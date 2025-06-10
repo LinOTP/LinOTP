@@ -82,13 +82,13 @@ function totp_get_config_params(){
 	<legend>${_("TOTP token settings")}</legend>
 	<table>
 		<tr><td><label for='totp_timeStep_config'> ${_("time step")}: </label></td>
-		<td><input type="text" name="tot_timeStep" class="required"  id="totp_timeStep_config" size="2" maxlength="2"
+		<td><input type="text" name="tot_timeStep" class="required" id="totp_timeStep_config" size="2" maxlength="2"
 			title='${_("This is the time step for time based tokens. Usually this is 30 or 60.")}'> sec</td></tr>
 		<tr><td><label for='totp_timeShift'> ${_("time offset")}: </label></td>
-		<td><input type="text" name="totp_timeShift" class="required"  id="totp_timeShift" size="5" maxlength="5"
+		<td><input type="text" name="totp_timeShift" class="required" id="totp_timeShift" size="5" maxlength="5"
 			title='${_("This is the default time shift of the server. This should be 0.")}'> sec</td></tr>
 		<tr><td><label for='totp_timeWindow'> ${_("time lookup window")}: </label></td>
-		<td><input type="text" name="totp_timeWindow" class="required"  id="totp_timeWindow" size="5" maxlength="5"
+		<td><input type="text" name="totp_timeWindow" class="required" id="totp_timeWindow" size="5" maxlength="5"
 			title='${_("This is the time LinOTP will calculate before and after the current time. A reasonable value is 300.")}'> sec</td></tr>
 	</table>
 </fieldset>
@@ -172,7 +172,7 @@ function totp_google_constrains() {
 /*
  * 'typ'_get_enroll_params()
  *
- * this method is called, when the token  is submitted
+ * this method is called, when the token is submitted
  * - it will return a hash of parameters for admin/init call
  *
  */
@@ -181,7 +181,7 @@ function totp_get_enroll_params(){
     params['type'] = 'totp';
    	params['description'] = $('#enroll_totp_desc').val();
 
-    if  ( $('#totp_rb_key_gen').is(':checked') ) {
+    if ( $('#totp_rb_key_gen').is(':checked') ) {
 		params['genkey']	= 1;
 		params['hashlib']	= 'sha1';
     } else {
@@ -258,8 +258,8 @@ $('#totp_google_compliant').click(function() {
 <tr>
     <td class="description"><label for="totp_otplen">${_("OTP digits")}</label></td>
     <td><select name="pintype" id="totp_otplen">
-            <option  selected value="6">6</option>
-            <option  value="8">8</option>
+            <option selected value="6">6</option>
+            <option value="8">8</option>
     </select></td>
 </tr>
 <tr>
@@ -316,7 +316,7 @@ ${_("Enroll TOTP Token")}
 jQuery.validator.addMethod("content_check", function(value, element, param){
     var res1 = value.match(/^[a-fA-F0-9]+$/i);
     var res2 = !value;
-    return  res1 || res2 ;
+    return res1 || res2 ;
     }, '${_("Please enter a valid init secret. It may only contain numbers and the letters A-F.")}');
 
 var totp_self_validator = $('#form_enroll_totp').validate({
@@ -339,7 +339,7 @@ function self_totp_get_param()
     var urlparam = {};
     var typ = 'totp';
 
-    if  ( $('#totp_rb2_key_gen').is(':checked') ) {
+    if ( $('#totp_rb2_key_gen').is(':checked') ) {
         urlparam['genkey'] = 1;
     } else {
         // OTP Keytotp_secret
@@ -365,12 +365,14 @@ function self_totp_clear()
     totp_self_validator.resetForm();
 
 }
-function self_totp_submit(){
+
+function self_totp_submit()
+{
 
     var ret = false;
     var params =  self_totp_get_param();
 
-    if  ( ($('#totp_rb2_key_gen').is(':checked') === false)
+    if (($('#totp_rb2_key_gen').is(':checked') === false)
            && ($('#form_enroll_totp').valid() === false)) {
         alert('${_("Form data not valid.")}');
         return ret

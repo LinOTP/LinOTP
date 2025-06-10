@@ -327,7 +327,7 @@ class AttributeCompare(object):
         define the user lookup, which is here use.resolver:
 
         Remark:
-            resolver only like  resolver: is handled in the legacy method,
+            resolver only like resolver: is handled in the legacy method,
             while this might be supported here as well
 
         :return: the user info as dict

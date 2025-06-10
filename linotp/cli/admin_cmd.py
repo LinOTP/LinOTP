@@ -26,7 +26,7 @@
 
 """linotp admin command.
 
-linotp admin  fix-db-encoding
+linotp admin fix-db-encoding
 
 """
 

@@ -115,10 +115,10 @@ class MonitoringController(BaseController):
         might be smaller than the summ of all tokens
         as tokens which have two realms are only counted once!
 
-        :param  status: (optional) takes assigned or unassigned, give the number
+        :param status: (optional) takes assigned or unassigned, give the number
                 of tokens with this characteristic
 
-        ;param realms: (optional) takes realms, only the number of tokens in
+        :param realms: (optional) takes realms, only the number of tokens in
                 these realms will be displayed
 
 

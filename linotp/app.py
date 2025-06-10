@@ -628,7 +628,7 @@ class LinOTPApp(Flask):
         """
         Initialise controllers and their routing
 
-        `DISABLE_CONTROLLERS` and  'ENABLE_CONTROLLERS' are strings that
+        `DISABLE_CONTROLLERS` and 'ENABLE_CONTROLLERS' are strings that
         contain space-separated list of controllers that should be made
         available.
         If an entry in this list is `foo`, this means that the Python module

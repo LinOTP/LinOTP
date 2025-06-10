@@ -386,7 +386,7 @@ def get_default_provider(provider_type):
 
 def getProvider(provider_type, provider_name=None, decrypted=False):
     """
-    return a dict with  providers, each with it's description as dict
+    return a dict with providers, each with it's description as dict
 
     :param provider_type: either push, sms or email
     :param provider_name: name of the provider (optional)

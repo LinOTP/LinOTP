@@ -29,7 +29,6 @@
 
 import logging
 import smtplib
-import string
 from hashlib import sha256
 
 from linotp.lib.type_utils import boolean

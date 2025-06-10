@@ -221,7 +221,7 @@ class ResourceScheduler(object):
     out   0,0  0,0  1,0  0,1  1,1  0,2  1,2  0,3  1,4  0,5  0,0
 
     Now we can dynamically adjust the delay by the doubling the time
-    based on the counter: delay + delay * 2**n  assuming a delay of
+    based on the counter: delay + delay * 2**n assuming a delay of
     30 seconds, this will result in a sequence of doubling delays
 
        0 -> 30                   =   0,5 Min
@@ -358,10 +358,10 @@ class ResourceScheduler(object):
         self._retry_complete = False
 
         for i in range(0, self.tries):
-            # the last of the list  is the last try, after which a blocking is
+            # the last of the list is the last try, after which a blocking is
             # possible
 
-            log.debug("try %d/%d for resource  %r", i, self.tries, uri)
+            log.debug("try %d/%d for resource %r", i, self.tries, uri)
 
             if i + 1 == self.tries:
                 self._retry_complete = True

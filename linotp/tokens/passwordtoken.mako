@@ -72,7 +72,7 @@ function pw_clear_input_fields() {
 /*
  * 'typ'_get_enroll_params()
  *
- * this method is called, when the token  is submitted
+ * this method is called, when the token is submitted
  * - it will return a hash of parameters for admin/init call
  *
  */
@@ -162,7 +162,7 @@ ${_("Enroll Password Token")}
 jQuery.validator.addMethod("content_check", function(value, element, param){
     //var res1 = value.match(/^[a-fA-F0-9]+$/i);
     //var res2 = !value;
-    //return  res1 || res2 ;
+    //return res1 || res2 ;
     return true;
     }, '${_("Please enter a valid init secret. It may only contain numbers and the letters A-F.")}');
 

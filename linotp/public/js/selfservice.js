@@ -138,7 +138,7 @@ function clientUrlFetchSync(myUrl, params) {
 
 function run_sync_request(url,params){
     /*
-     * run_sync_request - to submit a syncronous  http request
+     * run_sync_request - to submit a synchronous http request
      *
      * @remark: introduced the params (:dict:) so we could switch to
      *          a POST request, which will allow more and secure data

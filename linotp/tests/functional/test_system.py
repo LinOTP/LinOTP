@@ -34,7 +34,7 @@ import os
 from typing import Callable
 
 from flask.testing import FlaskClient
-from mock import Mock, patch
+from mock import patch
 
 from linotp.model.imported_user import ImportedUser
 from linotp.tests import TestController
@@ -382,7 +382,7 @@ class TestSystemController(TestController):
             action="delResolver", params={"resolver": "reso1"}
         )
 
-        assert "Resolver 'reso1'  still in use" in response, response
+        assert "Resolver 'reso1' still in use" in response, response
 
         response = self.make_system_request(
             action="delResolver", params={"resolver": "reso3"}

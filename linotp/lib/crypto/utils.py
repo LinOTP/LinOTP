@@ -343,7 +343,7 @@ def encryptPin(cryptPin: bytes, iv=None, hsm=None):
 
 
 def _get_hsm_obj_from_context(hsm=None):
-    """Get the hsm from  LinOTP request context
+    """Get the hsm from LinOTP request context
 
     If no hsm parameter is given, we get the hsm from the LinOTP request context
     (var context) which was extended some time ago.

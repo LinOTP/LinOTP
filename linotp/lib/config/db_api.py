@@ -32,7 +32,6 @@ import logging
 
 from linotp.lib.config.util import expand_here
 from linotp.lib.crypto.encrypted_data import EncryptedData
-from linotp.lib.crypto.utils import decryptPassword, encryptPassword
 from linotp.lib.error import ConfigAdminError
 from linotp.lib.text_utils import UTF8_MAX_BYTES, simple_slice, utf8_slice
 from linotp.model import db
@@ -55,7 +54,7 @@ log = logging.getLogger(__name__)
 
 def _storeConfigDB(key, val, typ=None, desc=None):
     """
-    insert or update the entry with  key, value, type and
+    insert or update the entry with key, value, type and
     description in the config DB
 
     """

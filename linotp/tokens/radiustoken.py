@@ -35,7 +35,6 @@ from flask import current_app
 from pyrad.client import Client
 from pyrad.dictionary import Dictionary
 
-from linotp.flap import config as env
 from linotp.lib.error import ParameterError
 from linotp.tokens import tokenclass_registry
 
@@ -237,7 +236,7 @@ class RadiusTokenClass(RemoteTokenClass):
 
         # here we also need to check for radius.user
         log.debug(
-            "[do_request] checking OTP len:%r on radius server: %s,  user: %s",
+            "[do_request] checking OTP len:%r on radius server: %s, user: %s",
             len(anOtpVal),
             radiusServer,
             radiusUser,

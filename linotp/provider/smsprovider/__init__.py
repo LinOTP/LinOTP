@@ -30,9 +30,9 @@
 LinOTP is an open solution for strong two-factor authentication
        with One Time Passwords.
 
-SMSProvider is the iterface to the final sms submitting service
-LinOTP provides  3 types of implementation: HTTPSMS, SMTP and Device
-sms submitt.
+SMSProvider is the interface to the final sms submitting service
+LinOTP provides 3 types of implementation: HTTPSMS, SMTP and Device
+sms submit.
 
 """
 

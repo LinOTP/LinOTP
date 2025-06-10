@@ -49,7 +49,7 @@ function error_handling(message, file, line) {
 
 /**
  * Make an API request to handle the logout in the backend.
- * 
+ *
  * If the logout is successful, we reload the page to let
  * the backend decide where to redirect the user to.
  */
@@ -839,7 +839,7 @@ function clientUrlFetch(myUrl, params, callback, parameter) {
 }
 
 /*
- * clientUrlFetchSync - to submit a syncronous  http request
+ * clientUrlFetchSync - to submit a synchronous http request
  *
  * @remark: introduced the params (:dict:) so we could switch to
  *          a POST request, which will allow more and secure data
@@ -5710,7 +5710,7 @@ $(document).ready(function () {
             });
             return false;
         }
-        // ajax call  w. callback//
+        // ajax call w. callback//
         get_enroll_infotext();
         translate_token_enroll();
         $dialog_enroll_token.dialog('open');
@@ -7101,7 +7101,7 @@ function resolver_ldap(name, duplicate) {
     critical_inputs.off("change keyup");
     $("#ldap_password").removeClass("input-placeholder-warning");
 
-    // enable critical input password requirement validation for resolver edits 
+    // enable critical input password requirement validation for resolver edits
     if (g.current_resolver_name) {
         $('#ldap_password').attr("placeholder", password_placeholder_not_changed);
         critical_inputs.on('change keyup', function (e) {
@@ -7433,7 +7433,7 @@ function resolver_sql(name, duplicate) {
     critical_inputs.off("change keyup");
     $("#sql_password").removeClass("input-placeholder-warning");
 
-    // enable critical input password requirement validation for resolver edits 
+    // enable critical input password requirement validation for resolver edits
     if (g.current_resolver_name) {
         $('#sql_password').attr("placeholder", password_placeholder_not_changed);
 

@@ -38,8 +38,7 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 
 from linotp.lib.auth.validate import check_otp, check_pin
-from linotp.lib.challenges import Challenges
-from linotp.lib.error import ParameterError, TokenTypeNotSupportedError
+from linotp.lib.error import ParameterError
 from linotp.lib.policy import getPolicy
 from linotp.lib.policy.action import get_action_value
 from linotp.tokens import tokenclass_registry
@@ -211,7 +210,7 @@ class U2FTokenClass(TokenClass):
             and the otp value for otpval
         """
         # Split OTP from pin
-        # Since we know that the OTP has to be valid JSON  with format {"a":"b", "b":"c", ...}
+        # Since we know that the OTP has to be valid JSON with format {"a":"b", "b":"c", ...}
         # we can parse the OTP for '{' beginning at the end of the OTP string
         splitIndex = passw.rfind("{")
         if splitIndex != -1:
@@ -610,8 +609,8 @@ class U2FTokenClass(TokenClass):
         :type passw:       string
         :param counter:    the start counter
         :type counter:     int
-        :param  window:    the window, in which the token is valid
-        :type  window:     int
+        :param window:     the window, in which the token is valid
+        :type window:      int
         :param options:    options
         :type options:     dict
 

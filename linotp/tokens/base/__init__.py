@@ -568,8 +568,8 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         The prompt for the challenge of every token type can be
         declared in the config with the corresponding token type name
-        (in capitals) and concatanted by "_CHALLENGE_PROMPT".
-        e.g. SMS_CHALLENGE_PROMPT, EMAIL_CHALLENGE_PROMPT  etc
+        (in capitals) and concatenated by "_CHALLENGE_PROMPT".
+        e.g. SMS_CHALLENGE_PROMPT, EMAIL_CHALLENGE_PROMPT, etc
 
         """
         prompt = getFromConfig(self.type.upper() + "_CHALLENGE_PROMPT", default)

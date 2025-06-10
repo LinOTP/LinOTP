@@ -284,7 +284,7 @@ class TestChunkConfigCase(unittest.TestCase):
 
         return
 
-    @patch("linotp.lib.config.db_api.encryptPassword")
+    @patch("linotp.lib.crypto.utils.encryptPassword")
     @patch("linotp.lib.config.db_api._storeConfigEntryDB", storeConfigEntryDB)
     @patch("linotp.model.db.session")
     def test__storeConfigDB_password(self, mock_session, mock_encryptPassword):

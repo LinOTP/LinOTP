@@ -244,7 +244,7 @@ function exportAudit(audit_num, audit_page) {
     if ($.isNumeric(audit_page) == false) {
         audit_page = 1;
     }
-    
+   
     $("<form action='/audit/search?outform=csv&rp=" + audit_num +
         "&page=" + audit_page + "&headers=true" + "&sortorder=desc" +
         "' method='post'><input type='hidden' name='csrf_token' value='" +

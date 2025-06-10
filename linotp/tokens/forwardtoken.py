@@ -32,7 +32,6 @@ from typing import Optional
 from flask_babel import gettext as _
 
 from linotp.lib.auth.validate import check_pin, split_pin_otp
-from linotp.lib.context import request_context as context
 from linotp.lib.policy import getPolicy
 from linotp.lib.token import get_token_owner, getTokenRealms
 from linotp.tokens import tokenclass_registry
@@ -347,7 +346,7 @@ class ForwardTokenClass(TokenClass):
         forwardSerial = self.getFromTokenInfo("forward.serial") or ""
 
         log.debug(
-            "checking OTP len:%r  for target serial: %r",
+            "checking OTP len:%r for target serial:%r",
             len(passw),
             forwardSerial,
         )

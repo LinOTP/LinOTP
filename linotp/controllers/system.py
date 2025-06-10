@@ -792,7 +792,7 @@ class SystemController(BaseController):
 
             if fRealms:
                 g.audit["failed"] = res
-                err = "Resolver %r  still in use by the realms: %r" % (
+                err = "Resolver %r still in use by the realms: %r" % (
                     resolver_name,
                     fRealms,
                 )
@@ -2177,7 +2177,7 @@ class SystemController(BaseController):
     @deprecated_methods(["POST"])
     def getProviderDef(self):
         """
-        get the definition of the specified  provider
+        get the definition of the specified provider
         - used for automatic rendering
 
         :param type: (required) the provider type

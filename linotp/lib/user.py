@@ -821,7 +821,7 @@ def getResolversOfUser(user):
     The usecase behind this constrain is that an user for example could
     be ldap wise in a group which could be addressed by two queries.
 
-    :param user: userobject with  user.login, user.realm
+    :param user: userobject with user.login, user.realm
 
     :returns: array of resolvers, the user was found in
     """

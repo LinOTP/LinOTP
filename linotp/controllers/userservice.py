@@ -2023,7 +2023,7 @@ class UserserviceController(BaseController):
                 raise Exception(_("The token is already assigned to another user."))
             # -------------------------------------------------------------- --
 
-            # assign  token to user
+            # assign token to user
 
             log.info(
                 "user %s@%s is assign the token with serial %s to himself.",
@@ -2488,7 +2488,7 @@ class UserserviceController(BaseController):
     @methods(["POST"])
     def activateocratoken(self):
         """
-        activateocratoken - called from the selfservice web ui to activate the  OCRA token
+        activateocratoken - called from the selfservice web ui to activate the OCRA token
 
         :param type:    'ocra2'
         :param serial:    serial number of the token

@@ -55,7 +55,7 @@ function forward_enroll_setup_defaults(config, options){
 /*
  * 'typ'_get_enroll_params()
  *
- * this method is called, when the token  is submitted
+ * this method is called, when the token is submitted
  * - it will return a hash of parameters for admin/init call
  *
  */
@@ -95,6 +95,4 @@ function forward_get_enroll_params(){
     <td><input type="password" autocomplete="off" name="pin2" id="forward_pin2"
             class="text ui-widget-content ui-corner-all"></td>
 	</tr></table>
-
-
 %endif

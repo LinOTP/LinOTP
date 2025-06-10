@@ -63,4 +63,3 @@ integrationtests:
 	$(MAKE) -C linotp/tests/integration $@
 
 .PHONY: test unittests functionaltests integrationtests
-

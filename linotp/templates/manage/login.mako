@@ -41,7 +41,7 @@
   <meta http-equiv="content-style-type" content="text/css">
 
   <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
-  
+ 
   %if c.debug:
     <link type="text/css" rel="stylesheet" href="/static/css/jquery-ui/jquery-ui.structure.css">
     <link type="text/css" rel="stylesheet" href="/static/css/jquery-ui/jquery-ui.theme.css">

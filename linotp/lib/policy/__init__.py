@@ -3187,7 +3187,7 @@ def check_auth_tokentype(serial, exception=False, user=None):
         userObj=user,
     )
 
-    log.debug("got policy %s for user %s@%s  client %s", pol, login, realm, client)
+    log.debug("got policy %s for user %s@%s client %s", pol, login, realm, client)
 
     t_type = get_action_value(
         pol, scope="authorization", action="tokentype", default=""
@@ -3278,7 +3278,7 @@ def check_auth_serial(serial, exception=False, user=None):
         )
         return True
 
-    log.debug("got policy %s for user %s@%s  client %s", pol, login, realm, client)
+    log.debug("got policy %s for user %s@%s client %s", pol, login, realm, client)
 
     # extract the value from the policy
     serial_regexp = get_action_value(
