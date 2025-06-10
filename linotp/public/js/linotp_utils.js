@@ -104,7 +104,7 @@ function cb_changed(checkbox_id,arry){
 
     for (i=0; i<arry.length; i++) {
         var sid = arry[i];
-        if  ( checked )
+        if ( checked )
             $('#'+sid).hide();
         else
             $('#'+sid).show();
@@ -119,7 +119,7 @@ function cb_changed_deactivate(checkbox_id,arry){
 
     for (i=0; i<arry.length; i++) {
         var sid = arry[i];
-        if  ( checked ) {
+        if ( checked ) {
             $('#'+sid).prop('disabled', true);
             $('#'+sid).addClass('disabled');
         } else {

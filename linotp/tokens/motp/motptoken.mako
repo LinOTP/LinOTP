@@ -61,7 +61,7 @@
     /*
     * 'typ'_get_enroll_params()
     *
-    * this method is called, when the token  is submitted
+    * this method is called, when the token is submitted
     * - it will return a hash of parameters for admin/init call
     *
     */

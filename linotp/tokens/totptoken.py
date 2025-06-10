@@ -123,11 +123,11 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         #  window size in seconds:
         #    30 seconds with as step width of 30 seconds results
-        #    in a window of 1  which is one attempt
+        #    in a window of 1 which is one attempt
 
         self.timeWindow = getFromConfig("totp.timeWindow", 180) or 180
 
-        # the time shift is specified in seconds  - and could be
+        # the time shift is specified in seconds - and could be
         # positive and negative
 
         self.timeShift = getFromConfig("totp.timeShift", 0)

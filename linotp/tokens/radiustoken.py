@@ -237,7 +237,7 @@ class RadiusTokenClass(RemoteTokenClass):
 
         # here we also need to check for radius.user
         log.debug(
-            "[do_request] checking OTP len:%r on radius server: %s,  user: %s",
+            "[do_request] checking OTP len:%r on radius server: %s, user: %s",
             len(anOtpVal),
             radiusServer,
             radiusUser,

@@ -452,7 +452,7 @@ class IdResolver(UserIdResolver):
     @classmethod
     def primary_key_changed(cls, new_params, previous_params):
         """
-        check if during the  parameter update the primary key has changed
+        check if during the parameter update the primary key has changed
 
         :param new_params: the set of new parameters
         :param previous_params: the set of previous parameters

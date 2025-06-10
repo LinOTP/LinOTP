@@ -55,7 +55,7 @@ log = logging.getLogger(__name__)
 
 def _storeConfigDB(key, val, typ=None, desc=None):
     """
-    insert or update the entry with  key, value, type and
+    insert or update the entry with key, value, type and
     description in the config DB
 
     """

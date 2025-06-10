@@ -124,7 +124,7 @@ class MaintenanceController(BaseController):
     @deprecated_methods(["POST"])
     def check_status(self):
         """
-        simple check if LinOTP backend services  are up and running
+        simple check if LinOTP backend services are up and running
 
         support for checking that the Config database could be accessed
 

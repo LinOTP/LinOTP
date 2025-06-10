@@ -104,7 +104,7 @@ function hmac_clear_input_fields() {
 /*
  * 'typ'_get_enroll_params()
  *
- * this method is called, when the token  is submitted
+ * this method is called, when the token is submitted
  * - it will return a hash of parameters for admin/init call
  *
  */
@@ -114,7 +114,7 @@ function hmac_get_enroll_params(){
    	url['description'] = $('#enroll_hmac_desc').val();
 
     // If we got to generate the hmac key, we do it here:
-    if  ( $('#hmac_key_rb_gen').is(':checked') ) {
+    if ( $('#hmac_key_rb_gen').is(':checked') ) {
     	url['genkey'] = 1;
 
     } else {
@@ -192,8 +192,8 @@ $('#hmac_google_compliant').click(function() {
 <tr>
 	<td class="description"><label for="hmac_otplen">${_("OTP Digits")}</label></td>
 	<td><select name="pintype" id="hmac_otplen">
-			<option  selected value="6">6</option>
-			<option  value="8">8</option>
+			<option selected value="6">6</option>
+			<option value="8">8</option>
 	</select></td>
 
 </tr>
@@ -247,7 +247,7 @@ ${_("Enroll HOTP Token")}
 jQuery.validator.addMethod("content_check", function(value, element, param){
     var res1 = value.match(/^[a-fA-F0-9]+$/i);
     var res2 = !value;
-    return  res1 || res2 ;
+    return res1 || res2 ;
     }, '${_("Please enter a valid init secret. It may only contain numbers and the letters A-F.")}');
 
 var hmac_self_validator = $('#form_enroll_hmac').validate({
@@ -270,7 +270,7 @@ function self_hmac_get_param()
     var urlparam = {};
     var typ = 'hmac';
 
-    if  ( $('#hmac_key_rb2_gen').is(':checked') ) {
+    if ( $('#hmac_key_rb2_gen').is(':checked') ) {
     	urlparam['genkey'] = 1;
     } else {
         // OTP Key
@@ -295,12 +295,14 @@ function self_hmac_clear()
     hmac_self_validator.resetForm();
 
 }
-function self_hmac_submit(){
+
+function self_hmac_submit()
+{
 
     var ret = false;
     var params =  self_hmac_get_param();
 
-    if  ( ($('#hmac_key_rb2_gen').is(':checked') === false)
+    if (($('#hmac_key_rb2_gen').is(':checked') === false)
            && ($('#form_enroll_hmac').valid() === false)) {
         alert('${_("Form data not valid.")}');
         return ret

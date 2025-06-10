@@ -264,7 +264,7 @@ def check_license_restrictions():
     """
     check if there are restrictions, which are caused by the license
 
-    :return: boolean - True if there are  restrictions
+    :return: boolean - True if there are restrictions
     """
 
     license_str = getFromConfig("license")
@@ -976,7 +976,7 @@ def check_date(expire_type, expire):
     """
     today = datetime.datetime.now()
 
-    # -with  support for two date formats
+    # - with support for two date formats
     expiration_date = None
     for fmt in ("%d.%m.%Y", "%m/%d/%Y", "%Y-%m-%d"):
         try:

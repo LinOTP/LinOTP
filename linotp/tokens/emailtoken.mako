@@ -100,7 +100,7 @@ function email_enroll_setup_defaults(config, options){
 /*
  * 'typ'_get_enroll_params()
  *
- * this method is called, when the token  is submitted
+ * this method is called, when the token is submitted
  * - it will return a hash of parameters for admin/init call
  *
  */
@@ -133,7 +133,7 @@ function email_clear_input_fields() {
     <td><input type="text" name="enroll_email_desc" id="enroll_email_desc" value="webGUI_generated" class="text"></td>
 </tr>
 <tr name="set_pin_rows" class="space" title='${_("Protect your token with a static PIN")}'><th colspan="2">${_("Token PIN:")}</th></tr>
-<tr  name='set_pin_rows'>
+<tr name='set_pin_rows'>
     <td class="description"><label for="pin1" id="email_pin1_label">${_("Enter PIN")}:</label></td>
     <td><input type="password" autocomplete="off" name="pin1" id="email_pin1"
             class="text ui-widget-content ui-corner-all"></td>
@@ -224,7 +224,7 @@ function self_email_submit(){
                     value='${emailaddress}'
 
                     %if c.edit_email == 0:
-                            readonly  disabled
+                            readonly disabled
                     %endif
                    >
         </td>

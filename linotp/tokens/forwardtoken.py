@@ -347,7 +347,7 @@ class ForwardTokenClass(TokenClass):
         forwardSerial = self.getFromTokenInfo("forward.serial") or ""
 
         log.debug(
-            "checking OTP len:%r  for target serial: %r",
+            "checking OTP len:%r for target serial:%r",
             len(passw),
             forwardSerial,
         )

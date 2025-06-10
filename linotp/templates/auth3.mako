@@ -69,4 +69,3 @@ ${_("Enter your username, the OTP PIN (Password) and the OTP value.")}
 <div id="successDiv"></div>
 
 </div>  <!-- end of main-->
-

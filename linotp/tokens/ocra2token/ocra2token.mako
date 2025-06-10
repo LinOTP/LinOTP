@@ -113,7 +113,7 @@ function ocra2_enroll_setup_defaults(config, options){
 /*
  * 'typ'_get_enroll_params()
  *
- * this method is called, when the token  is submitted
+ * this method is called, when the token is submitted
  * - it will return a hash of parameters for admin/init call
  *
  */
@@ -126,7 +126,7 @@ function ocra2_get_enroll_params(){
 	url['ocrasuite'] = $('#ocrasuite_algorithm').val();
 
     // If we got to generate the ocra2 key, we do it here:
-    if  ( $('#ocra2_key_cb').is(':checked')  ) {
+    if ( $('#ocra2_key_cb').is(':checked') ) {
     	url['genkey'] = 1;
 
     } else {
@@ -212,7 +212,7 @@ ${_("Enroll your OCRA2 Token")}
 jQuery.validator.addMethod("ocra2_secret", function(value, element, param){
 	var res1 = value.match(/^[a-fA-F0-9]+$/i);
 	var res2 = !value;
-    return  res1 || res2 ;
+    return res1 || res2 ;
 }, '${_("Please enter a valid init secret. It may only contain numbers and the letters A-F.")}'  );
 
 var ocra2_self_validator = $('#form_enroll_ocra2').validate({
@@ -237,7 +237,7 @@ function self_ocra2_get_param()
 	var urlparam = {};
 	var typ = 'ocra2';
 
-    if  ( $('#ocra2_key_cb2').is(':checked')) {
+    if ( $('#ocra2_key_cb2').is(':checked') ) {
     	urlparam['genkey'] = 1;
     } else {
         // OTP Key
@@ -261,7 +261,7 @@ function self_ocra2_submit(){
 	var ret = false;
 	var params =  self_ocra2_get_param();
 
-	if  (( $('#ocra2_key_cb2').is(':checked') === false
+	if (( $('#ocra2_key_cb2').is(':checked') === false
 		 && $('#form_enroll_ocra2').valid() === false)) {
 		alert('${_("Form data not valid.")}');
 		return ret;

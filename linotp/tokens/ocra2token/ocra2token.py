@@ -49,7 +49,7 @@ instead of the dedicated ocra/request and ocra/check_t
  in the image data for the softtoken qrscan in the structure
       detail/ocraurl/img
 
- <img    width=250   src="data:image/png;base64,iVBO....
+ <img width=250 src="data:image/png;base64,iVBO....
 
  which could be embedded in the enrollment application. Other relevant
  information (as well part in the qr encoded data) is the
@@ -241,7 +241,7 @@ def get_qrtan_url(qrtan_policy_name, realms, callback_id=None):
 @tokenclass_registry.class_entry("linotp.tokens.ocra2token.Ocra2TokenClass")
 class Ocra2TokenClass(TokenClass):
     """
-    Ocra2TokenClass  implement an ocra compliant token
+    Ocra2TokenClass implement an ocra compliant token
 
     used from Config
         OcraMaxChallenges         - number of open challenges per token

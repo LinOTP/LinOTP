@@ -323,7 +323,7 @@ def methods(mm=["GET"]):
         def wrapper(*args, **kwargs):
             return func(*args, **kwargs)
 
-        # update the calling  docstring of the function
+        # update the calling docstring of the function
         wrapper.__doc__ = render_calling_path(func) + wrapper.__doc__
 
         return wrapper

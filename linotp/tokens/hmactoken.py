@@ -575,7 +575,7 @@ class HmacTokenClass(TokenClass):
         counter = hmac2Otp.checkOtp(otp1, syncWindow)
 
         if counter == -1:
-            log.debug("[resync] exit. First counter (-1) not found  ret: %r", ret)
+            log.debug("[resync] exit. First counter (-1) not found ret: %r", ret)
             return ret
 
         nextOtp = hmac2Otp.generate(counter + 1)

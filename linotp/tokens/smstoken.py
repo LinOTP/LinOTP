@@ -962,7 +962,7 @@ class SmsTokenClass(HmacTokenClass):
             sms_provider = loadProvider("sms", provider_name=provider_name)
 
             if not sms_provider:
-                log.error("Unable to load provider  %r", provider_name)
+                log.error("Unable to load provider %r", provider_name)
                 log.error("Please verify your provider configuration!")
                 raise Exception("unable to load provider")
 

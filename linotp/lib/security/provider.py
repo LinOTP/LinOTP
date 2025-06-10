@@ -361,7 +361,7 @@ class SecurityProvider(object):
 
             if found is None:
                 log.info(
-                    "[SecurityProvider:dropSecurityModule] could not find  "
+                    "[SecurityProvider:dropSecurityModule] could not find "
                     "hsm connection allocated by thread in hsm pool: %r ",
                     hsm_id,
                 )

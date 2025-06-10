@@ -382,7 +382,7 @@ class TestSystemController(TestController):
             action="delResolver", params={"resolver": "reso1"}
         )
 
-        assert "Resolver 'reso1'  still in use" in response, response
+        assert "Resolver 'reso1' still in use" in response, response
 
         response = self.make_system_request(
             action="delResolver", params={"resolver": "reso3"}

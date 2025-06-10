@@ -141,7 +141,7 @@ class DefaultPushProvider(IPushProvider, ConfigParsingMixin):
             # timeout could come with capital letter
             # and could be a
             # - simple timeout (float)
-            # - or  a tuple of connection and request timeout (float)
+            # - or a tuple of connection and request timeout (float)
             #
 
             if "timeout" in configDict or "Timeout" in configDict:

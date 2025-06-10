@@ -77,8 +77,8 @@ ${_("To verify your result enter the OTP value into the form below.")}
                 </tr>
                 %endif
                 <tr>
-                <td>${_("OTP PIN")}</td>
-                <td><input type="text" id="pin" name="pass" class="required"></td>
+                    <td>${_("OTP PIN")}</td>
+                    <td><input type="text" id="pin" name="pass" class="required"></td>
                 </tr><tr>
                     <td>${_("message / data")}</td>
                     <td><textarea cols="40" rows="6" id="challenge" name="data" class="required"></textarea></td>

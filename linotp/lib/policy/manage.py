@@ -98,7 +98,7 @@ def setPolicy(policy):
     """
     define and store a policy definition
 
-    :param policy: dict  with the following keys:
+    :param policy: dict with the following keys:
 
           * name
           * action
@@ -120,7 +120,7 @@ def setPolicy(policy):
     # check that the name does not contain any bad characters
     if not PolicyNameRegex.match(name):
         raise Exception(
-            _("The name of the policy may only contain the characters  a-zA-Z0-9_.")
+            _("The name of the policy may only contain the characters a-zA-Z0-9_.")
         )
 
     # verify the required policy attributes
