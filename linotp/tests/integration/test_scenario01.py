@@ -24,7 +24,6 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-from linotp_selenium_helper.self_service import SelfService
 from selenium.webdriver.common.by import By
 
 """LinOTP Selenium Test for Scenario 01 - General functionality tests"""
@@ -32,11 +31,11 @@ from selenium.webdriver.common.by import By
 import binascii
 import logging
 import os
-import re
 import time
 
 import integration_data as data
 import pytest
+import requests
 from linotp_selenium_helper import Policy, TestCase
 from linotp_selenium_helper.token_import import TokenImportAladdin
 from linotp_selenium_helper.validate import Validate
@@ -65,11 +64,11 @@ def calculate_motp(epoch, key, pin, digits=6):
 @pytest.mark.smoketest
 class TestScenario01:
     """TestCase class that tests Scenario 01 as defined here:
-    https://wally/projects/linotp/wiki/TestingTest_Szenario_01
+    https://wiki.corp.linotp.de/pages/viewpage.action?pageId=119867175
     """
 
     @pytest.fixture(autouse=True)
-    def setUp(self, testcase):
+    def setUp(self, testcase: TestCase):
         self.testcase = testcase
 
     def _announce_test(self, testname):
@@ -77,16 +76,17 @@ class TestScenario01:
 
     def test_scenario01(self):
         """
-        Scenario01 (https://wally/projects/linotp/wiki/TestingTest_Szenario_01)
+        Scenario01 (https://wiki.corp.linotp.de/pages/viewpage.action?pageId=119867175)
         """
-
-        driver = self.testcase.driver
-
         token_view = self.testcase.manage_ui.token_view
         user_view = self.testcase.manage_ui.user_view
         token_enroll = self.testcase.manage_ui.token_enroll
 
-        selfservice = SelfService(self.testcase)
+        selfservice = UserServiceApi(
+            self.testcase.http_protocol,
+            self.testcase.http_host,
+            self.testcase.http_port,
+        )
 
         # reset all views
         self.testcase.reset_resolvers_and_realms()
@@ -171,41 +171,19 @@ class TestScenario01:
 
         motp_key = "1234123412341234"
         motp_pin = "1234"
-        selfservice.open()
         selfservice.login("mozart", "Test123!", test1_realm)
-        selfservice.select_tab(selfservice.tab_register_motp)
-        driver.find_element(By.ID, "motp_secret").clear()
-        driver.find_element(By.ID, "motp_secret").send_keys(motp_key)
-        driver.find_element(By.ID, "motp_s_pin1").clear()
-        driver.find_element(By.ID, "motp_s_pin1").send_keys(motp_pin)
-        driver.find_element(By.ID, "motp_s_pin2").clear()
-        driver.find_element(By.ID, "motp_s_pin2").send_keys(motp_pin)
-        driver.find_element(By.ID, "motp_self_desc").clear()
-        driver.find_element(By.ID, "motp_self_desc").send_keys("Selenium self enrolled")
-        driver.find_element(By.ID, "button_register_motp").click()
-        alert_box_text = driver.find_element(By.ID, "alert_box_text").text
-        m = re.match(
-            r"""
-                .*?
-                Token\ enrolled\ successfully
-                .*?
-                [sS]erial(\ number)?:     # 'serial:' or 'Serial number:'
-                \s*
-                (?P<serial>\w+)           # For example: LSMO0001222C
-                """,
-            alert_box_text,
-            re.DOTALL | re.VERBOSE,
+        otp_pin = 666
+        result = selfservice.enroll_motp(
+            motp_key=motp_key,
+            motp_pin=motp_pin,
+            pin=otp_pin,
+            description="Selenium self enrolled",
         )
-        assert m is not None, (
-            "alert_box_text does not match regex. Possibly the token was not enrolled properly. %r"
-            % alert_box_text
+        selfservice.clear_session()
+        serial_token_mozart = result["detail"]["serial"]
+        assert serial_token_mozart, (
+            "Failed to enroll mOTP token for user mozart: %s" % result["detail"]
         )
-        serial_token_mozart = m.group("serial")
-        self.testcase.driver.find_element(
-            By.XPATH,
-            "//button[@type='button' and ancestor::div[@aria-describedby='alert_box']]",
-        ).click()
-        selfservice.logout()
 
         self._announce_test(
             "9. Alle 4 Benutzer melden sich im selfservice Portal an und setzen die PIN"
@@ -221,7 +199,7 @@ class TestScenario01:
         for user, token in user_token_dict.items():
             selfservice.login(user, "Test123!", test1_realm)
             selfservice.set_pin(token, user + "newpin")
-            selfservice.logout()
+            selfservice.clear_session()
 
         self._announce_test("10. Authentisierung der 4 Benutzer ###")
         validate = Validate(
@@ -344,10 +322,9 @@ class TestScenario01:
 
         new_motp_pin = "5588"
 
-        selfservice.open()
         selfservice.login("mozart", "Test123!", test1_realm)
         selfservice.set_motp_pin(serial_token_mozart, new_motp_pin)
-        selfservice.logout()
+        selfservice.clear_session()
 
         time.sleep(10)  # otherwise next mOTP value might not be valid
 
@@ -380,7 +357,7 @@ class TestScenario01:
         otp2 = hotp.generate(counter=counter + 2, key=seed_oath137332_bin)
 
         selfservice.resync_token(serial_token_bach, otp1, otp2)
-        selfservice.logout()
+        selfservice.clear_session()
 
         # Should be able to authenticate again
         otp = "bachnewpin" + hotp.generate(counter=counter + 3, key=seed_oath137332_bin)
@@ -393,7 +370,7 @@ class TestScenario01:
 
         selfservice.login("beethoven", "Test123!", test1_realm)
         selfservice.disable_token(serial_token_beethoven)
-        selfservice.logout()
+        selfservice.clear_session()
 
         # beethoven should be unable to authenticate
         access_granted, _ = validate.validate(
@@ -436,3 +413,127 @@ class TestScenario01:
                 "User '%s' should exist in realm %s" % (user, realm)
             )
             break
+
+
+class UserServiceApi:
+    """This class is used by test_scenario01 to make http requests to the
+    userservice API.
+    """
+
+    def __init__(self, http_protocol, http_host, http_port):
+        """Initializes the class with the required values to call"""
+        self.base_url = http_protocol + "://" + http_host
+        if http_port:
+            self.base_url += ":" + http_port
+        self._login_response: requests.Response | None = None
+
+    def login(self, user, password, realm=None):
+        """Login to the suserservice API with user and password"""
+        if realm:
+            login_user = "%s@%s" % (user, realm)
+        else:
+            login_user = user
+        url = self.base_url + "/userservice/login"
+        params = {"username": login_user, "password": password}
+        r = requests.post(url, params=params, verify=False)
+
+        assert r.status_code == 200, (
+            "Failed to login to self service, status code: %s, response: %s"
+            % (r.status_code, r.text)
+        )
+
+        assert r.cookies.get("user_selfservice") is not None, (
+            "No session cookie found in login response, response: %s" % r.text
+        )
+
+        self._login_response = r
+
+    def clear_session(self):
+        self._login_response = None
+
+    def set_pin(self, serial, pin):
+        """Set the pin for token"""
+        params = {
+            "userpin": pin,
+            "serial": serial,
+        }
+        r = self._make_userservice_request("setpin", params)
+        assert r.json()["result"]["value"]["set userpin"] == 1, (
+            "Failed to set pin for token, params: %s, response: %s" % (params, r.text)
+        )
+
+    def enroll_motp(self, motp_key, motp_pin, pin, description):
+        """Enroll a MOTP token for the logged in user"""
+        params = {
+            "type": "motp",
+            "otpkey": motp_key,
+            "otppin": motp_pin,
+            "pin": pin,
+            "description": description,
+        }
+        r = self._make_userservice_request("enroll", params)
+        assert r.json()["result"]["value"] == True, (
+            "Failed to enroll mOTP token, params: %s, response: %s" % (params, r.text)
+        )
+
+        return r.json()
+
+    def set_motp_pin(self, serial, motp_pin):
+        """Set the motp pin for a MOTP token"""
+        params = {
+            "pin": motp_pin,
+            "serial": serial,
+        }
+        r = self._make_userservice_request("setmpin", params)
+        assert r.json()["result"]["value"]["set userpin"] == 1, (
+            "Failed to set mOTP pin for token, params: %s, response: %s"
+            % (params, r.text)
+        )
+
+    def resync_token(self, serial, otp1, otp2):
+        """Resync a token"""
+        params = {
+            "serial": serial,
+            "otp1": otp1,
+            "otp2": otp2,
+        }
+        r = self._make_userservice_request("resync", params)
+        assert r.json()["result"]["value"]["resync Token"] == True, (
+            "Failed to resync token, params: %s, response: %s" % (params, r.text)
+        )
+
+    def disable_token(self, serial):
+        """Disable a token"""
+        params = {
+            "serial": serial,
+        }
+        r = self._make_userservice_request("disable", params)
+        assert r.json()["result"]["value"]["disable token"] == 1, (
+            "Failed to disable token %s, response: %s" % (serial, r.text)
+        )
+
+    def _make_userservice_request(self, endpoint, params):
+        """Make a request to the userservice endpoint with the given params"""
+        assert not self._login_response is None, (
+            "No login response found, did you call login() before making a request?"
+        )
+        params["session"] = self._login_response.cookies.get("user_selfservice")
+
+        url = self.base_url + "/userservice/" + endpoint
+
+        items = self._login_response.cookies.items()
+        cookies_string = "; ".join([f"{name}={value}" for name, value in items])
+        headers: dict[str, str] = {"Cookie": cookies_string}
+
+        r = requests.post(url, params=params, headers=headers, verify=False)
+        assert r.status_code == 200, (
+            "Failed to make request to userservice endpoint %s, params: %s, status code: %s, response: %s"
+            % (endpoint, params, r.status_code, r.text)
+        )
+
+        assert r.json()["result"]["status"] == True, (
+            "Request to userservice endpoint %s, params %s, response: %s did not return status True"
+            % (endpoint, params, r.text)
+        )
+
+        return r
