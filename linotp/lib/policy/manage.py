@@ -242,12 +242,7 @@ def _check_policy_impact(
 
     #
     # we need a copy of the policies as we want to modify them
-
     policies = get_copy_of_policies()
-
-    # in case of a policy change exclude this one from comparison
-    if name in policies:
-        del policies[name]
 
     # add the new policy and check the constrains
     policies[name] = pol
