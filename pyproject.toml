@@ -135,4 +135,5 @@ lint.select = [
   "PERF102",
   "PERF203",
   "PERF401",
+  "PERF402",
 ]

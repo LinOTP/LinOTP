@@ -1192,9 +1192,7 @@ class IdResolver(UserIdResolver):
             # prepare the list of attributes that we wish to recieve
             # Remark: the elememnts each must be of type string utf-8
 
-            attrlist = []
-            for uval in self.userinfo.values():
-                attrlist.append(uval)
+            attrlist = list(self.userinfo.values())
 
             if self.uidType.lower() != "dn":
                 attrlist.append(self.uidType)

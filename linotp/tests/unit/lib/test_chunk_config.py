@@ -193,9 +193,7 @@ class TestChunkConfigCase(unittest.TestCase):
         key_type = "text"
         key_desc = "description"
 
-        chunks = []
-        for cont_value in simple_slice(big_value, MAX_VALUE_LEN):
-            chunks.append(cont_value)
+        chunks = list(simple_slice(big_value, MAX_VALUE_LEN))
 
         _store_continous_entry_db(
             chunks, key=key_name, val=big_value, typ=key_type, desc=key_desc

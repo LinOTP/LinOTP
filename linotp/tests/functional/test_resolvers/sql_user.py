@@ -185,10 +185,7 @@ class SqlUserDB(object):
         with self.engine.begin() as conn:
             result = conn.execute(selectStr)
 
-        res = []
-        for row in result:
-            res.append(row)
-
+        res = list(result)
         return res
 
     def delUsers(self, uid=None, username=None):

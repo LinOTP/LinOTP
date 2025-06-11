@@ -190,10 +190,7 @@ class SQLUser(object):
         selectStr = "select * from %s" % (self.userTable)
         with self.engine.begin() as conn:
             result = conn.execute(selectStr)
-        res = []
-        for row in result:
-            res.append(row)
-
+        res = list(result)
         return res
 
     def delUsers(self, uid=None, username=None):
