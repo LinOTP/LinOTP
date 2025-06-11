@@ -224,8 +224,6 @@ class SQLImportHandler(ImportHandler):
         - create the database session context
         """
 
-        former_user_by_id = {}
-
         session = self.db_context.get_session()
 
         u_users = (
@@ -234,10 +232,7 @@ class SQLImportHandler(ImportHandler):
             .all()
         )
 
-        for u_user in u_users:
-            userid, username = u_user
-            former_user_by_id[userid] = username
-
+        former_user_by_id = dict(u_users)
         return former_user_by_id
 
     def commit(self):
