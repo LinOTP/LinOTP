@@ -690,7 +690,7 @@ _config_schema = ConfigSchema(
             "JWT_ACCESS_TOKEN_EXPIRES",
             int,
             validate=check_int_in_range(min=0),
-            default=15 * 60,  # 15 minutes
+            default=30 * 60,  # 30 minutes
             help=(
                 "How long JWT access tokens will be valid, in seconds "
                 "from when they are first issued. Note that a value "
