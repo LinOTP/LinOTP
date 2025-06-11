@@ -52,6 +52,7 @@ class TestRandompinController(TestController):
             "type": "hmac",
             "serial": None,
             "otplen": 6,
+            "pin": "123456",  # FIXME: Rewrite tests to make sense once fixed in LINOTP-2294 - LinOTP 4.0 currently requires a PIN to be set when setOTPPIN is active, yet it is overwritten by the random PIN
             "otps": deque(
                 [
                     "755224",
@@ -233,7 +234,9 @@ class TestRandompinController(TestController):
         # Enroll first token without otp_pin_random policy
         self._enroll_token_in_selfservice(user, pwd, token1)
         # Login with only OTP succeeds
-        self._validate_check_s(token1["serial"], token1["otps"].popleft())
+        self._validate_check_s(
+            token1["serial"], token1["pin"] + token1["otps"].popleft()
+        )
 
         self._create_randompin_policy("myDefRealm")
 
@@ -469,6 +472,8 @@ class TestRandompinController(TestController):
             "type": token["type"],
             "otplen": token["otplen"],
         }
+        if "pin" in token:
+            params["pin"] = token["pin"]
 
         response = self.make_userservice_request(
             "enroll", params, auth_user=(user, pwd)
