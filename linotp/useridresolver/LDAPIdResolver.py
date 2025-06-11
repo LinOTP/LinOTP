@@ -1193,7 +1193,7 @@ class IdResolver(UserIdResolver):
             # Remark: the elememnts each must be of type string utf-8
 
             attrlist = []
-            for _ukey, uval in self.userinfo.items():
+            for uval in self.userinfo.values():
                 attrlist.append(uval)
 
             if self.uidType.lower() != "dn":
@@ -1282,7 +1282,7 @@ class IdResolver(UserIdResolver):
             searchFilterOr = ""
             searchTermValue = searchDict.get("searchTerm")
             if searchTermValue:
-                for tmp, ldapKey in self.userinfo.items():
+                for ldapKey in self.userinfo.values():
                     searchFilterOr += "(%s=%s)" % (ldapKey, searchTermValue)
             # AND filter
             for searchKey, searchValue in searchDict.items():

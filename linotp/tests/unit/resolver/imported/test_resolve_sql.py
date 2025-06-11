@@ -107,7 +107,7 @@ class TestSQLResolver(TestCase):
         """
         res = obj.getUserList(arg)
         for item in res:
-            for _key, val in item.items():
+            for val in item.values():
                 assert "-ERR" not in str(val)
         return res
 
