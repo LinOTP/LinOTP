@@ -57,6 +57,7 @@ from linotp.lib.type_utils import boolean
 from linotp.lib.user import User, getUserInfo, getUserResolverId
 from linotp.lib.util import generate_otpkey
 from linotp.model import db
+from linotp.model.challange import Challenge
 from linotp.model.token import Token
 
 from .tokenproperty_mixin import TokenPropertyMixin
@@ -500,7 +501,9 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         return (otp_counter, matching_challenges)
 
-    def challenge_janitor(self, matching_challenges, challenges):
+    def challenge_janitor(
+        self, matching_challenges: list[Challenge], challenges: list[Challenge]
+    ):
         """
         This is the default janitor for the challenges of a token.
 
@@ -522,8 +525,8 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
             return []
 
         # other, minor challenge will be closed as well
-        highest_match_id = int(max(ch["id"] for ch in matching_challenges))
-        return [ch for ch in challenges if int(ch["id"]) < highest_match_id]
+        highest_match_id = int(max(ch.id for ch in matching_challenges))
+        return [ch for ch in challenges if int(ch.id) < highest_match_id]
 
     def createChallenge(self, transactionid, options=None):
         """
