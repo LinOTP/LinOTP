@@ -164,9 +164,7 @@ class SQLImportHandler(ImportHandler):
         :return: dictionary of the resolver parameters
         """
 
-        mapping = {}
-        for entry in ImportedUser.user_entries:
-            mapping[entry] = entry
+        mapping = {entry: entry for entry in ImportedUser.user_entries}
 
         where = "groupid = '%s'" % self.groupid
 

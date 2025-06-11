@@ -177,7 +177,6 @@ class UserImport(object):
         2. all former entries, which have not been update, will be removed
 
         """
-        users_deleted = {}
         users_created = {}
         users_not_modified = {}
         users_modified = {}
@@ -231,10 +230,6 @@ class UserImport(object):
                             "new_user": user,
                         }
 
-            # finally remove all former, not updated users
-            for del_userid, del_user_name in list(former_userids_to_be_removed.items()):
-                users_deleted[del_userid] = del_user_name
-
             # prepare the results to send back
             result = {
                 "created": {
@@ -247,7 +242,7 @@ class UserImport(object):
                     userid: u["new_user"].username
                     for userid, u in users_modified.items()
                 },
-                "deleted": users_deleted,
+                "deleted": former_userids_to_be_removed,
             }
 
             # wet run:
@@ -256,7 +251,7 @@ class UserImport(object):
                     self.import_handler.add(user)
                 for u in users_modified.values():
                     self.import_handler.update(u["former_user"], u["new_user"])
-                for del_userid in users_deleted:
+                for del_userid in former_userids_to_be_removed:
                     self.import_handler.delete_by_id(del_userid)
 
                 self.import_handler.commit()
