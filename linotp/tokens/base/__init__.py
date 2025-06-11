@@ -200,16 +200,12 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         return "UNK"
 
     def getRealms(self):
-        realms = []
-
         if hasattr(self, "realms"):
             return self.realms  # pylint: disable=E0203
 
         tokenrealms = self.token.getRealms()
-        for realm in tokenrealms:
-            realms.append(realm.name)
+        self.realms = [realm.name for realm in tokenrealms]
 
-        self.realms = realms
         return self.realms
 
     def getType(self):
@@ -522,19 +518,12 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         :return: list of all challenges, which should be deleted
         """
+        if not matching_challenges:
+            return []
 
-        to_be_closed = []
-        if matching_challenges:
-            match_id = 0
-            for match in matching_challenges:
-                match_id = max([match_id, int(match.get("id"))])
-
-            # other, minor challenge will be closes as well
-            for ch in challenges:
-                if int(ch.get("id")) < match_id:
-                    to_be_closed.append(ch)
-
-        return to_be_closed
+        # other, minor challenge will be closed as well
+        highest_match_id = int(max(ch["id"] for ch in matching_challenges))
+        return [ch for ch in challenges if int(ch["id"]) < highest_match_id]
 
     def createChallenge(self, transactionid, options=None):
         """

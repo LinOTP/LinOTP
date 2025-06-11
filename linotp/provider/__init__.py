@@ -739,11 +739,9 @@ def get_provider_from_policy(
 
     provider_names = get_action_value(policies, scope=scope, action=action, default="")
 
-    providers = []
-
-    for entry in [x.strip() for x in provider_names.split(" ")]:
-        if entry:
-            providers.append(entry)
+    providers = [
+        entry for entry in [x.strip() for x in provider_names.split(" ")] if entry
+    ]
 
     return providers
 

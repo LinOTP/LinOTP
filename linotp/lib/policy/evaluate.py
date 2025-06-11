@@ -869,11 +869,8 @@ def cron_compare(condition, now):
     :return: boolean - is allowed or not
     """
 
-    condition_parts = []
     parts = condition.split(" ")
-    for part in parts:
-        if part.strip():
-            condition_parts.append(part)
+    condition_parts = [part for part in parts if part.strip()]
 
     if len(condition_parts) != 6:
         raise Exception(

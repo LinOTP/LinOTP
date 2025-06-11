@@ -194,10 +194,9 @@ def deletePolicy(name, enforce=False):
         param["enforce"] = enforce
         _check_policy_impact(**param)
 
-    delEntries = []
-    for entry in Config:
-        if entry.startswith("linotp.Policy.%s." % name):
-            delEntries.append(entry)
+    delEntries = [
+        entry for entry in Config if entry.startswith(f"linotp.Policy.{name}.")
+    ]
 
     for entry in delEntries:
         # delete this entry.
@@ -253,7 +252,7 @@ def _check_policy_impact(
     # add the new policy and check the constrains
     policies[name] = pol
 
-    for policy in list(policies.values()):
+    for policy in policies.values():
         # do we have a system policy that is active?
         p_scope = policy["scope"].lower()
         p_active = policy["active"].lower()
@@ -262,9 +261,7 @@ def _check_policy_impact(
             active_system_policy = True
 
             # get the policy actions
-            p_actions = []
-            for act in policy.get("action", "").split(","):
-                p_actions.append(act.strip())
+            p_actions = [act.strip() for act in policy.get("action", "").split(",")]
 
             # check if there is a write in the actions
             if "*" in p_actions or "write" in p_actions:

@@ -133,4 +133,6 @@ lint.select = [
   # perflint rules
   "PERF101",
   "PERF102",
+  "PERF203",
+  "PERF401",
 ]

@@ -338,10 +338,9 @@ class TestResolver(TestController):
             response = self.create_resolver(name, resolver_param)
             assert '"value": true' in response.body
 
-        resolver_list = []
         resolver_base = "useridresolver.PasswdIdResolver.IdResolver."
-        for name in ["AAAA", "BBBB", "CCCC", "DDDD"]:
-            resolver_list.append(resolver_base + name)
+        resolver_names = ["AAAA", "BBBB", "CCCC", "DDDD"]
+        resolver_list = [resolver_base + name for name in resolver_names]
 
         response = self.create_realm("eins", resolver_list)
         assert '"value": true' in response.body
