@@ -1192,9 +1192,7 @@ class IdResolver(UserIdResolver):
             # prepare the list of attributes that we wish to recieve
             # Remark: the elememnts each must be of type string utf-8
 
-            attrlist = []
-            for _ukey, uval in self.userinfo.items():
-                attrlist.append(uval)
+            attrlist = list(self.userinfo.values())
 
             if self.uidType.lower() != "dn":
                 attrlist.append(self.uidType)
@@ -1282,7 +1280,7 @@ class IdResolver(UserIdResolver):
             searchFilterOr = ""
             searchTermValue = searchDict.get("searchTerm")
             if searchTermValue:
-                for tmp, ldapKey in self.userinfo.items():
+                for ldapKey in self.userinfo.values():
                     searchFilterOr += "(%s=%s)" % (ldapKey, searchTermValue)
             # AND filter
             for searchKey, searchValue in searchDict.items():

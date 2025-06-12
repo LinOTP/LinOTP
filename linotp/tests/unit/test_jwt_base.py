@@ -65,12 +65,7 @@ def test_session_cookie_secure(base_app, client, secure_cookies, auth_type):
 
     # Note that we are using `client` rather than `adminclient`, because
     # `adminclient` already is logged in.
-    cookie_jar = []
-    for cookie in client._cookies.values():
-        cookie_jar.append(cookie)
-
-    for cookie in cookie_jar:
-        client.delete_cookie(cookie.key, path=cookie.path, domain=cookie.domain)
+    client._cookies.clear()  # Clear cookies before the test
     res = client.post(
         auth_type["api"],
         data={"username": "foooooo", "password": "baaaaar"},

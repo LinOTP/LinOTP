@@ -674,9 +674,7 @@ class TestChallengeResponseController(TestingChallengeResponseController):
             user="passthru_user1",
         )
 
-        otps = []
-        for i in range(0, 10):
-            otps.append(get_otp(i, otpkey, typ))
+        otps = [get_otp(i, otpkey, typ) for i in range(0, 10)]
 
         # trigger challenge
         params = {"user": "passthru_user1", "pass": "shortpin"}
@@ -866,9 +864,7 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         typ = "sms"
         otpkey = "AD8EABE235FC57C815B26CEF3709075580B44738"
 
-        otps = []
-        for i in range(0, 20):
-            otps.append(get_otp(i, otpkey, typ))
+        otps = [get_otp(i, otpkey, typ) for i in range(0, 20)]
 
         # normal test - no sms is send
         serial = self.createToken(

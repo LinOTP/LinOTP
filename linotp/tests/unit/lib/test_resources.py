@@ -85,9 +85,7 @@ class TestResourceScheduler(unittest.TestCase):
 
             # verify that all uris are blocked and none is iterated
 
-            uris = []
-            for uri in next(res_sched):
-                uris.append(uri)
+            uris = list(next(res_sched))
 
             assert len(uris) == 0
 
@@ -97,9 +95,7 @@ class TestResourceScheduler(unittest.TestCase):
 
             # verify that all uris are un blocked after the delay
 
-            uris = []
-            for uri in next(res_sched):
-                uris.append(uri)
+            uris = list(next(res_sched))
 
             assert "uri://1" in uris
             assert "uri://2" in uris
@@ -132,9 +128,7 @@ class TestResourceScheduler(unittest.TestCase):
 
         # check that the retry will be run through all uris n-times
 
-        uris = []
-        for uri in next(res_sched):
-            uris.append(uri)
+        uris = list(next(res_sched))
 
         assert len(uris) == 9
 
@@ -185,9 +179,7 @@ class TestResourceScheduler(unittest.TestCase):
 
             # verify that the second entry will not be iterated
 
-            uris = []
-            for uri in next(res_sched):
-                uris.append(uri)
+            uris = list(next(res_sched))
 
             assert the_blocked_one not in uris
 

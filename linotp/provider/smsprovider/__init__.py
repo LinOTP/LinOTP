@@ -138,19 +138,9 @@ class ISMSProvider(object):
         might start with an +CC country code. in this conversion routine, the
         global prefixing is ignored
         """
-        msisdn = []
-        prefix = False
-        if phonenumber.strip()[0] == "+":
-            prefix = True
-        for character in phonenumber:
-            if character.isdigit():
-                msisdn.append(character)
-
-        phone = "".join(msisdn)
-        if prefix:
-            return "+" + phone
-        else:
-            return phone
+        with_prefix = phonenumber.strip().startswith("+")
+        phone = "".join(char for char in phonenumber if char.isdigit())
+        return "+" + phone if with_prefix else phone
 
     @staticmethod
     def get_bool(config, key, default):

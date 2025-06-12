@@ -739,11 +739,9 @@ def get_provider_from_policy(
 
     provider_names = get_action_value(policies, scope=scope, action=action, default="")
 
-    providers = []
-
-    for entry in [x.strip() for x in provider_names.split(" ")]:
-        if entry:
-            providers.append(entry)
+    providers = [
+        entry for entry in [x.strip() for x in provider_names.split(" ")] if entry
+    ]
 
     return providers
 
@@ -795,16 +793,12 @@ def load_provider_ini(ini_file):
     parser.read(ini_file)
 
     for section_name in parser.sections():
-        provider_type, provider_name = section_name.split(":")
-        provider_config = {}
-        for name, value in parser.items(section_name):
-            provider_config[name] = value
+        provider_config = {name: value for name, value in parser.items(section_name)}
 
+        provider_type, provider_name = section_name.split(":")
         provider_config["type"] = provider_type
         provider_config["name"] = provider_name
         setProvider(provider_config)
-
-    return
 
 
 def _get_default_provider_name(provider_type):

@@ -363,9 +363,7 @@ class TestRemoteToken(TestingChallengeResponseController):
 
         # set pin to the target token and do remote token pin verification
         for offset in range(1, 20):
-            pin_chars = []
-            for i in range(1, 100):
-                pin_chars.append(chr(0x28 * offset + i))
+            pin_chars = [chr(0x28 * offset + i) for i in range(1, 100)]
             pin = "pin" + "".join(pin_chars)
             pin = pin.encode("utf-8")
 

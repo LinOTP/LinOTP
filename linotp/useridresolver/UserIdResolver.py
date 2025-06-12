@@ -146,14 +146,9 @@ class UserIdResolver(object):
 
         :return: list of missing parameters
         """
-
-        missing = []
-
-        for crypt in cls.crypted_parameters:
-            if new_params.get(crypt) is None:
-                missing.append(crypt)
-
-        return missing
+        return [
+            crypt for crypt in cls.crypted_parameters if new_params.get(crypt) is None
+        ]
 
     @classmethod
     def getResolverClassType(cls):

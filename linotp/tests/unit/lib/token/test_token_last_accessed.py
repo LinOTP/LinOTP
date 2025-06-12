@@ -64,9 +64,7 @@ class TestTokenLastAcces(unittest.TestCase):
 
         m_getFromConfig.return_value = "True"
 
-        token_list = []
-        for _i in range(1, 5):
-            token_list.append(FakeToken())
+        token_list = [FakeToken() for _i in range(1, 5)]
 
         add_last_accessed_info(token_list)
 
@@ -84,9 +82,7 @@ class TestTokenLastAcces(unittest.TestCase):
         custom_time_format = "%d.%m.%Y"
         m_getFromConfig.return_value = custom_time_format
 
-        token_list = []
-        for _i in range(1, 5):
-            token_list.append(FakeToken())
+        token_list = [FakeToken() for _i in range(1, 5)]
 
         add_last_accessed_info(token_list)
 
@@ -103,9 +99,7 @@ class TestTokenLastAcces(unittest.TestCase):
 
         m_getFromConfig.return_value = "False"
 
-        token_list = []
-        for _i in range(1, 5):
-            token_list.append(FakeToken())
+        token_list = [FakeToken() for _i in range(1, 5)]
 
         add_last_accessed_info(token_list)
 
@@ -121,9 +115,7 @@ class TestTokenLastAcces(unittest.TestCase):
 
         m_getFromConfig.return_value = "False"
 
-        token_list = []
-        for _i in range(1, 5):
-            token_list.append(FakeToken())
+        token_list = [FakeToken() for _i in range(1, 5)]
 
         add_last_accessed_info(token_list)
 
@@ -140,9 +132,7 @@ class TestTokenLastAcces(unittest.TestCase):
 
         m_getFromConfig.return_value = None
 
-        token_list = []
-        for _i in range(1, 5):
-            token_list.append(FakeToken())
+        token_list = [FakeToken() for _i in range(1, 5)]
 
         add_last_accessed_info(token_list)
 

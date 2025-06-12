@@ -595,10 +595,8 @@ class Ocra2TokenClass(TokenClass):
         """
         callback = ""
 
-        realms = []
         tokenrealms = self.token.getRealms()
-        for realm in tokenrealms:
-            realms.append(realm.name)
+        realms = [realm.name for realm in tokenrealms]
 
         # is there an callbac selector
         callback_id = params.get("callback.id", None)
@@ -1020,10 +1018,8 @@ class Ocra2TokenClass(TokenClass):
                 "[Ocra2TokenClass] Failed to create challenge object: %s" % (ex)
             )
 
-        realms = []
         tokenrealms = self.token.getRealms()
-        for realm in tokenrealms:
-            realms.append(realm.name)
+        realms = [realm.name for realm in tokenrealms]
 
         url = qrtan_url(realms)
 

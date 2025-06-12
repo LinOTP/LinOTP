@@ -869,11 +869,8 @@ def cron_compare(condition, now):
     :return: boolean - is allowed or not
     """
 
-    condition_parts = []
     parts = condition.split(" ")
-    for part in parts:
-        if part.strip():
-            condition_parts.append(part)
+    condition_parts = [part for part in parts if part.strip()]
 
     if len(condition_parts) != 6:
         raise Exception(
@@ -883,13 +880,7 @@ def cron_compare(condition, now):
 
     #
     # extract the members of the cron condition
-
-    minute = condition_parts[0]
-    hour = condition_parts[1]
-    dom = condition_parts[2]
-    month = condition_parts[3]
-    dow = condition_parts[4]
-    year = condition_parts[5]
+    minute, hour, dom, month, dow, year = condition_parts
 
     weekday = now.isoweekday()
 

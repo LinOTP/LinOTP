@@ -44,7 +44,7 @@ dependencies = [
   "python-ldap",
   "bcrypt",
   "cryptography",
-  "click<8.2",               # Click is pinned, because 8.2 is not compatible with Flask 2.1.x.
+  "click<8.2",          # Click is pinned, because 8.2 is not compatible with Flask 2.1.x.
   "jsonschema",
   "smpplib",
   "psycopg2-binary",
@@ -130,4 +130,11 @@ plugins = "sqlmypy"
 [tool.ruff]
 lint.select = [
   "I", # isort formatting.
+  # perflint rules
+  "PERF101",
+  "PERF102",
+  "PERF203",
+  "PERF401",
+  "PERF402",
+  "PERF403",
 ]

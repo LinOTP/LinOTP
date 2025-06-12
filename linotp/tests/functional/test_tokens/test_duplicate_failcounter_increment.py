@@ -114,13 +114,10 @@ class TestDuplicateFailcounterIncrement(TestController):
         response = self.make_admin_request("show", params=params)
         jresp = json.loads(response.body)
 
-        failcounters = []
-
-        data = jresp["result"]["value"]["data"]
-        for entry in data:
-            failcounters.append(entry["LinOtp.FailCount"])
-
-        assert failcounters[0] == failcounters[1]
+        fail_counts = [
+            entry["LinOtp.FailCount"] for entry in jresp["result"]["value"]["data"]
+        ]
+        assert fail_counts[0] == fail_counts[1]
 
         self.delete_all_token()
         return

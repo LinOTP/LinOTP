@@ -333,10 +333,7 @@ class Token(TokenSchema):
         return self.realms or ""
 
     def getRealmNames(self) -> list:
-        r_list = []
-        for r in self.realms:
-            r_list.append(r.name)
-        return r_list
+        return [r.name for r in self.realms]
 
     def setRealms(self, realms: list) -> None:
         if realms is not None:
