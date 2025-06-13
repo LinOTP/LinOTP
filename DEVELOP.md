@@ -385,7 +385,7 @@ For debugging:
   - create the folder `Screenshots` and update its permissions: `mkdir Screenshots && chmod 777 Screenshots`
 - Look into Selenium to see tests live:
   - (potential) password: `secret`
-  - via Browser: http://localhost:9700
+  - via Browser: http://localhost:7900
   - via VNCViewer: http://localhost:5900
 - Access LinOTP UI: http://localhost:5000/manage/
   - username: `admin`
