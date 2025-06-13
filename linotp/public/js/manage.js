@@ -942,8 +942,14 @@ function assign_callback(xhdr, textStatus, serials) {
             'type': ERROR,
             'is_escaped': true
         });
-    } else
+    } else {
+        alert_info_text({
+            'text': "text_operation_success",
+            'param': "assign",
+            'is_escaped': true
+        });
         view_setpin_after_assigning(serials);
+    }
     reset_buttons();
 }
 
@@ -951,7 +957,7 @@ function assign_callback(xhdr, textStatus, serials) {
  * Evaluates a list of responses, displays a list of all the errors found
  * and finally reloads the page.
  */
-function token_operations_callback(responses) {
+function token_operations_callback(responses, url) {
     var error_messages = [];
     $.each(responses, function (index, responseData) {
         // "responseData" will contain an array of response information for each specific request
@@ -973,6 +979,12 @@ function token_operations_callback(responses) {
         alert_info_text({
             'text': escape(error_messages.join(" -- ")),
             'type': ERROR,
+            'is_escaped': true
+        });
+    } else {
+        alert_info_text({
+            'text': "text_operation_success",
+            'param': escape(url.split("/").pop()),
             'is_escaped': true
         });
     }
@@ -1008,7 +1020,7 @@ function token_operation(tokens, url, params) {
         else {
             responses = arguments;
         }
-        token_operations_callback(responses);
+        token_operations_callback(responses, url);
     });
 }
 
@@ -1039,7 +1051,7 @@ function tokens_operation(tokens, url, params) {
         else {
             responses = arguments;
         }
-        token_operations_callback(responses);
+        token_operations_callback(responses, url);
     });
 }
 

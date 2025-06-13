@@ -23,4 +23,9 @@ if [ -n "$TLS_CA_CERTS" ]; then
 		 --elide-empty-files - "/-----END CERTIFICATE-----/+1" "{*}"
 fi
 
-update-ca-certificates
+# Update CA certificates only if there are .crt files in the directory
+if ls /usr/local/share/ca-certificates/*.crt >/dev/null 2>&1; then
+    update-ca-certificates
+else
+    echo "No certificates to update. 'update-ca-certificates' will not be executed."
+fi

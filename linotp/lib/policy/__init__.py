@@ -187,8 +187,6 @@ def _checkAdminPolicyPost(
     if not param:
         param = {}
 
-    serial = param.get("serial")
-
     if user is None:
         user = _getUserFromParam()
 
@@ -217,19 +215,29 @@ def _checkAdminPolicyPost(
     if method in ["init", "assign", "setPin"]:
         randomPINLength = _getRandomOTPPINLength(user)
         if randomPINLength > 0:
-            new_pin = createRandomPin(user, min_pin_length=randomPINLength)
+            serial_param = param.get("serial")
+            serials: set[str] = set()
+            if isinstance(serial_param, str):
+                serials.add(serial_param)
+            elif isinstance(serial_param, (list, set)):
+                serials.update(serial_param)
 
-            log.debug(
-                "setting random pin for token with serial %s and user: %s",
-                serial,
-                user,
-            )
+            ret["new_pins"] = []
 
-            linotp.lib.token.setPin(new_pin, None, serial)
+            for serial in serials:
+                new_pin = createRandomPin(user, min_pin_length=randomPINLength)
 
-            log.debug("pin set")
+                log.debug(
+                    "setting random pin for token with serial %s and user: %s",
+                    serial,
+                    user,
+                )
 
-            ret["new_pin"] = new_pin
+                linotp.lib.token.setPin(new_pin, None, serial)
+
+                log.debug("pin set")
+
+                ret["new_pins"].append({"serial": serial, "pin": new_pin})
 
     # ------------------------------------------------------------------ --
 
@@ -286,6 +294,7 @@ def _checkAdminPolicyPost(
 
     if method == "getserial":
         policies = getAdminPolicies("getserial")
+        serial = param.get("serial")
         if policies["active"] and not checkAdminAuthorization(
             policies, serial, User("", "", "")
         ):

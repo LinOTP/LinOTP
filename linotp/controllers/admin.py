@@ -530,7 +530,7 @@ class AdminController(BaseController, JWTMixin):
     def getSerialByOtp(self):
         """
         searches for the token, that generates the given OTP value.
-        The search can be restricted by several critterions
+        The search can be restricted by several criteria
 
         :param otp:      (required). Will search for the token, that produces this OTP value
         :param type:     (optional), will only search in tokens of type
