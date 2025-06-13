@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - the provided `pin` is validated against the following policies: `otp_pin_minlength`, `otp_pin_maxlength` and `otp_pin_contents`
 - `userservice/enroll` response for HOTP/TOTP tokens now includes a new field: `detail.enrollment_url`, which currently mirrors `detail.googleurl` property
 - The `LINOTP_DATABASE_URI` environment variable now requires the PostgreSQL connection URL to use the prefix `postgresql://` instead of `postgres://`
+- Setting `WORKER_THREADS` to `auto` (or not setting it at all) will use “2 * number of CPU cores + 1” threads.
 
 ### Security
 
