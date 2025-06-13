@@ -2318,6 +2318,7 @@
 <div id="all_alerts" style="display:none; height:0px;">
 <div id="text_resync_fail">${_("Resyncing of token failed")}</div>
 <div id="text_resync_success">${_("Resynced token successfully")}</div>
+<div id="text_operation_success"><span class="text_param1"></span> ${_("operation successfully executed")}</div>
 <div id="text_setpin_success">${_("set PIN successfully")}</div>
 <div id="text_only_one_token_ti">${_("When displaying Token information you may only select one single Token.")}</div>
 <div id="text_only_one_token_type">${_("When retrieving the token type you may only select one single Token.")}</div>
