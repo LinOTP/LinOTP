@@ -44,6 +44,7 @@ Valid_Token_Types = {
     "hmac": "hotp",
     "hotp": "hotp",
     "totp": "totp",
+    "motp": "motp",
 }
 
 log = logging.getLogger(__name__)
@@ -122,7 +123,12 @@ def google_authenticator_url(label, param):
         log.info("unsupported hmac hash algorithm %r - adjusting to 'SHA1'")
         algorithm = "SHA1"
 
-    seed = binascii.unhexlify(param.get("otpkey", ""))
+    otpkey = param.get("otpkey", "")
+    # For mOTP tokens, the `otpkey` already consists of hexadecimal
+    # digits. If we “unhexlify” these, we get raw bytes, which is wrong.
+    seed = (
+        otpkey.encode("ascii") if token_type == "motp" else binascii.unhexlify(otpkey)
+    )
     if not seed:
         raise Exception("Failed to create token url due to missing seed!")
     secret = base64.b32encode(seed).decode().strip("=")
