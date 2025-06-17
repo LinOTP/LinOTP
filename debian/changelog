@@ -1,18 +1,12 @@
-linotp (3.4.4~rc2-1) UNRELEASED; urgency=medium
-
-  Features:
-  * Change default JWT session timeout from 15 minutes to 30 minutes
-
- -- LinOTP Packaging <packaging@linotp.de>  Wed, 11 Jun 2025 11:00:00 +0100
-
-linotp (3.4.4~rc1-1) UNRELEASED; urgency=medium
+linotp (3.4.4-1) buster; urgency=medium
 
   Features:
   * Show success messages in manage UI for all token operations
-  * For container entrypoint: added a check to update CA certificates only if `.crt` files exist in `/usr/local/share/ca-certificates`.
+  * For container entrypoint: allow mounting /etc/ssl/certs folder by adding a check to update CA certificates only if `.crt` files exist in `/usr/local/share/ca-certificates`.
+  * Change default session timeout for /manage UI and /admin APIs from 15 minutes to 30 minutes
 
   Fixes:
-  * Reverse the commit that prevented setting the otppin for mOTP tokens
+  * Revert the change that prevented setting the otppin for mOTP tokens
     and used it as token pin instead (was broken since 3.4.1)
   * User information was not included in ValidateController responses when
     * the `detail_on_success` policy was active
@@ -25,7 +19,7 @@ linotp (3.4.4~rc1-1) UNRELEASED; urgency=medium
   * otp_pin_random was breaking admin/assign in manage due to multi-token operation mode
     not being compatible with otp_pin_random generation
 
- -- LinOTP Packaging <packaging@linotp.de>  Wed, 09 Apr 2025 11:00:00 +0100
+ -- LinOTP Packaging <packaging@linotp.de>  Tue, 17 Jun 2025 08:54:00:00 +0200
  
 linotp (3.4.3-1) buster; urgency=medium
 
