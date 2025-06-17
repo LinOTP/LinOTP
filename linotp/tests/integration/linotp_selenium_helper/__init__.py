@@ -28,8 +28,6 @@
 
 from . import helper
 from .policy import Policy
-from .self_service import SelfService
-from .self_service_angular import AngularSelfService
 from .test_case import TestCase
 from .token_enroll import EnrollTokenDialog
 from .user_id_resolver import (
@@ -44,8 +42,6 @@ __all__ = [
     "helper",
     "EnrollTokenDialog",
     "Policy",
-    "SelfService",
-    "AngularSelfService",
     "TestCase",
     "UserIdResolverManager",
     "UserIdResolver",
