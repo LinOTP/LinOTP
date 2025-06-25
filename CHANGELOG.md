@@ -47,28 +47,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Don't reject empty string as `pin` when `otp_pin_contents=+`
 
-## [3.4.4-rc2] - UNRELEASED
+## [3.4.4-1] - 2025-06-18
 
 ### Added
 
 - Show success messages in manage UI for all token operations
+- For container entrypoint: allow mounting /etc/ssl/certs folder by adding a check to update CA certificates only if `.crt` files exist in `/usr/local/share/ca-certificates`.
 
 ### Changed
 
-- For container entrypoint: added a check to update CA certificates only if `.crt` files exist in `/usr/local/share/ca-certificates`
-- Change default JWT session timeout from 15 minutes to 30 minutes
+- Change default session timeout for /manage UI and /admin APIs from 15 minutes to 30 minutes
 
 ### Fixed
 
-- Reverse the commit that prevented setting the otppin for mOTP tokens
+- Revert the change that prevented setting the otppin for mOTP tokens
   and used it as token pin instead (was broken since 3.4.1)
 - User information was not included in ValidateController responses when
   - the `detail_on_success` policy was active
   - the user had no tokens assigned
   - authentication was successful through a passing policy (e.g., `passthru` or `passOnNoToken`)
-    Previously, in this scenario the user object in the response was empty, which could
-    impact integrations that rely on the detail_on_success policy, such as LinOTP IdP.
-    Now, the user information is correctly included in the response.
+  Previously, in this scenario the user object in the response was empty, which could
+  impact integrations that rely on the detail_on_success policy, such as LinOTP IdP.
+  Now, the user information is correctly included in the response.
 - Apply policy `setrealm` in ValidateController when the user is known
 - otp_pin_random was breaking admin/assign in manage due to multi-token operation mode
   not being compatible with otp_pin_random generation
@@ -252,7 +252,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [3.2.5-1] - 2023-11-24
 
 Release 3.2.5 patches a session handling vulnerability in the Self
-Service API. This patch is necessary for all versions newer than LinOTP
+Service API. This patch is necessary for all versions newer than LinOTP
 3.0. We will provide additional details on
 <https://linotp.org/linotp-3-2-5.html>.
 
@@ -261,7 +261,7 @@ Service API. This patch is necessary for all versions newer than LinOTP
 - Ensure that userservice login results in exactly one session cookie per
   response.
 - Avoid a race condition in userservice request method setup which could
-  lead to a user being erroneously authenticated as a different user.
+  lead to a user being erroneously authenticated as a different user.
 - Debian postinst now correctly restarts the LinOTP service again to ensure
   running the latest version without the need for manual intervention.
 
