@@ -16,7 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `userservice/enroll` now validates otp pins:
   - The `pin` parameter is now required or prohibited based on the `setOTPPIN` policy
   - the provided `pin` is validated against the following policies: `otp_pin_minlength`, `otp_pin_maxlength` and `otp_pin_contents`
-- `userservice/enroll` response for HOTP/TOTP tokens now includes a new field: `detail.enrollment_url`, which currently mirrors `detail.googleurl` property
+- `userservice/enroll` response for HOTP/TOTP/mOTP tokens now includes a new field: `detail.enrollment_url`, which currently mirrors `detail.googleurl` property
+- `userservice/enroll` requests for mOTP tokens may now omit the `otpkey` parameter, which will cause a random `otpkey` to be assigned by LinOTP. Clients can find out about this from the response.
 - The `LINOTP_DATABASE_URI` environment variable now requires the PostgreSQL connection URL to use the prefix `postgresql://` instead of `postgres://`
 - Setting `WORKER_THREADS` to `auto` (or not setting it at all) will use “2 * number of CPU cores + 1” threads.
 

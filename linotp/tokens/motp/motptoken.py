@@ -29,6 +29,7 @@
 """
 
 import logging
+import secrets
 
 from linotp.lib.context import request_context as context
 from linotp.lib.crypto import SecretObj
@@ -38,6 +39,8 @@ from linotp.tokens.hmactoken import HmacTokenClass
 from linotp.tokens.motp import mTimeOtp
 
 log = logging.getLogger(__name__)
+
+MOTP_KEY_BYTES = 8  # 8 bytes = 16 hexadecimal digits
 
 
 ###############################################
@@ -147,6 +150,10 @@ class MotpTokenClass(HmacTokenClass):
         :return: nothing
 
         """
+
+        # Create a random secret if the request didn't come with one.
+        if param.pop("genkey", "0") == "1":
+            param["otpkey"] = secrets.token_hex(MOTP_KEY_BYTES).upper()
 
         if "otpkey" not in param:
             raise ParameterError("Missing parameter: 'otpkey'")

@@ -2198,9 +2198,9 @@ class UserserviceController(BaseController):
 
             # --------------------------------------------------------- --
 
-            # enrollment of hotp (hmac) or totp token
+            # enrollment of hotp (hmac), totp, or motp token
 
-            if tok_type in ["hmac", "totp"]:
+            if tok_type in ["hmac", "totp", "motp"]:
                 if "otpkey" not in param:
                     param["genkey"] = param.get("genkey", "1")
 
