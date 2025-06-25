@@ -44,13 +44,14 @@ dependencies = [
   "python-ldap",
   "bcrypt",
   "cryptography",
-  "click<8.2",          # Click is pinned, because 8.2 is not compatible with Flask 2.1.x.
+  "click<8.2", # Click is pinned, because 8.2 is not compatible with Flask 2.1.x.
   "jsonschema",
   "smpplib",
   "psycopg2-binary",
   "mysqlclient",
   # for running LinOTP in production container
   "gunicorn",
+  "urllib3>=2.5.0",
 ]
 
 [dependency-groups]
