@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -217,8 +216,8 @@ def get_qrtan_url(qrtan_policy_name, realms, callback_id=None):
         for url in urls:
             if url != url[0]:
                 raise Exception(
-                    "multiple enrollement urls %r found for "
-                    "realm set: %r" % (urls, realms)
+                    f"multiple enrollement urls {urls!r} found for "
+                    f"realm set: {realms!r}"
                 )
 
     url = ""
@@ -321,7 +320,7 @@ class Ocra2TokenClass(TokenClass):
             serial = getRolloutToken4User(user=user, serial=serial, tok_type=tok_type)
             if serial is None:
                 raise Exception(
-                    "no token found for user: %r or serial: %r" % (user, serial)
+                    f"no token found for user: {user!r} or serial: {serial!r}"
                 )
             helper_param["serial"] = serial
             helper_param["activationcode"] = normalize_activation_code(activationcode)
@@ -552,7 +551,7 @@ class Ocra2TokenClass(TokenClass):
             # the info url must be provided in any case
             info["url"] = callback
 
-            info["app_import"] = "lseqr://init?%s" % (urllib.parse.urlencode(uInfo))
+            info["app_import"] = f"lseqr://init?{urllib.parse.urlencode(uInfo)}"
             del info["ocrasuite"]
             self.info = info
 
@@ -569,7 +568,7 @@ class Ocra2TokenClass(TokenClass):
         if "rollout" in info:
             return {
                 "status": "not completed",
-                "rollout": "%r" % info["rollout"],
+                "rollout": "{!r}".format(info["rollout"]),
             }
 
         if "ocrasuite" not in info:
@@ -657,7 +656,7 @@ class Ocra2TokenClass(TokenClass):
             if encSharedSecret is None:
                 raise Exception(
                     "missing shared secret of initialition for "
-                    "token %r" % (self.getSerial())
+                    f"token {self.getSerial()!r}"
                 )
 
             sharedSecret = SecretObj.decrypt_pin(encSharedSecret)
@@ -709,16 +708,13 @@ class Ocra2TokenClass(TokenClass):
                 uInfo["u"] = ustr[2:]
                 info["url"] = url
 
-            app_import = "lseqr://nonce?%s" % (urllib.parse.urlencode(uInfo))
+            app_import = f"lseqr://nonce?{urllib.parse.urlencode(uInfo)}"
 
             # add a signature of the url
             signature = {"si": self.signData(app_import)}
             info["signature"] = signature.get("si")
 
-            info["app_import"] = "%s&%s" % (
-                app_import,
-                urllib.parse.urlencode(signature),
-            )
+            info["app_import"] = f"{app_import}&{urllib.parse.urlencode(signature)}"
             self.info = info
 
             # setup new state
@@ -857,7 +853,7 @@ class Ocra2TokenClass(TokenClass):
             challenge = ocraSuite.data2hashChallenge(input_data)
 
         store_data = {
-            "challenge": "%s" % (challenge),
+            "challenge": f"{challenge}",
             "serial": self.token.getSerial(),
             "input": "",
             "url": "",
@@ -920,12 +916,12 @@ class Ocra2TokenClass(TokenClass):
         }
 
         # create the app_url from the data
-        dataobj = "lseqr://req?%s" % urllib.parse.urlencode(uInfo)
+        dataobj = f"lseqr://req?{urllib.parse.urlencode(uInfo)}"
 
         # append the signature to the url
         signature = {"si": self.signData(dataobj)}
         uInfo["si"] = signature
-        dataobj = "%s&%s" % (dataobj, urllib.parse.urlencode(signature))
+        dataobj = f"{dataobj}&{urllib.parse.urlencode(signature)}"
 
         detail["data"] = dataobj
         detail["ocraurl"] = {
@@ -1001,7 +997,7 @@ class Ocra2TokenClass(TokenClass):
 
         except Exception as exx:
             raise Exception(
-                "[Ocra2TokenClass] Failed to create ocrasuite challenge: %r" % (exx)
+                f"[Ocra2TokenClass] Failed to create ocrasuite challenge: {exx!r}"
             ) from exx
 
         # create a non exisiting challenge
@@ -1015,7 +1011,7 @@ class Ocra2TokenClass(TokenClass):
             # this might happen if we have a db problem or
             # the uniqnes constrain does not fit
             raise Exception(
-                "[Ocra2TokenClass] Failed to create challenge object: %s" % (exx)
+                f"[Ocra2TokenClass] Failed to create challenge object: {exx}"
             ) from exx
 
         tokenrealms = self.token.getRealms()
@@ -1050,7 +1046,7 @@ class Ocra2TokenClass(TokenClass):
             if "data" in options or "challenge" in options:
                 request_is_valid = True
         else:
-            tok = super(Ocra2TokenClass, self)
+            tok = super()
             request_is_valid = tok.is_challenge_request(passw, user, options=options)
 
         return request_is_valid
@@ -1232,7 +1228,7 @@ class Ocra2TokenClass(TokenClass):
                             challenges.append(chall)
 
         if len(challenges) == 0:
-            err = "No open transaction found for token %s" % serial
+            err = f"No open transaction found for token {serial}"
             log.info(err)  # TODO should log and fail!!
             return -1
 
@@ -1284,7 +1280,7 @@ class Ocra2TokenClass(TokenClass):
 
             if challenge.get("challenge") is None:
                 raise Exception(
-                    "could not checkOtp due to missing challenge in request: %r" % ch
+                    f"could not checkOtp due to missing challenge in request: {ch!r}"
                 )
 
             ret = ocraSuite.checkOtp(
@@ -1583,7 +1579,7 @@ class Ocra2TokenClass(TokenClass):
 
         if len(challenge1) == 0 or len(challenge2) == 0:
             error = "No challeges found!"
-            raise Exception("[Ocra2TokenClass:resync] %s" % (error))
+            raise Exception(f"[Ocra2TokenClass:resync] {error}")
 
         secObj = self._get_secret_object()
         ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secObj)
@@ -1653,9 +1649,7 @@ class Ocra2TokenClass(TokenClass):
                             ret = True
 
         except Exception as exx:
-            raise Exception(
-                "[Ocra2TokenClass:resync] unknown error: %s" % (exx)
-            ) from exx
+            raise Exception(f"[Ocra2TokenClass:resync] unknown error: {exx}") from exx
 
         return ret
 
@@ -1713,7 +1707,7 @@ class Ocra2TokenClass(TokenClass):
             response_detail["otpkey"] = {
                 "order": "1",
                 "description": _("OTP seed"),
-                "value": "seed://%s" % otpkey,
+                "value": f"seed://{otpkey}",
                 "img": create_img(otpkey, width=200),
             }
 

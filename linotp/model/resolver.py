@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -25,7 +24,6 @@
 #    Support: www.linotp.de
 from enum import Enum
 from logging import getLogger
-from typing import Dict, List, Optional, Set, Union
 
 import linotp
 from linotp.lib.realm import getRealms
@@ -56,11 +54,11 @@ class User:
         resolver_name: str,
         resolver_class: ResolverType,
         username: str,
-        surname: Optional[str],
-        given_name: Optional[str],
-        phone: Optional[str],
-        mobile: Optional[str],
-        email: Optional[str],
+        surname: str | None,
+        given_name: str | None,
+        phone: str | None,
+        mobile: str | None,
+        email: str | None,
     ):
         self.user_id = user_id
         self.resolver_name = resolver_name
@@ -90,7 +88,7 @@ class User:
             email=user_dictionary.get("email", None),
         )
 
-    def as_dict(self) -> Dict[str, Union[str, Optional[str]]]:
+    def as_dict(self) -> dict[str, str | str | None]:
         return {
             "userId": self.user_id,
             "resolverClass": self.resolver_class.value,
@@ -119,7 +117,7 @@ class Resolver:
         name: str,
         type: ResolverType,
         spec: str,
-        read_only: Optional[bool],
+        read_only: bool | None,
         admin: bool,
         config: UserIdResolver,
     ):
@@ -208,7 +206,7 @@ class Resolver:
         self._configuration_instance = value
 
     @property
-    def realms(self) -> Set[str]:
+    def realms(self) -> set[str]:
         """
         Set of names of the realms the resolver is in
         """
@@ -223,7 +221,7 @@ class Resolver:
                 result.add(realm_name)
         return result
 
-    def get_users(self, search_dictionary: dict | None = None) -> List[User]:
+    def get_users(self, search_dictionary: dict | None = None) -> list[User]:
         """
         List users of a resolver. Some resolvers might limit this result, so it
         is not always guaranteed that the list is complete.
@@ -263,7 +261,7 @@ class Resolver:
             )
             return users
 
-        users: List[User] = []
+        users: list[User] = []
         for iteration_results in user_iterator:
             for user_dict in iteration_results:
                 user = User.from_dict(self.name, self.type, user_dict)

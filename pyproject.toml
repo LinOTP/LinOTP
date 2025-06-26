@@ -137,6 +137,7 @@ lint.select = [
   "I",    # isort
   "PERF", # perflint
   "RUF",  # Ruff-specific
+  "UP",   # pyupgrade
   "W",    # pycodestyle warnings
 ]
 lint.ignore = [

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -35,7 +34,7 @@ import hashlib
 import hmac
 import logging
 import re
-import xml.etree.cElementTree as etree
+import xml.etree.ElementTree as etree
 
 import linotp.lib.crypto.pbkdf2 as pbkdf2
 from linotp.lib.ImportOTP import ImportException, getTagName
@@ -59,7 +58,7 @@ def getEncMethod(elem):
         algo = m.group(1)
     if "aes128-cbc" != algo:
         log.error("The algorithm %s is not supported", algo)
-        raise ImportException("The algorithm %s is not supported" % algo)
+        raise ImportException(f"The algorithm {algo} is not supported")
     return algo
 
 
@@ -70,7 +69,7 @@ def getMacMethod(elem):
         meth = m.group(1)
     if "hmac-sha1" != meth:
         log.error("The method %s is not supported", meth)
-        raise ImportException("The method %s is not supported" % meth)
+        raise ImportException(f"The method {meth} is not supported")
     return meth
 
 
@@ -216,7 +215,7 @@ def parsePSKCdata(
                             deriv_algo,
                         )
                         raise ImportException(
-                            "We do not support key derivation method %s" % deriv_algo
+                            f"We do not support key derivation method {deriv_algo}"
                         )
                 log.debug("found the salt <<%r>>", PBE_SALT)
 
@@ -270,7 +269,7 @@ def parsePSKCdata(
                             cipher_tag,
                         )
                         raise ImportException(
-                            "Found unsupported child in CipherData: %r" % cipher_tag
+                            f"Found unsupported child in CipherData: {cipher_tag!r}"
                         )
             elif "EncryptionMethod" == tag:
                 ENC_ALGO = getEncMethod(e)
@@ -283,7 +282,7 @@ def parsePSKCdata(
 
     elem_KeyPackageList = elem_keycontainer.findall(namespace + TAG_NAME_KEYPACKAGE)
     if 0 == len(elem_KeyPackageList):
-        raise ImportException("No element %s contained!" % TAG_NAME_KEYPACKAGE)
+        raise ImportException(f"No element {TAG_NAME_KEYPACKAGE} contained!")
 
     # Now parsing all the keys
     for elem_package in elem_KeyPackageList:
@@ -455,8 +454,8 @@ def parsePSKCdata(
                                 serial,
                             )
                             raise ImportException(
-                                "The MAC value for %s does not fit. The HMAC "
-                                "secrets could be compromised!" % serial
+                                f"The MAC value for {serial} does not fit. The HMAC "
+                                "secrets could be compromised!"
                             )
                             # TOKENS[serial] = { 'hmac_key' : binascii.hexlify(HMAC_KEY_bin),
                             #            'counter' : KD_counter, 'type' : TOKEN_TYPE,

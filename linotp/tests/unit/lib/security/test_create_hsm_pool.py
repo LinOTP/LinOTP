@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -30,9 +29,10 @@ These tests are far from complete and can not be the only point of
 reliance for changes in the code base
 """
 
+from unittest.mock import patch
+
 import flask
 import pytest
-from mock import patch
 
 from linotp.lib.security.provider import SecurityProvider
 

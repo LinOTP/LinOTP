@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -41,7 +40,7 @@ from linotp.model.challange import Challenge
 log = logging.getLogger(__name__)
 
 
-class Challenges(object):
+class Challenges:
     DefaultTransactionIdLength = 17
 
     @staticmethod
@@ -58,7 +57,7 @@ class Challenges(object):
 
         if transid_len < 12 or transid_len > 17:
             raise Exception(
-                "TransactionIdLength must be between 12 and 17, was %d" % transid_len
+                f"TransactionIdLength must be between 12 and 17, was {transid_len}"
             )
         return transid_len
 
@@ -136,9 +135,8 @@ class Challenges(object):
         while True:
             try:
                 if not challenge_id:
-                    transactionid = "%s%s" % (
-                        Challenge.createTransactionId(length=id_length),
-                        id_postfix,
+                    transactionid = (
+                        f"{Challenge.createTransactionId(length=id_length)}{id_postfix}"
                     )
                 else:
                     transactionid = challenge_id
@@ -156,7 +154,7 @@ class Challenges(object):
 
             except Exception as exce:
                 log.error("Failed to create challenge: %r", exce)
-                reason = "%r" % exce
+                reason = f"{exce!r}"
                 ReasonException = exce
 
             # prevent an unlimited loop
@@ -167,7 +165,7 @@ class Challenges(object):
                     retry_counter,
                     reason,
                 )
-                raise Exception("Failed to create challenge %r" % reason)
+                raise Exception(f"Failed to create challenge {reason!r}")
 
         expired_challenges, valid_challenges = Challenges.get_challenges(token)
 
@@ -213,7 +211,7 @@ class Challenges(object):
 
         except Exception as exce:
             log.error("Failed to create challenge: %r", exce)
-            reason = "%r" % exce
+            reason = f"{exce!r}"
             ReasonException = exce
             res = False
 
@@ -286,7 +284,7 @@ class Challenges(object):
                     challenge_id = challenge.get("id")
             elif isinstance(challenge, Challenge):
                 challenge_id = challenge.get("id")
-            elif isinstance(challenge, (str, int)):
+            elif isinstance(challenge, str | int):
                 challenge_id = challenge
 
             try:

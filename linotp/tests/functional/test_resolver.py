@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -31,9 +30,9 @@
 import json
 import logging
 import os
+from unittest.mock import patch
 
 import pytest
-from mock import patch
 from sqlalchemy.engine import create_engine
 
 from linotp.flap import config
@@ -100,7 +99,7 @@ class TestResolver(TestController):
 
         server = db_url.host
         if db_url.port:
-            server = "%s:%s" % (db_url.host, db_url.port)
+            server = f"{db_url.host}:{db_url.port}"
 
         if not user_mapping:
             user_mapping = {}

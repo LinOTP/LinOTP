@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -128,8 +127,9 @@ class TestEmailTokenAuth(TestEmailToken):
                 return check_output(call_array)
             except CalledProcessError as e:
                 assert e.returncode == 0, (
-                    "radius auth process exit code %s. Command:%s Ouptut:%s"
-                    % (e.returncode, " ".join(e.cmd), e.output)
+                    "radius auth process exit code {}. Command:{} Ouptut:{}".format(
+                        e.returncode, " ".join(e.cmd), e.output
+                    )
                 )
 
         radius_server = get_from_tconfig(
@@ -149,7 +149,7 @@ class TestEmailTokenAuth(TestEmailToken):
             )
             m = re.search(r"State:\['(\d+)'\]", rad1)
             assert m is not None, (
-                "'State' not found in linotp-auth-radius output. %r" % rad1
+                f"'State' not found in linotp-auth-radius output. {rad1!r}"
             )
             state = m.group(1)
             logger.debug("State: %s", state)
@@ -165,7 +165,7 @@ class TestEmailTokenAuth(TestEmailToken):
             state,
         )
         assert "Access granted to user " + self.data["username"] in rad2, (
-            "Access not granted to user. %r" % rad2
+            f"Access not granted to user. {rad2!r}"
         )
 
     def test_web_api_auth(self):
@@ -190,10 +190,10 @@ class TestEmailTokenAuth(TestEmailToken):
             except KeyError as exx:
                 raise KeyError(
                     exx.message
-                    + " | detail.message should be present %r" % validate_resp
+                    + f" | detail.message should be present {validate_resp!r}"
                 ) from exx
             assert message == "e-mail sent successfully", (
-                "Wrong validate response %r" % validate_resp
+                f"Wrong validate response {validate_resp!r}"
             )
             otp = smtpsvc.get_otp()
 
@@ -201,7 +201,7 @@ class TestEmailTokenAuth(TestEmailToken):
             user=self.data["username"] + "@" + self.data["realm_name"],
             password=self.data["email_token_pin"] + otp,
         )
-        assert access_granted, "Could not authenticate user %s %r" % (
+        assert access_granted, "Could not authenticate user {} {!r}".format(
             self.data["username"],
             validate_resp,
         )

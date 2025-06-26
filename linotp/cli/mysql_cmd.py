@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -205,7 +204,7 @@ def restore_mysql_database(filename: str):
 
     app.echo(f"Restoring MySQL backup {backup_filename!r}", v=1)
 
-    with open(backup_filename, "r") as backup_file:
+    with open(backup_filename) as backup_file:
         result = subprocess.run(command, stdin=backup_file, capture_output=True)
 
         if result.returncode != 0:

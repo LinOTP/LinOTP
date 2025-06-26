@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -63,10 +62,7 @@ class HttpSMSProvider(ISMSProvider, ConfigParsingMixin):
 
         method = self.config.get("HTTP_Method", "POST").upper()
         if method not in ["GET", "POST"]:
-            msg = (
-                "Method for HttpSmsProvider method must be GET or POST - unsupported method: %s"
-                % method
-            )
+            msg = f"Method for HttpSmsProvider method must be GET or POST - unsupported method: {method}"
             log.error(msg)
             raise Exception(msg)
 
@@ -265,12 +261,12 @@ class HttpSMSProvider(ISMSProvider, ConfigParsingMixin):
         ) as exx:
             log.error("HttpSMSProvider timed out")
             raise ProviderNotAvailable(
-                "Failed to send SMS - timed out %r" % exx
+                f"Failed to send SMS - timed out {exx!r}"
             ) from exx
 
         except Exception as exx:
             log.error("HttpSMSProvider %r", exx)
-            raise Exception("Failed to send SMS. %r" % exx) from exx
+            raise Exception(f"Failed to send SMS. {exx!r}") from exx
 
         return ret
 

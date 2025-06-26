@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -325,7 +324,7 @@ class TestSelfserviceController(TestController):
         # testing the index and the list of the tokens
         response = self.make_selfservice_request("index", auth_user=auth_user)
 
-        print("%r" % response)
+        print(f"{response!r}")
 
     def test_get_serial_by_otp(self):
         """

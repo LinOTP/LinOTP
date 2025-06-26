@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #   LinOTP - the open source solution for two factor authentication
 #   Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -35,7 +34,6 @@ import json
 import logging
 import sys
 from datetime import datetime
-from typing import Dict
 
 import ldap
 import ldap.filter
@@ -120,7 +118,7 @@ class IdResolver(UserIdResolver):
     LDAP User Id resolver
     """
 
-    nameDict: Dict[str, str] = {}
+    nameDict: dict[str, str] = {}
     conf = ""
     db_prefix = "useridresolver.LDAPIdResolver.IdResolver"
 
@@ -242,7 +240,7 @@ class IdResolver(UserIdResolver):
 
         if not uri.startswith(("ldaps://", "ldap://")):
             log.error("unsuported protocol %r", uri)
-            raise Exception("unsuported protocol %r" % uri)
+            raise Exception(f"unsuported protocol {uri!r}")
 
         l_obj = init_ldap(uri, trace_level)
 
@@ -359,7 +357,7 @@ class IdResolver(UserIdResolver):
         # first parameter, while its as well possible to use the connect
         # method from the LDAPResolver instance
 
-        class Caller(object):
+        class Caller:
             pass
 
         caller = Caller()
@@ -447,7 +445,7 @@ class IdResolver(UserIdResolver):
             status = "error"
             if not silent:
                 log.error("[testconnection] LDAP Error: %r", err)
-            return (status, "Connection Error: %s" % str(err))
+            return (status, f"Connection Error: {err}")
 
         except ldap.LDAPError as err:
             status = "error"
@@ -540,7 +538,7 @@ class IdResolver(UserIdResolver):
 
         log.error("Failed to bind to any resource %r", urilist)
 
-        raise ResolverNotAvailable("Unable to bind to servers %r" % urilist)
+        raise ResolverNotAvailable(f"Unable to bind to servers {urilist!r}")
 
     def unbind(self, lobj):
         """
@@ -711,7 +709,7 @@ class IdResolver(UserIdResolver):
 
         s_base = self.base
         s_scope = ldap.SCOPE_SUBTREE
-        s_filter = "(%s=%s)" % (self.uidType, userid)
+        s_filter = f"({self.uidType}={userid})"
 
         if self.uidType.lower() == "dn":
             s_base = userid
@@ -719,14 +717,14 @@ class IdResolver(UserIdResolver):
             s_filter = None
 
         elif self.uidType.lower() == "objectguid":
-            s_base = "<guid=%s>" % (userid)
+            s_base = f"<guid={userid}>"
             s_scope = ldap.SCOPE_BASE
             s_filter = None
 
             if self.proxy:
                 s_base = self.base
                 s_scope = ldap.SCOPE_SUBTREE
-                s_filter = "(objectGuid=%s)" % escape_hex_for_search(userid)
+                s_filter = f"(objectGuid={escape_hex_for_search(userid)})"
 
         # ------------------------------------------------------------------ --
 
@@ -944,12 +942,12 @@ class IdResolver(UserIdResolver):
         except Exception as exx:
             log.error("failed to parse configuration: %r", exx)
             raise ResolverLoadConfigError(
-                "failed to parse configuration: %r" % exx
+                f"failed to parse configuration: {exx!r}"
             ) from exx
 
         if missing:
             log.error("missing config entries: %r", missing)
-            raise ResolverLoadConfigError(" missing config entries: %r" % missing)
+            raise ResolverLoadConfigError(f" missing config entries: {missing!r}")
 
         # ------------------------------------------------------------------ --
 
@@ -970,8 +968,7 @@ class IdResolver(UserIdResolver):
             self.userinfo = json.loads(l_config["USERINFO"])
         except ValueError as exx:
             raise ResolverLoadConfigError(
-                "Invalid userinfo - no json"
-                " document: %s %r" % (l_config["USERINFO"], exx)
+                f"Invalid userinfo - no json document: {l_config['USERINFO']!r} {exx!r}"
             ) from exx
 
         # ------------------------------------------------------------------ --
@@ -1087,7 +1084,7 @@ class IdResolver(UserIdResolver):
         if last_error:
             log.error("[checkPass] access to resource failed: %r", last_error)
 
-        raise ResolverNotAvailable("unable to bind to servers %r" % urilist)
+        raise ResolverNotAvailable(f"unable to bind to servers {urilist!r}")
 
     def _is_ad(self):
         """
@@ -1283,7 +1280,7 @@ class IdResolver(UserIdResolver):
             searchTermValue = searchDict.get("searchTerm")
             if searchTermValue:
                 for ldapKey in self.userinfo.values():
-                    searchFilterOr += "(%s=%s)" % (ldapKey, searchTermValue)
+                    searchFilterOr += f"({ldapKey}={searchTermValue})"
             # AND filter
             for searchKey, searchValue in searchDict.items():
                 if searchKey == "searchTerm":
@@ -1293,15 +1290,15 @@ class IdResolver(UserIdResolver):
                 if searchKey in self.userinfo:
                     ldapKey = self.userinfo[searchKey]
                     # value and searchFilter are Unicode!
-                    searchFilter += "(%s=%s)" % (ldapKey, searchValue)
+                    searchFilter += f"({ldapKey}={searchValue})"
                 else:
                     log.warning("[getUserList] Unknown searchkey: %r", searchKey)
 
             # finaly embedd the filter in the ldap query string
             if searchFilterOr:
-                searchFilter = "(&(|%s)%s)" % (searchFilterOr, searchFilter)
+                searchFilter = f"(&(|{searchFilterOr}){searchFilter})"
             else:
-                searchFilter = "(&%s)" % (searchFilter)
+                searchFilter = f"(&{searchFilter})"
             log.debug("[getUserList] searchfilter: %r", searchFilter)
         except Exception as exep:
             log.error("[getUserList] Error creating searchFilter: %r", exep)
@@ -1555,23 +1552,23 @@ def resolver_request(params, silent=False):
 
     current_app.preprocess_request()
 
-    pr("Trying to connect to %r" % params["LDAPURI"])
+    pr(f"Trying to connect to {params['LDAPURI']!r}.")
     status, results = IdResolver.testconnection(params, silent)
-    pr("Status: %r" % status)
+    pr(f"Status: {status!r}")
 
     if results:
         pr("Result:")
 
         if status != "success":
-            pr("%r" % results)
+            pr(f"{results!r}")
             return False
 
         for result in results:
             if not result:
-                pr("%r" % result)
+                pr(f"{result!r}")
             else:
                 for key, value in list(result.items()):
-                    pr("%s : %s" % (key, value))
+                    pr(f"{key} : {value}")
 
     return True
 

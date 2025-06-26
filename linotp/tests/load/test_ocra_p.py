@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -48,7 +47,7 @@ from linotp.tokens.ocra2token import OcraSuite
 log = logging.getLogger(__name__)
 
 
-class OcraOtp(object):
+class OcraOtp:
     def __init__(self, ocrapin=None):
         self.ocra = None
         self.bkey = None
@@ -184,7 +183,7 @@ class doRequest(threading.Thread):
 
 
 def genUrl(controller="admin", action="init"):
-    return "/%s/%s" % (controller, action)
+    return f"/{controller}/{action}"
 
 
 class OcraTest(TestController):
@@ -478,7 +477,7 @@ class OcraTest(TestController):
             "scope": "authentication",
             "realm": "mydefrealm",
         }
-        params["action"] = "qrtanurl=%s" % (str(check_url))
+        params["action"] = f"qrtanurl={check_url!s}"
         response = self.app.get(
             genUrl(controller="system", action="setPolicy"), params=params
         )
@@ -938,12 +937,7 @@ class OcraTest(TestController):
             bkey = test["key"]
             ocrapin = "myocrapin"
             tid = tid
-            serial = "QR_One_%r_%r_%r_%r" % (
-                tid,
-                tcount,
-                int(time.time()),
-                random.randint(0, 100),
-            )
+            serial = f"QR_One_{tid!r}_{tcount!r}_{int(time.time())!r}_{random.randint(0, 100)!r}"
             log.info("## serial: %r", serial)
             count = 0
             tcount = tcount + 1
@@ -1082,7 +1076,7 @@ class OcraTest(TestController):
                 )
                 log.info("response %s\n", response)
                 assert '"status": true' in response
-                assstring = '"failcount": %d,' % (fcount)
+                assstring = f'"failcount": {fcount},'
                 log.info("assert %s\n", assstring)
                 if assstring not in response:
                     log.error(response)

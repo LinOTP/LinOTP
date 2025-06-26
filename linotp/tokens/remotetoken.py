@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -338,10 +337,7 @@ class RemoteTokenClass(TokenClass):
 
         # use a POST request to check the token
         data = urllib.parse.urlencode(params)
-        request_url = "%s/%s" % (
-            remoteServer.rstrip("/"),
-            remotePath.lstrip("/"),
-        )
+        request_url = f"{remoteServer.rstrip('/')}/{remotePath.lstrip('/')}"
 
         reply = {}
         otp_count = -1

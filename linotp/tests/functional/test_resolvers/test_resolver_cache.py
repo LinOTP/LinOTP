@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -31,8 +30,7 @@ sql resolver tests
 
 import json
 import logging
-
-from mock import patch
+from unittest.mock import patch
 
 from linotp.tests import TestController
 from linotp.useridresolver.LDAPIdResolver import IdResolver as ldap_resolver

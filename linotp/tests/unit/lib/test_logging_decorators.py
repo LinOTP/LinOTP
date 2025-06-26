@@ -35,7 +35,7 @@ import linotp.lib.logs as logs
 # ------------------------------------------------------------------------------
 
 
-class FakeLogger(object):
+class FakeLogger:
     def __init__(self, log_level=10):
         self.clear()
         self.log_level = log_level

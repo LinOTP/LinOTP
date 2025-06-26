@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -48,7 +47,7 @@ EMAIL_PROVIDER_TEMPLATE_KEY = "email_provider_template_root"
 LOG = logging.getLogger(__name__)
 
 
-class IEmailProvider(object):
+class IEmailProvider:
     """
     An abstract class that has to be implemented by ever e-mail provider class
     """
@@ -356,8 +355,7 @@ class SMTPEmailProvider(IEmailProvider):
 
             if not absolute_filename.startswith(provider_template_root):
                 raise Exception(
-                    "Template %r - not in email provider template root %r"
-                    % (absolute_filename, provider_template_root)
+                    f"Template {absolute_filename!r} - not in email provider template root {provider_template_root!r}"
                 )
 
             with open(absolute_filename, "rb") as f:
@@ -428,7 +426,7 @@ class SMTPEmailProvider(IEmailProvider):
                 return message
             except NameError as exx:
                 var = str(exx).split()[0].strip("'")
-                replacements[var] = "${%s}" % var
+                replacements[var] = f"${{{var}}}"
                 LOG.error("Template refers to unresolved replacement: %r", var)
 
     def render_message(self, email_to, subject, message, replacements):
@@ -531,7 +529,7 @@ class SMTPEmailProvider(IEmailProvider):
                 LOG.error("Start_TLS not supported:")
                 raise Exception(
                     "Start_TLS requested but not supported"
-                    " by server %r" % self.smtp_server
+                    f" by server {self.smtp_server!r}"
                 )
 
             smtp_connection.starttls(
@@ -546,7 +544,7 @@ class SMTPEmailProvider(IEmailProvider):
         if self.smtp_user:
             if not smtp_connection.has_extn("AUTH"):
                 LOG.error("AUTH not supported:")
-                raise Exception("AUTH not supported by server %r" % self.smtp_server)
+                raise Exception(f"AUTH not supported by server {self.smtp_server!r}")
 
             LOG.debug("authenticating to mailserver, user: %r", self.smtp_user)
             smtp_connection.login(self.smtp_user, self.smtp_password)
@@ -559,7 +557,7 @@ class SMTPEmailProvider(IEmailProvider):
             errors = smtp_connection.sendmail(self.email_from, email_to, email_message)
             if len(errors) > 0:
                 LOG.error("error(s) sending e-mail %r", errors)
-                return False, ("error sending e-mail %r" % errors)
+                return False, (f"error sending e-mail {errors!r}")
 
             return True, "e-mail sent successfully"
 
@@ -574,7 +572,7 @@ class SMTPEmailProvider(IEmailProvider):
                 smtplib_exception,
             )
 
-            return False, ("error sending e-mail %r" % smtplib_exception)
+            return False, (f"error sending e-mail {smtplib_exception!r}")
 
         finally:
             if smtp_connection:

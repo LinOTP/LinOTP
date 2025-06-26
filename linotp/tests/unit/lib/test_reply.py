@@ -41,7 +41,7 @@ from linotp.lib.reply import (
 
 
 @pytest.mark.usefixtures("app")
-class TestReplyTestCase(object):
+class TestReplyTestCase:
     @pytest.mark.parametrize(
         "querystring,result",
         [
@@ -63,7 +63,7 @@ class TestReplyTestCase(object):
         Simulate request parameters returning a UnicodeDecodeError
         """
 
-        class fake_current_app(object):
+        class fake_current_app:
             def getRequestParams(self):
                 # Raise UnicodeDecodeError
                 b"\xc0".decode("utf-8")
@@ -84,7 +84,7 @@ class TestReplyTestCase(object):
             assert httperror == "777"
 
     def test_httperror_with_Exception(self, monkeypatch):
-        class fake_current_app(object):
+        class fake_current_app:
             def getRequestParams(self):
                 raise Exception("Random exception")
 

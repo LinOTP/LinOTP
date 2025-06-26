@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -40,7 +39,7 @@ import subprocess
 import sys
 import tempfile
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any
 
 import click
 from flask import current_app
@@ -89,7 +88,7 @@ def _make_backup(what: str, filename: str) -> bool:
     return True
 
 
-def _run_command(task: str, cmd: List[str], **kwargs: Dict[str, Any]) -> bool:
+def _run_command(task: str, cmd: list[str], **kwargs: dict[str, Any]) -> bool:
     """Execute a shell command given as a list of strings, with
     error checking.
     """

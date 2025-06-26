@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -48,7 +47,7 @@ __email__ = "info@linotp.de"
 __version__ = "2.12"
 
 
-class ISMSProvider(object):
+class ISMSProvider:
     """
     Interface class for the SMS providers
     """
@@ -172,9 +171,8 @@ def getSMSProviderClass(packageName, className):
     klass = getattr(mod, className)
     if not hasattr(klass, "submitMessage"):
         raise NameError(
-            "SMSProvider AttributeError: %r.%r "
+            f"SMSProvider AttributeError: {packageName!r}.{className!r} "
             "instance of SMSProvider has no method 'submitMessage'"
-            % (packageName, className)
         )
     else:
         return klass

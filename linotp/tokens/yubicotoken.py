@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -74,17 +73,14 @@ LINOTP_DOC_LINK = (
 
 YUBICO_GETAPI_LINK = "https://upgrade.yubico.com/getapikey/"
 
-APIKEY_UNCONFIGURED_ERROR = """
+APIKEY_UNCONFIGURED_ERROR = f"""
 You need to provide an API key and ID for Yubico support.
 Please register your own apiKey and apiId at the Yubico web site:"
-  %s
+  {YUBICO_GETAPI_LINK}
 Configure apiKey and apiId in the LinOTP token-config dialog.
 Have a look at:
-  %s"
-""" % (
-    YUBICO_GETAPI_LINK,
-    LINOTP_DOC_LINK,
-)
+  {LINOTP_DOC_LINK}
+"""
 
 
 class YubicoApikeyException(Exception):
@@ -188,7 +184,7 @@ class YubicoTokenClass(TokenClass):
 
         if len(tokenid) < YUBICO_LEN_ID:
             raise Exception(
-                "The YubiKey token ID needs to be %i characters long!" % YUBICO_LEN_ID
+                f"The YubiKey token ID needs to be {YUBICO_LEN_ID} characters long!"
             )
 
         if len(tokenid) > YUBICO_LEN_ID:
@@ -230,7 +226,7 @@ class YubicoTokenClass(TokenClass):
 
             if datetime.datetime.now() >= third_feb_2019:
                 raise Exception(
-                    "Usage of YUBICO_URL %r is deprecated!! " % DEPRECATED_YUBICO_URL
+                    f"Usage of YUBICO_URL {DEPRECATED_YUBICO_URL!r} is deprecated!! "
                 )
 
         apiId = getFromConfig("yubico.id")
@@ -266,7 +262,7 @@ class YubicoTokenClass(TokenClass):
 
         for uri in next(res_scheduler):
             try:
-                URL = "%s?%s" % (uri, p)
+                URL = f"{uri}?{p}"
 
                 response = requests.get(URL, **pparams)
 
@@ -309,7 +305,7 @@ class YubicoTokenClass(TokenClass):
         log.error("non of the resources %r available!", yubico_urls)
 
         raise AllResourcesUnavailable(
-            "non of the resources %r available!" % yubico_urls
+            f"non of the resources {yubico_urls!r} available!"
         )
 
     def _check_yubico_response(self, nonce, apiKey, rv):

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 #
 #    LinOTP - the open source solution for two factor authentication
@@ -50,7 +49,7 @@ class TestSQLResolver(TestCase):
             "config": {
                 "Driver": "sqlite",
                 "Port": "",
-                "Database": "%s/data/linotp-users.sql" % current_directory,
+                "Database": f"{current_directory}/data/linotp-users.sql",
                 "Server": "",
                 "User": "",
                 "Password": "",

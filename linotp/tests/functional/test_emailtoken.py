@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -33,9 +32,9 @@ Test linotp.tokens.emailtoken
 import re
 import smtplib
 import time
+from unittest.mock import patch
 
 from freezegun import freeze_time
-from mock import patch
 
 from linotp.tests import TestController
 

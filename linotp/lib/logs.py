@@ -137,7 +137,7 @@ def log_timedelta(logger):
             }
 
             logger.debug(
-                "Spent %f seconds in %s" % (delta_sec, func.__name__),
+                "Spent %f seconds in %s" % (delta_sec, func.__name__),  # noqa: UP031
                 extra=extra,
             )
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -40,7 +39,7 @@ from linotp.tests import TestController
 log = logging.getLogger(__name__)
 
 
-class DBSession(object):
+class DBSession:
     """db session with  context manager"""
 
     def __init__(self):
@@ -64,7 +63,7 @@ class TestReportingController(TestController):
         self.delete_all_resolvers()
         self.delete_all_reports()
 
-        super(TestReportingController, self).setUp()
+        super().setUp()
         self.create_common_resolvers()
         self.create_common_realms()
         return
@@ -73,7 +72,7 @@ class TestReportingController(TestController):
         self.delete_all_policies()
         self.delete_all_token()
         self.delete_all_reports()
-        super(TestReportingController, self).tearDown()
+        super().tearDown()
 
     # --------------------------------------------------------------------------- --
     # Helper functions
@@ -834,8 +833,8 @@ class TestReportingController(TestController):
         # test csv output
         parameter["outform"] = "csv"
         response = self.make_reporting_request("show", params=parameter)
-        line = '"%s", "token_init", "mydefrealm", "total", "", 18, "", "", ""' % (
-            str(timestamp),
+        line = (
+            f'"{timestamp!s}", "token_init", "mydefrealm", "total", "", 18, "", "", ""'
         )
         assert line in response, response
         resp = response.body.splitlines()
@@ -853,7 +852,7 @@ class TestReportingController(TestController):
         license_data = None
         license_file = os.path.join(self.fixture_path, "linotp2.token_user.pem")
 
-        with open(license_file, "r") as f:
+        with open(license_file) as f:
             license_data = f.read()
 
         # -------------------------------------------------------------- --

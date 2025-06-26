@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,9 +26,8 @@
 #
 
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Optional
 
 import click
 from flask import current_app
@@ -107,11 +105,11 @@ audit_cmds = AppGroup("audit", help="Manage audit options")
     ),
 )
 def cleanup_command(
-    max_entries_to_keep: Optional[int],
-    cleanup_threshold: Optional[int],
-    delete_after_days: Optional[int],
+    max_entries_to_keep: int | None,
+    cleanup_threshold: int | None,
+    delete_after_days: int | None,
     export: bool,
-    exportdir: Optional[str],
+    exportdir: str | None,
 ):
     """This function removes old entries from the audit table.
 
@@ -191,12 +189,12 @@ class SQLJanitor:
     script to help the house keeping of audit entries
     """
 
-    def __init__(self, export_dir: Optional[Path] = None):
+    def __init__(self, export_dir: Path | None = None):
         self.export_dir = export_dir
 
         self.app = current_app
 
-    def export_data(self, export_up_to) -> Optional[Path]:
+    def export_data(self, export_up_to) -> Path | None:
         """
         export each audit row into a csv output
 
@@ -232,15 +230,15 @@ class SQLJanitor:
                 for column in audit_columns:
                     val = getattr(audit_row, column.name)
                     if isinstance(val, int):
-                        row_data.append("%d" % val)
+                        row_data.append(f"{val:d}")
                     elif isinstance(val, str):
-                        row_data.append('"%s"' % val)
+                        row_data.append(f'"{val}"')
                     elif val is None:
                         row_data.append("")
                     else:
                         row_data.append("?")
                         self.app.echo(
-                            "exporting of unknown data / data type %r" % val,
+                            f"exporting of unknown data / data type {val!r}",
                             v=1,
                         )
                 f.write("; ".join(row_data))
@@ -252,7 +250,7 @@ class SQLJanitor:
         self,
         cleanup_threshold,
         max_entries_to_keep,
-        delete_after_days: Optional[int] = None,
+        delete_after_days: int | None = None,
     ):
         """
         identify the audit data and delete them
@@ -284,7 +282,7 @@ class SQLJanitor:
             "time_taken": 0,
         }
 
-        start_time = datetime.now(timezone.utc)
+        start_time = datetime.now(UTC)
 
         if delete_after_days is not None and (cleanup_threshold or max_entries_to_keep):
             raise ValueError(
@@ -303,7 +301,7 @@ class SQLJanitor:
                 start_time.year,
                 start_time.month,
                 start_time.day,
-                tzinfo=timezone.utc,
+                tzinfo=UTC,
             )
             cutoff_date = start_of_day - timedelta(days=delete_after_days)
             cutoff_iso = cutoff_date.isoformat(timespec="milliseconds")
@@ -335,7 +333,7 @@ class SQLJanitor:
             cleanup_infos["entries_deleted"] = result
             cleanup_infos["cleaned"] = True
 
-        end_time = datetime.now(timezone.utc)
+        end_time = datetime.now(UTC)
 
         duration = end_time - start_time
         cleanup_infos["time_taken"] = duration.seconds

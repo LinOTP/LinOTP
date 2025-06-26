@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2015-2019 KeyIdentity GmbH
@@ -37,7 +36,7 @@ in the Selenium tests
 """
 
 
-class AuthUi(object):
+class AuthUi:
     """Base for managing parts of the manage page"""
 
     URL = "/auth/index"
@@ -105,4 +104,4 @@ class AuthUi(object):
         elif alert_text == "User failed to authenticate!":
             return self.AUTH_FAIL
 
-        raise RuntimeError("Unknown auth result received: %s" % alert_text)
+        raise RuntimeError(f"Unknown auth result received: {alert_text}")

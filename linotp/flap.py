@@ -28,7 +28,7 @@ error_document_template = """
     """
 
 
-class RequestContextProxy(object):
+class RequestContextProxy:
     def __getattr__(self, name):
         try:
             return flask.g.request_context.__getitem__(name)
@@ -57,7 +57,7 @@ class RequestContextProxy(object):
 
     def __repr__(self, *_args, **_kwargs):
         repr_dict = dict(flask.g.request_context.items())
-        return "%r" % repr_dict
+        return f"{repr_dict!r}"
 
 
 tmpl_context = RequestContextProxy()

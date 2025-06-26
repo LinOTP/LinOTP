@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -490,10 +489,7 @@ class TestAutoassignmentController(TestController):
         response = self.make_validate_request("check", params=params)
         content = response.json
         if not err_msg:
-            err_msg = "validate/check failed for %r. Response: %r" % (
-                user,
-                content,
-            )
+            err_msg = f"validate/check failed for {user!r}. Response: {content!r}"
         if expected == "success":
             assert content["result"]["status"], err_msg
             assert content["result"]["value"], err_msg
@@ -507,7 +503,7 @@ class TestAutoassignmentController(TestController):
             assert not content["result"]["status"], err_msg
             assert not content["result"]["value"], err_msg
         else:
-            self.fail("Unknown 'expected' %s" % expected)
+            self.fail(f"Unknown 'expected' {expected}")
         return content
 
     def test_autoassign_mixed_token_wo_password(self):

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -51,7 +50,6 @@ import logging
 import os
 import warnings
 from datetime import datetime
-from typing import Optional
 from unittest import TestCase
 from unittest.mock import Mock, patch
 from uuid import uuid4
@@ -296,8 +294,8 @@ class TestController(TestCase):
     def _make_authenticated_request(
         self,
         app_get_jwt_identity: Mock,
-        controller: Optional[str] = None,
-        action: Optional[str] = None,
+        controller: str | None = None,
+        action: str | None = None,
         method=None,
         params=None,
         headers=None,
@@ -678,7 +676,7 @@ class TestController(TestCase):
             action="getPolicy", params={}, auth_user=auth_user
         )
         content = response.json
-        err_msg = "Error getting all policies. Response %s" % (content)
+        err_msg = f"Error getting all policies. Response {content}"
         assert content["result"]["status"], err_msg
         policies = content.get("result", {}).get("value", {})
 
@@ -716,14 +714,14 @@ class TestController(TestCase):
         expected_keys = {"name", "scope", "action", "user", "realm", "client", "time"}
         diff_set = expected_keys - set(lparams.keys())
         assert len(diff_set) == 0, (
-            "Some key is missing to create a policy %r" % diff_set
+            f"Some key is missing to create a policy {diff_set!r}"
         )
 
         response = self.make_system_request("setPolicy", params=lparams)
         content = response.json
         assert content["result"]["status"]
         expected_value = {
-            "setPolicy %s" % params["name"]: {
+            "setPolicy {}".format(params["name"]): {
                 "realm": True,
                 "active": True,
                 "client": True,
@@ -780,13 +778,13 @@ class TestController(TestCase):
         expected_value = {
             "delPolicy": {
                 "result": {
-                    "linotp.Policy.%s.action" % name: True,
-                    "linotp.Policy.%s.active" % name: True,
-                    "linotp.Policy.%s.client" % name: True,
-                    "linotp.Policy.%s.realm" % name: True,
-                    "linotp.Policy.%s.scope" % name: True,
-                    "linotp.Policy.%s.time" % name: True,
-                    "linotp.Policy.%s.user" % name: True,
+                    f"linotp.Policy.{name}.action": True,
+                    f"linotp.Policy.{name}.active": True,
+                    f"linotp.Policy.{name}.client": True,
+                    f"linotp.Policy.{name}.realm": True,
+                    f"linotp.Policy.{name}.scope": True,
+                    f"linotp.Policy.{name}.time": True,
+                    f"linotp.Policy.{name}.user": True,
                 }
             }
         }
@@ -802,7 +800,7 @@ class TestController(TestCase):
         response = self.make_admin_request("show", params={})
         content = response.json
 
-        err_msg = "Error getting token list. Response %s" % (content)
+        err_msg = f"Error getting token list. Response {content}"
         assert content["result"]["status"], err_msg
         data = content["result"]["value"]["data"]
         for entry in data:
@@ -819,7 +817,7 @@ class TestController(TestCase):
         params = {"serial": serial}
         response = self.make_admin_request("remove", params=params)
         content = response.json
-        err_msg = "Error deleting token %s. Response %s" % (serial, content)
+        err_msg = f"Error deleting token {serial}. Response {content}"
         assert content["result"]["status"], err_msg
         assert 1 == content["result"]["value"], err_msg
 
@@ -1065,7 +1063,7 @@ class TestController(TestCase):
         )
 
         if response.status_code != 200:
-            raise Exception("Server Error %d" % response.status_code)
+            raise Exception(f"Server Error {response.status_code}")
 
         response.body = response.data.decode("utf-8")
         return response

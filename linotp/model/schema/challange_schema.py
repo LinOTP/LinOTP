@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -37,8 +36,8 @@ from sqlalchemy import (
 
 from linotp.model import COL_PREFIX, db
 
-session_column = "%ssession" % COL_PREFIX
-timestamp_column = "%stimestamp" % COL_PREFIX
+session_column = f"{COL_PREFIX}session"
+timestamp_column = f"{COL_PREFIX}timestamp"
 
 
 class ChallengeSchema(db.Model):

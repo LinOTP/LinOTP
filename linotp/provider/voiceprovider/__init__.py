@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -60,8 +59,7 @@ class TwillioMixin:
 
         if set(twilio_config.keys()) != set(twilio_config_keys):
             raise KeyError(
-                "unsupported key provided [%r]: %r!"
-                % (twilio_config_keys, list(twilio_config.keys()))
+                f"unsupported key provided [{twilio_config_keys!r}]: {list(twilio_config.keys())!r}!"
             )
 
         return {"twilioConfig": twilio_config}

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -374,8 +373,8 @@ class SelfserviceController(BaseController):
         except Exception as exx:
             db.session.rollback()
             error = (
-                "error (%r) accessing form data for: tok:%r, scope:%r"
-                ", section:%r" % (exx, tok, scope, section)
+                f"error ({exx!r}) accessing form data for: tok:{tok!r}, scope:{scope!r}"
+                f", section:{section!r}"
             )
             log.error(error)
             return "<h1>{}</h1><pre>{} {}</pre>".format(

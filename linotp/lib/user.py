@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -30,7 +29,6 @@ import json
 import logging
 import re
 from functools import partial
-from typing import Dict
 
 from flask import g
 
@@ -61,7 +59,7 @@ class NoResolverFound(Exception):
     pass
 
 
-class User(object):
+class User:
     def __init__(self, login="", realm="", resolver_config_identifier=""):
         self.login = login
         self.realm = realm
@@ -181,22 +179,12 @@ class User(object):
             return "None"
 
         if self.resolver_config_identifier:
-            return "%s@%s (%s)" % (
-                self.login,
-                self.realm,
-                self.resolver_config_identifier,
-            )
+            return f"{self.login}@{self.realm} ({self.resolver_config_identifier})"
         else:
-            return "%s@%s" % (self.login, self.realm)
+            return f"{self.login}@{self.realm}"
 
     def __repr__(self):
-        ret = "User(login=%r, realm=%r, conf=%r ::resolverUid:%r, resolverConf:%r)" % (
-            self.login,
-            self.realm,
-            self.resolver_config_identifier,
-            self.resolverUid,
-            self.resolverConf,
-        )
+        ret = f"User(login={self.login!r}, realm={self.realm!r}, conf={self.resolver_config_identifier!r} ::resolverUid:{self.resolverUid!r}, resolverConf:{self.resolverConf!r})"
         return ret
 
     @staticmethod
@@ -308,10 +296,10 @@ class User(object):
         fqn.append(self.login)
 
         if self.realm:
-            fqn.append("%s@%s" % (self.login, self.realm))
+            fqn.append(f"{self.login}@{self.realm}")
 
         if self.resolver_config_identifier:
-            fqn.append("%s.%s:" % (self.login, self.resolver_config_identifier))
+            fqn.append(f"{self.login}.{self.resolver_config_identifier}:")
 
         return fqn
 
@@ -428,7 +416,7 @@ def getUserResolverId(user, report=False):
         )
 
         if report is True:
-            raise UserError("getUserResolverId failed: %r" % exx, id=1112) from exx
+            raise UserError(f"getUserResolverId failed: {exx!r}", id=1112) from exx
         return ("", "", "")
 
 
@@ -597,7 +585,7 @@ def getUserFromRequest():
     return getattr(g, "authUser", None)
 
 
-def get_userinfo(user: User, secure: bool = True) -> Dict:
+def get_userinfo(user: User, secure: bool = True) -> dict:
     """ "
     gather information about a user to be returned for rendering
 
@@ -635,11 +623,11 @@ def setRealm(realm, resolvers):
     res = re.match(nameExp, realm)
     if res is None:
         e = Exception(
-            "non conformant characters in realm name: %s (not in %s)" % (realm, nameExp)
+            f"non conformant characters in realm name: {realm} (not in {nameExp})"
         )
         raise e
 
-    ret = storeConfig("useridresolver.group.%s" % realm, resolvers)
+    ret = storeConfig(f"useridresolver.group.{realm}", resolvers)
     if ret is False:
         return ret
 
@@ -913,7 +901,7 @@ def get_resolvers_of_user(login, realm):
             Resolvers.append(resolver_spec)
 
         if not Resolvers:
-            raise NoResolverFound("no user %r found in realm %r" % (login, realm))
+            raise NoResolverFound(f"no user {login!r} found in realm {realm!r}")
 
         return Resolvers
 
@@ -1052,19 +1040,19 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
 
         if not resolver_spec:
             log.error("missing resolver spec %r", resolver_spec)
-            raise Exception("missing resolver spec %r" % resolver_spec)
+            raise Exception(f"missing resolver spec {resolver_spec!r}")
 
         y = getResolverObject(resolver_spec)
 
         if not y:
             log.error("[resolver with spec %r not found!]", resolver_spec)
-            raise NoResolverFound("Failed to access Resolver: %r" % resolver_spec)
+            raise NoResolverFound(f"Failed to access Resolver: {resolver_spec!r}")
 
         if login:
             r_user_id = y.getUserId(login)
             if not r_user_id:
                 log.error("Failed get user info for login %r", login)
-                raise NoResolverFound("Failed get user info for login %r" % login)
+                raise NoResolverFound(f"Failed get user info for login {login!r}")
 
             r_user_info = y.getUserInfo(r_user_id)
             return login, r_user_id, r_user_info
@@ -1074,7 +1062,7 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
 
             if not r_user_info:
                 log.error("Failed get user info for user_id %r", user_id)
-                raise NoResolverFound("Failed get user info for user_id %r" % user_id)
+                raise NoResolverFound(f"Failed get user info for user_id {user_id!r}")
 
             r_login = r_user_info.get("username")
             return r_login, user_id, r_user_info
@@ -1166,7 +1154,7 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
         if not g.audit["action_detail"]:
             g.audit["action_detail"] = "Failed to connect to:"
 
-        g.audit["action_detail"] += "%s, " % resolver_spec
+        g.audit["action_detail"] += f"{resolver_spec}, "
         log.error("unable to connect to %r", resolver_spec)
 
         return None, None, None
@@ -1336,7 +1324,7 @@ def getUserId(user, check_existance=False):
             user.realm,
         )
 
-        raise UserError("getUserId failed: no user >%s< found!" % user.login, id=1205)
+        raise UserError(f"getUserId failed: no user >{user.login}< found!", id=1205)
 
     if len(uids) > 1:
         log.warning(
@@ -1346,7 +1334,7 @@ def getUserId(user, check_existance=False):
         )
 
         raise UserError(
-            "getUserId failed: multiple uids for user >%s< found!" % user.login,
+            f"getUserId failed: multiple uids for user >{user.login}< found!",
             id=1205,
         )
 

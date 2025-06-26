@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -146,7 +145,7 @@ class SmtpSMSProvider(ISMSProvider):
             return ret
 
         # prepare the phone number
-        msisdn = "true" in ("%r" % self.config.get("MSISDN", "false")).lower()
+        msisdn = "true" in ("{!r}".format(self.config.get("MSISDN", "false"))).lower()
         if msisdn:
             phone = self._get_msisdn_phonenumber(phone)
 
@@ -193,12 +192,7 @@ class SmtpSMSProvider(ISMSProvider):
         body = body.replace(PHONE_TAG, phone)
         body = body.replace(MSG_TAG, message)
 
-        msg = "From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n%s" % (
-            fromaddr,
-            toaddr,
-            subject,
-            body,
-        )
+        msg = f"From: {fromaddr}\r\nTo: {toaddr}\r\nSubject: {subject}\r\n\r\n{body}"
 
         serv = None
         try:
@@ -220,7 +214,7 @@ class SmtpSMSProvider(ISMSProvider):
                 else:
                     log.error("Start_TLS not supported:")
                     raise Exception(
-                        "Start_TLS requested but not supported by server %r" % server
+                        f"Start_TLS requested but not supported by server {server!r}"
                     )
             if user:
                 if serv.has_extn("AUTH"):
@@ -244,7 +238,7 @@ class SmtpSMSProvider(ISMSProvider):
             log.error("Error: could not connect to server")
             if boolean(self.config.get("raise_exception", True)):
                 raise ProviderNotAvailable(
-                    "Error: could not connect to server: %r" % exx
+                    f"Error: could not connect to server: {exx!r}"
                 ) from exx
             ret = False
         except Exception as exx:

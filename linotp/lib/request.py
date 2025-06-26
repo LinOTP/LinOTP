@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -48,7 +47,7 @@ from pyrad.dictionary import Dictionary
 log = logging.getLogger(__name__)
 
 
-class RemoteRequest(object):
+class RemoteRequest:
     """
     Request is the class to handle the forwarding of request
     to external, remote sources and servers. Supported is currently either
@@ -164,7 +163,7 @@ class HttpRequest(RemoteRequest):
 
         try:
             # prepare the url
-            request_url = "%(scheme)s://%(netloc)s%(path)s" % server_config
+            request_url = "{scheme}://{netloc}{path}".format(**server_config)
 
             # prepare the submit and receive headers
             headers = {

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #
 #   LinOTP - the open source solution for two factor authentication
 #   Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -36,7 +34,7 @@ from passlib.hash import atlassian_pbkdf2_sha1
 from linotp.useridresolver.SQLIdResolver import check_password
 
 
-class TestSQLResolver_Password(object):
+class TestSQLResolver_Password:
     def test_pbkdf2_password(self):
         brahms_hashed_pw = (
             "{PKCS5S2}TGF1K1olIoY5a4HHy89R+LcT8E/V5P+"

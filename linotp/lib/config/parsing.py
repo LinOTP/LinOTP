@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -46,7 +45,7 @@ class ConfigNotRecognized(Exception):
 
     def __init__(self, key, message=None):
         if message is None:
-            message = "Unrecognized config key: %s" % key
+            message = f"Unrecognized config key: {key}"
         Exception.__init__(self, message)
         self.key = key
 

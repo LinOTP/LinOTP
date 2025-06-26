@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -141,9 +140,9 @@ class TestCheckStatus(TestController):
                 )
 
                 assert response.json["result"]["status"], response
-                assert response.json["result"]["value"]["setPolicy %s" % pol["name"]], (
-                    response
-                )
+                assert response.json["result"]["value"][
+                    "setPolicy {}".format(pol["name"])
+                ], response
 
             param = {"DefaultChallengeValidityTime": "120"}
             response = self.make_system_request("setConfig", params=param)
@@ -279,7 +278,7 @@ class TestCheckStatus(TestController):
 
                     now = datetime.datetime.now()
                     assert now < start + datetime.timedelta(seconds=3), (
-                        "challenge did not expire: %r" % response
+                        f"challenge did not expire: {response!r}"
                     )
 
             finally:
@@ -368,10 +367,10 @@ class TestCheckStatus(TestController):
 
         serials = g.audit["serial"].split(" ")
         assert serial in serials, (
-            "serial {} should have been written to audit log".format(serial)
+            f"serial {serial} should have been written to audit log"
         )
         assert serial2 in serials, (
-            "serial {} should have been written to audit log".format(serial2)
+            f"serial {serial2} should have been written to audit log"
         )
 
         # invalidate request
@@ -444,7 +443,7 @@ class TestCheckStatus(TestController):
 
                 now = datetime.datetime.now()
                 assert now < start + datetime.timedelta(seconds=3), (
-                    "challenge did not expire: %r" % response
+                    f"challenge did not expire: {response!r}"
                 )
 
         finally:

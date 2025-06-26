@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -32,7 +31,6 @@ import os
 import stat
 import subprocess
 from pathlib import Path
-from typing import List
 
 import click.termui
 import pytest
@@ -854,7 +852,7 @@ def test_init_audit_keys_cmd_failed_openssl(
 
         exit_code = 999
 
-    def mock_run_command(task: str, cmd: List[str], **kargs):
+    def mock_run_command(task: str, cmd: list[str], **kargs):
         assert cmd[0] == "openssl"
         return mock_exit()
 

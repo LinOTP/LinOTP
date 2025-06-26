@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,9 +26,9 @@
 "verfify that the userservice pre_context works as intended"
 
 import unittest
+from unittest.mock import patch
 
 import pytest
-from mock import patch
 
 from linotp.lib.userservice import get_pre_context
 

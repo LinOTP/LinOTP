@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -238,7 +237,7 @@ def split_pin_otp(token, passw, user=None, options=None):
         return 3, pin, otp
 
 
-class ValidationHandler(object):
+class ValidationHandler:
     def check_by_transactionid(self, transid, passw, options=None):
         """
         check the passw against the open transaction
@@ -256,7 +255,7 @@ class ValidationHandler(object):
         if not serials:
             reply = {
                 "value": False,
-                "failure": "No challenge for transaction %r found" % transid,
+                "failure": f"No challenge for transaction {transid!r} found",
             }
             return False, reply
 
@@ -274,7 +273,7 @@ class ValidationHandler(object):
                 continue
 
             if not tokens and not token_type:
-                raise Exception("tokenmismatch for token serial: %r" % serial)
+                raise Exception(f"tokenmismatch for token serial: {serial!r}")
 
             # there could be only one
             token = tokens[0]
@@ -339,7 +338,7 @@ class ValidationHandler(object):
 
             else:
                 raise Exception(
-                    "No token found: unable to create challenge for %s" % serial
+                    f"No token found: unable to create challenge for {serial}"
                 )
 
         else:
@@ -506,28 +505,20 @@ class ValidationHandler(object):
         if user_exists and not get_auth_forward_on_no_token(user):
             servers = get_auth_forward(user)
             if servers:
-                log.info(
-                    "forwarding auth request for user {} to {}".format(user, servers)
-                )
+                log.info(f"forwarding auth request for user {user} to {servers}")
                 res, opt = ForwardServerPolicy.do_request(
                     servers, env, user, passw, options
                 )
-                log.info(
-                    "result of auth request for user {}: ({}, {})".format(
-                        user, res, opt
-                    )
-                )
-                g.audit["action_detail"] = "Forwarded, result {}".format(res)
+                log.info(f"result of auth request for user {user}: ({res}, {opt})")
+                g.audit["action_detail"] = f"Forwarded, result {res}"
                 return res, opt
             else:
-                log.info(
-                    "NOT forwarding auth request for user {} (no servers)".format(user)
-                )
+                log.info(f"NOT forwarding auth request for user {user} (no servers)")
                 g.audit["action_detail"] = "Not forwarded (no servers)"
         else:
             log.info(
-                "NOT forwarding auth request for user {} "
-                "(get_auth_forward_on_no_token returned False)".format(user)
+                f"NOT forwarding auth request for user {user} "
+                "(get_auth_forward_on_no_token returned False)"
             )
 
         # ------------------------------------------------------------------ --
@@ -613,26 +604,16 @@ class ValidationHandler(object):
             elif get_auth_forward_on_no_token(user):
                 servers = get_auth_forward(user)
                 if servers:
-                    log.info(
-                        "forwarding auth request for user {} to {}".format(
-                            user, servers
-                        )
-                    )
+                    log.info(f"forwarding auth request for user {user} to {servers}")
                     res, opt = ForwardServerPolicy.do_request(
                         servers, env, user, passw, options
                     )
-                    log.info(
-                        "result of auth request for user {}: ({}, {})".format(
-                            user, res, opt
-                        )
-                    )
-                    g.audit["action_detail"] = "Forwarded, result {}".format(res)
+                    log.info(f"result of auth request for user {user}: ({res}, {opt})")
+                    g.audit["action_detail"] = f"Forwarded, result {res}"
                     return res, opt
                 else:
                     log.info(
-                        "NOT forwarding auth request for user {} (no servers)".format(
-                            user
-                        )
+                        f"NOT forwarding auth request for user {user} (no servers)"
                     )
                     g.audit["action_detail"] = "Not forwarded (no servers)"
 
@@ -814,13 +795,12 @@ class ValidationHandler(object):
                 # and continue with the next one
                 log.error("checking token %r failed: %r", token, exx)
                 ret = -1
-                reply = "%r" % exx
-                audit_entry["action_detail"] = "checking token %r failed: %r" % (
-                    token,
-                    exx,
+                reply = f"{exx!r}"
+                audit_entry["action_detail"] = (
+                    f"checking token {token!r} failed: {exx!r}"
                 )
 
-                audit_entry["info"] = audit_entry.get("info", "") + "%r" % exx
+                audit_entry["info"] = audit_entry.get("info", "") + f"{exx!r}"
 
                 continue
             finally:
@@ -930,7 +910,7 @@ class ValidationHandler(object):
         ]
 
         if not tokenList:
-            g.audit["action_detail"] = "The serial %s could not be found!" % serialnum
+            g.audit["action_detail"] = f"The serial {serialnum} could not be found!"
             return res, opt
 
         # FIXME if the Token has set a PIN and the User does not want to enter

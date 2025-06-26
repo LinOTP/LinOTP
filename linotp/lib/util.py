@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -31,7 +30,7 @@ import logging
 import re
 import secrets
 import string
-from typing import Any, Dict
+from typing import Any
 
 from linotp import __api__ as linotp_api
 from linotp import __copyright__ as linotp_copyright
@@ -76,7 +75,7 @@ def get_version():
     This returns the version, that is displayed in the WebUI and
     self service portal.
     """
-    return "%s %s" % (linotp_product, linotp_version)
+    return f"{linotp_product} {linotp_version}"
 
 
 def get_copyright_info():
@@ -122,7 +121,7 @@ def getParam(param, which, optional=True):
         ret = param[which]
     else:
         if optional is False:
-            raise ParameterError("Missing parameter: %r" % which, id=905)
+            raise ParameterError(f"Missing parameter: {which!r}", id=905)
 
     return ret
 
@@ -347,7 +346,7 @@ def get_client(request):
                 client = client_from_post
 
     if not is_ip_address_dotted_quad(client):
-        raise ValueError("client address is not a dotted quad: %r" % client)
+        raise ValueError(f"client address is not a dotted quad: {client!r}")
 
     log.debug("get_client: client is %s", client)
     return client
@@ -485,8 +484,8 @@ def dict_copy(dict_):
 
 # courtesies to pydantic:
 def deep_update(
-    mapping: Dict[str, Any], *updating_mappings: Dict[str, Any]
-) -> Dict[str, Any]:
+    mapping: dict[str, Any], *updating_mappings: dict[str, Any]
+) -> dict[str, Any]:
     updated_mapping = mapping.copy()
     for updating_mapping in updating_mappings:
         for k, v in updating_mapping.items():

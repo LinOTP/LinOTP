@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -69,7 +68,7 @@ class TestPasswdController(TestController):
         assert ret.get("username") == "heinz", ret
 
         username_exists = y.getUsername("1000")
-        msg = "Username exists: %r" % username_exists
+        msg = f"Username exists: {username_exists!r}"
         assert username_exists, msg
 
     def test_no_file(self):
@@ -111,11 +110,11 @@ class TestPasswdController(TestController):
         y.loadConfig({"fileName": os.path.join(self.fixture_path, "my-pass2")}, "")
 
         res = y.checkPass("2001", "geheim")
-        msg = "result %r" % res
+        msg = f"result {res!r}"
         assert res, msg
 
         res = y.checkPass("2001", "wrongPW")
-        msg = "result %r" % res
+        msg = f"result {res!r}"
         assert res is False, msg
 
     def test_searchfields(self):

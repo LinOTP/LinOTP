@@ -25,9 +25,10 @@
 #
 
 
+from unittest.mock import patch
+
 import flask
 import pytest
-from mock import patch
 from sqlalchemy.exc import OperationalError
 from werkzeug.exceptions import Unauthorized
 
@@ -36,7 +37,7 @@ from linotp.model import LoggingConfig, db
 
 
 @pytest.mark.usefixtures("app")
-class TestMaintenance(object):
+class TestMaintenance:
     @patch("linotp.model.db.session")
     def test_check_status_ok(self, mock_session, adminclient):
         """
@@ -76,7 +77,7 @@ class TestMaintenance(object):
         assert config_entry.level == 10
 
 
-class TestMaintCertificateHandling(object):
+class TestMaintCertificateHandling:
     maint = None
 
     @pytest.fixture(autouse=True)

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -32,8 +31,7 @@ import math
 import time
 from datetime import datetime
 from hashlib import md5, sha1
-
-from mock import patch
+from unittest.mock import patch
 
 import linotp.provider.smsprovider.FileSMSProvider
 from linotp.lib.HMAC import HmacOtp
@@ -645,7 +643,7 @@ class TestUserserviceTokenTest(TestUserserviceController):
             "name": "dummy1",
             "scope": "authentication",
             "realm": "*",
-            "action": "qrtoken_pairing_callback_url=%s" % cb_url,
+            "action": f"qrtoken_pairing_callback_url={cb_url}",
             "user": "*",
         }
 
@@ -660,7 +658,7 @@ class TestUserserviceTokenTest(TestUserserviceController):
             "name": "dummy3",
             "scope": "authentication",
             "realm": "*",
-            "action": "qrtoken_challenge_callback_url=%s" % cb_url,
+            "action": f"qrtoken_challenge_callback_url={cb_url}",
             "user": "*",
         }
 

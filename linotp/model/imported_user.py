@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -25,7 +24,7 @@
 #    Support: www.linotp.de
 
 
-from typing import Any, Dict, List
+from typing import Any
 
 from sqlalchemy import orm
 from sqlalchemy.orm import Session
@@ -58,7 +57,7 @@ class ImportedUser(ImportedUserSchema):
             raise NoSuchUserError(username)
         return user
 
-    def _get_keys_of_table(self) -> List[str]:
+    def _get_keys_of_table(self) -> list[str]:
         tablename = self.user_class.__tablename__
         return self.user_class.metadata.tables[tablename].c.keys()
 
@@ -88,7 +87,7 @@ class ImportedUser(ImportedUserSchema):
         """
         return cryptutils.crypt_password(plain_password)
 
-    def list_users(self) -> List[Dict[str, str]]:
+    def list_users(self) -> list[dict[str, str]]:
         """list all users of an ImportedUser instance
 
         Returns:

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -62,7 +61,7 @@ def _compile_regex(search_text):
     """
 
     searcH_regex = re.compile(
-        "^%s$" % search_text.replace(".", r"\.").replace("*", ".*")
+        "^{}$".format(search_text.replace(".", r"\.").replace("*", ".*"))
     )
 
     return searcH_regex
@@ -113,7 +112,7 @@ def _user_expression_match(login_user, token_owner_iterator):
     return serials
 
 
-class TokenIterator(object):
+class TokenIterator:
     """
     TokenIterator class - support a smooth iterating through the tokens
     """
@@ -568,7 +567,7 @@ class TokenIterator(object):
             "User.username": "",
         }
         for field in self.user_fields:
-            userInfo["User.%s" % field] = ""
+            userInfo[f"User.{field}"] = ""
 
         if tok.LinOtpUserid:
             # userInfo["User.description"]    = u'/:no user info:/'
@@ -602,7 +601,7 @@ class TokenIterator(object):
 
                 for field in self.user_fields:
                     fieldvalue = uInfo.get(field, "")
-                    userInfo["User.%s" % field] = fieldvalue
+                    userInfo[f"User.{field}"] = fieldvalue
 
         return (userInfo, uInfo)
 

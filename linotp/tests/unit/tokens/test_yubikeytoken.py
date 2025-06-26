@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -29,9 +28,9 @@ import binascii
 import json
 import logging
 import unittest
+from unittest.mock import MagicMock, patch
 
 from Cryptodome.Cipher import AES
-from mock import MagicMock, patch
 
 
 def _aes_decrypt_constructor(hex_key):
@@ -177,7 +176,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         counter_actual = self.yubikey_token.checkOtp(otp)
 
         assert counter_expected == counter_actual, (
-            "verification for malicous prefix: %s should fail." % otp
+            f"verification for malicous prefix: {otp} should fail."
         )
 
         logger.disabled = False
@@ -193,7 +192,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         counter_actual = self.yubikey_token.checkOtp(otp)
 
         assert counter_expected == counter_actual, (
-            "verification for malicous prefix: %s should fail." % otp
+            f"verification for malicous prefix: {otp} should fail."
         )
 
         logger.disabled = False
@@ -219,7 +218,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         counter_actual = self.yubikey_token.checkOtp(otp)
 
         assert counter_expected == counter_actual, (
-            "verification for malicous prefix: %s should fail." % otp
+            f"verification for malicous prefix: {otp} should fail."
         )
 
         logger.disabled = False
@@ -235,7 +234,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         counter_actual = self.yubikey_token.checkOtp(otp)
 
         assert counter_expected == counter_actual, (
-            "verification for malicous prefix: %s should fail." % otp
+            f"verification for malicous prefix: {otp} should fail."
         )
 
         logger.disabled = False

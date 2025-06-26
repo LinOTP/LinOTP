@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,10 +26,10 @@
 
 import logging
 import os
+from unittest.mock import patch
 
 import pytest
 import requests
-from mock import patch
 from requests.exceptions import ConnectionError
 
 from linotp.provider.pushprovider.default_push_provider import (
@@ -83,7 +82,7 @@ class TestPushProviderController(TestController):
 
     def tearDown(self):
         self.delete_all_resolvers()
-        super(TestPushProviderController, self).tearDown()
+        super().tearDown()
 
     def test_timeout_negative(self):
         """

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -62,7 +61,7 @@ class TestTokenlist(TestController):
         realm = "mydefrealm"
 
         # create token
-        params = {"type": "spass", "user": "%s@%s" % (login_name, realm)}
+        params = {"type": "spass", "user": f"{login_name}@{realm}"}
 
         response = self.make_admin_request("init", params=params)
         assert "serial" in response
@@ -97,7 +96,7 @@ class TestTokenlist(TestController):
 
         params = {
             "page": 1,
-            "query": "%s@mydefrealm" % login_name,
+            "query": f"{login_name}@mydefrealm",
             "qtype": "loginname",
             "sortname": None,
             "sortorder": None,

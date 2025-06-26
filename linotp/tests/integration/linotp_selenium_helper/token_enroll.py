@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -76,9 +75,7 @@ class EnrollTokenDialog(ManageDialog):
         # Check the last alert line
         info = self.manage.alert_box_handler.last_line
         if info.type != "info" or not info.text.startswith("created token with serial"):
-            raise RuntimeError(
-                "Password not correctly created. Message:{}".format(info)
-            )
+            raise RuntimeError(f"Password not correctly created. Message:{info}")
 
         # Find the token serial number
         token_serial = info.element.find_element(By.CSS_SELECTOR, ".text_param1").text

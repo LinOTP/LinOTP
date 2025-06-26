@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -258,7 +257,7 @@ def kdf2(
         bcode = base64.b32decode(acode)
 
     except Exception as exx:
-        error = "Error during decoding activation code %r: %r" % (acode, exx)
+        error = f"Error during decoding activation code {acode!r}: {exx!r}"
         log.error(error)
         raise Exception(error) from exx
 
@@ -268,7 +267,7 @@ def kdf2(
         if checkCode != veriCode:
             raise Exception(
                 "[crypt:kdf2] activation code checksum error."
-                " [%s]%s:%s" % (acode, veriCode, checkCode)
+                f" [{acode}]{veriCode}:{checkCode}"
             )
 
     activ = binascii.hexlify(bcode).decode()
@@ -469,7 +468,7 @@ def init_key_partition(config, partition, key_type="ed25519"):
     """
 
     if not key_type == "ed25519":
-        raise ValueError("Unsupported keytype: %s", key_type)
+        raise ValueError(f"Unsupported keytype: {key_type}")
 
     import linotp.lib.config
 
@@ -477,7 +476,7 @@ def init_key_partition(config, partition, key_type="ed25519"):
     secret_key_entry = base64.b64encode(secret_key).decode("utf-8")
 
     linotp.lib.config.storeConfig(
-        key="SecretKey.Partition.%d" % partition,
+        key=f"SecretKey.Partition.{partition}",
         val=secret_key_entry,
         typ="encrypted_data",
     )
@@ -485,7 +484,7 @@ def init_key_partition(config, partition, key_type="ed25519"):
     public_key_entry = base64.b64encode(public_key).decode("utf-8")
 
     linotp.lib.config.storeConfig(
-        key="PublicKey.Partition.%d" % partition,
+        key=f"PublicKey.Partition.{partition}",
         val=public_key_entry,
         typ="encrypted_data",
     )
@@ -499,13 +498,13 @@ def get_secret_key(partition):
 
     import linotp.lib.config
 
-    key = "linotp.SecretKey.Partition.%d" % partition
+    key = f"linotp.SecretKey.Partition.{partition}"
 
     # FIXME: unencryption should not happen at this early stage
     secret_key_b64 = linotp.lib.config.getFromConfig(key).get_unencrypted()
 
     if not secret_key_b64:
-        raise ConfigAdminError("No secret key found for %d" % partition)
+        raise ConfigAdminError(f"No secret key found for {partition}")
 
     secret_key = base64.b64decode(secret_key_b64)
 
@@ -527,13 +526,13 @@ def get_public_key(partition):
 
     import linotp.lib.config
 
-    key = "linotp.PublicKey.Partition.%d" % partition
+    key = f"linotp.PublicKey.Partition.{partition}"
 
     # FIXME: unencryption should not happen at this early stage
     public_key_b64 = linotp.lib.config.getFromConfig(key).get_unencrypted()
 
     if not public_key_b64:
-        raise ConfigAdminError("No public key found for %d" % partition)
+        raise ConfigAdminError(f"No public key found for {partition}")
 
     public_key = base64.b64decode(public_key_b64)
 
@@ -604,10 +603,10 @@ def extract_tan(signature, digits):
     itan = struct.unpack(">I", signature[offset : offset + 4])[0] & 0x7FFFFFFF
 
     # convert the binaries of the signature to an integer based string
-    tan = "%d" % (itan % 10**digits)
+    tan = f"{(itan % 10**digits):d}"
 
     # fill up the tan with leading zeros
-    stan = "%s%s" % ("0" * (digits - len(tan)), tan)
+    stan = f"{'0' * (digits - len(tan))}{tan}"
 
     return stan
 

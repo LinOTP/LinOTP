@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -70,10 +69,10 @@ def get_token_num_info():
     if get_license_type() == "user-num":
         token_count_type = "token users"
 
-    return "%s = %d" % (token_count_type, tokens)
+    return f"{token_count_type} = {tokens}"
 
 
-class AuditBase(object):
+class AuditBase:
     name = "AuditBase"
 
     def __init__(self):
@@ -121,7 +120,7 @@ class AuditBase(object):
         self.createKeys()
 
         try:
-            with open(self.privateKeyFilename, "r") as f:
+            with open(self.privateKeyFilename) as f:
                 self.private = f.read()
         except Exception as exx:
             log.error(
@@ -131,7 +130,7 @@ class AuditBase(object):
             )
 
         try:
-            with open(self.publicKeyFilename, "r") as f:
+            with open(self.publicKeyFilename) as f:
                 self.public = f.read()
         except Exception as exx:
             log.error(

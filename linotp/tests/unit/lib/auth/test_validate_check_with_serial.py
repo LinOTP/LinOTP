@@ -18,8 +18,7 @@ Tests the create of audit entries
 """
 
 import unittest
-
-from mock import patch
+from unittest.mock import patch
 
 from linotp.lib.auth.validate import ValidationHandler
 from linotp.lib.user import User

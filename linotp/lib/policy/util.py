@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -194,7 +193,7 @@ def parse_action(action_value):
 
     action = []
 
-    for entry in _tokenise_action("%s," % action_value):
+    for entry in _tokenise_action(f"{action_value},"):
         if entry != ",":  # in case of an ',' the key=value is completed
             action.append(entry)
             continue
@@ -224,7 +223,7 @@ def parse_action(action_value):
         action = []
 
     if action:
-        raise Exception("non terminated action %r" % action)
+        raise Exception(f"non terminated action {action!r}")
 
     return
 
@@ -243,7 +242,7 @@ def _strip_quotes(value):
             not value.startswith(quote) and value.endswith(quote)
         ):
             if quote not in value[1:-1]:
-                raise Exception("non terminated string value entry %r" % value)
+                raise Exception(f"non terminated string value entry {value!r}")
 
     for quote in ["'", '"']:
         if value.startswith(quote) and value.endswith(quote):
@@ -263,7 +262,7 @@ def parse_action_value(action_value):
 
     for key, value in parse_action(action_value):
         if key in params and params[key] != value:
-            raise Exception("duplicate key definition %r" % key)
+            raise Exception(f"duplicate key definition {key!r}")
 
         params[key] = value
 

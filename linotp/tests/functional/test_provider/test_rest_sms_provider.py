@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -41,9 +40,9 @@ specify it with nose-testconfig (e.g. --tc=paster.port:5005).
 import json
 import logging
 from datetime import datetime, timedelta
+from unittest.mock import patch
 
 from freezegun import freeze_time
-from mock import patch
 
 from linotp.tests.functional.challenge_response.testing_controller import (
     TestingChallengeResponseController,

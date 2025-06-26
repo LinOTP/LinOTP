@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -81,7 +80,7 @@ def get_otp_mail(queue, timeout):
     smtpserver.close()
 
 
-class SmtpMessageServer(object):
+class SmtpMessageServer:
     """
     This class can start an SMTP debugging server,
     configure LinOTP to talk to it and read the
@@ -130,7 +129,7 @@ class SmtpMessageServer(object):
         logger.debug("Configuration parameters: %s", parameters)
         result = self.set_config.setConfig(parameters)
 
-        assert result, "It was not possible to set the config. Result:%s" % result
+        assert result, f"It was not possible to set the config. Result:{result}"
 
     def get_config_parameters(self):
         # This function can be overridden to provide configuration parameters to configure
@@ -174,13 +173,10 @@ class EmailProviderServer(SmtpMessageServer):
 
     def get_config_parameters(self):
         # SMTP e-mail configuration
-        config = """{
-            "SMTP_SERVER": "%s",
-            "SMTP_PORT": %s
-        }""" % (
-            self.addr,
-            self.port,
-        )
+        config = f"""{{
+            "SMTP_SERVER": "{self.addr}",
+            "SMTP_PORT": {self.port}
+        }}"""
 
         parameters = {"EmailProviderConfig": config}
         return parameters
@@ -193,15 +189,12 @@ class SMSProviderServer(SmtpMessageServer):
     """
 
     def get_config_parameters(self):
-        sms_provider_config = """{
-            "mailserver" : "%s",
-            "mailserver_port": %s,
+        sms_provider_config = f"""{{
+            "mailserver" : "{self.addr}",
+            "mailserver_port": {self.port},
             "mailsender" : "linotp-sms@localhost",
             "mailto": "seleniumtest@localhost"
-        }""" % (
-            self.addr,
-            self.port,
-        )
+        }}"""
         print(sms_provider_config)
 
         # Set SMTP sms config

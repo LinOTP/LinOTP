@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 #
 #    LinOTP - the open source solution for two factor authentication
@@ -29,13 +28,12 @@
 
 import json
 import os
-
-from mock import patch
+from unittest.mock import patch
 
 from linotp.useridresolver.SQLIdResolver import IdResolver as SQLResolver
 
 
-class TestSQLResolverSensitiveData(object):
+class TestSQLResolverSensitiveData:
     """Test class for SQL sensitive data"""
 
     resolver = None
@@ -51,7 +49,7 @@ class TestSQLResolverSensitiveData(object):
             "config": {
                 "Driver": "sqlite",
                 "Port": "",
-                "Database": "%s/imported/data/linotp-users.sql" % current_directory,
+                "Database": f"{current_directory}/imported/data/linotp-users.sql",
                 "Server": "",
                 "User": "",
                 "Password": "",

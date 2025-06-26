@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -30,8 +29,8 @@ import os
 import struct
 from collections import defaultdict
 from tempfile import NamedTemporaryFile
+from unittest import mock
 
-import mock
 from Cryptodome.Cipher import AES
 from Cryptodome.Hash import SHA256
 from Cryptodome.Util import Counter
@@ -80,7 +79,7 @@ def u64_to_transaction_id(u64_int):
     if rest == 0:
         return str(before)
     else:
-        return "%d.%02d" % (before, rest)
+        return f"{before}.{rest:02d}"
 
 
 # -------------------------------------------------------------------------- --
@@ -92,7 +91,7 @@ class TestPushToken(TestController):
         self.delete_all_token()
         self.delete_all_realms()
         self.delete_all_resolvers()
-        super(TestPushToken, self).setUp()
+        super().setUp()
         self.create_common_resolvers()
         self.create_common_realms()
         self.create_dummy_cb_policies()
@@ -156,7 +155,7 @@ class TestPushToken(TestController):
         self.delete_all_realms()
         self.delete_all_resolvers()
         self.delete_all_token()
-        super(TestPushToken, self).tearDown()
+        super().tearDown()
 
         # ------------------------------------------------------------------ --
 
@@ -932,8 +931,8 @@ class TestPushToken(TestController):
                 user_token_id,
                 data=(
                     "Yes, I want to know why doctors hate this guy. Take these "
-                    "%d000 $ with all my sincere benevolence and send me the black "
-                    "magic diet pill they don't want me to know about" % i
+                    f"{i}000 $ with all my sincere benevolence and send me the black "
+                    "magic diet pill they don't want me to know about"
                 ),
                 content_type=CONTENT_TYPE_SIGNREQ,
             )

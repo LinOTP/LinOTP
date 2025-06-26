@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -26,8 +25,7 @@
 #
 
 import unittest
-
-from mock import patch
+from unittest.mock import patch
 
 from linotp.tokens.emailtoken import EmailTokenClass
 from linotp.tokens.hmactoken import HmacTokenClass
@@ -39,7 +37,7 @@ from linotp.tokens.yubikeytoken import YubikeyTokenClass
 # ---------------------------------------------------------------------------- -
 
 
-class FakeTokenModel(object):
+class FakeTokenModel:
     def __init__(self):
         self.LinOtpOtpLen = 8
         # emailtoken needs LinOtpCount variable to function correctly

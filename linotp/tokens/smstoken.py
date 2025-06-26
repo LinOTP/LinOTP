@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -513,15 +512,15 @@ class SmsTokenClass(HmacTokenClass):
             transactionid = options.get("transactionid", None)
             res, result = self.sendSMS(message=message, transactionid=transactionid)
 
-            self.info["info"] = "SMS sent: %r" % res
+            self.info["info"] = f"SMS sent: {res!r}"
             log.debug("SMS sent: %s", result)
 
             return res, result
 
-        except Exception as e:
+        except Exception as exx:
             # The PIN was correct, but the SMS could not be sent.
-            self.info["info"] = str(e)
-            info = "The SMS could not be sent: %r" % e
+            self.info["info"] = str(exx)
+            info = f"The SMS could not be sent: {exx!r}"
             log.warning("[submitChallenge] %s", info)
             return False, info
 
@@ -610,7 +609,7 @@ class SmsTokenClass(HmacTokenClass):
         # datetime format in the storeing data
         timeScope = self.loadLinOtpSMSValidTime()
         expiryDate = datetime.datetime.now() + datetime.timedelta(seconds=timeScope)
-        data = {"valid_until": "%s" % expiryDate}
+        data = {"valid_until": f"{expiryDate}"}
 
         return (success, message, data, attributes)
 
@@ -630,7 +629,7 @@ class SmsTokenClass(HmacTokenClass):
         change the tokeninfo data of the last challenge
         """
 
-        _tok = super(SmsTokenClass, self)
+        _tok = super()
         counter = self.getOtpCount()
         window = self.getOtpCountWindow()
 
@@ -920,9 +919,9 @@ class SmsTokenClass(HmacTokenClass):
         if "<otp>" not in message:
             log.error("Message unconfigured: prepending <otp> to message")
             if isinstance(message, str):
-                message = "<otp> %s" % message
+                message = f"<otp> {message}"
             else:
-                message = "<otp> %r" % message
+                message = f"<otp> {message!r}"
 
         message = message.replace("<otp>", otp)
         message = message.replace("<serial>", serial)
@@ -974,7 +973,7 @@ class SmsTokenClass(HmacTokenClass):
         if not available:
             log.error("all providers are not available %r", providers)
             raise AllResourcesUnavailable(
-                "unable to connect to any SMSProvider %r" % providers
+                f"unable to connect to any SMSProvider {providers!r}"
             )
 
         log.info("[sendSMS] message submitted")

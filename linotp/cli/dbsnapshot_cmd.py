@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -87,7 +86,7 @@ def create_command():
         backup_database_tables()
         current_app.echo("finished", v=1)
     except Exception as exx:
-        current_app.echo("Failed to backup: %r" % exx)
+        current_app.echo(f"Failed to backup: {exx!r}")
         sys.exit(1)
 
 
@@ -97,7 +96,7 @@ def create_command():
     "--date",
     help=(
         "Restore a snapshot from a given date. "
-        "'date' must be in format '%s'." % TIME_FORMAT
+        f"'date' must be in format '{TIME_FORMAT}'."
     ),
 )
 @click.option(
@@ -161,8 +160,7 @@ def backup_database_tables() -> int:
         backup_classes["AuditTable"] = AuditTable
 
     app.echo(
-        "extracting data from: %r:%r"
-        % (db.engine.url.drivername, db.engine.url.database),
+        f"extracting data from: {db.engine.url.drivername!r}:{db.engine.url.database!r}",
         v=1,
     )
 
@@ -180,13 +178,13 @@ def backup_database_tables() -> int:
     filename = get_backup_filename(backup_filename_template)
     backup_filename = os.path.join(backup_dir, filename)
 
-    app.echo("Creating backup file: %s" % backup_filename, v=1)
+    app.echo(f"Creating backup file: {backup_filename}", v=1)
 
     with open(backup_filename, "w") as backup_file:
         for name, model_class in backup_classes.items():
-            app.echo("Saving %s" % name, v=1)
+            app.echo(f"Saving {name}", v=1)
 
-            backup_file.write("--- BEGIN %s\n" % name)
+            backup_file.write(f"--- BEGIN {name}\n")
 
             data_query = model_class.query
 
@@ -205,7 +203,7 @@ def backup_database_tables() -> int:
             # final newline for detail
             app.echo("", v=2)
 
-            backup_file.write("\n--- END %s\n" % name)
+            backup_file.write(f"\n--- END {name}\n")
 
 
 def list_database_backups() -> list:
@@ -225,7 +223,7 @@ def list_database_backups() -> list:
     backup_dir = app.config["BACKUP_DIR"]
 
     if not os.path.exists(backup_dir):
-        app.echo("no backup directory found: %s" % backup_dir, v=2)
+        app.echo(f"no backup directory found: {backup_dir}", v=2)
         return
 
     # ---------------------------------------------------------------------- --
@@ -288,9 +286,9 @@ def _get_restore_filename(
     # verify that the file to restore from exists
 
     if not os.path.isfile(backup_filename):
-        app.echo("Failed to restore %s - not found or not accessible" % backup_filename)
+        app.echo(f"Failed to restore {backup_filename} - not found or not accessible")
         raise FileNotFoundError(
-            "failed to restore %s - not found or not accessible" % backup_filename
+            f"failed to restore {backup_filename} - not found or not accessible"
         )
 
     return backup_filename
@@ -352,7 +350,7 @@ def restore_database_tables(
 
     # restore the sqlalchemy dump from file
 
-    with open(backup_filename, "r") as backup_file:
+    with open(backup_filename) as backup_file:
         for line in backup_file:
             line = line.strip()
 
@@ -375,7 +373,7 @@ def restore_database_tables(
 
                 db.session.merge(restore_query)
 
-                app.echo("Restoring %r" % name, v=1)
+                app.echo(f"Restoring {name!r}", v=1)
 
     # finally commit all de-serialized objects
 

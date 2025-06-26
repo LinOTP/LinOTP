@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -173,8 +172,8 @@ def generate_pairing_url(
         allowed_types = ", ".join(list(TOKEN_TYPES.keys()))
         raise InvalidFunctionParameter(
             "token_type",
-            "Unsupported token type %s. Supported "
-            "types for pairing are: %s" % (token_type, allowed_types),
+            f"Unsupported token type {token_type}. Supported "
+            f"types for pairing are: {allowed_types}",
         ) from exx
 
     # ---------------------------------------------------------------------- --
@@ -278,8 +277,8 @@ def generate_pairing_url(
             allowed_values = ", ".join(list(hash_algorithms.keys()))
             raise InvalidFunctionParameter(
                 "hash_algorithm",
-                "Unsupported hash algorithm %s, "
-                "allowed values are %s" % (hash_algorithm, allowed_values),
+                f"Unsupported hash algorithm {hash_algorithm}, "
+                f"allowed values are {allowed_values}",
             ) from exx
         data += struct.pack("<b", HASH_ALGO)
 
@@ -324,8 +323,7 @@ def get_pairing_data_parser(token_type):
         return parse_and_verify_pushtoken_pairing_data
 
     raise ValueError(
-        "unsupported token type %d, supported types "
-        "are %s" % (token_type, SUPPORTED_TOKEN_TYPES)
+        f"unsupported token type {token_type}, supported types are {SUPPORTED_TOKEN_TYPES}"
     )
 
 
@@ -404,7 +402,7 @@ def decrypt_pairing_response(enc_pairing_response):
     if version != PAIR_RESPONSE_VERSION:
         raise ValueError(
             "Unexpected pair-response version, "
-            "expected: %d, got: %d" % (PAIR_RESPONSE_VERSION, version)
+            f"expected: {PAIR_RESPONSE_VERSION}, got: {version}"
         )
 
     # ---------------------------------------------------------------------- --
@@ -461,8 +459,7 @@ def decrypt_pairing_response(enc_pairing_response):
 
     if token_type not in SUPPORTED_TOKEN_TYPES:
         raise ValueError(
-            "unsupported token type %d, supported types "
-            "are %s" % (token_type, SUPPORTED_TOKEN_TYPES)
+            f"unsupported token type {token_type}, supported types are {SUPPORTED_TOKEN_TYPES}"
         )
 
     # ---------------------------------------------------------------------- --
@@ -481,8 +478,7 @@ def decrypt_pairing_response(enc_pairing_response):
     except KeyError as exx:
         raise ProgrammingError(
             "token_type %d is in SUPPORTED_TOKEN_TYPES",
-            "however an appropriate mapping entry in "
-            "TOKEN_TYPES is missing" % token_type,
+            "however an appropriate mapping entry in TOKEN_TYPES is missing",
         ) from exx
 
     return PairingResponse(token_type_as_str, pairing_data)

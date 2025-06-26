@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -419,7 +418,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
             except BaseException as exx:
                 raise ValueError(
-                    "Unrecognized content type: %s" % content_type_as_str
+                    f"Unrecognized content type: {content_type_as_str}"
                 ) from exx
 
             # --------------------------------------------------------------- --
@@ -445,7 +444,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
                 )
 
             else:
-                raise ValueError("Unrecognized content type: %s" % content_type)
+                raise ValueError(f"Unrecognized content type: {content_type}")
 
         # ------------------------------------------------------------------- --
 
@@ -461,7 +460,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         )
 
         if not success:
-            raise Exception("push mechanism failed. response was %r" % response)
+            raise Exception(f"push mechanism failed. response was {response!r}")
 
         # ------------------------------------------------------------------- --
 
@@ -516,14 +515,14 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         except AttributeError as exx:  # will be raised with a get() on a str object
             raise Exception(
-                'Pushtoken version %r requires "accept" or'
-                ' "reject" as parameter' % CHALLENGE_URL_VERSION
+                f'Pushtoken version {CHALLENGE_URL_VERSION!r} requires "accept" or'
+                ' "reject" as parameter'
             ) from exx
 
         if signature_accept is not None and signature_reject is not None:
             raise Exception(
-                'Pushtoken version %r requires "accept" or'
-                ' "reject" as parameter' % CHALLENGE_URL_VERSION
+                f'Pushtoken version {CHALLENGE_URL_VERSION!r} requires "accept" or'
+                ' "reject" as parameter'
             )
 
         # ------------------------------------------------------------------ --

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,8 +26,8 @@
 
 import base64
 import json
+from unittest.mock import patch
 
-from mock import patch
 from pysodium import crypto_sign_keypair
 
 from linotp.flap import config
@@ -36,7 +35,7 @@ from linotp.lib.context import request_context
 from linotp.tokens.pushtoken.pushtoken import PushTokenClass
 
 
-class FakeHSM(object):
+class FakeHSM:
     def isReady(self):
         return True
 
@@ -52,7 +51,7 @@ fake_hsm_wrapper = {"obj": FakeHSM()}
 # -------------------------------------------------------------------------- --
 
 
-class FakeTokenModel(object):
+class FakeTokenModel:
     def __init__(self):
         self.info_dict = {}
 
@@ -75,7 +74,7 @@ class FakeTokenModel(object):
 # -------------------------------------------------------------------------- --
 
 
-class PushTokenClassUnitTestCase(object):
+class PushTokenClassUnitTestCase:
     # ---------------------------------------------------------------------- --
 
     @patch("linotp.tokens.pushtoken.pushtoken.get_secret_key")

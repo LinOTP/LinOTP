@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2015-2019 KeyIdentity GmbH
@@ -29,7 +28,6 @@ This file contains sample data for the integration tests
 """
 
 # LDAP resolvers
-from typing import Dict, List, Union
 
 # This is the "O = LinOTP-DE, CN = LinOTP-DE Root CA" certificate
 # used by the new blackdog-ldap container.
@@ -47,7 +45,7 @@ TGfofQIgFClkyscaKq+ALGjKzDAf+oF4A1BgOzqdFxafFePRH54=
 -----END CERTIFICATE-----"""
 
 
-musicians_ldap_resolver: Dict[str, Union[str, int, bool, List]] = {
+musicians_ldap_resolver: dict[str, str | int | bool | list] = {
     "name": "SE_musicians",
     "title": "Musicians LDAP (Blackdog)",
     "type": "ldapresolver",

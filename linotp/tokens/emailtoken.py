@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -134,7 +133,7 @@ class EmailTokenClass(HmacTokenClass):
         """
         LOG.debug(
             "[getClassInfo] begin. Get class render info for section: "
-            "key %r, ret %r " % (key, ret)
+            f"key {key!r}, ret {ret!r} "
         )
 
         res = {
@@ -221,7 +220,7 @@ class EmailTokenClass(HmacTokenClass):
             if ret == "all":
                 ret = res
         LOG.debug(
-            "[getClassInfo] end. Returned the configuration section: ret %r " % ret
+            f"[getClassInfo] end. Returned the configuration section: ret {ret!r} "
         )
         return ret
 
@@ -354,7 +353,7 @@ class EmailTokenClass(HmacTokenClass):
 
         attributes = {}
         counter = self.getOtpCount() + 1
-        data = {"counter_value": "%s" % counter}
+        data = {"counter_value": f"{counter}"}
 
         try:
             success, status_message = self._sendEmail()

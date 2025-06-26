@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -24,8 +23,9 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
+from unittest.mock import patch
+
 import pytest
-from mock import patch
 
 from linotp.tokens.yubicotoken import YubicoApikeyException, YubicoTokenClass
 

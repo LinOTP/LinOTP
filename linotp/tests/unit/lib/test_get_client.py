@@ -27,11 +27,11 @@
 
 import socket
 import unittest
+from unittest.mock import patch
 
 import netaddr
 import pytest
 from flask import current_app
-from mock import patch
 
 from linotp.lib.type_utils import get_ip_address, get_ip_network
 from linotp.lib.util import (
@@ -66,14 +66,14 @@ def mock_IPNet(address):
         "www.my.test.domain",
         "my.local.test.domain",
     ]:
-        raise netaddr.core.AddrFormatError("invalid IPNetwork %r" % address)
+        raise netaddr.core.AddrFormatError(f"invalid IPNetwork {address!r}")
 
     return netw_dict.get(address)
 
 
 def mock_IPAddr(address):
     if address in ["www.my.test.domain"]:
-        raise netaddr.core.AddrFormatError("invalid IPNetwork %r" % address)
+        raise netaddr.core.AddrFormatError(f"invalid IPNetwork {address!r}")
 
     return addr_dict.get(address)
 
@@ -87,7 +87,7 @@ def mocked_getFromConfig(key, default):
     return LinConfig.get(key, default)
 
 
-class Request(object):
+class Request:
     def __init__(self, environ, values=None):
         self.environ = environ
         self.values = values or {}

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -108,9 +107,7 @@ class MaintenanceController(BaseController):
             try:
                 level = int(level)
             except ValueError as exx:
-                raise Exception(
-                    "debug level {} contains nondigits!".format(level)
-                ) from exx
+                raise Exception(f"debug level {level} contains nondigits!") from exx
 
             # ----------------------------------------------------------------------
 

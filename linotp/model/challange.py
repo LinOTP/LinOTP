@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -28,7 +27,7 @@
 import json
 import logging
 from datetime import datetime
-from typing import Any, Tuple, Union
+from typing import Any
 
 from linotp.lib.crypto.utils import get_rand_digit_str
 from linotp.lib.security.default import DefaultSecurityModule
@@ -43,8 +42,8 @@ class Challenge(ChallengeSchema):
         self,
         transid: str,
         tokenserial: str,
-        challenge: Union[str, bytes] = "",
-        data: Union[str, bytes] = "",
+        challenge: str | bytes = "",
+        data: str | bytes = "",
         session: str = "",
     ):
         super().__init__()
@@ -90,8 +89,8 @@ class Challenge(ChallengeSchema):
 
         self.data = save_data.encode("utf-8")
 
-    def getData(self) -> Union[dict, str]:
-        data: Union[dict, str] = {}
+    def getData(self) -> dict | str:
+        data: dict | str = {}
         saved_data = (
             self.data if isinstance(self.data, str) else self.data.decode("utf-8")
         )
@@ -106,7 +105,7 @@ class Challenge(ChallengeSchema):
         key: str | None = None,
         fallback: Any = None,
         save: bool = False,
-    ) -> Union[None, dict]:
+    ) -> None | dict:
         """
         simulate the dict behaviour to make challenge processing
         easier, as this will have to deal as well with
@@ -226,7 +225,7 @@ class Challenge(ChallengeSchema):
             self.received_count += 1
         self.valid_tan = valid
 
-    def getTanStatus(self) -> Tuple[bool, bool]:
+    def getTanStatus(self) -> tuple[bool, bool]:
         return (self.received_tan, self.valid_tan)
 
     def close(self) -> None:
@@ -311,7 +310,9 @@ class Challenge(ChallengeSchema):
         descr["tokenserial"] = self.tokenserial
         descr["data"] = self.getData()
         if save is True:
-            descr["timestamp"] = "%s" % self.timestamp.strftime("%Y-%m-%d %H:%M:%S")
+            descr["timestamp"] = "{}".format(
+                self.timestamp.strftime("%Y-%m-%d %H:%M:%S")
+            )
         else:
             descr["timestamp"] = self.timestamp
         descr["received_tan"] = self.received_tan
@@ -334,4 +335,4 @@ class Challenge(ChallengeSchema):
 
     def __str__(self) -> str:
         descr = self.get_vars()
-        return "%s" % str(descr)
+        return f"{descr!s}"

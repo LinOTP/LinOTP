@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,7 +26,6 @@
 """policy evaluation"""
 
 from datetime import datetime
-from typing import Dict
 
 from netaddr import IPAddress, IPNetwork
 
@@ -43,7 +41,7 @@ REGEX_MATCH = "regex:match"
 NOT_MATCH = "not:match"
 
 
-class PolicyEvaluator(object):
+class PolicyEvaluator:
     """
     policy evaluation engine
 
@@ -293,7 +291,7 @@ class PolicyEvaluator(object):
 
         return selection
 
-    def add_match_type(self, matches: Dict, matches_dict: Dict, policy: str):
+    def add_match_type(self, matches: dict, matches_dict: dict, policy: str):
         """helper to add the matches into a common dict.
 
         the dict will contain

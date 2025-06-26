@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -39,7 +38,7 @@ Declare the SecretObject to encapsulate security aspects
 log = logging.getLogger(__name__)
 
 
-class SecretObj(object):
+class SecretObj:
     """
     High level interface to security operations
 

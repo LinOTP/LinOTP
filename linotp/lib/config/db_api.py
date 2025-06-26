@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -120,7 +119,7 @@ def _delete_continous_entry_db(key):
     :param key: the key prefix of the chunks
     """
 
-    search_key = "%s__[%%:%%]" % (key)
+    search_key = f"{key}__[%:%]"
     continous_entries = Config.query.filter(Config.Key.like(search_key))
 
     for continous_entry in continous_entries:
@@ -261,7 +260,7 @@ def _removeConfigDB(key):
 
     except Exception as exx:
         raise ConfigAdminError(
-            "remove Config failed for %r: %r" % (key, exx), id=1133
+            f"remove Config failed for {key!r}: {exx!r}", id=1133
         ) from exx
 
     return len(to_be_deleted)

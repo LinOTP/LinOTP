@@ -19,8 +19,7 @@ Tests the last_access token info
 
 import unittest
 from datetime import datetime
-
-from mock import patch
+from unittest.mock import patch
 
 from linotp.lib.token import add_last_accessed_info
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -33,7 +32,7 @@ import logging
 log = logging.getLogger(__name__)
 
 
-class IPushProvider(object):
+class IPushProvider:
     """
     An abstract class that has to be implemented by ever e-mail provider class
     """

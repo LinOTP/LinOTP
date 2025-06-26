@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -200,7 +199,7 @@ class RestSMSProvider(ISMSProvider, ConfigParsingMixin):
         # do some phone number normalisation if MSISDN parameter is provided
 
         # prepare the phone number
-        msisdn = "true" in ("%r" % self.config.get("MSISDN", "false")).lower()
+        msisdn = "true" in ("{!r}".format(self.config.get("MSISDN", "false"))).lower()
         if msisdn:
             phone = self._get_msisdn_phonenumber(phone)
 
@@ -287,13 +286,13 @@ class RestSMSProvider(ISMSProvider, ConfigParsingMixin):
                 retry -= 1
                 if retry <= 0:
                     raise ProviderNotAvailable(
-                        "RestSMSProvider timed out %r" % exx
+                        f"RestSMSProvider timed out {exx!r}"
                     ) from exx
 
             except Exception as exx:
                 log.error("RestSMSProvider %r", exx)
                 retry = 0
-                raise Exception("Failed to send SMS. %s" % str(exx)) from exx
+                raise Exception(f"Failed to send SMS. {exx!s}") from exx
 
 
 def json_replace(payload, key, value):

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -143,16 +142,15 @@ def usage(prog):
     Print usage information and exit
     """
     print(
-        """
+        f"""
 Usage:
-        %s [--dict=###] [--authport=###] [--acctport=###] [--help]
+        {prog} [--dict=###] [--authport=###] [--acctport=###] [--help]
 
         --dict=, -d         The path to a dictionary file (default is /etc/linotp/dictionary)
         --authport=, -t     Port used for RADIUS authentication packets (default is 18012)
         --acctport=, -c     Port used for RADIUS accounting packets (default is 18013)
         --help, -h          Show this message and exit
 """
-        % prog
     )
 
 
@@ -200,13 +198,13 @@ def main():
             if os.path.isfile(arg):
                 r_dict = arg
             else:
-                print(("radius dictionary file  <%r> not found!" % arg))
+                print(f"radius dictionary file  <{arg!r}> not found!")
         elif opt in ("-t", "--authport"):
             authport = int(arg)
         elif opt in ("-c", "--acctport"):
             acctport = int(arg)
         else:
-            print("Unknown option %s" % opt)
+            print(f"Unknown option {opt}")
 
     ips = set()
     ips.add("127.0.0.1")

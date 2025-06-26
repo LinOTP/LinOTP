@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -113,7 +112,7 @@ def fill_element_from_dict(driver, element_id, name, data_dict):
     Verify that we have the named element in dict. Then clear the element
     and fill with the value in the data dict
     """
-    assert name in data_dict, "Data dict needs element %s" % name
+    assert name in data_dict, f"Data dict needs element {name}"
     return fill_form_element(driver, element_id, data_dict[name])
 
 
@@ -173,7 +172,7 @@ def get_from_tconfig(key_array, default=None, required=False):
         if not required:
             return default
         raise Exception(
-            "Testconfig entry %s is required" % ".".join(key_array)
+            "Testconfig entry {} is required".format(".".join(key_array))
         ) from exx
 
 

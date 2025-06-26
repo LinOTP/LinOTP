@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -41,7 +40,7 @@ from linotp.model import db
 log = logging.getLogger(__name__)
 
 
-class DataBaseContext(object):
+class DataBaseContext:
     """
     the database context - used to preseve the engine, which is required for
     the unit test, where the sqlite database resides in memory
@@ -174,11 +173,11 @@ class SetPasswordHandler(ToolsHandler):
 
             except NoResultFound as exx:
                 log.error("no user %r found!", username)
-                raise Exception("no user %r found!" % username) from exx
+                raise Exception(f"no user {username!r} found!") from exx
 
             except MultipleResultsFound as exx:
                 log.error("multiple users %r found!", username)
-                raise Exception("multiple users %r found!" % username) from exx
+                raise Exception(f"multiple users {username!r} found!") from exx
 
             crypted_password = admin_user.password
 

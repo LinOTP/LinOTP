@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -33,7 +32,6 @@ import logging
 import urllib.error
 import urllib.parse
 import urllib.request
-from typing import Union
 
 import qrcode
 from flask import Response, current_app, g
@@ -85,7 +83,7 @@ resp = """
 log = logging.getLogger(__name__)
 
 
-def _get_httperror_code_from_params() -> Union[str, None]:
+def _get_httperror_code_from_params() -> str | None:
     """
     Extract an httperror parameter from the client request
 
@@ -142,7 +140,7 @@ def _get_httperror_code_from_params() -> Union[str, None]:
     return httperror
 
 
-def sendError(exception: Union[Exception, str], id: int = 1):
+def sendError(exception: Exception | str, id: int = 1):
     """
     sendError - return a HTML or JSON error result document
 
@@ -216,7 +214,7 @@ def sendError(exception: Union[Exception, str], id: int = 1):
         errDesc = str(exception)
 
     else:
-        errDesc = "%r" % exception
+        errDesc = f"{exception!r}"
 
     # check if we have an additional request parameter 'httperror'
     # which triggers the error to be delivered as HTTP Error
@@ -245,8 +243,8 @@ def sendError(exception: Union[Exception, str], id: int = 1):
         if error_code in standard_http_errors:
             reason = standard_http_errors[error_code]
         code = error_code
-        status = "%s %s" % (error_code, reason)
-        desc = "[%s] %d: %s" % (get_version(), errId, errDesc)
+        status = f"{error_code} {reason}"
+        desc = f"[{get_version()}] {errId}: {errDesc}"
         ret = resp % (code, status, code, status, desc)
 
         return Response(response=ret, status=code, mimetype="text/html")
@@ -356,16 +354,16 @@ def sendResultIterator(
         except ValueError as exx:
             err["result"]["error"] = {
                 "code": 9876,
-                "message": "%r" % exx,
+                "message": f"{exx!r}",
             }
             log.error("failed to convert paging request parameters: %r", exx)
             yield json.dumps(err)
             # finally we signal end of error result
             return
 
-    typ = "%s" % type(obj)
+    typ = f"{type(obj)}"
     if "generator" not in typ and "iterator" not in typ:
-        raise Exception("no iterator method for object %r" % obj)
+        raise Exception(f"no iterator method for object {obj!r}")
 
     res = {
         "jsonrpc": api_version,
@@ -395,7 +393,7 @@ def sendResultIterator(
         # are we running in paging mode?
         if page is not None:
             if counter >= start_at and counter < stop_at:
-                res = "%s%s\n" % (sep, next_one)
+                res = f"{sep}{next_one}\n"
                 sep = ","
                 yield res
             if counter >= stop_at:
@@ -403,14 +401,14 @@ def sendResultIterator(
                 break
         else:
             # no paging - no limit
-            res = "%s%s\n" % (sep, next_one)
+            res = f"{sep}{next_one}\n"
             sep = ","
             yield res
         counter = counter + 1
 
     # we add the amount of queried objects
-    total = '"queried" : %d' % counter
-    postfix = ", %s %s" % (total, postfix)
+    total = f'"queried" : {counter}'
+    postfix = f", {total} {postfix}"
 
     # last return the closing
     yield "] " + postfix
@@ -440,7 +438,7 @@ def sendCSVResult(obj, flat_lines=False, filename="linotp-tokendata.csv"):
             # Do the header
             if not headers_printed:
                 for k in list(data[0].keys()):
-                    output += "%s%s%s%s " % (delim, k, delim, seperator)
+                    output += f"{delim}{k}{delim}{seperator} "
                 output += "\n"
                 headers_printed = True
 
@@ -449,17 +447,17 @@ def sendCSVResult(obj, flat_lines=False, filename="linotp-tokendata.csv"):
                     value = val.replace("\n", " ")
                 else:
                     value = val
-                output += "%s%s%s%s " % (delim, value, delim, seperator)
+                output += f"{delim}{value}{delim}{seperator} "
             output += "\n"
     else:
         for row in obj:
             for elem in row.get("cell", []):
-                output += "'%s'%s " % (elem, seperator)
+                output += f"'{elem}'{seperator} "
 
             output += "\n"
 
     response = Response(response=output, status=200, mimetype=content_type)
-    response.headers["Content-disposition"] = "attachment; filename=%s" % filename
+    response.headers["Content-disposition"] = f"attachment; filename={filename}"
 
     return response
 
@@ -490,20 +488,15 @@ def sendXMLResult(obj, id=1, opt=None):
         xml_options = "\n<options>" + json2xml(opt) + "</options>"
     xml_object = json2xml(obj)
 
-    res = """<?xml version="1.0" encoding="UTF-8"?>
+    res = f"""<?xml version="1.0" encoding="UTF-8"?>
 <jsonrpc version="2.0">
     <result>
         <status>True</status>
-        <value>%s</value>
+        <value>{xml_object}</value>
     </result>
-    <version>%s</version>
-    <id>%s</id>%s
-</jsonrpc>""" % (
-        xml_object,
-        get_version(),
-        id,
-        xml_options,
-    )
+    <version>{get_version()}</version>
+    <id>{id}</id>{xml_options}
+</jsonrpc>"""
 
     return Response(response=res, status=200, mimetype="text/xml")
 
@@ -515,21 +508,18 @@ def sendXMLError(exception, id=1):
     else:
         errId = exception.getId()
         errDesc = exception.getDescription()
-    res = (
-        '<?xml version="1.0" encoding="UTF-8"?>\
-            <jsonrpc version="%s">\
+    res = f'<?xml version="1.0" encoding="UTF-8"?>\
+            <jsonrpc version="{get_api_version()}">\
             <result>\
                 <status>False</status>\
                 <error>\
-                    <code>%s</code>\
-                    <message>%s</message>\
+                    <code>{errId}</code>\
+                    <message>{errDesc}</message>\
                 </error>\
             </result>\
-            <version>%s</version>\
-            <id>%s</id>\
+            <version>{get_version()}</version>\
+            <id>{id}</id>\
             </jsonrpc>'
-        % (get_api_version(), errId, errDesc, get_version(), id)
-    )
     return Response(response=res, status=200, mimetype="text/xml")
 
 
@@ -610,7 +600,7 @@ def create_img_src(data):
 
     o_data = create_png(data)
     data_uri = base64.b64encode(o_data).decode()
-    ret_img_src = "data:image/png;base64,%s" % data_uri
+    ret_img_src = f"data:image/png;base64,{data_uri}"
 
     return ret_img_src
 
@@ -633,18 +623,13 @@ def create_img(data, width=0, alt=None, img_id="challenge_qrcode"):
     img_src = create_img_src(data)
 
     if width != 0:
-        width_str = " width=%d " % (int(width))
+        width_str = f" width={int(width)} "
 
     if alt is not None:
         val = urllib.parse.urlencode({"alt": alt})
-        alt_str = " alt=%r " % (val[len("alt=") :])
+        alt_str = f" alt={val[len('alt=') :]} "
 
-    ret_img = '<img id="%s" %s %s src="%s"/>' % (
-        img_id,
-        alt_str,
-        width_str,
-        img_src,
-    )
+    ret_img = f'<img id="{img_id}" {alt_str} {width_str} src="{img_src}"/>'
 
     return ret_img
 
@@ -686,9 +671,9 @@ def sendCSVIterator(obj, headers=True):
     delim = '"'
     output = ""
 
-    typ = "%s" % type(obj)
+    typ = f"{type(obj)}"
     if "generator" not in typ and "iterator" not in typ:
-        raise Exception("no iterator method for object %r" % obj)
+        raise Exception(f"no iterator method for object {obj!r}")
 
     try:
         for row in obj:
@@ -696,7 +681,7 @@ def sendCSVIterator(obj, headers=True):
             # do the header
             if headers:
                 for key in row:
-                    output += "%s%s%s," % (delim, key, delim)
+                    output += f"{delim}{key}{delim},"
                 output += "\n"
                 yield str(output)
                 headers = False
@@ -705,12 +690,12 @@ def sendCSVIterator(obj, headers=True):
             for val in list(row.values()):
                 if isinstance(val, str):
                     value = val.replace("\n", " ")
-                    output += "%s%s%s, " % (delim, value, delim)
+                    output += f"{delim}{value}{delim}, "
                 elif isinstance(val, int):
-                    value = "%d" % val
-                    output += "%s, " % (value)
+                    value = f"{val:d}"
+                    output += f"{value}, "
                 else:
-                    output += "%s%s%s, " % (delim, value, delim)
+                    output += f"{delim}{value}{delim}, "
                 # output += "%s%s%s, " % (delim, value, delim)
             output += "\n"
             yield str(output)

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -129,7 +128,7 @@ def parseYubicoCSV(csv):
                 if typ.lower() == "yubico otp":
                     ttype = "yubikey"
                     otplen = 32 + len(public_id)
-                    serial = "UBAM%08d_%s" % (serial_int, slot)
+                    serial = f"UBAM{serial_int:08d}_{slot}"
                     TOKENS[serial] = {
                         "type": ttype,
                         "hmac_key": key,
@@ -147,7 +146,7 @@ def parseYubicoCSV(csv):
                     if cells and len(cells) > 11 and cells[11] and cells[11].strip():
                         otplen = int(cells[11])
 
-                    serial = "UBOM%08d_%s" % (serial_int, slot)
+                    serial = f"UBOM{serial_int:08d}_{slot}"
                     TOKENS[serial] = {
                         "type": ttype,
                         "hmac_key": key,
@@ -171,12 +170,12 @@ def parseYubicoCSV(csv):
                 if cells[2].strip() == "0":
                     # HOTP
                     typ = "hmac"
-                    serial = "UBOM%s_%s" % (serial, slot)
+                    serial = f"UBOM{serial}_{slot}"
                     otplen = 6
                 elif cells[2].strip() == "":
                     # Static
                     typ = "pw"
-                    serial = "UBSM%s_%s" % (serial, slot)
+                    serial = f"UBSM{serial}_{slot}"
                     key = create_static_password(key)
                     otplen = len(key)
                     log.warning(
@@ -187,7 +186,7 @@ def parseYubicoCSV(csv):
                 else:
                     # Yubico
                     typ = "yubikey"
-                    serial = "UBAM%s_%s" % (serial, slot)
+                    serial = f"UBAM{serial}_{slot}"
                     public_id = cells[1].strip()
                     otplen = 32 + len(public_id)
                 TOKENS[serial] = {

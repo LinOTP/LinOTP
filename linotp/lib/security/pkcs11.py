@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -173,7 +172,7 @@ def pkcs11error(rv):
 
 def output(loglevel, text):
     if running_as_main:
-        print("%s: %s" % (loglevel.upper(), text))
+        print(f"{loglevel.upper()}: {text}")
     else:
         if loglevel == "debug":
             log.debug(text)
@@ -274,7 +273,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
 
         self.initpkcs11()
         if self.password:
-            output("debug", "[setup_module] logging in to slot %r" % self.slotid)
+            output("debug", f"[setup_module] logging in to slot {self.slotid!r}")
             self.login(slotid=self.slotid)
 
     def populate_handles(self):
@@ -289,14 +288,14 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
             if label:
                 output(
                     "debug",
-                    "[populate_handles] get handle for label %s" % label,
+                    f"[populate_handles] get handle for label {label}",
                 )
 
                 self.handles[key] = self.find_aes_keys(label)
 
                 output(
                     "debug",
-                    "[populate_handles] handle set to %s" % self.handles.get(key),
+                    f"[populate_handles] handle set to {self.handles.get(key)}",
                 )
 
     def isReady(self):
@@ -400,7 +399,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         #   only padded value. Therefore compose a string with only
         #   padding bytes and compare it with the truncated padding string
 
-        byte_str_with_padding_byte = ("%s" % chr(last_byte) * padding_length).encode(
+        byte_str_with_padding_byte = (f"{chr(last_byte)}" * padding_length).encode(
             "utf-8"
         )
 
@@ -424,7 +423,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         """
         output(
             "debug",
-            "[initpkcs11]  Initialize the PKCS11 library %s" % self.pkcs11,
+            f"[initpkcs11]  Initialize the PKCS11 library {self.pkcs11}",
         )
 
         self.pkcs11.C_Initialize(0)
@@ -436,25 +435,24 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
             # fetch the list of the slots
             output(
                 "error",
-                "[initpkcs11] Failed to C_GetSlotList (%s): %s"
-                % (str(rv), pkcs11error(rv)),
+                f"[initpkcs11] Failed to C_GetSlotList ({rv!s}): {pkcs11error(rv)}",
             )
-            raise Exception("etng::initpkcs11 - Failed to C_GetSlotList (%s)" % rv)
+            raise Exception(f"etng::initpkcs11 - Failed to C_GetSlotList ({rv})")
         else:
             output(
                 "debug",
-                "[initpkcs11] number of connected tokens: %s. "
-                "slotid: %s" % (nSlots.value, SlotID.value),
+                f"[initpkcs11] number of connected tokens: {nSlots.value}. "
+                f"slotid: {SlotID.value}",
             )
 
         if nSlots.value == 0:
             output("error", "[initpkcs11] No slots connected!")
-            raise Exception("initpkcs11 - No slot connected (%s)" % nSlots.value)
+            raise Exception(f"initpkcs11 - No slot connected ({nSlots.value})")
 
         if nSlots.value > 1:
             output(
                 "info",
-                "[initpkcs11] More than one slot connected: %s" % nSlots.value,
+                f"[initpkcs11] More than one slot connected: {nSlots.value}",
             )
 
         return
@@ -465,7 +463,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
 
         After this, we got a self.hSession
         """
-        output("debug", "[login] login on slotid %i" % slotid)
+        output("debug", f"[login] login on slotid {slotid}")
 
         if password is None:
             output("debug", "[login] using password from the config file.")
@@ -496,7 +494,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
 
         self.hSession = opensession(SlotID=CK_SLOT_ID(slotid))
 
-        output("debug", "[login] got this session: %s" % self.hSession)
+        output("debug", f"[login] got this session: {self.hSession}")
 
         pw = password
         if isinstance(password, str):
@@ -506,9 +504,9 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         if rv:
             output(
                 "error",
-                "[login] Failed to login to token (%r): %s" % (rv, pkcs11error(rv)),
+                f"[login] Failed to login to token ({rv!r}): {pkcs11error(rv)}",
             )
-            raise Exception("etng::logintoken - Failed to C_Login (%r)" % rv)
+            raise Exception(f"etng::logintoken - Failed to C_Login ({rv!r})")
         else:
             output("debug", "[login] login successful")
             self.is_ready = True
@@ -523,12 +521,10 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         if rv:
             output(
                 "error",
-                "[logout] Failed to close session (%s): %s"
-                % (str(rv), pkcs11error(rv)),
+                f"[logout] Failed to close session ({rv!s}): {pkcs11error(rv)}",
             )
             raise Exception(
-                "[logout] Failed to C_CloseSession (%s): %s"
-                % (str(rv), pkcs11error(rv))
+                f"[logout] Failed to C_CloseSession ({rv!s}): {pkcs11error(rv)}"
             )
         else:
             output("debug", "[logout] logout successful")
@@ -608,9 +604,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
 
         rv = self.pkcs11.C_FindObjectsInit(self.hSession, template, template_len)
         if rv:
-            raise Exception(
-                "Failed to C_FindObjectsInit (%s): %s" % (rv, pkcs11error(rv))
-            )
+            raise Exception(f"Failed to C_FindObjectsInit ({rv}): {pkcs11error(rv)}")
 
         keys = []
         hKey = CK_OBJECT_HANDLE()
@@ -623,20 +617,17 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
             if rv:
                 output(
                     "error",
-                    "[find_aes_keys] Failed to C_FindObjects (%s):"
-                    " %s" % (rv, pkcs11error(rv)),
+                    f"[find_aes_keys] Failed to C_FindObjects ({rv}):"
+                    f" {pkcs11error(rv)}",
                 )
-                raise Exception(
-                    "Failed to C_FindObjects (%s): %s" % (rv, pkcs11error(rv))
-                )
+                raise Exception(f"Failed to C_FindObjects ({rv}): {pkcs11error(rv)}")
 
             if ulKeyCount.value > 0:
                 keys.append(int(hKey.value))
 
             output(
                 "debug",
-                "[find_aes_keys] searching keys: %i: %s"
-                % (ulKeyCount.value, hKey.value),
+                f"[find_aes_keys] searching keys: {ulKeyCount.value}: {hKey.value}",
             )
 
         rv = self.pkcs11.C_FindObjectsFinal(self.hSession)
@@ -644,12 +635,9 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         if rv:
             output(
                 "debug",
-                "[find_aes_keys] Failed to C_FindObjectsFinal "
-                "(%s): %s" % (rv, pkcs11error(rv)),
+                f"[find_aes_keys] Failed to C_FindObjectsFinal ({rv}): {pkcs11error(rv)}",
             )
-            raise Exception(
-                "Failed to C_FindObjectsFinal (%s): %s" % (rv, pkcs11error(rv))
-            )
+            raise Exception(f"Failed to C_FindObjectsFinal ({rv}): {pkcs11error(rv)}")
 
         if wanted == 1:
             if keys:
@@ -663,19 +651,18 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         """
         This returns a dictionary with the token info
         """
-        output("debug", "[gettokeninfo] for slot %s" % slotid)
+        output("debug", f"[gettokeninfo] for slot {slotid}")
         ti = CK_TOKEN_INFO()
         rv = self.pkcs11.C_GetTokenInfo(ctypes.c_ulong(slotid), ctypes.byref(ti))
 
         if rv:
             output(
                 "error",
-                "[gettokeninfo] Failed to get token info (%s): %s"
-                % (rv, pkcs11error(rv)),
+                f"[gettokeninfo] Failed to get token info ({rv}): {pkcs11error(rv)}",
             )
-            raise Exception("Failed to get token info (%s): %s" % (rv, pkcs11error(rv)))
+            raise Exception(f"Failed to get token info ({rv}): {pkcs11error(rv)}")
         else:
-            output("debug", "[gettokeninfo] %s" % str(ti))
+            output("debug", f"[gettokeninfo] {ti!s}")
         return ti
 
     def createAES(self, label: bytes, ks: int = 32) -> CK_OBJECT_HANDLE:
@@ -746,15 +733,15 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         if rv:
             output(
                 "error",
-                "[createAES] Failed to C_GenerateKey (%s): %s" % (rv, pkcs11error(rv)),
+                f"[createAES] Failed to C_GenerateKey ({rv}): {pkcs11error(rv)}",
             )
             raise Exception(
-                "createAES - Failed to C_GenerateKey (%s): %s" % (rv, pkcs11error(rv))
+                f"createAES - Failed to C_GenerateKey ({rv}): {pkcs11error(rv)}"
             )
         else:
             output(
                 "debug",
-                "[createAES] created key successfully: %s" % str(objHandle),
+                f"[createAES] created key successfully: {objHandle!s}",
             )
 
         return objHandle
@@ -764,15 +751,15 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         create a random value and return it
         l specifies the length of the random data to be created.
         """
-        output("debug", "[random] creating %i random bytes" % l)
+        output("debug", f"[random] creating {l} random bytes")
         key = b"0" * l
         rv = self.pkcs11.C_GenerateRandom(self.hSession, key, len(key))
         if rv:
             output(
                 "error",
-                "C_GenerateRandom failed (%s): %s" % (rv, pkcs11error(rv)),
+                f"C_GenerateRandom failed ({rv}): {pkcs11error(rv)}",
             )
-            raise Exception("C_GenerateRandom failed (%s): %s" % (rv, pkcs11error(rv)))
+            raise Exception(f"C_GenerateRandom failed ({rv}): {pkcs11error(rv)}")
         return key
 
     def decrypt(self, value: bytes, iv: bytes, id: int = DEFAULT_KEY) -> bytes:
@@ -787,7 +774,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         """
 
         handle = int(self.handles.get(id))
-        output("debug", "[decrypt] decrypting with handle %r" % handle)
+        output("debug", f"[decrypt] decrypting with handle {handle!r}")
 
         plaintext = ctypes.create_string_buffer(len(value))
         plaintext_len = ctypes.c_ulong(len(plaintext))
@@ -796,11 +783,11 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
             output(
                 "error",
                 "[decrypt] Doeing aes requires an IV (block size)"
-                " of 16 bytes. %i given" % len(iv),
+                f" of 16 bytes. {len(iv)} given",
             )
             raise Exception(
-                "aes.decrypt: Doeing aes requires an IV (block "
-                "size) of 16 bytes. %i given" % len(iv)
+                f"aes.decrypt: Doeing aes requires an IV (block "
+                f"size) of 16 bytes. {len(iv)} given"
             )
 
         mechanism = CK_MECHANISM(
@@ -813,9 +800,9 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         if rv:
             output(
                 "error",
-                "[decrypt] C_DecryptInit failed (%s): %s" % (rv, pkcs11error(rv)),
+                f"[decrypt] C_DecryptInit failed ({rv}): {pkcs11error(rv)}",
             )
-            raise Exception("C_DecryptInit failed (%s): %s" % (rv, pkcs11error(rv)))
+            raise Exception(f"C_DecryptInit failed ({rv}): {pkcs11error(rv)}")
 
         rv = self.pkcs11.C_Decrypt(
             self.hSession,
@@ -827,9 +814,9 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         if rv:
             output(
                 "error",
-                "[decrypt] C_Decrypt failed (%s): %s" % (rv, pkcs11error(rv)),
+                f"[decrypt] C_Decrypt failed ({rv}): {pkcs11error(rv)}",
             )
-            raise Exception("C_Decrypt failed (%s): %s" % (rv, pkcs11error(rv)))
+            raise Exception(f"C_Decrypt failed ({rv}): {pkcs11error(rv)}")
 
         return self.unpad(plaintext.value)
 
@@ -848,7 +835,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         :return: the encrypted byte string
         """
         handle = CK_OBJECT_HANDLE(self.handles.get(id))
-        output("debug", "[encrypt] encrypting with handle %r" % handle)
+        output("debug", f"[encrypt] encrypting with handle {handle!r}")
         data = self.pad(data)
 
         encrypted_data = ctypes.create_string_buffer(len(data))
@@ -858,11 +845,11 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
             output(
                 "error",
                 "[encrypt] Doing aes requires an IV (block size)"
-                " of 16 bytes. %i given" % len(iv),
+                f" of 16 bytes. {len(iv)} given",
             )
             raise Exception(
-                "PKCS11.decrypt: Doeing aes requires an IV (block "
-                "size) of 16 bytes. %i given" % len(iv)
+                f"PKCS11.decrypt: Doeing aes requires an IV (block "
+                f"size) of 16 bytes. {len(iv)} given"
             )
 
         mechanism = CK_MECHANISM(
@@ -874,11 +861,11 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         if rv:
             output(
                 "error",
-                "[encrypt] C_EncryptInit (slot=%s, handle=%s) "
-                "failed (%s): %s" % (self.slotid, handle, rv, pkcs11error(rv)),
+                f"[encrypt] C_EncryptInit (slot={self.slotid}, handle={handle}) "
+                f"failed ({rv}): {pkcs11error(rv)}",
             )
 
-            raise Exception("C_EncryptInit failed (%s): %s" % (rv, pkcs11error(rv)))
+            raise Exception(f"C_EncryptInit failed ({rv}): {pkcs11error(rv)}")
 
         data_buffer = ctypes.create_string_buffer(data)
 
@@ -892,8 +879,8 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         if rv:
             output(
                 "error",
-                "[encrypt] C_Encrypt (slot=%s, handle=%s) failed "
-                "(%s): %s" % (self.slotid, handle, rv, pkcs11error(rv)),
+                f"[encrypt] C_Encrypt (slot={self.slotid}, handle={handle}) failed "
+                f"({rv}): {pkcs11error(rv)}",
             )
 
         return encrypted_data.value
@@ -1090,7 +1077,7 @@ def main():
 
     if not password:
         password = getpass.getpass(
-            prompt="Please enter password for slot %i:" % int(slot)
+            prompt=f"Please enter password for slot {int(slot)}:"
         )
 
     config = {
@@ -1106,11 +1093,11 @@ def main():
 
     if listing:
         keys = P11.find_aes_keys(label=label.encode("utf-8"), wanted=100)
-        print("Found these AES keys: %r" % keys)
+        print(f"Found these AES keys: {keys!r}")
 
     elif encrypt:
         print(
-            "Encrypting data %r with label %r from slot %r." % (encrypt, l_handle, slot)
+            f"Encrypting data {encrypt!r} with label {l_handle!r} from slot {slot!r}."
         )
 
         iv = P11.random(16)
@@ -1118,7 +1105,7 @@ def main():
         handle = P11.find_aes_keys(label=l_handle.encode("utf-8"))
         if handle == 0:
             print(
-                "Enryption failed: no handle for aes key found for label %r!" % l_handle
+                f"Enryption failed: no handle for aes key found for label {l_handle!r}!"
             )
             return
 
@@ -1126,14 +1113,14 @@ def main():
         print("Encrypted Text : ", binascii.hexlify(crypttext))
 
         plaintext = P11.decrypt(crypttext, iv, DEFAULT_KEY)
-        print("Decrypted Text >>%s<< " % plaintext.decode("utf-8"))
+        print("Decrypted Text >>{}<< ".format(plaintext.decode("utf-8")))
 
     else:
         handle = P11.find_aes_keys(label=name.encode("utf-8"))
 
         if not handle:
             handle_object = P11.createAES(label=name.encode("utf-8"))
-            print("Created AES key %s with handle %r" % (name, handle_object.value))
+            print(f"Created AES key {name} with handle {handle_object.value!r}")
 
     P11.logout()
 

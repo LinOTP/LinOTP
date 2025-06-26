@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -88,7 +87,7 @@ class TestUserserviceAuthController(TestController):
 
         response = self.make_system_request("setPolicy", params=policy)
         assert '"status": true' in response, response
-        assert ('"setPolicy %s": {' % name) in response, response
+        assert (f'"setPolicy {name}": {{') in response, response
 
         return
 
@@ -258,7 +257,7 @@ class TestUserserviceAuthController(TestController):
                 "delete", params=params, auth_user=auth_user
             )
 
-        msg = "%s" % exx.exception
+        msg = f"{exx.exception}"
         assert "Server Error 401" in msg
 
         self.delete_all_token()

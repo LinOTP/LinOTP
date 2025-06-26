@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,9 +26,9 @@
 
 from datetime import datetime, timedelta
 from unittest import TestCase
+from unittest.mock import patch
 
 import pytest
-from mock import patch
 
 from linotp.lib.remote_service import (
     AllServicesUnavailable,

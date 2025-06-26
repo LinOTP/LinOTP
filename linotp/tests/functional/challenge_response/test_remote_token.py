@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -37,9 +36,9 @@ used to do functional testing of the remote token
 import json
 import logging
 import urllib.parse
+from unittest.mock import patch
 
 import httplib2
-from mock import patch
 
 from linotp.tests.functional.challenge_response.testing_controller import (
     TestingChallengeResponseController,
@@ -90,7 +89,7 @@ class TestRemoteToken(TestingChallengeResponseController):
         and we loose the information how many tokens are within a realm!
         """
         TestingChallengeResponseController.setUp(self)
-        self.remote_url = "http://127.0.0.1:%s" % self.paster_port
+        self.remote_url = f"http://127.0.0.1:{self.paster_port}"
 
         self.delete_all_policies()
         self.delete_all_token()
@@ -101,7 +100,7 @@ class TestRemoteToken(TestingChallengeResponseController):
         return
 
     def create_local_tokens(self, serial):
-        serial = "LSP%s" % serial
+        serial = f"LSP{serial}"
 
         # local token
         param_local_1 = {
@@ -338,8 +337,8 @@ class TestRemoteToken(TestingChallengeResponseController):
 
         # create token and remote token which points to this
         serials = []
-        serial = self.create_local_tokens("tok_%d" % 1)
-        rserial = "%s_remote" % serial
+        serial = self.create_local_tokens("tok_1")
+        rserial = f"{serial}_remote"
         serials.append(rserial)
 
         parameters1 = {

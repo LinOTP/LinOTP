@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -275,7 +274,7 @@ class TestAdminController(TestController):
         assert '"status": true,' in response, response
         resp = json.loads(response.body)
         values = resp.get("result", {}).get("value", [])
-        assert len(values) > 15, "not enough users returned %r" % resp
+        assert len(values) > 15, f"not enough users returned {resp!r}"
 
     def test_userlist_paged(self):
         """
@@ -968,21 +967,15 @@ class TestAdminController(TestController):
         )
 
         assert response.json["result"]["status"], (
-            'Expected response.result.status to be True in response: "{}"'.format(
-                response.json
-            )
+            f'Expected response.result.status to be True in response: "{response.json}"'
         )
 
         assert token_serial_1 in response.json["result"]["value"], (
-            'Expected response.result.value to contain token id "{}" in response: "{}"'.format(
-                token_serial_1, response.json
-            )
+            f'Expected response.result.value to contain token id "{token_serial_1}" in response: "{response.json}"'
         )
 
         assert token_serial_2 in response.json["result"]["value"], (
-            'Expected response.result.value to contain token id "{}" in response: "{}"'.format(
-                token_serial_2, response.json
-            )
+            f'Expected response.result.value to contain token id "{token_serial_2}" in response: "{response.json}"'
         )
 
     def test_set_empty(self):

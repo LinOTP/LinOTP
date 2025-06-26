@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -355,8 +354,7 @@ class U2FTokenClass(TokenClass):
             error_text = error_codes.get(error_code, "")
             error_msg = client_response.get("errorMessage", "")
             raise Exception(
-                "U2F client error code: %s (%d): %s"
-                % (error_text, error_code, error_msg)
+                f"U2F client error code: {error_text} ({error_code}): {error_msg}"
             )
 
     def _checkClientData(self, clientData, clientDataType, challenge):
@@ -641,10 +639,7 @@ class U2FTokenClass(TokenClass):
                 pass
 
         if len(challenges) == 0:
-            err = "No open transaction found for token %s and transactionid %s" % (
-                serial,
-                transid,
-            )
+            err = f"No open transaction found for token {serial} and transactionid {transid}"
             raise Exception(err)
 
         # decode the retrieved passw object

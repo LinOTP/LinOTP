@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -31,10 +30,10 @@
 import json
 import logging
 import os
-from typing import Callable
+from collections.abc import Callable
+from unittest.mock import patch
 
 from flask.testing import FlaskClient
-from mock import patch
 
 from linotp.model.imported_user import ImportedUser
 from linotp.tests import TestController
@@ -489,7 +488,7 @@ scope = authentication
 
         file_name = os.path.join(self.fixture_path, policy_file)
 
-        with open(file_name, "r") as f:
+        with open(file_name) as f:
             policy_content = f.read()
 
         upload_files = [("file", policy_file, policy_content)]
@@ -664,7 +663,7 @@ scope = gettoken
         """
         demo_license_file = os.path.join(self.fixture_path, license_filename)
 
-        with open(demo_license_file, "r") as license_file:
+        with open(demo_license_file) as license_file:
             demo_license = license_file.read()
         form_files = [("license", "demo-lic.pem", demo_license)]
 
@@ -683,7 +682,7 @@ scope = gettoken
         """
         demo_license_file = os.path.join(self.fixture_path, license_filename)
 
-        with open(demo_license_file, "r") as license_file:
+        with open(demo_license_file) as license_file:
             demo_license = license_file.read()
         params = {"license": demo_license}
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -75,7 +74,7 @@ class LinotpAppConfig:
         self.configLock.acquire_write()
         try:
             if not isinstance(config, dict):
-                raise Exception("cannot set global config from object %r" % config)
+                raise Exception(f"cannot set global config from object {config!r}")
 
             conf = copy.deepcopy(config)
             if replace is True:
@@ -116,7 +115,7 @@ class LinotpAppConfig:
         self.configLock.acquire_write()
 
         try:
-            if isinstance(conf, (list, dict)):
+            if isinstance(conf, list | dict):
                 for k in conf:
                     self.config.pop(k, None)
             elif isinstance(conf, str):

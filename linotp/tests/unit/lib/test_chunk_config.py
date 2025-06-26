@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -29,9 +28,9 @@ Tests the chunked data handling in the config
 """
 
 import unittest
+from unittest.mock import patch
 
 import pytest
-from mock import patch
 
 from linotp.lib.config.db_api import (
     _retrieveConfigDB,
@@ -156,7 +155,7 @@ def storeConfigEntryDB(key, val, typ=None, desc=None):
     TestConfigEntries[key] = {"type": typ, "value": val, "desc": desc}
 
 
-class ContEntries(object):
+class ContEntries:
     """
     mock class for db config entries
     """
@@ -220,7 +219,7 @@ class TestChunkConfigCase(unittest.TestCase):
         # check that all entries have the extended key format
 
         for i in range(int(from_) + 1, int(to_) + 1):
-            entry_key = "%s__[%d:%d]" % (key_name, i, int(to_))
+            entry_key = f"{key_name}__[{i}:{int(to_)}]"
             assert entry_key in TestConfigEntries
 
             value += TestConfigEntries[entry_key]["value"]
@@ -230,7 +229,7 @@ class TestChunkConfigCase(unittest.TestCase):
         # finally we check if the original type and description is in the
         # last entry
 
-        entry_key = "%s__[%d:%d]" % (key_name, int(to_), int(to_))
+        entry_key = f"{key_name}__[{int(to_)}:{int(to_)}]"
         entry_type = TestConfigEntries[entry_key]["type"]
         entry_desc = TestConfigEntries[entry_key]["desc"]
 
@@ -387,12 +386,7 @@ class TestConfigStoreCase(unittest.TestCase):
 
         for key in list(conf.keys()):
             assert conf[key] == getattr(stored_conf, key), (
-                "Key should match key:%s - expected %r, recevied %r"
-                % (
-                    key,
-                    conf[key],
-                    getattr(stored_conf, key),
-                )
+                f"Key should match key:{key} - expected {conf[key]!r}, recevied {getattr(stored_conf, key)!r}"
             )
 
     def test_updateExisting(self):

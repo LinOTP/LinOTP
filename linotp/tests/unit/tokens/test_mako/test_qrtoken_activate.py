@@ -43,7 +43,7 @@ def mocked_translate(input_data=None):
 
 
 class TestActivationMako(unittest.TestCase):
-    class MyContext(object):
+    class MyContext:
         scope = "selfservice.activate"
         user = "me"
         realm = "home"

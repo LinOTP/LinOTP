@@ -100,7 +100,7 @@ def b2a_hex(s):
     return _b2a_hex(s).decode("us-ascii")
 
 
-class PBKDF2(object):
+class PBKDF2:
     """PBKDF2.py : PKCS#5 v2.0 Password-Based Key Derivation
 
     This implementation takes a passphrase and a salt (and optionally an
@@ -249,7 +249,7 @@ def crypt(word, salt=None, iterations=None):
             iterations = 400
         else:
             converted = int(iterations, 16)
-            if iterations != "%x" % converted:  # lowercase hex, minimum digits
+            if iterations != f"{converted:x}":  # lowercase hex, minimum digits
                 raise ValueError("Invalid salt")
             iterations = converted
             if not (iterations >= 1):
@@ -259,13 +259,13 @@ def crypt(word, salt=None, iterations=None):
     allowed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789./"
     for ch in salt:
         if ch not in allowed:
-            raise ValueError("Illegal character %r in salt" % (ch,))
+            raise ValueError(f"Illegal character {ch!r} in salt")
 
     if iterations is None:
         iterations = 400
         salt = "$p5k2$$" + salt
     else:
-        salt = "$p5k2$%x$%s" % (iterations, salt)
+        salt = f"$p5k2${iterations:x}${salt}"
     rawhash = PBKDF2(word, salt, iterations).read(24)
     return salt + "$" + b64encode(rawhash, "./")
 

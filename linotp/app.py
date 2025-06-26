@@ -29,7 +29,6 @@ import time
 from datetime import datetime
 from logging.config import dictConfig as logging_dictConfig
 from pathlib import Path
-from typing import List, Optional
 from uuid import uuid4
 
 from beaker.cache import CacheManager
@@ -291,14 +290,14 @@ class LinOTPApp(Flask):
     """Beaker cache for this app"""
     cache = None
 
-    available_languages: List[str] = []
+    available_languages: list[str] = []
 
     def __init__(self):
         self.cli_cmd = os.environ.get("LINOTP_CMD", "")
         self.config_class = ExtFlaskConfig  # our special `Config` class
         self.audit_obj = None  # No audit logging so far
-        self.security_provider: Optional[SecurityProvider] = None
-        self.enabled_controllers: List[str] = []
+        self.security_provider: SecurityProvider | None = None
+        self.enabled_controllers: list[str] = []
         """Currently activated controller names"""
 
         # ------------------------------------------------------------------ --
@@ -306,7 +305,7 @@ class LinOTPApp(Flask):
         # we create an app-wide shared linotp config object whose main purpose is
         # to synchronize the access to changes within multiple threads
 
-        self.linotp_app_config: Optional[LinotpAppConfig] = None
+        self.linotp_app_config: LinotpAppConfig | None = None
 
         # ------------------------------------------------------------------ --
 
@@ -337,7 +336,7 @@ class LinOTPApp(Flask):
             try:
                 with open(filename) as f:
                     license_str = f.read()
-            except IOError:
+            except OSError:
                 log.error("could not open licence file: %s", filename)
 
             if not license_str:
@@ -563,7 +562,7 @@ class LinOTPApp(Flask):
         # public / private key pair
 
         partition = 0
-        if "SecretKey.Partition.%d" % partition not in linotp_config:
+        if f"SecretKey.Partition.{partition}" not in linotp_config:
             init_key_partition(linotp_config, partition=partition)
 
     def getRadiusDictionaryPath(self):
@@ -690,9 +689,7 @@ class LinOTPApp(Flask):
         :param ctrl_class_name: Name of controller class to load. Defaults to CtrlNameController
         """
         if not ctrl_name:
-            raise ConfigurationError(
-                "no controller module specified: {}".format(ctrl_name)
-            )
+            raise ConfigurationError(f"no controller module specified: {ctrl_name}")
         if not ctrl_class_name:
             # "foobar" => "FoobarController"
             ctrl_class_name = ctrl_name.title() + "Controller"
@@ -701,15 +698,13 @@ class LinOTPApp(Flask):
         cls = getattr(mod, ctrl_class_name, None)
         if cls is None:
             raise ConfigurationError(
-                "{} does not define the '{}' class".format(ctrl_name, ctrl_class_name)
+                f"{ctrl_name} does not define the '{ctrl_class_name}' class"
             )
 
         if not url_prefix:
             url_prefix = cls.default_url_prefix or "/" + ctrl_name
 
-        self.logger.debug(
-            "Registering {0} class at {1}".format(ctrl_class_name, url_prefix)
-        )
+        self.logger.debug(f"Registering {ctrl_class_name} class at {url_prefix}")
         self.register_blueprint(cls(ctrl_name), url_prefix=url_prefix)
 
         self.enabled_controllers.append(ctrl_name)
@@ -851,9 +846,7 @@ def init_security_provider():
         current_app.security_provider = security_provider
 
     except Exception as exx:
-        current_app.logger.error(
-            "Failed to load security provider definition: {}".format(exx)
-        )
+        current_app.logger.error(f"Failed to load security provider definition: {exx}")
         raise exx
 
 
@@ -1088,7 +1081,7 @@ def create_app(config_name=None, config_extra=None):
     init_logging(app)
 
     if app.cli_cmd in START_LINOTP_COMMANDS:
-        app.logger.info("LinOTP {} starting ...".format(__version__))
+        app.logger.info(f"LinOTP {__version__} starting ...")
 
     # Initialize components (that need app_context)
     with app.app_context():

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,7 +26,7 @@
 """The Controller's Base class"""
 
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from functools import wraps
 from inspect import getfullargspec
 from types import FunctionType
@@ -80,7 +79,7 @@ class ControllerMetaClass(type):
         a hassle to prefix all of their names with `_`.
         """
 
-        cls = super(ControllerMetaClass, meta).__new__(meta, name, bases, dct)
+        cls = super().__new__(meta, name, bases, dct)
 
         if name == "BaseController":
             cls._url_methods = set()
@@ -124,7 +123,7 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
     jwt_exempt = False
 
     def __init__(self, name, install_name="", **kwargs):
-        super(BaseController, self).__init__(name, __name__, **kwargs)
+        super().__init__(name, __name__, **kwargs)
 
         self.jwt_exempt_methods = set()
 
@@ -345,7 +344,7 @@ def jwt_refresh(response):
         return response
     try:
         exp_timestamp = get_jwt()["exp"]
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         target_timestamp = datetime.timestamp(now + timedelta(seconds=delta))
         if target_timestamp > exp_timestamp:
             log.debug("jwt_refresh: refreshing access token")
@@ -357,7 +356,7 @@ def jwt_refresh(response):
         return response
 
 
-class JWTMixin(object):
+class JWTMixin:
     """
     Provides `login` and `logout` methods that generate or dispose of
     JWT access tokens (and double-submit tokens for CSRF protection).

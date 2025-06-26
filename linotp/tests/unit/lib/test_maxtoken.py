@@ -1,8 +1,8 @@
 import unittest
 from collections import namedtuple
+from unittest.mock import patch
 
 import pytest
-from mock import patch
 
 from linotp.lib.policy import PolicyException
 from linotp.lib.policy.maxtoken import (
@@ -37,7 +37,7 @@ def fake_get_client_policy(client, scope, action, realm, user, userObj):
         return fake_policies
 
     raise Exception(
-        "fake_get_client_policy has no fake return value for realm %s" % realm
+        f"fake_get_client_policy has no fake return value for realm {realm}"
     )
 
 

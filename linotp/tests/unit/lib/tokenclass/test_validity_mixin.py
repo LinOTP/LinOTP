@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -36,7 +35,7 @@ from freezegun import freeze_time
 from linotp.tokens.base.validity_mixin import TokenValidityMixin
 
 
-class FakeTokenInfoMixin(object):
+class FakeTokenInfoMixin:
     def __init__(self):
         self.info = {}
 

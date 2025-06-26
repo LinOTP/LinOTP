@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -29,7 +28,6 @@ import os
 import re
 import time
 from contextlib import contextmanager
-from typing import Optional, Union
 from unittest.case import SkipTest
 
 import pytest
@@ -71,10 +69,10 @@ def is_flaky_exception(err, *args):
     return False
 
 
-class TestCase(object):
+class TestCase:
     """Basic LinOTP TestCase class"""
 
-    driver: Union[webdriver.Chrome, webdriver.Firefox] = None
+    driver: webdriver.Chrome | webdriver.Firefox = None
     "Selenium driver"
 
     http_username: str
@@ -93,7 +91,7 @@ class TestCase(object):
     backend_wait_time = 10
 
     _linotp_version = None  # LinOTP server version
-    _manage: Optional[ManageUi] = None  # Manage UI
+    _manage: ManageUi | None = None  # Manage UI
 
     @classmethod
     def setup_class(cls):
@@ -263,7 +261,7 @@ class TestCase(object):
         try:
             elements = WebDriverWait(self.driver, 0).until(
                 EC.visibility_of_all_elements_located(
-                    (By.XPATH, 'id("%s")//%s' % (parent_id, element_type))
+                    (By.XPATH, f'id("{parent_id}")//{element_type}')
                 )
             )
         except TimeoutException:
@@ -351,12 +349,7 @@ class TestCase(object):
 
         if parse_version(filtered_version_string) < parse_version(version_minimum):
             raise SkipTest(
-                "LinOTP version %s (%s) <  %s"
-                % (
-                    filtered_version_string,
-                    self.linotp_version,
-                    version_minimum,
-                )
+                f"LinOTP version {filtered_version_string} ({self.linotp_version}) <  {version_minimum}"
             )
 
     def reset_resolvers_and_realms(self, resolver=None, realm=None):

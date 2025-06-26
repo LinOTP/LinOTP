@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2021 KeyIdentity GmbH
@@ -141,9 +140,9 @@ class DummySMPPServer:
 
         try:
             pdu_bytes = sock.recv(4)
-        except socket.timeout:
+        except TimeoutError:
             raise
-        except socket.error as exx:
+        except OSError as exx:
             self.logger.warning(exx)
             raise exceptions.ConnectionError() from exx
         if not pdu_bytes:
@@ -159,9 +158,9 @@ class DummySMPPServer:
         while len(pdu_bytes) < length:
             try:
                 more_bytes = sock.recv(length - len(pdu_bytes))
-            except socket.timeout:
+            except TimeoutError:
                 raise
-            except socket.error as exx:
+            except OSError as exx:
                 self.logger.warning(exx)
                 raise exceptions.ConnectionError() from exx
             if not pdu_bytes:

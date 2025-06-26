@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -106,12 +105,12 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
     def pair(self, response_data):
         raise NotImplementedError(
-            "token type %s doesn't support pairing " % self.getType()
+            f"token type {self.getType()} doesn't support pairing "
         )
 
     def unpair(self):
         raise NotImplementedError(
-            "token type %s doesn't support unpairing " % self.getType()
+            f"token type {self.getType()} doesn't support unpairing "
         )
 
     def is_auth_only_token(self, user):
@@ -857,7 +856,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         if genkey not in [0, 1]:
             raise Exception(
-                "TokenClass supports only genkey in range [0,1] : %r" % genkey
+                f"TokenClass supports only genkey in range [0,1] : {genkey!r}"
             )
 
         if genkey == 1 and otpKey is not None:
@@ -1254,7 +1253,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         except Exception as exx:
             log.error("Token Counter update failed: %r", exx)
             raise TokenAdminError(
-                "Token Counter update failed: %r" % (exx), id=1106
+                f"Token Counter update failed: {exx!r}", id=1106
             ) from exx
 
         return self.token.LinOtpCount
@@ -1343,10 +1342,10 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         """
         ldict = {}
         for attr in self.__dict__:
-            key = "%r" % attr
-            val = "%r" % getattr(self, attr)
+            key = f"{attr!r}"
+            val = f"{getattr(self, attr)!r}"
             ldict[key] = val
-        res = "<%r %r>" % (self.__class__, ldict)
+        res = f"<{self.__class__!r} {ldict!r}>"
         return res
 
     def get_vars(self, save=False):
@@ -1360,12 +1359,12 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
             if key == "context":
                 continue
             val = getattr(self, attr)
-            if isinstance(val, (list, dict, str, int, float, bool)):
+            if isinstance(val, list | dict | str | int | float | bool):
                 ldict[key] = val
             elif type(val).__name__.startswith("Token"):
                 ldict[key] = val.get_vars(save=save)
             else:
-                ldict[key] = "%r" % val
+                ldict[key] = f"{val!r}"
         return ldict
 
     def get_enrollment_status(self):
@@ -1397,7 +1396,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
             response_detail["otpkey"] = {
                 "order": "1",
                 "description": _("OTP seed"),
-                "value": "seed://%s" % otpkey,
+                "value": f"seed://{otpkey}",
                 "img": create_img(otpkey, width=200),
             }
 

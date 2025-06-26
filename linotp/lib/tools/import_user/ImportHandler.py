@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -30,7 +29,7 @@ Interface for import handling
 """
 
 
-class ImportHandler(object):
+class ImportHandler:
     """
     interface for ImportHandler - example implemetation is the SQLImportHandler
     """
@@ -82,5 +81,5 @@ class ImportHandler(object):
 
     # inner class to process the orm user object
 
-    class User(object):
+    class User:
         pass

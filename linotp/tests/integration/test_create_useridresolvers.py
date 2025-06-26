@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -89,11 +88,7 @@ class TestCreateUserIdResolvers:
 
         user_view = self.testcase.manage_ui.user_view
         assert total_expected_users == user_view.get_num_users(realm_name), (
-            "Expected %i users, got %i"
-            % (
-                total_expected_users,
-                user_view.get_num_users(realm_name),
-            )
+            f"Expected {total_expected_users} users, got {user_view.get_num_users(realm_name)}"
         )
 
     def create_resolver(self, testdata):

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,7 +26,6 @@
 """static policy definitions"""
 
 import logging
-from typing import Dict
 
 from linotp.lib.context import request_context
 from linotp.lib.policy.util import parse_action
@@ -489,7 +487,7 @@ POLICY_DEFINTIONS = {
 }
 
 
-def get_policy_definitions(scope: str | None = None) -> Dict:
+def get_policy_definitions(scope: str | None = None) -> dict:
     """cache the policy definitions access in the local request context.
 
     as the evaluation of the policy definition is resource intensive we cache
@@ -535,9 +533,9 @@ def _get_policy_definitions():
     token_type_list = linotp.lib.token.get_token_type_list()
 
     for ttype in token_type_list:
-        pol["enrollment"]["maxtoken%s" % ttype.upper()] = {"type": "int"}
+        pol["enrollment"][f"maxtoken{ttype.upper()}"] = {"type": "int"}
 
-        pol["admin"]["init%s" % ttype.upper()] = {"type": "bool"}
+        pol["admin"][f"init{ttype.upper()}"] = {"type": "bool"}
 
         # ----------------------------------------------------------------- --
 
@@ -550,9 +548,9 @@ def _get_policy_definitions():
 
         conf = linotp.lib.token.getTokenConfig(ttype, section="selfservice")
         if conf and "enroll" in conf:
-            pol["selfservice"]["enroll%s" % ttype.upper()] = {
+            pol["selfservice"][f"enroll{ttype.upper()}"] = {
                 "type": "bool",
-                "desc": "The user is allowed to enroll a %s token." % ttype,
+                "desc": f"The user is allowed to enroll a {ttype} token.",
             }
 
         # ----------------------------------------------------------------- --
@@ -631,8 +629,9 @@ def validate_policy_definition(policy):
         # validation for this
         if action in actions_to_skip.get(scope, {}):
             log.info(
-                "action validation skipped for policy: %r action: %r"
-                % (policy["name"], action)
+                "action validation skipped for policy: {!r} action: {!r}".format(
+                    policy["name"], action
+                )
             )
             continue
 
@@ -644,12 +643,14 @@ def validate_policy_definition(policy):
         # .1. definition lookup
         if not definition:
             log.error(
-                "policy: %r uses action %r which is not defined in the policy"
-                " definitions!" % (policy["name"], action)
+                "policy: {!r} uses action {!r} which is not defined in the policy"
+                " definitions!".format(policy["name"], action)
             )
 
             raise ValueError(
-                "unsupported policy action %r in policy %r " % (action, policy["name"])
+                "unsupported policy action {!r} in policy {!r} ".format(
+                    action, policy["name"]
+                )
             )
 
         # .2. type conversion
@@ -660,8 +661,9 @@ def validate_policy_definition(policy):
                 value = convert_policy_value(value, definition["type"])
             except ValueError as exx:
                 raise Exception(
-                    "Action value %r for %s.%s not of the expected type %r"
-                    % (value, scope, action, definition["type"])
+                    "Action value {!r} for {}.{} not of the expected type {!r}".format(
+                        value, scope, action, definition["type"]
+                    )
                 ) from exx
 
         # .3. a "value" comparison:
@@ -670,8 +672,9 @@ def validate_policy_definition(policy):
         if "value" in definition:
             if value not in definition["value"]:
                 raise Exception(
-                    "Action value %r for %s.%s not in supported values %r"
-                    % (value, scope, action, definition["value"])
+                    "Action value {!r} for {}.{} not in supported values {!r}".format(
+                        value, scope, action, definition["value"]
+                    )
                 )
 
         # .3. b "range" comparison
@@ -686,8 +689,9 @@ def validate_policy_definition(policy):
 
             if len(value - set(definition["range"])) != 0:
                 raise Exception(
-                    "Action value %r for %s.%s not in supported range %r"
-                    % (value, scope, action, definition["range"])
+                    "Action value {!r} for {}.{} not in supported range {!r}".format(
+                        value, scope, action, definition["range"]
+                    )
                 )
 
     return
@@ -724,8 +728,8 @@ def convert_policy_value(value, value_type):
             except ValueError:
                 pass
         # if we end up here, none of the proposed types could be applied
-        log.error("unable to convert value %r to %r" % (value, val_type))
-        raise ValueError("unable to convert %r to %r" % (value, val_type))
+        log.error(f"unable to convert value {value!r} to {val_type!r}")
+        raise ValueError(f"unable to convert {value!r} to {val_type!r}")
 
     elif value_type == "set":
         # there is no easy way to deal with a set currently as a set defines

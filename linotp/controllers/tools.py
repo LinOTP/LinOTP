@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -152,7 +151,7 @@ class ToolsController(BaseController):
 
             return sendResult(
                 obj=True,
-                opt={"detail": ("password updated for %r" % username)},
+                opt={"detail": (f"password updated for {username!r}")},
             )
 
         except Exception as exx:
@@ -240,7 +239,7 @@ class ToolsController(BaseController):
 
             except KeyError as exx:
                 log.error("Missing parameter: %r", exx)
-                raise ParameterError("Missing parameter: %r" % exx) from exx
+                raise ParameterError(f"Missing parameter: {exx!r}") from exx
 
             if resolver_name == current_app.config["ADMIN_RESOLVER_NAME"]:
                 raise DeleteForbiddenError(
@@ -332,8 +331,8 @@ class ToolsController(BaseController):
             if resolver_name in resolvers:
                 if not resolvers[resolver_name].get("readonly", False):
                     raise Exception(
-                        "Unmanged resolver with same name: %r"
-                        " already exists!" % resolver_name
+                        f"Unmanged resolver with same name: {resolver_name!r}"
+                        " already exists!"
                     )
             # -------------------------------------------------------------- --
 
@@ -386,7 +385,7 @@ class ToolsController(BaseController):
 
             db.session.rollback()
 
-            return sendError("%r" % pexx, 1)
+            return sendError(f"{pexx!r}", 1)
 
         except Exception as exx:
             log.error("Error during user import: %r", exx)

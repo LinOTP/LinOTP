@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,7 +26,7 @@
 import binascii
 import logging
 from datetime import datetime
-from typing import Any, Optional, Tuple, Union
+from typing import Any
 
 from linotp.lib.type_utils import DEFAULT_TIMEFORMAT
 from linotp.model import db
@@ -110,7 +109,7 @@ class Token(TokenSchema):
         self.LinOtpKeyEnc = binascii.hexlify(encrypted_seed).decode("utf-8")
         self.LinOtpKeyIV = binascii.hexlify(iv).decode("utf-8")
 
-    def get_encrypted_seed(self) -> Tuple[bytes, bytes]:
+    def get_encrypted_seed(self) -> tuple[bytes, bytes]:
         key = binascii.unhexlify(self.LinOtpKeyEnc or "")
         iv = binascii.unhexlify(self.LinOtpKeyIV or "")
         return key, iv
@@ -119,7 +118,7 @@ class Token(TokenSchema):
         self.LinOtpTokenPinUser = binascii.hexlify(enc_userPin).decode("utf-8")
         self.LinOtpTokenPinUserIV = binascii.hexlify(iv).decode("utf-8")
 
-    def getUserPin(self) -> Tuple[bytes, bytes]:
+    def getUserPin(self) -> tuple[bytes, bytes]:
         pu = self._fix_spaces(self.LinOtpTokenPinUser or "")
         puiv = self._fix_spaces(self.LinOtpTokenPinUserIV or "")
         key = binascii.unhexlify(pu)
@@ -133,7 +132,7 @@ class Token(TokenSchema):
         self.LinOtpSeed = binascii.hexlify(iv).decode("utf-8")
         self.LinOtpPinHash = binascii.hexlify(pin).decode("utf-8")
 
-    def get_hashed_pin(self) -> Tuple[bytes, bytes]:
+    def get_hashed_pin(self) -> tuple[bytes, bytes]:
         iv = binascii.unhexlify(self.LinOtpSeed)
         pin = binascii.unhexlify(self.LinOtpPinHash)
         return iv, pin
@@ -148,7 +147,7 @@ class Token(TokenSchema):
         self.LinOtpPinHash = binascii.hexlify(pin).decode("utf-8")
         self.LinOtpPinHash = "@@" + self.LinOtpPinHash
 
-    def get_encrypted_pin(self) -> Tuple[bytes, bytes]:
+    def get_encrypted_pin(self) -> tuple[bytes, bytes]:
         iv = binascii.unhexlify(self.LinOtpSeed)
         pin = binascii.unhexlify(self.LinOtpPinHash[2:])
         return iv, pin
@@ -162,7 +161,7 @@ class Token(TokenSchema):
     def getDescription(self) -> str:
         return self.LinOtpTokenDesc
 
-    def setOtpLen(self, otplen: Union[str, int]) -> None:
+    def setOtpLen(self, otplen: str | int) -> None:
         self.LinOtpOtpLen = int(otplen)
 
     def deleteToken(self) -> bool:
@@ -179,7 +178,7 @@ class Token(TokenSchema):
         db.session.delete(self)
         return True
 
-    def isPinEncrypted(self, pin: Optional[str] = None) -> bool:
+    def isPinEncrypted(self, pin: str | None = None) -> bool:
         ret = False
         if pin is None:
             pin = self.LinOtpPinHash
@@ -286,10 +285,10 @@ class Token(TokenSchema):
         """
         ldict = {}
         for attr in self.__dict__:
-            key = "%r" % attr
-            val = "%r" % getattr(self, attr)
+            key = f"{attr!r}"
+            val = f"{getattr(self, attr)!r}"
             ldict[key] = val
-        res = "<%r %r>" % (self.__class__, ldict)
+        res = f"<{self.__class__!r} {ldict!r}>"
         return res
 
     def getSyncWindow(self) -> int:

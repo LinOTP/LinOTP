@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -86,7 +85,7 @@ def parse_duration(duration_str, time_delta_compliant=False):
         parts = duration_regex.match(duration_str.lower())
 
     if not parts:
-        raise DurationParsingException("must be of type 'duration': %r" % duration_str)
+        raise DurationParsingException(f"must be of type 'duration': {duration_str!r}")
 
     parts = parts.groupdict()
 
@@ -95,7 +94,7 @@ def parse_duration(duration_str, time_delta_compliant=False):
             # iso8601 defines month, weeks and years, while the python
             # timedelta does not support it for good reasons
             raise DurationParsingException(
-                "definition %s is not python timedelta supported!" % duration_str
+                f"definition {duration_str} is not python timedelta supported!"
             )
 
     time_params = {
@@ -138,7 +137,7 @@ def get_duration(value):
         if res:
             return int(res.total_seconds())
 
-    raise ValueError("not of type 'duration': %s" % value)
+    raise ValueError(f"not of type 'duration': {value}")
 
 
 def is_integer(value):
@@ -187,7 +186,7 @@ def get_timeout(timeout, seperator=","):
     if isinstance(timeout, tuple):
         return timeout
 
-    if isinstance(timeout, (float, int)):
+    if isinstance(timeout, float | int):
         return timeout
 
     if not isinstance(timeout, str):
@@ -198,7 +197,7 @@ def get_timeout(timeout, seperator=","):
             return float(timeout)
 
     except ValueError as exx:
-        raise ValueError("Failed to convert timeout %r values!" % timeout) from exx
+        raise ValueError(f"Failed to convert timeout {timeout!r} values!") from exx
 
     try:
         timeouts = tuple(
@@ -206,7 +205,7 @@ def get_timeout(timeout, seperator=","):
         )
 
     except ValueError as exx:
-        raise ValueError("Failed to convert timeout %r values!" % timeout) from exx
+        raise ValueError(f"Failed to convert timeout {timeout!r} values!") from exx
 
     if len(timeouts) == 1:
         return timeouts[0]
@@ -228,7 +227,7 @@ def boolean(value):
         value = value.lower()
 
     if value not in true_def and value not in false_def:
-        raise ValueError("unable to convert %r to a boolean" % value)
+        raise ValueError(f"unable to convert {value!r} to a boolean")
 
     return value in true_def
 
@@ -412,7 +411,7 @@ def parse_timeout(timeout_val, seperator=","):
         else:
             return float(timeout_val)
 
-    if isinstance(timeout_val, (float, int)):
+    if isinstance(timeout_val, float | int):
         return timeout_val
 
     raise ValueError("unsupported timeout format")
@@ -433,6 +432,6 @@ def convert_to_datetime(date_str, time_formats):
             date_obj = datetime.strptime(date_str, time_format_string)
             return date_obj
         except ValueError as exx:
-            err.append("%r" % exx)
+            err.append(f"{exx!r}")
 
-    raise Exception("Failed to convert start time paramter to timestamp %r" % err)
+    raise Exception(f"Failed to convert start time paramter to timestamp {err!r}")

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -44,9 +43,9 @@ specify it with nose-testconfig (e.g. --tc=paster.port:5005).
 
 import json
 import urllib.parse
+from unittest.mock import patch
 
 import httplib2
-from mock import patch
 
 from linotp.tests.functional.challenge_response.testing_controller import (
     TestingChallengeResponseController,
@@ -95,7 +94,7 @@ class TestRemoteToken2(TestingChallengeResponseController):
         and we loose the information how many tokens are within a realm!
         """
         TestingChallengeResponseController.setUp(self)
-        self.remote_url = "http://127.0.0.1:%s" % self.paster_port
+        self.remote_url = f"http://127.0.0.1:{self.paster_port}"
 
         # Init the tests....
         self.delete_all_policies()
@@ -128,7 +127,7 @@ class TestRemoteToken2(TestingChallengeResponseController):
 
         response = self.make_system_request("setPolicy", params=params)
 
-        stat = response.json["result"]["value"]["setPolicy %s" % p_name]
+        stat = response.json["result"]["value"][f"setPolicy {p_name}"]
         assert len(stat) > 0, response
         for val in list(stat.values()):
             assert val, response
@@ -148,7 +147,7 @@ class TestRemoteToken2(TestingChallengeResponseController):
 
         response = self.make_system_request("setPolicy", params=params)
 
-        stat = response.json["result"]["value"]["setPolicy %s" % p_name]
+        stat = response.json["result"]["value"][f"setPolicy {p_name}"]
         assert len(stat) > 0, response
         for val in list(stat.values()):
             assert val, response
@@ -170,7 +169,7 @@ class TestRemoteToken2(TestingChallengeResponseController):
 
         response = self.make_system_request("setPolicy", params=params)
 
-        stat = response.json["result"]["value"]["setPolicy %s" % p_name]
+        stat = response.json["result"]["value"][f"setPolicy {p_name}"]
         assert len(stat) > 0, response
         for val in list(stat.values()):
             assert val, response
@@ -192,7 +191,7 @@ class TestRemoteToken2(TestingChallengeResponseController):
 
         response = self.make_system_request("setPolicy", params=params)
 
-        stat = response.json["result"]["value"]["setPolicy %s" % p_name]
+        stat = response.json["result"]["value"][f"setPolicy {p_name}"]
         assert len(stat) > 0, response
         for val in list(stat.values()):
             assert val, response
@@ -207,7 +206,7 @@ class TestRemoteToken2(TestingChallengeResponseController):
         :return: the serial number of the remote token
         """
 
-        serial = "LSRE%s" % target_serial
+        serial = f"LSRE{target_serial}"
         params = {
             "serial": serial,
             "type": "remote",
@@ -220,7 +219,7 @@ class TestRemoteToken2(TestingChallengeResponseController):
         }
 
         response = self.make_admin_request("init", params=params)
-        assert response.json["result"]["value"], "Response: %r" % response
+        assert response.json["result"]["value"], f"Response: {response!r}"
 
         return serial
 
@@ -260,7 +259,7 @@ class TestRemoteToken2(TestingChallengeResponseController):
         ]
 
         # local yubikey token
-        serial = "UBAM%s_%s" % (serialnum, yubi_slot)
+        serial = f"UBAM{serialnum}_{yubi_slot}"
 
         params = {
             "type": "yubikey",
@@ -276,7 +275,7 @@ class TestRemoteToken2(TestingChallengeResponseController):
             params["public_uid"] = public_uid
 
         response = self.make_admin_request("init", params=params)
-        assert response.json["result"]["value"], "Response: %r" % response
+        assert response.json["result"]["value"], f"Response: {response!r}"
 
         return serial
 
@@ -284,11 +283,11 @@ class TestRemoteToken2(TestingChallengeResponseController):
         # define new realms: nopin and withpin
         resolvers = self.resolvers["myDefRes"]
         response = self.create_realm("nopin", resolvers)
-        assert response.json["result"]["value"], "Response: %r" % response
+        assert response.json["result"]["value"], f"Response: {response!r}"
 
         resolvers = self.resolvers["myDefRes"]
         response = self.create_realm("withpin", resolvers)
-        assert response.json["result"]["value"], "Response: %r" % response
+        assert response.json["result"]["value"], f"Response: {response!r}"
 
     def create_tokens(self):
         """
@@ -339,7 +338,7 @@ class TestRemoteToken2(TestingChallengeResponseController):
         return (y_serial, r_serial)
 
     def create_local_tokens(self, serial):
-        serial = "LSP%s" % serial
+        serial = f"LSP{serial}"
 
         # local token
         param_local_1 = {
@@ -478,7 +477,7 @@ class TestRemoteToken2(TestingChallengeResponseController):
         assert response.json["result"]["value"]["set pin"] == 1, response
 
         otp = self.yubi_valid_otps[5]
-        passw = "local%s" % otp
+        passw = f"local{otp}"
 
         def check_func1(params):
             resp = 200
@@ -529,7 +528,7 @@ class TestRemoteToken2(TestingChallengeResponseController):
         assert response.json["result"]["value"], response
 
         otp = self.yubi_valid_otps[1]
-        passw = "geheim1%s" % otp
+        passw = f"geheim1{otp}"
 
         def check_func1(params):
             resp = 200
@@ -561,7 +560,7 @@ class TestRemoteToken2(TestingChallengeResponseController):
         (y_serial, r_serial) = self.create_tokens()
 
         # check otps on yubikey
-        passw = "geheim1%s" % self.yubi_valid_otps[8]
+        passw = f"geheim1{self.yubi_valid_otps[8]}"
 
         params = {"user": "passthru_user1@nopin", "pass": passw}
         response = self.make_validate_request(action="check", params=params)
@@ -578,7 +577,7 @@ class TestRemoteToken2(TestingChallengeResponseController):
 
         # check otps on remote
         otp = self.yubi_valid_otps[9]
-        passw = "geheim1%s" % otp
+        passw = f"geheim1{otp}"
 
         def check_func1(params):
             resp = 200
@@ -622,7 +621,7 @@ class TestRemoteToken2(TestingChallengeResponseController):
 
         # check otps on remote
         otp = self.yubi_valid_otps[10]
-        passw = "geheim1%s" % otp
+        passw = f"geheim1{otp}"
 
         params = {"user": "passthru_user1@withpin", "pass": passw}
         response = self.make_validate_request(action="check", params=params)

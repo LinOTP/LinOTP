@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -85,7 +84,7 @@ def search(adminclient):
     return _search
 
 
-class TestAuditSearch(object):
+class TestAuditSearch:
     def test_audit_json_empty(self, search):
         response = search()
         expected = {"page": 1, "rows": [], "total": 0}

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -278,7 +277,7 @@ class MonitoringController(BaseController):
             except InvalidLicenseException as err:
                 if err.type != "UNLICENSED":
                     raise err
-                opt = {"valid": False, "message": "%r" % err}
+                opt = {"valid": False, "message": f"{err!r}"}
                 return sendResult({}, 1, opt=opt)
 
             # Add Extra info

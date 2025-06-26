@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -46,7 +45,7 @@ VALUE_KEY = 3
 log = logging.getLogger(__name__)
 
 
-class SecurityProvider(object):
+class SecurityProvider:
     """
     the security provider is the singleton in the server who provides
     the security modules to run security relevant methods
@@ -106,7 +105,7 @@ class SecurityProvider(object):
 
         except Exception as exx:
             log.error("[load_config] failed to identify module")
-            error = "failed to identify module: %r " % exx
+            error = f"failed to identify module: {exx!r} "
             raise HSMException(error, id=707) from exx
 
         # now create a pool of hsm objects for each module
@@ -158,8 +157,8 @@ class SecurityProvider(object):
         for method in methods:
             if hasattr(klass, method) is False:
                 error = (
-                    "[loadSecurityModule] Security Module %r misses the "
-                    "following interface: %r" % (module, method)
+                    f"[loadSecurityModule] Security Module {module!r} misses the "
+                    f"following interface: {method!r}"
                 )
                 log.error(error)
                 raise NameError(error)
@@ -198,7 +197,7 @@ class SecurityProvider(object):
         try:
             pool = self._getHsmPool_(hsm_id)
             if pool is None:
-                error = "[setupModule] failed to retieve pool for hsm_id: %r" % hsm_id
+                error = f"[setupModule] failed to retieve pool for hsm_id: {hsm_id!r}"
                 log.error(error)
                 raise HSMException(error, id=707)
 
@@ -208,7 +207,7 @@ class SecurityProvider(object):
 
             self.activeOne = hsm_id
         except Exception as exx:
-            error = "[setupModule] failed to load hsm : %r" % exx
+            error = f"[setupModule] failed to load hsm : {exx!r}"
             log.error(error)
             raise HSMException(error, id=707) from exx
 
@@ -235,7 +234,7 @@ class SecurityProvider(object):
                 provider_ids = []
                 provider_ids.append(hsm_id)
             else:
-                error = "[createHSMPool] failed to find hsm_id: %r" % hsm_id
+                error = f"[createHSMPool] failed to find hsm_id: {hsm_id!r}"
                 log.error(error)
                 raise HSMException(error, id=707)
 
@@ -259,11 +258,11 @@ class SecurityProvider(object):
                     log.error("[createHSMPool] %r %r ", id, exx)
                     if id == self.activeOne:
                         raise exx
-                    error = "%r: %r" % (id, exx)
+                    error = f"{id!r}: {exx!r}"
 
                 except Exception as exx:
                     log.error("[createHSMPool] %r ", exx)
-                    error = "%r: %r" % (id, exx)
+                    error = f"{id!r}: {exx!r}"
 
                 pool.append({"obj": hsm, "session": 0, "error": error})
 
@@ -348,7 +347,7 @@ class SecurityProvider(object):
         if hsm_id not in self.config:
             error = (
                 "[SecurityProvider:dropSecurityModule] no config found "
-                "for hsm with id %r " % hsm_id
+                f"for hsm with id {hsm_id!r} "
             )
             log.error(error)
             raise HSMException(error, id=707)
@@ -391,7 +390,7 @@ class SecurityProvider(object):
         if hsm_id not in self.config:
             error = (
                 "[SecurityProvider:getSecurityModule] no config found for "
-                "hsm with id %r " % hsm_id
+                f"hsm with id {hsm_id!r} "
             )
             log.error(error)
             raise HSMException(error, id=707)
@@ -440,9 +439,9 @@ class SecurityProvider(object):
                         time.sleep(delay)
                         if tries >= self.max_retry:
                             error = (
-                                "[SecurityProvider:getSecurityModule] "
-                                "%d retries: could not bind hsm to "
-                                "session for %d seconds" % (tries, delay)
+                                f"[SecurityProvider:getSecurityModule] "
+                                f"{tries} retries: could not bind hsm to "
+                                f"session for {delay} seconds"
                             )
                             log.error(error)
                             raise Exception(error)

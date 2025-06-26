@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -30,8 +29,7 @@ Tests the chunked data handling in the config
 
 import datetime
 import unittest
-
-from mock import patch
+from unittest.mock import patch
 
 from linotp.lib.token import _calculate_validity_end
 

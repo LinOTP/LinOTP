@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 #
 #    LinOTP - the open source solution for two factor authentication
@@ -30,9 +29,9 @@ import os
 import subprocess
 import unittest
 from copy import deepcopy
+from unittest import mock
 
 import ldap
-import mock
 
 from linotp.useridresolver.LDAPIdResolver import IdResolver as LDAPResolver
 
@@ -190,9 +189,7 @@ class LDAPInProcessTests(LDAPResolverTest):
                 assert mock_ldap_init.call_count == 2, (
                     "ldap.initialize should have been called "
                     "twice (with starttls, without starttls)."
-                    "\nException:{}\nCalls:{}".format(
-                        effect, mock_ldap_init.call_args_list
-                    )
+                    f"\nException:{effect}\nCalls:{mock_ldap_init.call_args_list}"
                 )
 
 
@@ -226,7 +223,7 @@ class LDAPResolverExtTest(LDAPResolverTest):
                     "1389",
                     "./tinyldap-64bit",
                 ],
-                cwd="%s/data" % current_directory,
+                cwd=f"{current_directory}/data",
             )
 
             assert self.proc is not None

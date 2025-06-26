@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -244,7 +243,7 @@ class SystemController(BaseController):
                     "find any known parameter. %s",
                     description,
                 )
-                raise ParameterError("Usage: %s" % description, id=77)
+                raise ParameterError(f"Usage: {description}", id=77)
 
             db.session.commit()
             return sendResult(res)
@@ -300,7 +299,7 @@ class SystemController(BaseController):
                     raise ParameterError("Required parameters: value and key")
 
                 ret = storeConfig(key, val, typ, des)
-                string = "setConfig %s" % key
+                string = f"setConfig {key}"
                 res[string] = ret
 
                 # --------------------------------------------------------- --
@@ -311,7 +310,7 @@ class SystemController(BaseController):
                 # --------------------------------------------------------- --
 
                 g.audit["success"] = True
-                g.audit["info"] = "%s=%s" % (key, val)
+                g.audit["info"] = f"{key}={val}"
 
             else:
                 # we gather all key value pairs in the conf dict
@@ -490,14 +489,14 @@ class SystemController(BaseController):
                 #
 
                 if key.startswith("enclinotp."):
-                    key = "linotp.%s" % key[len("enclinotp.") :]
+                    key = "linotp.{}".format(key[len("enclinotp.") :])
 
                 ret = getFromConfig(key)
                 string = "getConfig " + key
                 res[string] = ret
 
                 g.audit["success"] = ret
-                g.audit["info"] = "config key %s" % key
+                g.audit["info"] = f"config key {key}"
 
             db.session.commit()
             return sendResult(res, 1)
@@ -632,8 +631,8 @@ class SystemController(BaseController):
             #
             if mode in ["create", "rename"] and new_resolver_name in getResolverList():
                 raise Exception(
-                    "Cound not %s resolver, resolver %r already"
-                    " exists!" % (mode, new_resolver_name)
+                    f"Cound not {mode} resolver, resolver {new_resolver_name!r} already"
+                    " exists!"
                 )
 
             #
@@ -792,12 +791,9 @@ class SystemController(BaseController):
 
             if fRealms:
                 g.audit["failed"] = res
-                err = "Resolver %r still in use by the realms: %r" % (
-                    resolver_name,
-                    fRealms,
-                )
+                err = f"Resolver {resolver_name!r} still in use by the realms: {fRealms!r}"
                 g.audit["info"] = err
-                raise Exception("%r !" % err)
+                raise Exception(f"{err!r} !")
 
             is_manged_resolver = getResolverInfo(resolver_name).get("readonly", False)
 
@@ -885,7 +881,7 @@ class SystemController(BaseController):
             defRealm = param.get("realm", "").lower().strip()
             res = setDefaultRealm(defRealm)
             if res is False and defRealm != "":
-                g.audit["info"] = "The realm %s does not exist" % defRealm
+                g.audit["info"] = f"The realm {defRealm} does not exist"
 
             g.audit["success"] = True
             g.audit["info"] = defRealm
@@ -971,7 +967,7 @@ class SystemController(BaseController):
                 if resolver is None:
                     raise Exception(
                         "unknown resolver or invalid resolver "
-                        "class specification: %r" % resolver_spec
+                        f"class specification: {resolver_spec!r}"
                     )
                 valid_resolver_specs.append(resolver_spec)
                 valid_resolver_names.append(resolver_spec.rpartition(".")[-1])
@@ -994,16 +990,15 @@ class SystemController(BaseController):
 
             res = setRealm(realm, valid_resolver_specs_str)
             g.audit["success"] = res
-            g.audit["info"] = "realm: %r, resolvers: %r" % (
-                realm,
-                valid_resolver_specs_str,
+            g.audit["info"] = (
+                f"realm: {realm!r}, resolvers: {valid_resolver_specs_str!r}"
             )
 
             db.session.commit()
             return sendResult(res, 1)
 
         except Exception as exx:
-            err = "Failed to set realm with %r " % param
+            err = f"Failed to set realm with {param!r} "
             log.error("[setRealm] %r %r", err, exx)
             db.session.rollback()
             return sendError(exx)
@@ -1146,7 +1141,7 @@ class SystemController(BaseController):
                     "[setPolicy] failed: policy with empty name or action %r",
                     p_param,
                 )
-                string = "setPolicy <%r>" % name
+                string = f"setPolicy <{name!r}>"
                 res[string] = False
 
                 g.audit["success"] = False
@@ -1259,11 +1254,7 @@ class SystemController(BaseController):
             res = {"page": int(page), "total": lines_total, "rows": lines}
 
             g.audit["success"] = True
-            g.audit["info"] = "name = %s, realm = %s, scope = %s" % (
-                name,
-                realm,
-                scope,
-            )
+            g.audit["info"] = f"name = {name}, realm = {realm}, scope = {scope}"
             db.session.commit()
             return json.dumps(res, indent=3)
 
@@ -1413,7 +1404,7 @@ class SystemController(BaseController):
             # -- ------------------------------------------------------ --
             res = import_policies(policies)
 
-            g.audit["info"] = "Policies imported from file %s" % policy_file
+            g.audit["info"] = f"Policies imported from file {policy_file}"
             g.audit["success"] = 1
 
             db.session.commit()
@@ -1490,12 +1481,12 @@ class SystemController(BaseController):
                     res["allowed"] = len(pol) > 0
                     res["policy"] = pol
                     if len(pol) > 0:
-                        g.audit["info"] = "allowed by policy %s" % list(pol.keys())
+                        g.audit["info"] = f"allowed by policy {list(pol.keys())}"
                 else:
                     # No policy active for this scope
-                    g.audit["info"] = "allowed since no policies in scope %s" % scope
+                    g.audit["info"] = f"allowed since no policies in scope {scope}"
                     res["allowed"] = True
-                    res["policy"] = "No policies in scope %s" % scope
+                    res["policy"] = f"No policies in scope {scope}"
             else:
                 log.debug(
                     "[checkPolicy] checking policy for client %s, "
@@ -1511,12 +1502,10 @@ class SystemController(BaseController):
                 res["allowed"] = len(pol) > 0
                 res["policy"] = pol
                 if len(pol) > 0:
-                    g.audit["info"] = "allowed by policy %s" % list(pol.keys())
+                    g.audit["info"] = f"allowed by policy {list(pol.keys())}"
 
-            g.audit["action_detail"] = "action = %s, realm = %s, scope = %s" % (
-                action,
-                realm,
-                scope,
+            g.audit["action_detail"] = (
+                f"action = {action}, realm = {realm}, scope = {scope}"
             )
             g.audit["success"] = True
 
@@ -1601,11 +1590,7 @@ class SystemController(BaseController):
                 }
 
             g.audit["success"] = True
-            g.audit["info"] = "name = %s, realm = %s, scope = %s" % (
-                name,
-                realm,
-                scope,
-            )
+            g.audit["info"] = f"name = {name}, realm = {realm}, scope = {scope}"
 
             db.session.commit()
 
@@ -1705,10 +1690,10 @@ class SystemController(BaseController):
                 error = c.hsm.get("error")
                 if hsm is None or len(error) != 0:
                     raise Exception(
-                        "current activeSecurityModule >%r< is not"
-                        "initialized::%s:: - Please check your "
+                        f"current activeSecurityModule >{hsm_id!r}< is not"
+                        f"initialized::{error}:: - Please check your "
                         "security module configuration and "
-                        "connection!" % (hsm_id, error)
+                        "connection!"
                     )
 
                 ready = hsm.isReady()
@@ -1720,9 +1705,9 @@ class SystemController(BaseController):
             else:
                 if hsm_id != sep.activeOne:
                     raise Exception(
-                        "current activeSecurityModule >%r< could"
+                        f"current activeSecurityModule >{sep.activeOne!r}< could"
                         " only be changed through the "
-                        "configuration!" % sep.activeOne
+                        "configuration!"
                     )
 
                 ret = sep.setupModule(hsm_id, config=params)
@@ -1949,7 +1934,7 @@ class SystemController(BaseController):
                 _provider_class = params["class"]
                 _timeout = params["timeout"]
             except KeyError as exx:
-                raise ParameterError("missing key %r" % exx) from exx
+                raise ParameterError(f"missing key {exx!r}") from exx
 
             # -------------------------------------------------------------- --
 
@@ -2019,7 +2004,7 @@ class SystemController(BaseController):
             try:
                 provider_type = param["type"]
             except KeyError as exx:
-                raise ParameterError("missing key %r" % exx) from exx
+                raise ParameterError(f"missing key {exx!r}") from exx
 
             # optional parameters
             provider_name = param.get("name")
@@ -2062,7 +2047,7 @@ class SystemController(BaseController):
                 provider_name = self.request_params["name"]
                 provider_type = self.request_params["type"]
             except KeyError as exx:
-                raise ParameterError("missing key %r" % exx) from exx
+                raise ParameterError(f"missing key {exx!r}") from exx
 
             provider = loadProvider(
                 provider_type=provider_type, provider_name=provider_name
@@ -2103,7 +2088,7 @@ class SystemController(BaseController):
                 provider_name = self.request_params["name"]
                 provider_type = self.request_params["type"]
             except KeyError as exx:
-                raise ParameterError("missing key %r" % exx) from exx
+                raise ParameterError(f"missing key {exx!r}") from exx
 
             provider_def = getProvider(provider_type, provider_name)
 
@@ -2156,7 +2141,7 @@ class SystemController(BaseController):
                 provider_name = self.request_params["name"]
                 provider_type = self.request_params["type"]
             except KeyError as exx:
-                raise ParameterError("missing key %r" % exx) from exx
+                raise ParameterError(f"missing key {exx!r}") from exx
 
             res, reply = setDefaultProvider(provider_type, provider_name)
 
@@ -2194,7 +2179,7 @@ class SystemController(BaseController):
                 _provider_name = self.request_params["name"]
                 _provider_type = self.request_params["type"]
             except KeyError as exx:
-                raise ParameterError("missing key %r" % exx) from exx
+                raise ParameterError(f"missing key {exx!r}") from exx
 
             # TODO:  to be implemented
             res = {}

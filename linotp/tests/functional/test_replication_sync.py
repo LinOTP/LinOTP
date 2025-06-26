@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -42,7 +41,7 @@ from linotp.tests import TestController
 log = logging.getLogger(__name__)
 
 
-class SQLData(object):
+class SQLData:
     def __init__(self, connect="sqlite://"):
         self.userTable = "Config"
 
@@ -50,23 +49,20 @@ class SQLData(object):
         try:
             self.engine = create_engine(connect)
         except Exception as e:
-            print("%r" % e)
+            print(f"{e!r}")
         return
 
     def addData(self, key, value, typ, description):
-        iStr = """
-            INSERT INTO "%s"( "Key", "Value", "Type", "Description")
+        iStr = f"""
+            INSERT INTO "{self.userTable}"( "Key", "Value", "Type", "Description")
             VALUES (:key, :value, :typ, :description);
-            """ % (self.userTable)
+            """
 
         if self.engine.url.drivername.startswith("mysql"):
-            iStr = """
-            INSERT INTO %s (%s.Key, Value, Type, Description)
+            iStr = f"""
+            INSERT INTO {self.userTable} ({self.userTable}.Key, Value, Type, Description)
             VALUES (:key, :value, :typ, :description);
-            """ % (
-                self.userTable,
-                self.userTable,
-            )
+            """
 
         intoStr = iStr
 
@@ -97,12 +93,9 @@ class SQLData(object):
         return
 
     def delData(self, key):
-        dStr = 'DELETE FROM "%s" WHERE "Key"=:key;' % (self.userTable)
+        dStr = f'DELETE FROM "{self.userTable}" WHERE "Key"=:key;'
         if self.engine.url.drivername.startswith("mysql"):
-            dStr = "DELETE FROM %s WHERE %s.Key=:key;" % (
-                self.userTable,
-                self.userTable,
-            )
+            dStr = f"DELETE FROM {self.userTable} WHERE {self.userTable}.Key=:key;"
 
         delStr = dStr
         t = sqlalchemy.sql.expression.text(delStr)
@@ -184,7 +177,7 @@ class TestReplication(TestController):
         for cache in caches:
             params = {cache: enable_str}
             response = self.make_system_request("setConfig", params)
-            msg = '"setConfig %s:%s": true' % (cache, enable_str)
+            msg = f'"setConfig {cache}:{enable_str}": true'
             assert msg in response, response
 
     def set_cache_expiry(self, expiration):
@@ -196,7 +189,7 @@ class TestReplication(TestController):
         for cache in caches:
             params = {cache: expiration}
             response = self.make_system_request("setConfig", params)
-            msg = '"setConfig %s:%s": true' % (cache, expiration)
+            msg = f'"setConfig {cache}:{expiration}": true'
             assert msg in response, response
 
         return

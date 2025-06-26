@@ -1,6 +1,6 @@
 import logging
+from collections.abc import Callable
 from datetime import datetime, timedelta
-from typing import Callable, Optional
 
 import pytest
 from flask import Response
@@ -15,7 +15,7 @@ class TestJwtAdmin:
         self,
         client: FlaskClient,
         cookie_name: str,
-    ) -> Optional[str]:
+    ) -> str | None:
         cookie = next(
             (
                 cookie.value

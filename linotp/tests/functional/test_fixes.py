@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -107,8 +106,8 @@ def test_ticket_425(app, adminclient):
     for tid in range(numthreads):
         param = {}
         for kid in range(numkeys):
-            key = "key_%d" % (kid)
-            val = "val_%d" % (tid)
+            key = f"key_{kid}"
+            val = f"val_{tid}"
             param[key] = val
         params[tid] = param
 
@@ -155,7 +154,7 @@ class TestFixesController(TestController):
         """make the dishes"""
 
         for kid in range(200):
-            key = "key_%d" % (kid)
+            key = f"key_{kid}"
             self.make_system_request("delConfig", params={"key": key})
 
         self.remove_tokens()

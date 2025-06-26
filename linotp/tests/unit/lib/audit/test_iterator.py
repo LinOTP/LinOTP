@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,9 +26,9 @@
 
 import json
 import unittest
+from unittest.mock import MagicMock
 
 import pytest
-from mock import MagicMock
 
 
 @pytest.mark.usefixtures("app")
@@ -377,9 +376,6 @@ class AuditIteratorTestCase(unittest.TestCase):
         result_csv = ""
         for value in csv_audit_iterator:
             result_csv += value
-        assert expected_csv == result_csv, "%r \n\n%r" % (
-            expected_csv,
-            result_csv,
-        )
+        assert expected_csv == result_csv, f"{expected_csv!r} \n\n{result_csv!r}"
 
         return

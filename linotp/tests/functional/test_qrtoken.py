@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -80,7 +79,7 @@ def u64_to_transaction_id(u64_int):
     if rest == 0:
         return str(before)
     else:
-        return "%d.%02d" % (before, rest)
+        return f"{before}.{rest:02d}"
 
 
 class TestQRToken(TestController):
@@ -240,7 +239,7 @@ class TestQRToken(TestController):
         self.delete_all_realms()
         self.delete_all_resolvers()
 
-        super(TestQRToken, self).setUp()
+        super().setUp()
         self.create_common_resolvers()
         self.create_common_realms()
         self.create_dummy_cb_policies()
@@ -255,7 +254,7 @@ class TestQRToken(TestController):
         self.delete_all_realms()
         self.delete_all_resolvers()
         self.delete_all_token()
-        super(TestQRToken, self).tearDown()
+        super().tearDown()
 
     # --------------------------------------------------------------------------- --
 
@@ -975,9 +974,9 @@ class TestQRToken(TestController):
             )
 
             assert response.json["result"]["status"], response
-            assert response.json["result"]["value"]["setPolicy %s" % pol["name"]], (
-                response
-            )
+            assert response.json["result"]["value"][
+                "setPolicy {}".format(pol["name"])
+            ], response
 
     def remove_detail_policies(self):
         for policy_name in ["detail_on_success", "detail_on_fail"]:

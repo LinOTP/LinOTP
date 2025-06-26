@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -28,8 +27,9 @@
 Tests the chunked data handling in the config
 """
 
+from unittest.mock import patch
+
 import flask
-from mock import patch
 
 from linotp.controllers.userservice import UserserviceController
 from linotp.lib.user import User

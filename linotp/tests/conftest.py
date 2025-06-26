@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -34,7 +33,7 @@ import contextlib
 import copy
 import os
 import tempfile
-from typing import Callable, ContextManager, Iterator, List
+from collections.abc import Callable, Iterator
 from unittest.mock import patch
 
 import flask
@@ -295,7 +294,7 @@ def set_policy(adminclient):
 @pytest.fixture
 def scoped_authclient(
     client: FlaskClient,
-) -> Callable[[bool, str], ContextManager[FlaskClient]]:
+) -> Callable[[bool, str], contextlib.AbstractContextManager[FlaskClient]]:
     """This fixture returns a authentication client of type FlaskClient.
     With the parameter verify_jwt the jwt_check can be overwirtten, which will
     disable the validation of the request. The request will be done in the
@@ -384,7 +383,7 @@ class ResolverParams:
 
 def _create_realm(
     realm: str,
-    resolvers: List[str],
+    resolvers: list[str],
     adminclient: FlaskClient,
 ) -> CompatibleTestResponse:
     """
@@ -459,7 +458,7 @@ def create_managed_resolvers(
 
         def_passwd_file = os.path.join(fixture_path, file_name)
 
-        with io.open(def_passwd_file, "r", encoding="utf-8") as f:
+        with open(def_passwd_file, encoding="utf-8") as f:
             content = f.read()
 
         params = {

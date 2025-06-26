@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -2422,7 +2421,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=parameters, auth_user=auth_user
         )
 
-        pkey = "setPolicy %s" % parameters.get("name")
+        pkey = "setPolicy {}".format(parameters.get("name"))
         values = set(response.json["result"]["value"][pkey].values())
         assert False not in values, response
 
@@ -2438,7 +2437,7 @@ class TestPolicies(TestPoliciesBase):
             action="setPolicy", params=parameters, auth_user=auth_user
         )
 
-        pkey = "setPolicy %s" % parameters.get("name")
+        pkey = "setPolicy {}".format(parameters.get("name"))
         values = set(response.json["result"]["value"][pkey].values())
         assert False not in values, response
 
@@ -3479,15 +3478,15 @@ class TestPolicies(TestPoliciesBase):
         token_template = tokens["token1"]
 
         for i in range(0, 5):
-            serial = "token0%d" % i
+            serial = f"token0{i}"
             descr = copy.deepcopy(token_template)
-            descr["otpkey"] = "%s%d" % (token_template["otpkey"][:-1], i)
+            descr["otpkey"] = f"{token_template['otpkey'][:-1]}{i}"
             tokens[serial] = descr
 
         for i in range(0, 5):
-            serial = "token1%d" % i
+            serial = f"token1{i}"
             descr = copy.deepcopy(token_template)
-            descr["otpkey"] = "%s%d" % (token_template["otpkey"][:-1], i)
+            descr["otpkey"] = f"{token_template['otpkey'][:-1]}{i}"
             tokens[serial] = descr
 
         # enroll tokens in realm myOtherRealm
@@ -3545,7 +3544,7 @@ class TestPolicies(TestPoliciesBase):
         params = {
             "user": "max1",
             "realm": "myotherrealm",
-            "pass": "password%s" % descr["otpval"],
+            "pass": "password{}".format(descr["otpval"]),
         }
         response = self.make_validate_request(action="check", params=params)
 
@@ -3575,7 +3574,7 @@ class TestPolicies(TestPoliciesBase):
         params = {
             "user": "max2",
             "realm": "myotherrealm",
-            "pass": "password%s" % descr["otpval"],
+            "pass": "password{}".format(descr["otpval"]),
         }
 
         # max 2 can not autoassign a token pw2
@@ -3646,15 +3645,15 @@ class TestPolicies(TestPoliciesBase):
         token_template = tokens["token1"]
 
         for i in range(0, 5):
-            serial = "token0%d" % i
+            serial = f"token0{i}"
             descr = copy.deepcopy(token_template)
-            descr["otpkey"] = "%s%d" % (token_template["otpkey"][:-1], i)
+            descr["otpkey"] = f"{token_template['otpkey'][:-1]}{i}"
             tokens[serial] = descr
 
         for i in range(0, 5):
-            serial = "token1%d" % i
+            serial = f"token1{i}"
             descr = copy.deepcopy(token_template)
-            descr["otpkey"] = "%s%d" % (token_template["otpkey"][:-1], i)
+            descr["otpkey"] = f"{token_template['otpkey'][:-1]}{i}"
             tokens[serial] = descr
 
         # enroll tokens in realm myOtherRealm
@@ -3711,7 +3710,7 @@ class TestPolicies(TestPoliciesBase):
         params = {
             "user": "max1",
             "realm": "myotherrealm",
-            "pass": "password%s" % descr["otpval"],
+            "pass": "password{}".format(descr["otpval"]),
         }
         response = self.make_validate_request(action="check", params=params)
 
@@ -3741,7 +3740,7 @@ class TestPolicies(TestPoliciesBase):
         params = {
             "user": "max2",
             "realm": "myotherrealm",
-            "pass": "password%s" % descr["otpval"],
+            "pass": "password{}".format(descr["otpval"]),
         }
 
         # max 2 can not autoassign a token pw2
@@ -3902,7 +3901,7 @@ class TestPolicies(TestPoliciesBase):
             )
 
             assert response.json["result"]["status"], response
-            pkey = "setPolicy %s" % policy.get("name")
+            pkey = "setPolicy {}".format(policy.get("name"))
             values = set(response.json["result"]["value"][pkey].values())
             assert False not in values, response
 
@@ -3984,9 +3983,9 @@ class TestPolicies(TestPoliciesBase):
             )
 
             assert response.json["result"]["status"], response
-            assert response.json["result"]["value"]["setPolicy %s" % pol["name"]], (
-                response
-            )
+            assert response.json["result"]["value"][
+                "setPolicy {}".format(pol["name"])
+            ], response
 
         # check the successful validation
         params = {"user": "detail_user@myMixRealm", "pass": "secret"}

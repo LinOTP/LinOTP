@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -87,7 +86,7 @@ def notify_user(user, action, info, required=False):
 
     if required:
         raise NotificationException(
-            "No notification has been sent - %r provider defined?" % action
+            f"No notification has been sent - {action!r} provider defined?"
         )
 
     return False
@@ -139,7 +138,7 @@ def notify_user_by_email(provider_name, user, action, info):
     except Exception as exx:
         log.error("Failed to notify user %r by email", user_email)
         raise NotificationException(
-            "Failed to notify user %r by email:%r" % (user_email, exx)
+            f"Failed to notify user {user_email!r} by email:{exx!r}"
         ) from exx
 
 

@@ -1,4 +1,3 @@
-import io
 import os
 
 from flask import current_app
@@ -49,7 +48,7 @@ class TestAdminUserPrivilege(TestController):
 
         user_file = os.path.join(self.fixture_path, file_name)
 
-        with io.open(user_file, "r", encoding="utf-8") as f:
+        with open(user_file, encoding="utf-8") as f:
             content = f.read()
 
         upload_files = [("file", "user_list", content)]

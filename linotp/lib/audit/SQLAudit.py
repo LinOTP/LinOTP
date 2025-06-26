@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -56,9 +55,7 @@ def now() -> str:
     Returns an ISO datetime representation in UTC timezone with millisecond
     precision to fit in the AuditTable.timestamp column
     """
-    return datetime.datetime.now(datetime.timezone.utc).isoformat(
-        timespec="milliseconds"
-    )
+    return datetime.datetime.now(datetime.UTC).isoformat(timespec="milliseconds")
 
 
 ######################## MODEL ################################################
@@ -160,7 +157,7 @@ class Audit(AuditBase):
         :func:`~linotp.model.setup_db`.
         """
 
-        super(Audit, self).__init__()
+        super().__init__()
 
         # initialize signing keys
         self.readKeys()
@@ -191,7 +188,7 @@ class Audit(AuditBase):
         line["tokentype"] = audit_line.tokentype
         line["user"] = audit_line.user
         line["realm"] = audit_line.realm
-        line["administrator"] = "%r" % audit_line.administrator
+        line["administrator"] = f"{audit_line.administrator!r}"
         line["action_detail"] = audit_line.action_detail
         line["info"] = audit_line.info
         line["linotp_server"] = audit_line.linotp_server
@@ -499,9 +496,9 @@ def getAsString(data):
     """
 
     s = (
-        "number=%s, date=%s, action=%s, %s, serial=%s, %s, user=%s, %s,"
-        " admin=%s, %s, %s, server=%s, %s, %s"
-    ) % (
+        "number={}, date={}, action={}, {}, serial={}, {}, user={}, {},"
+        " admin={}, {}, {}, server={}, {}, {}"
+    ).format(
         str(data.get("id")),
         str(data.get("timestamp")),
         data.get("action"),
@@ -519,7 +516,7 @@ def getAsString(data):
     )
 
     if "client" in data:
-        s += ", client=%s" % data.get("client")
+        s += ", client={}".format(data.get("client"))
     return s
 
 

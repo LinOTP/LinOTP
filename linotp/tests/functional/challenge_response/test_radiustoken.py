@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -30,8 +29,7 @@ Test challenge response functionality for the radius token
 """
 
 import logging
-
-from mock import patch
+from unittest.mock import patch
 
 # we need this for the radius token
 from pyrad.client import Client
@@ -45,7 +43,7 @@ log = logging.getLogger(__name__)
 RADIUS_RESPONSE_FUNC = None
 
 
-class RadiusResponse(object):
+class RadiusResponse:
     def __init__(self, auth, reply=None):
         if auth is True:
             self.code = AccessAccept
@@ -116,7 +114,7 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
         self.delete_all_token()
         self.delete_all_policies()
 
-        self.radius_url = "localhost:%s" % self.radius_authport
+        self.radius_url = f"localhost:{self.radius_authport}"
 
     def tearDown(self):
         self.delete_all_token()

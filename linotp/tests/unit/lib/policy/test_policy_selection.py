@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -32,8 +31,7 @@ Best match criteria are 'exact:match', 'regex:match' and 'wildcard:match'
 """
 
 import unittest
-
-from mock import patch
+from unittest.mock import patch
 
 from linotp.lib.policy.evaluate import PolicyEvaluator
 from linotp.lib.user import User
@@ -53,10 +51,10 @@ def fn_mock_domain_comp(user_obj, condition):
     if condition in fqn:
         return True
 
-    if condition == "*.%s:" % user_obj.resolver_config_identifier:
+    if condition == f"*.{user_obj.resolver_config_identifier}:":
         return True
 
-    if condition == "*@%s" % user_obj.realm:
+    if condition == f"*@{user_obj.realm}":
         return True
 
     if condition == "*":

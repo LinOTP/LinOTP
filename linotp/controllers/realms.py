@@ -36,9 +36,7 @@ class RealmsController(BaseController):
     """
 
     def __init__(self, name, install_name="", **kwargs):
-        super(RealmsController, self).__init__(
-            name, install_name=install_name, **kwargs
-        )
+        super().__init__(name, install_name=install_name, **kwargs)
 
         self.add_url_rule("/", "realms", self.get_realms, methods=["GET"])
 
@@ -108,7 +106,7 @@ class RealmsController(BaseController):
             _res = checkPolicyPre("system", "getRealms")
 
         except PolicyException as pe:
-            log.error("[get_realms] policy failed: {}".format(pe))
+            log.error(f"[get_realms] policy failed: {pe}")
             db.session.rollback()
             error = sendError(pe.message)
             error.status_code = 403
@@ -135,7 +133,7 @@ class RealmsController(BaseController):
             return sendResult(formatted_realms)
 
         except Exception as e:
-            log.error("[get_realms] failed: {}".format(e))
+            log.error(f"[get_realms] failed: {e}")
             db.session.rollback()
             return sendError(e.message)
 
@@ -220,7 +218,7 @@ class RealmsController(BaseController):
         users_iters = getUserListIterators(searchDict, realm_user)
 
         g.audit["success"] = True
-        g.audit["info"] = "realm: %s" % realm_name
+        g.audit["info"] = f"realm: {realm_name}"
 
         # default of rp=16 is set in sendResultIterator
         rp = int(param.get("rp")) if param.get("rp") else None

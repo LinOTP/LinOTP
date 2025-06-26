@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #
 #   LinOTP - the open source solution for two factor authentication
 #   Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -73,7 +71,7 @@ class FakeLdapResolver(LDAPResolver):
     called = []
 
     def __init__(self, *args, **kwargs):
-        super(FakeLdapResolver, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @classmethod
     def m_connect(cls, uri, *args, **kwargs):
@@ -106,7 +104,7 @@ class MockedResourceScheduler(ResourceScheduler):
 
     def __init__(self, uri_list=None, tries=1):
         """overload the constuctor so we can control the retries"""
-        super(MockedResourceScheduler, self).__init__(
+        super().__init__(
             uri_list=uri_list,
             tries=TRIES,
             resource_registry_class=MockedResourceRegistry,

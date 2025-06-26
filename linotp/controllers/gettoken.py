@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -148,7 +147,7 @@ class GettokenController(BaseController):
         except Exception as exx:
             log.error("[getmultiotp] gettoken/getmultiotp failed: %r", exx)
             db.session.rollback()
-            return sendError("gettoken/getmultiotp failed: %r" % exx, 0)
+            return sendError(f"gettoken/getmultiotp failed: {exx!r}", 0)
 
     @deprecated_methods(["POST"])
     def getotp(self):
@@ -232,8 +231,8 @@ class GettokenController(BaseController):
                 if max_count <= 0:
                     return sendError(
                         "The policy forbids receiving"
-                        " OTP values for the token %s in "
-                        "this realm" % serial,
+                        f" OTP values for the token {serial} in "
+                        "this realm",
                         1,
                     )
 
@@ -270,7 +269,7 @@ class GettokenController(BaseController):
         except Exception as exx:
             log.error("[getotp] gettoken/getotp failed: %r", exx)
             db.session.rollback()
-            return sendError("gettoken/getotp failed: %s" % exx, 0)
+            return sendError(f"gettoken/getotp failed: {exx}", 0)
 
 
 # eof###########################################################################

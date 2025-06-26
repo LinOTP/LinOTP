@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -67,7 +66,7 @@ class MigrateResolverHandler(ToolsHandler):
         now = datetime.now()
         stime = now.strftime("%s")
 
-        g.audit["action_detail"] = "migration from %s to %s" % (
+        g.audit["action_detail"] = "migration from {} to {}".format(
             src["resolvername"],
             target["resolvername"],
         )
@@ -126,7 +125,7 @@ class MigrateResolverHandler(ToolsHandler):
             num_migration,
             len(tokens),
         )
-        g.audit["info"] = "[%s] %s" % (stime, ret["message"])
+        g.audit["info"] = "[{}] {}".format(stime, ret["message"])
         g.audit["serial"] = ",".join(list(serials))
         g.audit["success"] = True
 

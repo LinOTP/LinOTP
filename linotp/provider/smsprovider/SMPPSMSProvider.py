@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -123,7 +122,7 @@ class SMPPSMSProvider(ISMSProvider):
             # connected, to avoid "Client is not closed" message
             if client:
                 client.disconnect()
-            raise ProviderNotAvailable("Failed to connect to server %r" % exx) from exx
+            raise ProviderNotAvailable(f"Failed to connect to server {exx!r}") from exx
 
         try:
             log.debug(

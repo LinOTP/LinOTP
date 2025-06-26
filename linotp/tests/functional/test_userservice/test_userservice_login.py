@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,11 +26,10 @@
 
 import json
 from tempfile import NamedTemporaryFile
-from typing import Dict, Tuple
+from unittest import mock
+from unittest.mock import patch
 
-import mock
 import pytest
-from mock import patch
 
 import linotp.provider.pushprovider.default_push_provider as default_provider
 import linotp.provider.smsprovider.FileSMSProvider
@@ -100,9 +98,9 @@ class TestUserserviceLogin(TestUserserviceController):
         policy = {
             "name": "no_mfa",
             "action": "history, "
-            + 'imprint_url="%s", ' % imprint_url
-            + 'footer_text="%s", ' % footer_text
-            + "privacy_notice_url=%s, " % privacy_notice_url,
+            + f'imprint_url="{imprint_url}", '
+            + f'footer_text="{footer_text}", '
+            + f"privacy_notice_url={privacy_notice_url}, ",
             "user": " passthru.*.myDefRes:",
             "realm": "*",
             "scope": "selfservice",
@@ -664,7 +662,7 @@ class TestUserserviceLogin(TestUserserviceController):
             "name": "qr_pair_cb",
             "scope": "authentication",
             "realm": "*",
-            "action": "qrtoken_pairing_callback_url=%s" % cb_url,
+            "action": f"qrtoken_pairing_callback_url={cb_url}",
             "user": "*",
         }
 
@@ -679,7 +677,7 @@ class TestUserserviceLogin(TestUserserviceController):
             "name": "qr_chall_cb",
             "scope": "authentication",
             "realm": "*",
-            "action": "qrtoken_challenge_callback_url=%s" % cb_url,
+            "action": f"qrtoken_challenge_callback_url={cb_url}",
             "user": "*",
         }
 
@@ -748,7 +746,7 @@ class TestUserserviceLogin(TestUserserviceController):
             "name": "push_pair_cb",
             "scope": "authentication",
             "realm": "*",
-            "action": "pushtoken_pairing_callback_url=%s" % cb_url,
+            "action": f"pushtoken_pairing_callback_url={cb_url}",
             "user": "*",
         }
 
@@ -763,7 +761,7 @@ class TestUserserviceLogin(TestUserserviceController):
             "name": "push_chall_cb",
             "scope": "authentication",
             "realm": "*",
-            "action": "pushtoken_challenge_callback_url=%s" % cb_url,
+            "action": f"pushtoken_challenge_callback_url={cb_url}",
             "user": "*",
         }
 
@@ -864,8 +862,8 @@ class TestUserserviceLogin(TestUserserviceController):
         return token_info, secret_key, public_key
 
     def trigger_push_challenge(
-        self, token_info: Dict, content_type: int | None = None, data: str | None = None
-    ) -> Tuple[CompatibleTestResponse, str]:
+        self, token_info: dict, content_type: int | None = None, data: str | None = None
+    ) -> tuple[CompatibleTestResponse, str]:
         """Helper to trigger a push challenge request with some mocking
 
         :param token_info: containing all token details

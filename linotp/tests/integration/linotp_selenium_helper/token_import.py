@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -125,7 +124,7 @@ class TokenImport(ManageDialog):
         # Check the alert boxes on the top of the LinOTP UI
         info = self.manage.alert_box_handler.last_line
         if info.type != "info" or not info.text.startswith("Token import result:"):
-            raise TokenImportError("Import failure:{}".format(info))
+            raise TokenImportError(f"Import failure:{info}")
 
 
 class TokenImportAladdin(TokenImport):

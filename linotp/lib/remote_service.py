@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -37,7 +36,7 @@ def now():
     return datetime.now()
 
 
-class State(object):
+class State:
     """
     State of a Service
     """
@@ -69,7 +68,7 @@ class AllServicesUnavailable(Exception):
     pass
 
 
-class RemoteService(object):
+class RemoteService:
     """
     A service that keeps track of it failures and marks itself as unavilable
     after an exceeding amount of configured (base) exceptions.

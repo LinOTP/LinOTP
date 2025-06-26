@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,7 +26,6 @@
 """This file file contains the Forward token class"""
 
 import logging
-from typing import Optional
 
 from flask_babel import gettext as _
 
@@ -298,7 +296,7 @@ class ForwardTokenClass(TokenClass):
         }
 
     def check_challenge_response(
-        self, challenges, user, passw, options: Optional[dict] = None
+        self, challenges, user, passw, options: dict | None = None
     ):
         """
         reply the challenges of the target token
@@ -372,7 +370,7 @@ class ForwardTokenClass(TokenClass):
         tokens = get_tokens(serial=forwardSerial)
 
         if not tokens:
-            raise Exception("no target token with serial %r found" % forwardSerial)
+            raise Exception(f"no target token with serial {forwardSerial!r} found")
 
         targetToken = tokens[0]
         return targetToken

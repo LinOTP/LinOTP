@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -29,7 +28,6 @@
 import datetime
 import logging
 import time
-from typing import Union
 
 from linotp.lib.config import getFromConfig
 from linotp.lib.error import ParameterError
@@ -87,7 +85,7 @@ Internet-Draft                HOTPTimeBased               September 2010
 """
 
 
-def time2counter(T0: Union[float, int], timeStepping: int) -> int:
+def time2counter(T0: float | int, timeStepping: int) -> int:
     counter = int(T0 // timeStepping)
     return counter
 
@@ -395,8 +393,7 @@ class TimeHmacTokenClass(HmacTokenClass):
                 raise
         else:
             raise Exception(
-                "[time2float] invalid curTime: %s. You need to specify a datetime.datetime"
-                % type(curTime)
+                f"[time2float] invalid curTime: {type(curTime)}. You need to specify a datetime.datetime"
             )
 
         td = dt - datetime.datetime(1970, 1, 1)
@@ -797,9 +794,9 @@ class TimeHmacTokenClass(HmacTokenClass):
         otpval = hmac2Otp.generate(counter=counter, inc_counter=False)
 
         pin = self.getPin()
-        combined = "%s%s" % (otpval, pin)
+        combined = f"{otpval}{pin}"
         if getFromConfig("PrependPin") == "True":
-            combined = "%s%s" % (pin, otpval)
+            combined = f"{pin}{otpval}"
 
         return (1, pin, otpval, combined)
 

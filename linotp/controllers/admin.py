@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -309,7 +308,7 @@ class AdminController(BaseController, JWTMixin):
             )
 
             g.audit["success"] = True
-            g.audit["info"] = "realm: %s, filter: %r" % (filterRealm, filter)
+            g.audit["info"] = f"realm: {filterRealm}, filter: {filter!r}"
 
             # put in the result
             result = {}
@@ -383,7 +382,7 @@ class AdminController(BaseController, JWTMixin):
                 realm for serial in set(serials) for realm in getTokenRealms(serial)
             }
 
-            g.audit["realm"] = "%r" % realms
+            g.audit["realm"] = f"{realms!r}"
 
             log.info(
                 "[remove] removing token with serial %r for user %r",
@@ -423,9 +422,9 @@ class AdminController(BaseController, JWTMixin):
             # if not token could be removed, create a response detailed
             if ret == 0:
                 msg = (
-                    "No tokens for this user %r" % user.login
+                    f"No tokens for this user {user.login!r}"
                     if user
-                    else "No token with serials %r" % serials
+                    else f"No token with serials {serials!r}"
                 )
 
                 opt_result_dict["message"] = msg
@@ -504,7 +503,7 @@ class AdminController(BaseController, JWTMixin):
 
             opt_result_dict = {}
             if ret == 0 and serial:
-                opt_result_dict["message"] = "No token with serial %s" % serial
+                opt_result_dict["message"] = f"No token with serial {serial}"
             elif ret == 0 and user:
                 opt_result_dict["message"] = "No tokens for this user"
 
@@ -660,7 +659,7 @@ class AdminController(BaseController, JWTMixin):
 
             opt_result_dict = {}
             if ret == 0 and serial:
-                opt_result_dict["message"] = "No token with serial %s" % serial
+                opt_result_dict["message"] = f"No token with serial {serial}"
             elif ret == 0 and user:
                 opt_result_dict["message"] = "No tokens for this user"
 
@@ -709,7 +708,7 @@ class AdminController(BaseController, JWTMixin):
             (unique, new_serial) = th.check_serial(serial)
 
             g.audit["success"] = True
-            g.audit["action_detail"] = "%r - %r" % (unique, new_serial)
+            g.audit["action_detail"] = f"{unique!r} - {new_serial!r}"
 
             db.session.commit()
             return sendResult({"unique": unique, "new_serial": new_serial}, 1)
@@ -873,7 +872,7 @@ class AdminController(BaseController, JWTMixin):
 
             if lower_alias not in tokenclass_registry:
                 raise TokenAdminError(
-                    "admin/init failed: unknown token type %r" % token_cls_alias,
+                    f"admin/init failed: unknown token type {token_cls_alias!r}",
                     id=1610,
                 )
 
@@ -1034,7 +1033,7 @@ class AdminController(BaseController, JWTMixin):
 
             opt_result_dict = {}
             if ret == 0 and serial:
-                opt_result_dict["message"] = "No token with serial %s" % serial
+                opt_result_dict["message"] = f"No token with serial {serial}"
             elif ret == 0 and user:
                 opt_result_dict["message"] = "No tokens for this user"
 
@@ -1217,7 +1216,7 @@ class AdminController(BaseController, JWTMixin):
 
             if count == 0:
                 db.session.rollback()
-                return sendError(ParameterError("Usage: %s" % description, id=77))
+                return sendError(ParameterError(f"Usage: {description}", id=77))
 
             g.audit["success"] = count
             token = get_token(serial)
@@ -1375,7 +1374,7 @@ class AdminController(BaseController, JWTMixin):
             g.audit["token_type"] = ", ".join(token_types)
             g.audit["user"] = ", ".join(users)
             g.audit["realm"] = ", ".join(realms)
-            g.audit["action_detail"] = ("%r " % serials)[:80]
+            g.audit["action_detail"] = (f"{serials!r} ")[:80]
 
             db.session.commit()
             return sendResult(serials, 1)
@@ -1484,7 +1483,7 @@ class AdminController(BaseController, JWTMixin):
                 ret = th.setMaxFailCount(maxFail, user, serial)
                 res["set MaxFailCount"] = ret
                 count = count + 1
-                g.audit["action_detail"] += "maxFailCount=%d, " % maxFail
+                g.audit["action_detail"] += f"maxFailCount={maxFail}, "
 
             if "SyncWindow".lower() in param:
                 msg = "[set] setting SyncWindow failed"
@@ -1497,7 +1496,7 @@ class AdminController(BaseController, JWTMixin):
                 ret = th.setSyncWindow(syncWindow, user, serial)
                 res["set SyncWindow"] = ret
                 count = count + 1
-                g.audit["action_detail"] += "syncWindow=%d, " % syncWindow
+                g.audit["action_detail"] += f"syncWindow={syncWindow}, "
 
             if "description".lower() in param:
                 msg = "[set] setting description failed"
@@ -1510,7 +1509,7 @@ class AdminController(BaseController, JWTMixin):
                 ret = th.setDescription(description, user, serial)
                 res["set description"] = ret
                 count = count + 1
-                g.audit["action_detail"] += "description=%r, " % description
+                g.audit["action_detail"] += f"description={description!r}, "
 
             if "CounterWindow".lower() in param:
                 msg = "[set] setting CounterWindow failed"
@@ -1523,7 +1522,7 @@ class AdminController(BaseController, JWTMixin):
                 ret = th.setCounterWindow(counterWindow, user, serial)
                 res["set CounterWindow"] = ret
                 count = count + 1
-                g.audit["action_detail"] += "counterWindow=%d, " % counterWindow
+                g.audit["action_detail"] += f"counterWindow={counterWindow}, "
 
             if "OtpLen".lower() in param:
                 msg = "[set] setting OtpLen failed"
@@ -1536,7 +1535,7 @@ class AdminController(BaseController, JWTMixin):
                 ret = th.setOtpLen(otpLen, user, serial)
                 res["set OtpLen"] = ret
                 count = count + 1
-                g.audit["action_detail"] += "otpLen=%d, " % otpLen
+                g.audit["action_detail"] += f"otpLen={otpLen}, "
 
             if "hashlib".lower() in param:
                 msg = "[set] setting hashlib failed"
@@ -1550,7 +1549,7 @@ class AdminController(BaseController, JWTMixin):
                 ret = th.setHashLib(hashlib, user, serial)
                 res["set hashlib"] = ret
                 count = count + 1
-                g.audit["action_detail"] += "hashlib=%s, " % str(hashlib)
+                g.audit["action_detail"] += f"hashlib={hashlib!s}, "
 
             if "timeWindow".lower() in param:
                 msg = "[set] setting timeWindow failed"
@@ -1563,7 +1562,7 @@ class AdminController(BaseController, JWTMixin):
                 ret = th.addTokenInfo("timeWindow", timeWindow, user, serial)
                 res["set timeWindow"] = ret
                 count = count + 1
-                g.audit["action_detail"] += "timeWindow=%d, " % timeWindow
+                g.audit["action_detail"] += f"timeWindow={timeWindow}, "
 
             if "timeStep".lower() in param:
                 msg = "[set] setting timeStep failed"
@@ -1578,7 +1577,7 @@ class AdminController(BaseController, JWTMixin):
 
                 res["set timeStep"] = 1
                 count = count + 1
-                g.audit["action_detail"] += "timeStep=%d, " % timeStep
+                g.audit["action_detail"] += f"timeStep={timeStep}, "
 
             if "timeShift".lower() in param:
                 msg = "[set] setting timeShift failed"
@@ -1591,7 +1590,7 @@ class AdminController(BaseController, JWTMixin):
                 ret = th.addTokenInfo("timeShift", timeShift, user, serial)
                 res["set timeShift"] = ret
                 count = count + 1
-                g.audit["action_detail"] += "timeShift=%d, " % timeShift
+                g.audit["action_detail"] += f"timeShift={timeShift}, "
 
             if "countAuth".lower() in param:
                 msg = "[set] setting countAuth failed"
@@ -1609,7 +1608,7 @@ class AdminController(BaseController, JWTMixin):
                 [setattr(token, "count_auth", ca) for token in tokens]
                 count += len(tokens)
                 res["set countAuth"] = len(tokens)
-                g.audit["action_detail"] += "countAuth=%d, " % ca
+                g.audit["action_detail"] += f"countAuth={ca}, "
 
             if "countAuthMax".lower() in param:
                 msg = "[set] setting countAuthMax failed"
@@ -1627,7 +1626,7 @@ class AdminController(BaseController, JWTMixin):
                 [setattr(tok, "count_auth_max", ca) for tok in tokens]
                 count += len(tokens)
                 res["set countAuthMax"] = len(tokens)
-                g.audit["action_detail"] += "countAuthMax=%d, " % ca
+                g.audit["action_detail"] += f"countAuthMax={ca}, "
 
             if "countAuthSuccess".lower() in param:
                 msg = "[set] setting countAuthSuccess failed"
@@ -1645,7 +1644,7 @@ class AdminController(BaseController, JWTMixin):
                 [setattr(tok, "count_auth_success", ca) for tok in tokens]
                 count += len(tokens)
                 res["set countAuthSuccess"] = len(tokens)
-                g.audit["action_detail"] += "countAuthSuccess=%d, " % ca
+                g.audit["action_detail"] += f"countAuthSuccess={ca}, "
 
             if "countAuthSuccessMax".lower() in param:
                 msg = "[set] setting countAuthSuccessMax failed"
@@ -1663,7 +1662,7 @@ class AdminController(BaseController, JWTMixin):
                 [setattr(tok, "count_auth_success_max", ca) for tok in tokens]
                 count += len(tokens)
                 res["set countAuthSuccessMax"] = len(tokens)
-                g.audit["action_detail"] += "countAuthSuccessMax=%d, " % ca
+                g.audit["action_detail"] += f"countAuthSuccessMax={ca}, "
 
             if "validityPeriodStart".lower() in param:
                 msg = "[set] setting validityPeriodStart failed"
@@ -1681,7 +1680,7 @@ class AdminController(BaseController, JWTMixin):
                 [setattr(tok, "validity_period_start", ca) for tok in tokens]
                 count += len(tokens)
                 res["set validityPeriodStart"] = len(tokens)
-                g.audit["action_detail"] += "validityPeriodStart=%s, " % str(ca)
+                g.audit["action_detail"] += f"validityPeriodStart={ca!s}, "
 
             if "validityPeriodEnd".lower() in param:
                 msg = "[set] setting validityPeriodEnd failed"
@@ -1699,7 +1698,7 @@ class AdminController(BaseController, JWTMixin):
                 [setattr(tok, "validity_period_end", ca) for tok in tokens]
                 count += len(tokens)
                 res["set validityPeriodEnd"] = len(tokens)
-                g.audit["action_detail"] += "validityPeriodEnd=%s, " % str(ca)
+                g.audit["action_detail"] += f"validityPeriodEnd={ca!s}, "
 
             if "phone" in param:
                 msg = "[set] setting phone failed"
@@ -1718,11 +1717,11 @@ class AdminController(BaseController, JWTMixin):
                     tok.addToTokenInfo("phone", ca)
                 count += len(tokens)
                 res["set phone"] = len(tokens)
-                g.audit["action_detail"] += "phone=%s, " % str(ca)
+                g.audit["action_detail"] += f"phone={ca!s}, "
 
             if count == 0:
                 db.session.rollback()
-                return sendError(ParameterError("Usage: %s" % description, id=77))
+                return sendError(ParameterError(f"Usage: {description}", id=77))
 
             # TODO
             # Handle multiple tokens
@@ -1756,13 +1755,13 @@ class AdminController(BaseController, JWTMixin):
             db.session.rollback()
             # as this message is directly returned into the javascript
             # alert as escaped string we remove here all escaping chars
-            error = "%r" % exx
+            error = f"{exx!r}"
             error = error.replace('"', "|")
             error = error.replace("'", ":")
             error = error.replace("&", "+")
             error = error.replace(">", "]")
             error = error.replace("<", "[")
-            result = "%s: %s" % (msg, error)
+            result = f"{msg}: {error}"
             return sendError(result)
 
     ########################################################
@@ -1930,7 +1929,7 @@ class AdminController(BaseController, JWTMixin):
 
             g.audit["success"] = True
             g.audit["realm"] = realm
-            g.audit["info"] = "realm: %s" % realm
+            g.audit["info"] = f"realm: {realm}"
 
             db.session.commit()
 
@@ -2075,7 +2074,7 @@ class AdminController(BaseController, JWTMixin):
 
             opt_result_dict = {}
             if ret == 0 and serial:
-                opt_result_dict["message"] = "No token with serial %s" % serial
+                opt_result_dict["message"] = f"No token with serial {serial}"
             elif ret == 0 and user:
                 opt_result_dict["message"] = "No tokens for this user"
 
@@ -2141,7 +2140,7 @@ class AdminController(BaseController, JWTMixin):
             g.audit["token_type"] = token.type
             g.audit["user"] = token.getUsername()
             g.audit["realm"] = ", ".join(token.getRealms())
-            g.audit["action_detail"] = "from %s" % serial_from
+            g.audit["action_detail"] = f"from {serial_from}"
 
             err_string = str(ret)
             if -1 == ret:
@@ -2156,7 +2155,7 @@ class AdminController(BaseController, JWTMixin):
             if 1 == ret:
                 return sendResult(True)
             else:
-                return sendError("copying token pin failed: %s" % err_string)
+                return sendError(f"copying token pin failed: {err_string}")
 
         except PolicyException as pe:
             log.error("[losttoken] Error doing losttoken %r", pe)
@@ -2218,7 +2217,7 @@ class AdminController(BaseController, JWTMixin):
             g.audit["token_type"] = token.type
             g.audit["user"] = token.getUsername()
             g.audit["realm"] = ", ".join(token_realms)
-            g.audit["action_detail"] = "from %s" % serial_from
+            g.audit["action_detail"] = f"from {serial_from}"
             g.reporting["realms"] = set(token_realms or ["/:no realms"])
 
             err_string = str(ret)
@@ -2235,7 +2234,7 @@ class AdminController(BaseController, JWTMixin):
             if 1 == ret:
                 return sendResult(True)
             else:
-                return sendError("copying token user failed: %s" % err_string)
+                return sendError(f"copying token user failed: {err_string}")
 
         except PolicyException as pe:
             log.error("[copyTokenUser] Policy Exception %r", pe)
@@ -2288,7 +2287,7 @@ class AdminController(BaseController, JWTMixin):
             g.audit["token_type"] = token.type
             g.audit["user"] = token.getUsername()
             g.audit["realm"] = ", ".join(token_realms)
-            g.audit["action_detail"] = "from %s" % serial
+            g.audit["action_detail"] = f"from {serial}"
             g.reporting["realms"] = set(
                 (token_realms or ["/:no realm:/"])
                 + (getTokenRealms(serial) or ["/:no realm:/"])
@@ -2425,7 +2424,7 @@ class AdminController(BaseController, JWTMixin):
                     "[loadtokens] Error loading/importing token file. "
                     "file or type empty!"
                 )
-                return sendErrorMethod(("Error loading tokens. File or Type empty!"))
+                return sendErrorMethod("Error loading tokens. File or Type empty!")
 
             if typeString not in known_types:
                 log.error(
@@ -2436,8 +2435,9 @@ class AdminController(BaseController, JWTMixin):
                 )
                 return sendErrorMethod(
                     (
-                        "Unknown file type: >>%s<<. We only know the "
-                        "types: %s" % (typeString, ", ".join(known_types))
+                        "Unknown file type: >>{}<<. We only know the types: {}".format(
+                            typeString, ", ".join(known_types)
+                        )
                     ),
                 )
 
@@ -2593,11 +2593,7 @@ class AdminController(BaseController, JWTMixin):
                 tokenFile.filename,
             )
 
-            g.audit["info"] = "%s, %s (imported: %i)" % (
-                fileType,
-                tokenFile,
-                len(TOKENS),
-            )
+            g.audit["info"] = f"{fileType}, {tokenFile} (imported: {len(TOKENS)})"
             g.audit["success"] = ret
             g.audit["serial"] = ", ".join(TOKENS.keys())
             g.audit["token_type"] = ", ".join(
@@ -2613,12 +2609,12 @@ class AdminController(BaseController, JWTMixin):
         except PolicyException as pex:
             log.error("[loadtokens] Failed checking policy: %r", pex)
             db.session.rollback()
-            return sendError("%r" % pex, 1)
+            return sendError(f"{pex!r}", 1)
 
         except Exception as exx:
             log.error("[loadtokens] failed! %r", exx)
             db.session.rollback()
-            return sendErrorMethod("%r" % exx)
+            return sendErrorMethod(f"{exx!r}")
 
     @methods(["POST"])
     def testresolver(self):
@@ -2643,7 +2639,7 @@ class AdminController(BaseController, JWTMixin):
                 raise ParameterError(_("Missing parameter: %r") % exx) from exx
 
             if resolvername not in request_context["Resolvers"]:
-                raise Exception("no such resolver %r defined!" % resolvername)
+                raise Exception(f"no such resolver {resolvername!r} defined!")
 
             # ---------------------------------------------------------- --
 
@@ -2741,10 +2737,7 @@ class AdminController(BaseController, JWTMixin):
             g.audit["success"] = res
 
             if not res:
-                g.audit["info"] = "no otp %r found in window %r" % (
-                    otp,
-                    window,
-                )
+                g.audit["info"] = f"no otp {otp!r} found in window {window!r}"
 
             db.session.commit()
             return sendResult(res, opt=opt)
@@ -2811,7 +2804,7 @@ class AdminController(BaseController, JWTMixin):
                     "[admin/checkstatus] : missing parameter: "
                     "transactionid, user or serial number for token"
                 )
-                raise ParameterError("Usage: %s" % description, id=77)
+                raise ParameterError(f"Usage: {description}", id=77)
 
             # # gather all challenges from serial, transactionid and user
             challenges = set()

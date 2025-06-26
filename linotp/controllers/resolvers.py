@@ -59,9 +59,7 @@ class ResolversController(BaseController):
     """
 
     def __init__(self, name, install_name="", **kwargs):
-        super(ResolversController, self).__init__(
-            name, install_name=install_name, **kwargs
-        )
+        super().__init__(name, install_name=install_name, **kwargs)
 
         self.add_url_rule("/", "resolvers", self.get_resolvers, methods=["GET"])
         self.add_url_rule(

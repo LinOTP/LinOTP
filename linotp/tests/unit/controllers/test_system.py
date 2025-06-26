@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -26,9 +25,9 @@
 #
 
 import unittest
+from unittest.mock import patch
 
 import pytest
-from mock import patch
 
 from linotp.controllers.system import SystemController
 from linotp.lib.security.provider import SecurityProvider
@@ -90,8 +89,7 @@ class TestSetResolver(unittest.TestCase):
     def test_set_resolver_readonly_param_empty(self):
         ret = self.set_resolver({"readonly": ""})
         assert ret, (
-            "setResolver with empty readonly parameter should succeed. Returned:%s"
-            % ret
+            f"setResolver with empty readonly parameter should succeed. Returned:{ret}"
         )
 
 
@@ -102,7 +100,7 @@ def err_hsm(app, monkeypatch):
     """
 
     def getErrSecurityModule(s):
-        class ErrHSM(object):
+        class ErrHSM:
             def isReady(self):
                 return False
 
@@ -113,7 +111,7 @@ def err_hsm(app, monkeypatch):
 
 
 @pytest.mark.usefixtures("err_hsm")
-class TestHSMFail(object):
+class TestHSMFail:
     """
     Tests for #2909 to check behaviour with an HSM
     in error state

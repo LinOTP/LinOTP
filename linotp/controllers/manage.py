@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -668,7 +667,7 @@ class ManageController(BaseController):
             id = id or default_filename
 
             r = flask.send_file(
-                "%s/%s" % (directory, id),
+                f"{directory}/{id}",
                 mimetype=mimetype,
                 as_attachment=True,
                 attachment_filename=default_filename,

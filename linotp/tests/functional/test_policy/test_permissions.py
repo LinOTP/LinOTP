@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -84,9 +83,9 @@ class TestPermissions(TestPoliciesBase):
                 action="setPolicy", params=pol, auth_user=auth_user
             )
             assert response.json["result"]["status"], response
-            assert response.json["result"]["value"]["setPolicy %s" % pol["name"]], (
-                response
-            )
+            assert response.json["result"]["value"][
+                "setPolicy {}".format(pol["name"])
+            ], response
 
     def get_permissions(self, auth_user):
         response = self.make_manage_request(

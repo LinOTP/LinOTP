@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -46,7 +45,7 @@ class DecryptionError(Exception):
     pass
 
 
-class MigrationHandler(object):
+class MigrationHandler:
     """
     the migration handler supports the migration of encryted data
     like the token seed or pin of the encrypted config entries, that
@@ -106,7 +105,7 @@ class MigrationHandler(object):
 
         config_entries = model_config.query.filter_by(Type="password").all()
         for entry in config_entries:
-            key = "enc%s" % entry.Key
+            key = f"enc{entry.Key}"
             value = getFromConfig(key)
 
             # calculate encryption and add mac from mac_data
@@ -148,7 +147,7 @@ class MigrationHandler(object):
 
         # decypt the real value
         enc_value = config_entry["Value"]
-        value = self.crypter.decrypt(enc_value, just_mac="enc%s" % key + entry.Value)
+        value = self.crypter.decrypt(enc_value, just_mac=f"enc{key}" + entry.Value)
 
         _storeConfigDB(key, value, typ=typ, desc=desc)
 
@@ -231,7 +230,7 @@ class MigrationHandler(object):
         )
 
 
-class Crypter(object):
+class Crypter:
     @staticmethod
     def hmac_sha256(secret, msg):
         hmac_obj = hmac.new(secret, msg=msg, digestmod=sha256)

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -64,7 +63,7 @@ class TestImportOTP(TestController):
 
         file_name = self._get_file_name(data_file)
 
-        with open(file_name, "r") as data_file:
+        with open(file_name) as data_file:
             data = data_file.read()
 
             return data
@@ -503,7 +502,7 @@ class TestImportOTP(TestController):
         params = {
             "scope": "admin",
             "action": "*",
-            "realm": "%s" % target_realm,
+            "realm": f"{target_realm}",
             "user": "*",
             "name": "all_actions",
         }
@@ -573,7 +572,7 @@ class TestImportOTP(TestController):
 
         jresp = json.loads(response.body)
 
-        err_msg = "Error getting token list. Response %r" % (jresp)
+        err_msg = f"Error getting token list. Response {jresp!r}"
         assert jresp["result"]["status"], err_msg
 
         # extract the token info

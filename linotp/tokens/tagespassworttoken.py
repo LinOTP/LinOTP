@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -51,7 +50,7 @@ class dpwOtp:
         self.digits = digits
 
     def __enter__(self):
-        class dpwOtpImpl(object):
+        class dpwOtpImpl:
             """
             helper class for calculating day passwords. (Tagespasswort)
             """
@@ -248,10 +247,10 @@ class TagespasswortTokenClass(TokenClass):
             otpval = dpw.getOtp(date_string)
 
         pin = self.getPin()
-        combined = "%s%s" % (otpval, pin)
+        combined = f"{otpval}{pin}"
 
         if request_context["Config"].get("PrependPin") == "True":
-            combined = "%s%s" % (pin, otpval)
+            combined = f"{pin}{otpval}"
 
         return (1, pin, otpval, combined)
 
@@ -290,7 +289,7 @@ class TagespasswortTokenClass(TokenClass):
                 else:
                     raise TokenAdminError(
                         "[get_multi_otp] wrong curTime type:"
-                        " %s (%s)" % (type(curTime), curTime),
+                        f" {type(curTime)} ({curTime})",
                         id=2001,
                     )
 

@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 from beaker.cache import Cache
 from flask import current_app
@@ -10,7 +9,7 @@ from linotp.lib.type_utils import boolean, get_duration
 log = logging.getLogger(__name__)
 
 
-def get_cache(cache_name: str, scope: str | None = None) -> Optional[Cache]:
+def get_cache(cache_name: str, scope: str | None = None) -> Cache | None:
     """
     load the cache with cache_name and scope
 
@@ -81,7 +80,7 @@ def get_cache(cache_name: str, scope: str | None = None) -> Optional[Cache]:
 
     cache_fullname = cache_name
     if scope:
-        cache_fullname = "%s::%s" % (cache_name, scope)
+        cache_fullname = f"{cache_name}::{scope}"
 
     resolver_config_cache = cache_manager.get_cache(
         cache_fullname, type="memory", expiretime=expiration

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -111,12 +110,12 @@ def google_authenticator_url(label, param):
         token_type = Valid_Token_Types[param.get("type", "hotp").lower()]
     except KeyError as exx:
         raise NoOtpAuthTokenException(
-            "not supported otpauth token type: %r" % param.get("type")
+            "not supported otpauth token type: {!r}".format(param.get("type"))
         ) from exx
 
     digits = int(param.get("otplen", 6))
     if digits not in [6, 8]:
-        raise Exception("unsupported digits %r" % param.get("otplen"))
+        raise Exception("unsupported digits {!r}".format(param.get("otplen")))
 
     algorithm = param.get("hashlib", "SHA1").upper()
     if algorithm not in ["SHA1", "SHA256", "SHA512"]:
@@ -135,7 +134,9 @@ def google_authenticator_url(label, param):
 
     period = int(param.get("timeStep", 30))
     if period not in [30, 60]:
-        raise Exception("unsupported period for totp token %r" % param.get("timeStep"))
+        raise Exception(
+            "unsupported period for totp token {!r}".format(param.get("timeStep"))
+        )
 
     # --------------------------------------------------------------------- --
 
@@ -170,7 +171,7 @@ def google_authenticator_url(label, param):
     max_len = 400
 
     authenticator_params = urllib.parse.urlencode(url_param, quote_via=quote)
-    base_len = len("otpauth://%s/?%s" % (token_type, authenticator_params))
+    base_len = len(f"otpauth://{token_type}/?{authenticator_params}")
     allowed_label_length = max_len - base_len
 
     if len(label) > allowed_label_length:
@@ -186,7 +187,7 @@ def google_authenticator_url(label, param):
 
     # create the url
 
-    auth_url = "otpauth://%s/%s?%s" % (token_type, label, authenticator_params)
+    auth_url = f"otpauth://{token_type}/{label}?{authenticator_params}"
 
     auth_url_prefix_len = len("otpauth:///") + len(token_type) + len(label)
     log.debug("google authenticator: %r", auth_url[:auth_url_prefix_len])
@@ -206,9 +207,7 @@ def create_oathtoken_url(user, realm, otpkey, type="hmac", serial=""):
     label = get_tokenlabel(user, realm, serial)
     url_label = quote(label)
 
-    url = "oathtoken:///addToken?name=%s&lockdown=true&key=%s%s" % (
-        url_label,
-        otpkey,
-        timebased,
+    url = (
+        f"oathtoken:///addToken?name={url_label}&lockdown=true&key={otpkey}{timebased}"
     )
     return url

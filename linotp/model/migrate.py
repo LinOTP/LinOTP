@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -30,7 +29,7 @@ database schema migration hook
 
 import binascii
 import logging
-from typing import Any, Optional, Tuple, Union
+from typing import Any
 
 import sqlalchemy as sa
 from flask import current_app
@@ -69,7 +68,7 @@ def has_column(engine: Engine, table_name: str, column: sa.Column) -> bool:
     return False
 
 
-def _compile_name(name: str, dialect: Optional[str] = None) -> str:
+def _compile_name(name: str, dialect: str | None = None) -> str:
     """Helper - to adjust the names of table / column / index to quoted or not.
 
     in postgresql the tablenames / column /index names must be quotes
@@ -104,8 +103,7 @@ def add_column(engine: Engine, table_name: str, column: sa.Column):
 
     with engine.connect() as connection:
         connection.execute(
-            "ALTER TABLE %s ADD COLUMN %s %s"
-            % (c_table_name, c_column_name, c_column_type)
+            f"ALTER TABLE {c_table_name} ADD COLUMN {c_column_name} {c_column_type}"
         )
 
 
@@ -129,12 +127,12 @@ def add_index(engine: Engine, table_name: str, column: sa.Column) -> None:
 
     c_column_name = column.compile(dialect=engine.dialect)
 
-    index_name = "ix_%s_%s" % (table_name, column.name)
+    index_name = f"ix_{table_name}_{column.name}"
     c_index_name = _compile_name(index_name, dialect=engine.dialect)
 
     with engine.connect() as connection:
         connection.execute(
-            "CREATE INDEX %s ON %s ( %s )" % (c_index_name, c_table_name, c_column_name)
+            f"CREATE INDEX {c_index_name} ON {c_table_name} ( {c_column_name} )"
         )
 
 
@@ -156,9 +154,7 @@ def drop_column(engine: Engine, table_name: str, column: sa.Column) -> None:
 
     c_column_name = column.compile(dialect=engine.dialect)
     with engine.connect() as connection:
-        connection.execute(
-            "ALTER TABLE %s drop COLUMN %s " % (c_table_name, c_column_name)
-        )
+        connection.execute(f"ALTER TABLE {c_table_name} drop COLUMN {c_column_name} ")
 
 
 def re_encode(
@@ -295,7 +291,7 @@ class MYSQL_Migration:
 
     def _convert_Config_to_utf8(self) -> Any:
         """Migrate the Config Value and Description to utf8."""
-        cmd = "Update Config Set %s, %s ;" % (
+        cmd = "Update Config Set {}, {} ;".format(
             self._convert("Config.Description"),
             self._convert("Config.Value"),
         )
@@ -303,7 +299,7 @@ class MYSQL_Migration:
 
     def _convert_Token_to_utf8(self) -> Any:
         """Migrate the Token Description and LinOtpTokenInfo to utf8."""
-        cmd = "Update Token Set %s, %s ;" % (
+        cmd = "Update Token Set {}, {} ;".format(
             self._convert("Token.LinOtpTokenDesc"),
             self._convert("Token.LinOtpTokenInfo"),
         )
@@ -311,7 +307,7 @@ class MYSQL_Migration:
 
     def _convert_ImportedUser_to_utf8(self) -> Any:
         """Migrate Username, Surname, Givenname and Email of imported_user to utf8."""
-        cmd = "Update imported_user Set %s, %s, %s, %s ;" % (
+        cmd = "Update imported_user Set {}, {}, {}, {} ;".format(
             self._convert("imported_user.username"),
             self._convert("imported_user.surname"),
             self._convert("imported_user.givenname"),
@@ -437,7 +433,7 @@ class Migration:
             is None
         )
 
-    def get_current_version(self) -> Optional[str]:
+    def get_current_version(self) -> str | None:
         """Get the db model version number.
 
         :return: current db version or None
@@ -479,9 +475,9 @@ class Migration:
 
     def migrate(
         self,
-        from_version: Optional[str] = None,
-        to_version: Optional[str] = None,
-    ) -> Union[str, None]:
+        from_version: str | None = None,
+        to_version: str | None = None,
+    ) -> str | None:
         """Run all migration steps between the versions.
 
         run all steps, which are of ordered list migration_steps
@@ -524,11 +520,11 @@ class Migration:
                 # get the function pointer to the set version
 
                 exec_version = next_version.replace(".", "_")
-                function_name = "migrate_%s" % exec_version
+                function_name = f"migrate_{exec_version}"
 
                 if not hasattr(self, function_name):
                     log.error("unknown migration function %r", function_name)
-                    raise Exception("unknown migration to %r" % next_version)
+                    raise Exception(f"unknown migration to {next_version!r}")
 
                 migration_step = getattr(self, function_name)
 
@@ -709,7 +705,7 @@ class Migration:
                 " linotp admin fix-db-encoding"
             )
 
-    def iso8859_to_utf8_conversion(self) -> Tuple[bool, str]:
+    def iso8859_to_utf8_conversion(self) -> tuple[bool, str]:
         """
         Migrate all User (only Username, Surname, Givenname and Email),
         Config and Token entries from latin1 to utf-8,
@@ -739,7 +735,7 @@ class Migration:
 
         except OperationalError as exx:
             log.info("Failed to run convertion: %r", exx)
-            return False, "Failed to run convertion: %r" % exx
+            return False, f"Failed to run convertion: {exx!r}"
 
         finally:
             # in any case, we remove the conversion suggestion label
@@ -750,7 +746,7 @@ class Migration:
 
         return True, "User, Config and Token data converted to utf-8."
 
-    def migrate_3_1_0_0(self) -> Tuple[bool, str]:
+    def migrate_3_1_0_0(self) -> tuple[bool, str]:
         """Migrate the encrpyted data to pkcs7 padding.
 
         this requires to
@@ -839,12 +835,12 @@ class Migration:
 
                 model.db.session.add(entry)
 
-                log.info("%r re encrypted" % entry.Key)
+                log.info(f"{entry.Key!r} re encrypted")
 
                 entry_counter += 1
 
             except Exception as exx:
-                log.error("Unable to re-encrypt %r: %r" % (entry.Key, exx))
+                log.error(f"Unable to re-encrypt {entry.Key!r}: {exx!r}")
 
         # ----------------------------------------------------------------- --
 
@@ -901,8 +897,8 @@ class Migration:
         sec_module.unpadd_data = DefaultSecurityModule.unpadd_data
 
         return True, (
-            "re-encryption completed! %r tokens and %r config entries "
-            "migrated" % (token_counter, entry_counter)
+            f"re-encryption completed! {token_counter!r} tokens and {entry_counter!r} config entries "
+            "migrated"
         )
 
     def migrate_3_2_0_0(self):
@@ -965,8 +961,7 @@ class Migration:
             )
             if changed:
                 log.info(
-                    "Updating policy value %r from %r to %r"
-                    % (entry.Key, entry.Value, new_value)
+                    f"Updating policy value {entry.Key!r} from {entry.Value!r} to {new_value!r}"
                 )
                 entry.Value = new_value
                 model.db.session.add(entry)

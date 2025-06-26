@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -199,7 +198,7 @@ class LinOtpConfig(dict):
             typ, check_type_function = Config_Types[key]
 
             if not check_type_function(value):
-                raise ValueError("Config Error: %s must be of type %r" % (key, typ))
+                raise ValueError(f"Config Error: {key} must be of type {typ!r}")
 
     def get(self, key, default=None):
         """

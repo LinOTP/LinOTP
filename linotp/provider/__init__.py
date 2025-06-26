@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -77,10 +76,10 @@ def load_provider_classes():
 
     try:
         import_submodules(__name__)
-        import_submodules("%s.%s" % (__name__, "pushprovider"))
-        import_submodules("%s.%s" % (__name__, "emailprovider"))
-        import_submodules("%s.%s" % (__name__, "smsprovider"))
-        import_submodules("%s.%s" % (__name__, "voiceprovider"))
+        import_submodules("{}.{}".format(__name__, "pushprovider"))
+        import_submodules("{}.{}".format(__name__, "emailprovider"))
+        import_submodules("{}.{}".format(__name__, "smsprovider"))
+        import_submodules("{}.{}".format(__name__, "voiceprovider"))
     except ImportError as exx:
         log.error("unable to load provider module : %s (%r)", __name__, exx)
         raise
@@ -163,7 +162,7 @@ def parse_provider(provider_type, composite_key, value):
     # due to ambiguity of the second part in the config dot notation
     # we must check if the second part is the provider type
 
-    if not composite_key.startswith("linotp.%s." % provider_prefix):
+    if not composite_key.startswith(f"linotp.{provider_prefix}."):
         raise ConfigNotRecognized(composite_key)
 
     # ------------------------------------------------------------------------ -
@@ -214,7 +213,7 @@ def parse_legacy_provider(provider_type, composite_key, value):
     # due to ambiguity of the second part in the config dot notation
     # we must check if the second part is the provider type
 
-    if not composite_key.startswith("linotp.%s" % provider_prefix):
+    if not composite_key.startswith(f"linotp.{provider_prefix}"):
         raise ConfigNotRecognized(composite_key)
 
     # ------------------------------------------------------------------------ -
@@ -270,7 +269,7 @@ def parse_default_provider(provider_type, composite_key, value):
 # integrate the provider config parser into the config tree class
 
 for provider_type in Provider_types:
-    parser_target = "%s_providers" % provider_type
+    parser_target = f"{provider_type}_providers"
 
     func = partial(parse_provider, provider_type)
     ConfigTree.add_parser(parser_target, func)
@@ -300,7 +299,7 @@ def get_legacy_provider(provider_type):
 
     defintion = Legacy_Provider.get(provider_type, {})
     if not defintion:
-        raise Exception("unknown provider type %r" % provider_type)
+        raise Exception(f"unknown provider type {provider_type!r}")
 
     for key, translation in list(defintion.items()):
         if key in config:
@@ -329,7 +328,7 @@ def get_all_new_providers(provider_type, show_managed_config=False):
     # find out, which provider type we have, currently only push, sms or email
     prefix = Provider_types.get(provider_type, {}).get("prefix")
     if not prefix:
-        raise Exception("unknown provider type %r" % provider_type)
+        raise Exception(f"unknown provider type {provider_type!r}")
 
     # find out, which providers we have
     config = getLinotpConfig()
@@ -444,7 +443,7 @@ def delProvider(provider_type, provider_name):
 
     prefix = Provider_types.get(provider_type, {}).get("prefix")
     if not prefix:
-        raise Exception("unknown provider type %r" % provider_type)
+        raise Exception(f"unknown provider type {provider_type!r}")
 
     # find out, which providers we have
     config = getLinotpConfig()
@@ -553,7 +552,7 @@ def save_legacy_provider(provider_type, params):
 
     defintion = Legacy_Provider.get(provider_type, {})
     if not defintion:
-        raise Exception("unknown provider type %r" % provider_type)
+        raise Exception(f"unknown provider type {provider_type!r}")
 
     for config_name, spec in list(defintion.items()):
         if spec == "Class" and "class" in params:
@@ -584,7 +583,7 @@ def save_new_provider(provider_type, provider_name, params):
 
     prefix = Provider_types.get(provider_type, {}).get("prefix")
     if not prefix:
-        raise Exception("unknown provider type %r" % provider_type)
+        raise Exception(f"unknown provider type {provider_type!r}")
 
     provider_prefix = prefix + provider_name
 
@@ -666,10 +665,10 @@ def loadProviderFromPolicy(provider_type, realm=None, user=None):
     # lookup the policy action name
     provider_action_name = Policy_action_name.get(provider_type)
     if not provider_action_name:
-        raise Exception("unknown provider_type for policy lookup! %r" % provider_type)
+        raise Exception(f"unknown provider_type for policy lookup! {provider_type!r}")
 
     if user is None:
-        raise Exception("unknown user for policy lookup! %r" % user)
+        raise Exception(f"unknown user for policy lookup! {user!r}")
 
     if user and user.login:
         realm = user.realm
@@ -710,10 +709,10 @@ def get_provider_from_policy(
     # lookup the policy action name
     provider_action_name = Policy_action_name.get(provider_type)
     if not provider_action_name:
-        raise Exception("unknown provider_type for policy lookup! %r" % provider_type)
+        raise Exception(f"unknown provider_type for policy lookup! {provider_type!r}")
 
     if user is None:
-        raise Exception("unknown user for policy lookup! %r" % user)
+        raise Exception(f"unknown user for policy lookup! {user!r}")
 
     if user and user.login:
         realm = user.realm
@@ -758,7 +757,7 @@ def _lookup_provider_policies(provider_type):
     # lookup the policy action name
     provider_action_name = Policy_action_name.get(provider_type)
     if not provider_action_name:
-        raise Exception("unknown provider_type for policy lookup! %r" % provider_type)
+        raise Exception(f"unknown provider_type for policy lookup! {provider_type!r}")
 
     # now have a look at all authentication policies
     policies = linotp.lib.policy.getPolicy(
@@ -852,7 +851,7 @@ def loadProvider(provider_type, provider_name=None):
         provider_info = providers.get(provider_name)
 
     if not provider_info:
-        raise Exception("Unable to load provider: %r" % provider_name)
+        raise Exception(f"Unable to load provider: {provider_name!r}")
 
     provider_info = provider_info.get(provider_name, provider_info)
     provider_class = provider_info.get("Class")
@@ -886,7 +885,7 @@ def _build_provider_config(provider_info):
     except ValueError as exx:
         log.error("Failed to load provider config %r", provider_config)
         raise ValueError(
-            "Failed to load provider config:%r %r" % (provider_config, exx)
+            f"Failed to load provider config:{provider_config!r} {exx!r}"
         ) from exx
 
     # we have to add the other, additional parameters like timeout
@@ -933,9 +932,7 @@ def _load_provider_class(provider_slass_spec):
 
     if provider_class_obj is None:
         if "." not in provider_class:
-            raise Exception(
-                "Unknown provider class: Identifier was %s" % provider_class
-            )
+            raise Exception(f"Unknown provider class: Identifier was {provider_class}")
 
         # if there is no entry in the registry we try to fall back to
         # the old style of loading a module definition
@@ -947,12 +944,12 @@ def _load_provider_class(provider_slass_spec):
 
         except ImportError as exx:
             raise Exception(
-                "Unknown provider class: Identifier was %s - %r" % (provider_class, exx)
+                f"Unknown provider class: Identifier was {provider_class} - {exx!r}"
             ) from exx
 
         except AttributeError as exx:
             raise Exception(
-                "Unknown provider class: Identifier was %s - %r" % (provider_class, exx)
+                f"Unknown provider class: Identifier was {provider_class} - {exx!r}"
             ) from exx
 
     #
@@ -973,9 +970,9 @@ def _load_provider_class(provider_slass_spec):
 
     if not is_provider:
         raise NameError(
-            "Provider AttributeError: %s "
-            "Provider has no method %s"
-            % (provider_class_obj.__name__, " or ".join(required_method))
+            "Provider AttributeError: {} Provider has no method {}".format(
+                provider_class_obj.__name__, " or ".join(required_method)
+            )
         )
 
     return provider_class_obj

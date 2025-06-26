@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -52,7 +51,7 @@ class DuplicateUserError(Exception):
     pass
 
 
-class DatabaseContext(object):
+class DatabaseContext:
     """
     with the database context ist is possible to drive the "user import"
     from the shell and from within LinOTP
@@ -166,7 +165,7 @@ class SQLImportHandler(ImportHandler):
 
         mapping = {entry: entry for entry in ImportedUser.user_entries}
 
-        where = "groupid = '%s'" % self.groupid
+        where = f"groupid = '{self.groupid}'"
 
         resolver_parameters = {
             "Driver": "",

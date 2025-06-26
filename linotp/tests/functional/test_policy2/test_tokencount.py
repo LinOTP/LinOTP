@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -74,9 +73,9 @@ class TestPolicyTokencount(TestController):
         # all policies are deleted before
 
         for i in range(1, 6):
-            token_params = {"serial": "#TCOUNT%d" % i}
+            token_params = {"serial": f"#TCOUNT{i}"}
             serial = self.enroll_token(token_params)
-            assert serial == "#TCOUNT%d" % i
+            assert serial == f"#TCOUNT{i}"
 
         # set tokencount policy
         policy = {
@@ -92,14 +91,14 @@ class TestPolicyTokencount(TestController):
         # check that at least 4 tokens could be assigned
 
         for i in range(1, 5):
-            params = {"serial": "#TCOUNT%d" % i, "user": "def"}
+            params = {"serial": f"#TCOUNT{i}", "user": "def"}
             response = self.make_admin_request("assign", params=params)
             assert '"value": true' in response, response
 
         # check that the policy will raise an error
 
         i = 5
-        params = {"serial": "#TCOUNT%d" % i, "user": "def"}
+        params = {"serial": f"#TCOUNT{i}", "user": "def"}
         response = self.make_admin_request("assign", params=params)
         assert '"value": true' not in response, response
         msg = (
@@ -126,7 +125,7 @@ class TestPolicyTokencount(TestController):
         # already 4 tokens in realm
 
         i = 5
-        params = {"serial": "#TCOUNT%d" % i, "user": "def"}
+        params = {"serial": f"#TCOUNT{i}", "user": "def"}
         response = self.make_admin_request("assign", params=params)
         assert '"value": true' not in response, response
         msg = (

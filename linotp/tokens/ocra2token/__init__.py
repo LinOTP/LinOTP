@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -236,7 +235,7 @@ def truncated_value(bytes_s):
 
 
 def dec(h, p):
-    v = "%d" % truncated_value(h)
+    v = f"{truncated_value(h)}"
     if len(v) < p:
         v = (p - len(v)) * "0" + v
     return v[len(v) - p :]
@@ -288,7 +287,7 @@ class OcraSuite:
         (hotpStr, hash_type, trunc) = crypto.split("-")
 
         if hotpStr.upper() != "HOTP":
-            raise Exception("unsupported hash version: %s" % str(hotpStr))
+            raise Exception(f"unsupported hash version: {hotpStr!s}")
 
         self.hash_algo = self._getCrypto(hash_type.lower())
         self.truncation = self._getTruncation(trunc)
@@ -317,7 +316,7 @@ class OcraSuite:
                 self.S = 64
                 S = param[1:]
                 if S not in ["064", "128", "256", "512"]:
-                    raise ValueError("Unknown session length %r" % S)
+                    raise ValueError(f"Unknown session length {S!r}")
                 self.S = int(S)
 
             elif param[0] == "P":
@@ -330,7 +329,7 @@ class OcraSuite:
                 try:
                     length = 0
                     if not re.match(r"^(\d+[HMS])+$", complement):
-                        raise ValueError("timestep not in [HMS] %r" % complement)
+                        raise ValueError(f"timestep not in [HMS] {complement!r}")
                     parts = re.findall(r"\d+[HMS]", complement)
                     for part in parts:
                         period = part[-1]
@@ -339,7 +338,7 @@ class OcraSuite:
                     self.T = length
                 except ValueError as exx:
                     raise ValueError(
-                        "Invalid timestamp descriptor %r" % complement
+                        f"Invalid timestamp descriptor {complement!r}"
                     ) from exx
 
     def compute(self, data, key=None):
@@ -398,7 +397,7 @@ class OcraSuite:
             return get_hashalgo_from_description(hash_type)
 
         # any other case is an error
-        raise ValueError("Unknown hash algorithm %r" % hash_type)
+        raise ValueError(f"Unknown hash algorithm {hash_type!r}")
 
     def _getTruncation(self, trunc):
         truncation_length = 8
@@ -406,10 +405,10 @@ class OcraSuite:
             truncation_length = int(trunc)
             if truncation_length < 0 or truncation_length > 10:
                 raise ValueError(
-                    "Invalid truncation length [0,10] %r" % truncation_length
+                    f"Invalid truncation length [0,10] {truncation_length!r}"
                 )
         except ValueError as exx:
-            raise ValueError("Invalid truncation length %r" % trunc) from exx
+            raise ValueError(f"Invalid truncation length {trunc!r}") from exx
         return truncation_length
 
     ########################################
@@ -449,7 +448,7 @@ class OcraSuite:
                 if C < 0 or C > 2**64:
                     raise Exception()
             except BaseException as exx:
-                raise ValueError("Invalid counter value %r" % C) from exx
+                raise ValueError(f"Invalid counter value {C!r}") from exx
             datainput = int2beint64(int(C))
         return datainput
 
@@ -460,24 +459,24 @@ class OcraSuite:
             max_length = self.Q[1]
             # do some sanity checks
             if Q is None or len(Q) == 0:
-                raise ValueError("challenge is empty : %r" % Q)
+                raise ValueError(f"challenge is empty : {Q!r}")
             if isinstance(Q, str):
                 # this might raise an ascii conversion exception
                 Q = Q.encode("utf-8")
             elif not isinstance(Q, str):
-                raise ValueError("challenge is no string: %r" % Q)
+                raise ValueError(f"challenge is no string: {Q!r}")
             if len(Q) > max_length:
-                raise ValueError("challenge is to long: %r" % Q)
+                raise ValueError(f"challenge is to long: {Q!r}")
 
             if self.Q[0] == "N" and not Q.isdigit():
-                raise ValueError("challenge is not digits only: %r" % Q)
+                raise ValueError(f"challenge is not digits only: {Q!r}")
             if self.Q[0] == "A" and not Q.isalnum():
-                raise ValueError("challenge is not alpha-numeric: %r" % Q)
+                raise ValueError(f"challenge is not alpha-numeric: {Q!r}")
             if self.Q[0] == "H":
                 try:
                     int(Q, 16)
                 except ValueError as exx:
-                    raise ValueError("challenge is hex only: %s" % (Q)) from exx
+                    raise ValueError(f"challenge is hex only: {Q}") from exx
 
             # now encode the challenge acordingly
             if self.Q[0] == "N":
@@ -504,7 +503,7 @@ class OcraSuite:
                 elif len(P) == 2 * self.P.digest_size:
                     datainput += P_digest.decode("hex")
                 else:
-                    raise ValueError("Pin/Password digest invalid %r" % P_digest)
+                    raise ValueError(f"Pin/Password digest invalid {P_digest!r}")
             elif P is None:
                 raise ValueError("Pin/Password missing")
             else:
@@ -518,7 +517,7 @@ class OcraSuite:
         datainput = ""
         if self.S:
             if S is None or len(S) > self.S:
-                raise ValueError("session %r" % S)
+                raise ValueError(f"session {S!r}")
 
             datainput = S
             datainput += "\0" * (self.S - len(S))
@@ -537,7 +536,7 @@ class OcraSuite:
                 data = int2beint64(int(T // self.T))
 
             else:
-                raise ValueError("time format error %r" % self.T)
+                raise ValueError(f"time format error {self.T!r}")
             datainput += data
         return datainput
 
@@ -601,7 +600,7 @@ class OcraSuite:
         digits = "0123456789"
         lower_alpha = "abcdefghijklmnopqrstuvwxyz"
         upper_alpha = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        alphnum = "%s%s%s" % (lower_alpha, upper_alpha, digits)
+        alphnum = f"{lower_alpha}{upper_alpha}{digits}"
         hexs = digits + "abcdef"
 
         challenge = ""
@@ -770,8 +769,8 @@ def test():
     otp = ocra.compute(key, data)
 
     data = struct.pack(">Q", counter)
-    print("data %r" % binascii.hexlify(data))
-    print("otp %r" % otp)
+    print(f"data {binascii.hexlify(data)!r}")
+    print(f"otp {otp!r}")
 
 
 if __name__ == "__main__":

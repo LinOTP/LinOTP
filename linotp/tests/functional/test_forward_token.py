@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -184,7 +183,7 @@ class TestForwardToken(TestController):
         for i in [2, 3, 4, 5]:
             parameters = {
                 "serial": forward_serial,
-                "pass": "123!" + "12378%d" % i,
+                "pass": "123!" + f"12378{i}",
             }
             response = self.make_validate_request("check_s", params=parameters)
             assert '"value": false' in response, response
@@ -238,7 +237,7 @@ class TestForwardToken(TestController):
         for i in [2, 3, 4, 5]:
             parameters = {
                 "serial": forward_serial,
-                "pass": "123!" + "12378%d" % i,
+                "pass": "123!" + f"12378{i}",
             }
             response = self.make_validate_request("check_s", params=parameters)
             assert '"value": false' in response, response

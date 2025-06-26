@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -36,13 +35,13 @@ ResourceScheduler - handle iteration on resources list with blocking
 
 import logging
 from datetime import datetime, timedelta
-from typing import Any, Dict
+from typing import Any
 
 # ------------------------------------------------------------------------- --
 
 # global registry, where all current resolver uri and
 
-GLOBAL_REGISTRY: Dict[str, Any] = {}
+GLOBAL_REGISTRY: dict[str, Any] = {}
 MAX_BLOCK_COUNTER = 8  # delay = delay + delay * 2**block_counter
 
 log = logging.getLogger(__name__)
@@ -73,7 +72,7 @@ def string_to_list(string_list, sep=","):
 # ------------------------------------------------------------------------- --
 
 
-class ResourceRegistry(object):
+class ResourceRegistry:
     """
     the resource registry is a global registry, which keeps an entry
     per resource. The resource is identified by a unique identifier, eg. URI.
@@ -154,7 +153,7 @@ class DictResourceRegistry(ResourceRegistry):
 # ------------------------------------------------------------------------- --
 
 
-class ResourceScheduler(object):
+class ResourceScheduler:
     """
     Class to manage the list of resources (uris) in a global register, while
     keeping track of the connect-ability
@@ -304,8 +303,7 @@ class ResourceScheduler(object):
 
                 # return the resouce n-times until the retry count is done
 
-                for r_uri in self._retry_resource(uri):
-                    yield r_uri
+                yield from self._retry_resource(uri)
 
         return
 

@@ -18,9 +18,9 @@ Tests the create of audit entries
 """
 
 import unittest
+from unittest.mock import patch
 
 import pytest
-from mock import patch
 
 from linotp.lib.error import TokenAdminError
 from linotp.lib.token import TokenHandler

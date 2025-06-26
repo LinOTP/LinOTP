@@ -1,5 +1,3 @@
-from typing import Dict, List
-
 from linotp.lib.policy.evaluate import PolicyEvaluator
 from linotp.lib.policy.util import get_policies
 from linotp.lib.realm import getRealms
@@ -158,7 +156,7 @@ class UserPermissions(dict):
             }
         """
 
-        def _parse_scopes(scopes: List[Dict]):
+        def _parse_scopes(scopes: list[dict]):
             parsed_permissions = []
             for scope, actions in scopes.items():
                 permissions = [f"{scope}/{action}" for action in actions]

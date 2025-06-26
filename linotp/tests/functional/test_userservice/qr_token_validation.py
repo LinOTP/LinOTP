@@ -51,7 +51,7 @@ class QR_Token_Validation:
         if rest == 0:
             return str(before)
         else:
-            return "%d.%02d" % (before, rest)
+            return f"{before}.{rest:02d}"
 
     @staticmethod
     def create_keys():

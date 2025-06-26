@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -32,9 +31,9 @@ Test the Challenge Prompt
 import binascii
 import json
 import time
+from unittest.mock import patch
 
 import pytest
-from mock import patch
 
 import linotp.provider.smsprovider.HttpSMSProvider
 from linotp.lib.HMAC import HmacOtp
@@ -84,7 +83,7 @@ class TestChallengePrompt(TestController):
     being done in the test_email_token
     """
 
-    sms_url = "http://localhost:%d/testing/http2sms" % 5001
+    sms_url = "http://localhost:5001/testing/http2sms"
 
     def setUp(self):
         TestController.setUp(self)
@@ -118,7 +117,7 @@ class TestChallengePrompt(TestController):
         use_public_id=False,
         user=None,
     ):
-        serial = "UBAM%s_%s" % (serialnum, yubi_slot)
+        serial = f"UBAM{serialnum}_{yubi_slot}"
 
         params = {
             "type": "yubikey",
@@ -136,7 +135,7 @@ class TestChallengePrompt(TestController):
             params["user"] = user
 
         response = self.make_admin_request("init", params=params)
-        assert '"value": true' in response, "Response: %r" % response
+        assert '"value": true' in response, f"Response: {response!r}"
 
         # setup the otp values, that we check against
         self.init_yubikey_otps(public_uid)

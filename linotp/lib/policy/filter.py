@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -34,7 +33,7 @@ import re
 log = logging.getLogger(__name__)
 
 
-class UserDomainCompare(object):
+class UserDomainCompare:
     def __init__(self):
         self._compare = None
 
@@ -162,7 +161,7 @@ class UserDomainCompare(object):
         return self._compareUser(userObj, simple_user_def)
 
 
-class AttributeCompare(object):
+class AttributeCompare:
     """
     Policy Attribute Comparison to support user filter like
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2019 KeyIdentity GmbH
@@ -25,9 +24,8 @@
 #
 
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import List
 
 import pytest
 from flask.testing import FlaskCliRunner
@@ -41,7 +39,7 @@ from linotp.model import db
 # -------------------------------------------------------------------------- --
 
 AUDIT_AMOUNT_ENTRIES = 100
-FREEZE_DATE = datetime(2020, 1, 1, tzinfo=timezone.utc)
+FREEZE_DATE = datetime(2020, 1, 1, tzinfo=UTC)
 
 
 @pytest.fixture
@@ -241,7 +239,7 @@ def test_audit_cleanup_parameters(
     runner: FlaskCliRunner,
     setup_audit_table: None,
     freezer: FrozenDateTimeFactory,
-    options: List,
+    options: list,
     deleted: int,
     remaining: int,
     cleaned: bool,

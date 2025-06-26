@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -68,7 +67,7 @@ def parse_resolver(composite_key, value):
     cls_identifiers = get_resolver_types()  # ldapresolver, passwdresolver, etc
 
     for cls_identifier in cls_identifiers:
-        if composite_key.startswith("linotp.%s." % cls_identifier):
+        if composite_key.startswith(f"linotp.{cls_identifier}."):
             break
     else:
         raise ConfigNotRecognized(composite_key)
@@ -184,7 +183,7 @@ def defineResolver(params):
     resolver_cls = get_resolver_class(typ)
 
     if not resolver_cls:
-        raise Exception("no such resolver type '%r' defined!" % typ)
+        raise Exception(f"no such resolver type '{typ!r}' defined!")
 
     # ---------------------------------------------------------------------- --
 
@@ -224,11 +223,7 @@ def defineResolver(params):
 
     save_resolver_config(resolver, p_config, prefix="linotp." + typ, name=conf)
 
-    resolver_spec = "%s.%s.%s" % (
-        resolver.__module__,
-        resolver.__class__.__name__,
-        conf,
-    )
+    resolver_spec = f"{resolver.__module__}.{resolver.__class__.__name__}.{conf}"
 
     _flush_user_resolver_cache(resolver_spec)
 
@@ -376,7 +371,7 @@ def getResolverInfo(resolvername, passwords=False):
     resolver_cls = get_resolver_class(resolver_type)
 
     if resolver_cls is None:
-        raise Exception("no such resolver type '%r' defined!" % resolver_type)
+        raise Exception(f"no such resolver type '{resolver_type!r}' defined!")
 
     result["spec"] = resolver_cls.db_prefix + "." + resolvername
 
@@ -407,7 +402,7 @@ def getResolverInfo(resolvername, passwords=False):
         # the string representation
 
         if not isinstance(value, str):
-            res_conf[key] = "%r" % value
+            res_conf[key] = f"{value!r}"
 
     if "readonly" in res_conf:
         try:
@@ -829,7 +824,7 @@ def getResolverClassName(cls_identifier, resolver_name):
     if db_prefix is None:
         return ""
 
-    return "%s.%s" % (db_prefix, resolver_name)
+    return f"{db_prefix}.{resolver_name}"
 
 
 def get_resolver_db_prefix(cls_identifier):
@@ -926,7 +921,7 @@ def prepare_resolver_parameter(new_resolver_name, param, previous_name=None):
     resolver_cls = get_resolver_class(param["type"])
 
     if resolver_cls is None:
-        raise Exception("no such resolver type '%r' defined!" % param["type"])
+        raise Exception("no such resolver type '{!r}' defined!".format(param["type"]))
 
     # for rename and update, we support the merge with previous parameters
     if previous_name:

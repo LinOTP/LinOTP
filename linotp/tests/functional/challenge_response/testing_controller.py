@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -87,7 +86,7 @@ class TestingChallengeResponseController(TestController):
     def do_http_request(
         remoteServer, params=None, headers=None, cookies=None, method="POST"
     ):
-        request_url = "%s" % (remoteServer)
+        request_url = f"{remoteServer}"
 
         if not params:
             params = {}
@@ -104,7 +103,7 @@ class TestingChallengeResponseController(TestController):
         if cookies:
             cooking = []
             for key, value in list(cookies.items()):
-                cooking.append("%s=%s" % (key, value))
+                cooking.append(f"{key}={value}")
             r_headers["Cookie"] = ";".join(cooking)
 
         # submit the request
@@ -136,7 +135,7 @@ class TestingChallengeResponseController(TestController):
         result = False
         import subprocess
 
-        p = subprocess.Popen(["lsof", "-t", "-i:%s" % port], stdout=subprocess.PIPE)
+        p = subprocess.Popen(["lsof", "-t", f"-i:{port}"], stdout=subprocess.PIPE)
         out, _err = p.communicate()
         if len(out) > 0:
             result = True

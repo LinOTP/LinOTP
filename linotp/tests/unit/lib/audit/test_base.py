@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -35,7 +34,7 @@ from linotp.lib.audit.base import AuditBase, getAudit
 from linotp.lib.audit.SQLAudit import Audit
 
 
-class TestAuditSetup(object):
+class TestAuditSetup:
     @pytest.mark.app_config(
         {
             "AUDIT_DATABASE_URI": "OFF",

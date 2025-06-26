@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -109,7 +108,7 @@ class TestAdminAuthController(TestController):
         # overwrite the default defintion
         policy.update(param)
 
-        resp_dict = "setPolicy %s" % policy["name"]
+        resp_dict = "setPolicy {}".format(policy["name"])
 
         response = self.make_system_request("setPolicy", params=policy, **pparams)
         assert response.json["result"]["status"] is True, response

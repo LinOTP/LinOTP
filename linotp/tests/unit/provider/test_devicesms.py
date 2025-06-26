@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -30,8 +29,7 @@ import subprocess
 import sys
 import unittest
 from unittest import TestCase
-
-from mock import patch
+from unittest.mock import patch
 
 from linotp.provider.smsprovider.DeviceSMSProvider import DeviceSMSProvider
 
@@ -83,7 +81,7 @@ class BaseClass:
                 if not self.gnokii_available:
                     popen_mock.return_value.communicate.return_value = (
                         "Mocked gnokii",
-                        "Status:%s" % expected_gnokii_status,
+                        f"Status:{expected_gnokii_status}",
                     )
                     popen_mock.return_value.returncode = expected_gnokii_status
                 self.return_code = sms.submitMessage(self.phone, self.message)
@@ -102,13 +100,13 @@ class BaseClass:
             )
 
             if expected_gnokii_call:
-                gnokki_cmd = "gnokii --config %s --sendsms %s" % (
+                gnokki_cmd = "gnokii --config {} --sendsms {}".format(
                     self.config["CONFIGFILE"],
                     self.phone,
                 )
 
                 if "SMSC" in self.config:
-                    gnokki_cmd += " --smsc %s" % self.config["SMSC"]
+                    gnokki_cmd += " --smsc {}".format(self.config["SMSC"])
 
                 assert " ".join(self.gnokii_args[0]) == gnokki_cmd
 

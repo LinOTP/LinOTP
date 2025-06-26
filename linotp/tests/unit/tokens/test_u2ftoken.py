@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,9 +26,9 @@
 
 import logging
 import unittest
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
-from mock import MagicMock, Mock, patch
 
 
 class U2FTokenClassTestCase(unittest.TestCase):

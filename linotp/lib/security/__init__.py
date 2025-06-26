@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -35,7 +34,7 @@ class FatalHSMException(Exception):
     pass
 
 
-class SecurityModule(object):
+class SecurityModule:
     @classmethod
     def getAdditionalClassConfig(cls):
         return []
@@ -45,48 +44,48 @@ class SecurityModule(object):
 
     def isReady(self):
         fname = "isReady"
-        raise NotImplementedError("Should have been implemented %s" % fname)
+        raise NotImplementedError(f"Should have been implemented {fname}")
 
     def setup_module(self, params):
         fname = "setup_module"
-        raise NotImplementedError("Should have been implemented %s" % fname)
+        raise NotImplementedError(f"Should have been implemented {fname}")
 
     ### base methods ###
 
     def random(self, len: int) -> bytes:
         fname = "random"
-        raise NotImplementedError("Should have been implemented %s" % fname)
+        raise NotImplementedError(f"Should have been implemented {fname}")
 
     def encrypt(self, data: bytes, iv: bytes, id: int = 0) -> bytes:
         fname = "encrypt"
-        raise NotImplementedError("Should have been implemented %s" % fname)
+        raise NotImplementedError(f"Should have been implemented {fname}")
 
     def decrypt(self, value: bytes, iv: bytes, id: int = 0) -> bytes:
         fname = "decrypt"
-        raise NotImplementedError("Should have been implemented %s" % fname)
+        raise NotImplementedError(f"Should have been implemented {fname}")
 
     ### higer level methods ###
 
     def encryptPassword(self, cryptPass: bytes) -> str:
         fname = "decrypt"
-        raise NotImplementedError("Should have been implemented %s" % fname)
+        raise NotImplementedError(f"Should have been implemented {fname}")
 
     def encryptPin(self, cryptPin, iv=None) -> str:
         fname = "decrypt"
-        raise NotImplementedError("Should have been implemented %s" % fname)
+        raise NotImplementedError(f"Should have been implemented {fname}")
 
     def decryptPassword(self, cryptPass: str) -> bytes:
         fname = "decrypt"
-        raise NotImplementedError("Should have been implemented %s" % fname)
+        raise NotImplementedError(f"Should have been implemented {fname}")
 
     def decryptPin(self, cryptPin: str) -> bytes:
         fname = "decrypt"
-        raise NotImplementedError("Should have been implemented %s" % fname)
+        raise NotImplementedError(f"Should have been implemented {fname}")
 
     def signMessage(self, message, method=None, slot_id=3):
         fname = "signMessage"
-        raise NotImplementedError("Should have been implemented %s" % fname)
+        raise NotImplementedError(f"Should have been implemented {fname}")
 
     def verfiyMessageSignature(self, message, hex_mac, method=None, slot_id=3):
         fname = "verfiyMessageSignature"
-        raise NotImplementedError("Should have been implemented %s" % fname)
+        raise NotImplementedError(f"Should have been implemented {fname}")

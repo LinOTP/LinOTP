@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -28,8 +27,7 @@
 """unit test for complex policy comparisons"""
 
 import unittest
-
-from mock import patch
+from unittest.mock import patch
 
 from linotp.lib.auth.validate import check_pin
 from linotp.lib.user import User

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -28,9 +27,9 @@
 """test for ValidateController"""
 
 import logging
+from unittest import mock
 
 import pytest
-from mock import mock
 
 from linotp.lib.policy import AuthorizeException
 
@@ -45,7 +44,7 @@ class NotAuthorizeException(Exception):
 
 
 @pytest.mark.usefixtures("app")
-class TestValidateController(object):
+class TestValidateController:
     @pytest.mark.parametrize(
         "check_rv,data",
         [

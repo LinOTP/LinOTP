@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -31,6 +30,7 @@ import binascii
 import logging
 import os
 import time
+from hashlib import md5
 
 import integration_data as data
 import pytest
@@ -53,9 +53,8 @@ def calculate_motp(epoch, key, pin, digits=6):
     :param pin: mOTP PIN
     :type pin: string
     """
-    from hashlib import md5
 
-    vhash = "%d%s%s" % (epoch / 10, key, pin)
+    vhash = f"{int(epoch / 10)}{key}{pin}"
     motp = md5(vhash.encode("utf-8")).hexdigest()[:digits]
     return motp
 
@@ -181,7 +180,7 @@ class TestScenario01:
         selfservice.clear_session()
         serial_token_mozart = result["detail"]["serial"]
         assert serial_token_mozart, (
-            "Failed to enroll mOTP token for user mozart: %s" % result["detail"]
+            "Failed to enroll mOTP token for user mozart: {}".format(result["detail"])
         )
 
         self._announce_test(
@@ -314,7 +313,7 @@ class TestScenario01:
             user="mozart@" + test1_realm, password="mozartnewpin" + motp_otp
         )
         assert not access_granted, (
-            "OTP: mozartnewpin%s should be False for user mozart" % motp_otp
+            f"OTP: mozartnewpin{motp_otp} should be False for user mozart"
         )
 
         self._announce_test("11. mOTP Pin im selfservice ändern")
@@ -348,7 +347,7 @@ class TestScenario01:
         hotp = HmacOtp()
         otp = "bachnewpin" + hotp.generate(counter=counter, key=seed_oath137332_bin)
         access_granted, _ = validate.validate(user="bach@" + test1_realm, password=otp)
-        assert not access_granted, "OTP: %s should be False for user bach" % otp
+        assert not access_granted, f"OTP: {otp} should be False for user bach"
 
         selfservice.login("bach", "Test123!", test1_realm)
 
@@ -361,7 +360,7 @@ class TestScenario01:
         # Should be able to authenticate again
         otp = "bachnewpin" + hotp.generate(counter=counter + 3, key=seed_oath137332_bin)
         access_granted, _ = validate.validate(user="bach@" + test1_realm, password=otp)
-        assert access_granted, "OTP: %s should be True for user bach" % otp
+        assert access_granted, f"OTP: {otp} should be True for user bach"
 
         self._announce_test(
             "13. Benutzer beethoven deaktiviert seinen Token im Selfservice portal und versucht sich anzumelden."
@@ -403,13 +402,12 @@ class TestScenario01:
         found_users = self.testcase.manage_ui.user_view.get_num_users(realm)
 
         assert expected_users == found_users, (
-            "Not the expected number of users in realm %s: Expecting %s but found %s"
-            % (realm, expected_users, found_users)
+            f"Not the expected number of users in realm {realm}: Expecting {expected_users} but found {found_users}"
         )
 
         for user in users:
             assert self.testcase.manage_ui.user_view.user_exists(user), (
-                "User '%s' should exist in realm %s" % (user, realm)
+                f"User '{user}' should exist in realm {realm}"
             )
             break
 
@@ -429,7 +427,7 @@ class UserServiceApi:
     def login(self, user, password, realm=None):
         """Login to the suserservice API with user and password"""
         if realm:
-            login_user = "%s@%s" % (user, realm)
+            login_user = f"{user}@{realm}"
         else:
             login_user = user
         url = self.base_url + "/userservice/login"
@@ -437,12 +435,11 @@ class UserServiceApi:
         r = requests.post(url, params=params, verify=False)
 
         assert r.status_code == 200, (
-            "Failed to login to self service, status code: %s, response: %s"
-            % (r.status_code, r.text)
+            f"Failed to login to self service, status code: {r.status_code}, response: {r.text}"
         )
 
         assert r.cookies.get("user_selfservice") is not None, (
-            "No session cookie found in login response, response: %s" % r.text
+            f"No session cookie found in login response, response: {r.text}"
         )
 
         self._login_response = r
@@ -458,7 +455,7 @@ class UserServiceApi:
         }
         r = self._make_userservice_request("setpin", params)
         assert r.json()["result"]["value"]["set userpin"] == 1, (
-            "Failed to set pin for token, params: %s, response: %s" % (params, r.text)
+            f"Failed to set pin for token, params: {params}, response: {r.text}"
         )
 
     def enroll_motp(self, motp_key, motp_pin, pin, description):
@@ -472,7 +469,7 @@ class UserServiceApi:
         }
         r = self._make_userservice_request("enroll", params)
         assert r.json()["result"]["value"] is True, (
-            "Failed to enroll mOTP token, params: %s, response: %s" % (params, r.text)
+            f"Failed to enroll mOTP token, params: {params}, response: {r.text}"
         )
 
         return r.json()
@@ -485,8 +482,7 @@ class UserServiceApi:
         }
         r = self._make_userservice_request("setmpin", params)
         assert r.json()["result"]["value"]["set userpin"] == 1, (
-            "Failed to set mOTP pin for token, params: %s, response: %s"
-            % (params, r.text)
+            f"Failed to set mOTP pin for token, params: {params}, response: {r.text}"
         )
 
     def resync_token(self, serial, otp1, otp2):
@@ -498,7 +494,7 @@ class UserServiceApi:
         }
         r = self._make_userservice_request("resync", params)
         assert r.json()["result"]["value"]["resync Token"] is True, (
-            "Failed to resync token, params: %s, response: %s" % (params, r.text)
+            f"Failed to resync token, params: {params}, response: {r.text}"
         )
 
     def disable_token(self, serial):
@@ -508,7 +504,7 @@ class UserServiceApi:
         }
         r = self._make_userservice_request("disable", params)
         assert r.json()["result"]["value"]["disable token"] == 1, (
-            "Failed to disable token %s, response: %s" % (serial, r.text)
+            f"Failed to disable token {serial}, response: {r.text}"
         )
 
     def _make_userservice_request(self, endpoint, params):
@@ -526,13 +522,11 @@ class UserServiceApi:
 
         r = requests.post(url, params=params, headers=headers, verify=False)
         assert r.status_code == 200, (
-            "Failed to make request to userservice endpoint %s, params: %s, status code: %s, response: %s"
-            % (endpoint, params, r.status_code, r.text)
+            f"Failed to make request to userservice endpoint {endpoint}, params: {params}, status code: {r.status_code}, response: {r.text}"
         )
 
         assert r.json()["result"]["status"] is True, (
-            "Request to userservice endpoint %s, params %s, response: %s did not return status True"
-            % (endpoint, params, r.text)
+            f"Request to userservice endpoint {endpoint}, params {params}, response: {r.text} did not return status True"
         )
 
         return r

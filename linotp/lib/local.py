@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -42,7 +41,7 @@ at the end of every thread. Otherwise you will risk data leaks between threads.
 # inspired by werkzeugs local module, adapted to our needs
 
 
-class LocalContainer(object):
+class LocalContainer:
     """
     LocalContainer works as a thread safety wrapper for objects allowing
     item assignment. On construction it demands a factory function that

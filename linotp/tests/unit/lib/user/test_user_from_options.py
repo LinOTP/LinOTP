@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -26,8 +25,7 @@
 #
 
 import unittest
-
-from mock import patch
+from unittest.mock import patch
 
 from linotp.lib.user import User, get_user_from_options
 
@@ -85,7 +83,7 @@ class TestGetUserFromOptions(unittest.TestCase):
             )
 
             assert login == result["login"] and realm == result["realm"], (
-                "failed on run %r:%r:%r" % (login, realm, run)
+                f"failed on run {login!r}:{realm!r}:{run!r}"
             )
 
         return
@@ -142,7 +140,7 @@ class TestGetUserFromOptions(unittest.TestCase):
             )
 
             assert login == result["login"] and realm == result["realm"], (
-                "failed on run %r:%r:%r" % (login, realm, run)
+                f"failed on run {login!r}:{realm!r}:{run!r}"
             )
 
         return

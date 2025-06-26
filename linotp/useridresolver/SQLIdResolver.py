@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -223,7 +221,7 @@ def make_connect(driver, user, pass_, server, port, db, conParams=""):
             param_str = param_str.replace(key, value)
 
         url_quote = urllib.parse.quote_plus(param_str)
-        connect = "%s%s" % (driver, url_quote)
+        connect = f"{driver}{url_quote}"
     else:
         connect = build_simple_connect(driver, user, pass_, server, port, db, conParams)
 
@@ -259,7 +257,7 @@ def build_simple_connect(
 
     # add driver scope as protocoll
 
-    connect.append("%s://" % driver)
+    connect.append(f"{driver}://")
 
     # ------------------------------------------------------------------ --
 
@@ -269,9 +267,9 @@ def build_simple_connect(
         user = user.strip()
 
         if pass_ and pass_.strip():
-            connect.append("%s:%s" % (user, pass_))
+            connect.append(f"{user}:{pass_}")
         else:
-            connect.append("%s" % user)
+            connect.append(f"{user}")
 
     # ------------------------------------------------------------------ --
 
@@ -284,9 +282,9 @@ def build_simple_connect(
 
         if port and port.strip():
             port = port.strip()
-            connect.append("@%s:%d" % (server, int(port)))
+            connect.append(f"@{server}:{int(port)}")
         else:
-            connect.append("@%s" % server)
+            connect.append(f"@{server}")
     else:
         # in case of no server and a user, we have to append the empty @ sign
         # as otherwise the parser will interpret the :password as port which
@@ -299,14 +297,14 @@ def build_simple_connect(
 
     # add database
     if db and db.strip():
-        connect.append("/%s" % db.strip())
+        connect.append(f"/{db.strip()}")
 
     # ------------------------------------------------------------------ --
 
     # add additional parameters
 
     if conParams:
-        connect.append("?%s" % conParams)
+        connect.append(f"?{conParams}")
 
     return "".join(connect)
 
@@ -514,7 +512,7 @@ class IdResolver(UserIdResolver):
 
         except Exception as exx:
             log.error("[testconnection] Exception: %r", exx)
-            return False, {"err_string": "%r" % exx, "rows": num}
+            return False, {"err_string": f"{exx!r}", "rows": num}
 
         finally:
             dbObj.close()
@@ -684,7 +682,7 @@ class IdResolver(UserIdResolver):
         l_config, missing = self.filter_config(config, conf)
         if missing:
             log.error("missing config entries: %r", missing)
-            raise ResolverLoadConfigError(" missing config entries: %r" % missing)
+            raise ResolverLoadConfigError(f"missing config entries: {missing!r}")
 
         self.managed = l_config.get("readonly", False)
         # example for connect:
@@ -724,11 +722,11 @@ class IdResolver(UserIdResolver):
 
         except ValueError as exx:
             raise ResolverLoadConfigError(
-                "Invalid userinfo - no json document: %s %r" % (userInfo, exx)
+                f"Invalid userinfo - no json document: {userInfo} {exx!r}"
             ) from exx
 
         except Exception as exx:
-            raise Exception("linotp.sqlresolver.Map: %r" % exx) from exx
+            raise Exception(f"linotp.sqlresolver.Map: {exx!r}") from exx
 
         self.checkMapping()
 
@@ -763,9 +761,8 @@ class IdResolver(UserIdResolver):
             if invalid_columns:
                 dbObj.close()
                 raise Exception(
-                    "Invalid map with invalid columns: %r. "
-                    "Possible columns: %s"
-                    % (invalid_columns, [co.name for co in table.columns])
+                    f"Invalid map with invalid columns: {invalid_columns!r}. "
+                    f"Possible columns: {[co.name for co in table.columns]}"
                 )
             else:
                 log.debug("Valid mapping: %r", self.sqlUserInfo)
@@ -942,7 +939,7 @@ class IdResolver(UserIdResolver):
 
         except KeyError as exx:
             log.error("[getUserList] Invalid Mapping Error: %r", exx)
-            raise KeyError("Invalid Mapping %r " % exx) from exx
+            raise KeyError(f"Invalid Mapping {exx!r} ") from exx
 
         except Exception as exx:
             log.error("[getUserList] Exception: %r", exx)

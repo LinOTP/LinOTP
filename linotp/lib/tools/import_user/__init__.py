@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -45,7 +44,7 @@ from linotp.model.imported_user import ImportedUser
 log = logging.getLogger(__name__)
 
 
-class FormatReader(object):
+class FormatReader:
     """
     support for special csv formats
     """
@@ -99,7 +98,7 @@ class PasswdFormatReader(FormatReader):
         return ext_row
 
 
-class UserImport(object):
+class UserImport:
     def __init__(self, ImportHandler):
         self.user_column_mapping = {}
         self.import_handler = ImportHandler
@@ -203,7 +202,7 @@ class UserImport(object):
                 ):
                     raise Exception(
                         "Violation of unique constraint - "
-                        "duplicate user in data: %r" % user
+                        f"duplicate user in data: {user!r}"
                     )
                 else:
                     processed_users[user.userid] = user.username
@@ -276,7 +275,7 @@ def main():
     # in the test main() we use a password file, which is prepared
     # for splitting the description fields into csv data
 
-    with open("/linotp/def-passwd", "r") as f:
+    with open("/linotp/def-passwd") as f:
         csv_data = f.read()
 
     user_column_map = {

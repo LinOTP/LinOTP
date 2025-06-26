@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -215,7 +214,7 @@ class ValidateController(BaseController):
             if qr and opt and "message" in opt:
                 try:
                     dataobj = opt.get("message")
-                    param["alt"] = "%s" % opt
+                    param["alt"] = f"{opt}"
                     if "transactionid" in opt:
                         param["transactionid"] = opt["transactionid"]
                     return sendQRImageResult(dataobj, param)
@@ -229,7 +228,7 @@ class ValidateController(BaseController):
             log.error("[check] validate/check failed: %r", exx)
             # If an internal error occurs or the SMS gateway did not send the
             # SMS, we write this to the detail info.
-            g.audit["info"] = "%r" % exx
+            g.audit["info"] = f"{exx!r}"
             db.session.rollback()
             return sendResult(False, 0)
 
@@ -495,7 +494,7 @@ class ValidateController(BaseController):
             if qr and opt and "message" in opt:
                 try:
                     dataobj = opt.get("message")
-                    param["alt"] = "%s" % opt
+                    param["alt"] = f"{opt}"
                     if "transactionid" in opt:
                         param["transactionid"] = opt["transactionid"]
                     return sendQRImageResult(dataobj, param)
@@ -563,7 +562,7 @@ class ValidateController(BaseController):
             if "token_type" in _opt:
                 g.audit["token_type"] = _opt["token_type"]
 
-            g.audit["info"] = "accept transaction: %r" % ok
+            g.audit["info"] = f"accept transaction: {ok!r}"
 
             g.audit["success"] = ok
             db.session.commit()
@@ -572,7 +571,7 @@ class ValidateController(BaseController):
 
         except Exception as exx:
             log.error("validate/accept_transaction failed: %r", exx)
-            g.audit["info"] = "%r" % exx
+            g.audit["info"] = f"{exx!r}"
             db.session.rollback()
 
             return sendResult(False, 0)
@@ -629,7 +628,7 @@ class ValidateController(BaseController):
             if "token_type" in _opt:
                 g.audit["token_type"] = _opt["token_type"]
 
-            g.audit["info"] = "reject transaction: %r" % ok
+            g.audit["info"] = f"reject transaction: {ok!r}"
 
             g.audit["success"] = ok
             db.session.commit()
@@ -638,7 +637,7 @@ class ValidateController(BaseController):
 
         except Exception as exx:
             log.error("validate/reject_transaction failed: %r", exx)
-            g.audit["info"] = "%r" % exx
+            g.audit["info"] = f"{exx!r}"
             db.session.rollback()
 
             return sendResult(False, 0)
@@ -709,7 +708,7 @@ class ValidateController(BaseController):
             if qr and opt and "message" in opt:
                 try:
                     dataobj = opt.get("message")
-                    param["alt"] = "%s" % opt
+                    param["alt"] = f"{opt}"
                     if "transactionid" in opt:
                         param["transactionid"] = opt["transactionid"]
                     return sendQRImageResult(dataobj, param)

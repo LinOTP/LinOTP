@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -184,7 +183,7 @@ class IdResolver(UserIdResolver):
 
         log.info("[loadFile] loading users from file %s", self.fileName)
 
-        fileHandle = open(self.fileName, "r")
+        fileHandle = open(self.fileName)
 
         line = fileHandle.readline()
 
@@ -201,10 +200,10 @@ class IdResolver(UserIdResolver):
 
             line = str2unicode(line)
             fields = line.split(":", 7)
-            self.nameDict["%s" % fields[NAME]] = fields[ID]
+            self.nameDict[f"{fields[NAME]}"] = fields[ID]
 
             # for speed reason - build a revers lookup
-            self.reversDict[fields[ID]] = "%s" % fields[NAME]
+            self.reversDict[fields[ID]] = f"{fields[NAME]}"
 
             # for full info store the line
             self.descDict[fields[ID]] = fields
@@ -587,7 +586,7 @@ class IdResolver(UserIdResolver):
 
         if missing:
             log.error("missing config entries: %r", missing)
-            raise ResolverLoadConfigError(" missing config entries: %r" % missing)
+            raise ResolverLoadConfigError(f" missing config entries: {missing!r}")
 
         fileName = l_config["fileName"]
 
@@ -597,7 +596,7 @@ class IdResolver(UserIdResolver):
 
         if not os.path.isfile(fileName) or not os.access(fileName, os.R_OK):
             raise ResolverLoadConfigError(
-                "File %r does not exist or is not accessible" % fileName
+                f"File {fileName!r} does not exist or is not accessible"
             )
         self.fileName = fileName
         self.loadFile()
@@ -623,12 +622,12 @@ if __name__ == "__main__":
     user = "koelbel"
     loginId = y.getUserId(user)
 
-    print(" %s -  %s" % (user, loginId))
+    print(f" {user} -  {loginId}")
     print(" reId - " + y.getResolverId())
 
     ret = y.getUserInfo(loginId)
 
-    print("result %r" % ret)
+    print(f"result {ret!r}")
 
     ret = y.getSearchFields()
     # ret["username"]="^bea*"

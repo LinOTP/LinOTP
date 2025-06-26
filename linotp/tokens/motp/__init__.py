@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -37,7 +36,7 @@ from linotp.lib.crypto.utils import zerome
 log = logging.getLogger(__name__)
 
 
-class mTimeOtp(object):
+class mTimeOtp:
     """
     implements the motp timebased check_otp
     - s. https://github.com/neush/otpn900/blob/master/src/test_motp.c

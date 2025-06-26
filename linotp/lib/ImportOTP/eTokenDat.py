@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -123,7 +122,7 @@ def parse_dat_data(data, d_string=None):
     return tokens
 
 
-class DatToken(object):
+class DatToken:
     """
     eToken class which is equivalent to the token definition of the dat file
     """
@@ -335,7 +334,7 @@ class DatToken(object):
         return
 
     def __repr__(self):
-        rep = "<eToken %s>" % self.init_params
+        rep = f"<eToken {self.init_params}>"
         return rep
 
 
@@ -400,7 +399,7 @@ def get_session(lino_url, user=None, pwd=None):
             raise exception
 
     # add headers, as they transfer the cookies
-    session = "access_token_cookie={}".format(access_token_cookie)
+    session = f"access_token_cookie={access_token_cookie}"
     headers = {"Cookie": session, "X-CSRF-TOKEN": csrf_token}
     return (session, headers)
 
@@ -469,7 +468,7 @@ def process_file(filename, startdate, lino_url=None, user=None, password=None):
     tokens = []
     lines = []
 
-    with open(filename, "r") as fil:
+    with open(filename) as fil:
         for line in fil:
             line = line.strip()
 

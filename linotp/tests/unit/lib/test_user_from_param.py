@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,8 +26,7 @@
 
 import json
 import unittest
-
-from mock import patch
+from unittest.mock import patch
 
 from linotp.lib.user import getUserFromParam
 
@@ -185,12 +183,7 @@ class TestGetFromParam(unittest.TestCase):
 
                 user = getUserFromParam(param)
 
-                msg = "Failed for config: %r\n at run[%r] %r\nresult was %r" % (
-                    config,
-                    run_id,
-                    run,
-                    user,
-                )
+                msg = f"Failed for config: {config!r}\n at run[{run_id!r}] {run!r}\nresult was {user!r}"
 
                 try:
                     assert user.login == result["login"], msg
@@ -250,7 +243,7 @@ class TestGetFromParam(unittest.TestCase):
                 .replace("realms", "Benutzer ist in folgenden Realms")
             )
 
-            table.append("%s %s" % (panel, cc))
+            table.append(f"{panel} {cc}")
             table.append("")
 
             # ------------------------------------------------------------- --
@@ -268,7 +261,7 @@ class TestGetFromParam(unittest.TestCase):
                 rparams = json.dumps(result)
                 rr = rparams.replace("{", "|* ").replace(",", " * ").replace("}", "")
 
-                table.append("||Parameters: %s||Result: %s|" % (pp, rr))
+                table.append(f"||Parameters: {pp}||Result: {rr}|")
 
             table.append("{panel}")
             table.append("")

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2015-2019 KeyIdentity GmbH
@@ -29,7 +28,7 @@ import logging
 import os
 import re
 from operator import methodcaller
-from typing import TYPE_CHECKING, List, Optional, Union
+from typing import TYPE_CHECKING
 from warnings import warn
 
 import requests
@@ -60,7 +59,7 @@ This file contains the main manage page class
 """
 
 
-class ManageUi(object):
+class ManageUi:
     """
     Object for representing the manage page itself. There should be
     a single ManageUi object to represent the browser page
@@ -90,7 +89,7 @@ class ManageUi(object):
         :param testcase: The test case that is controlling the UI
         """
 
-        self.testcase: "TestCase" = testcase
+        self.testcase: TestCase = testcase
         "The UnitTest class that is running the tests"
 
         self.test_data_dir = os.path.normpath(
@@ -183,7 +182,7 @@ class ManageUi(object):
         return AlertBoxHandler(self)
 
     @property
-    def driver(self) -> Union[Chrome, Firefox]:
+    def driver(self) -> Chrome | Firefox:
         """
         Return a reference to the selenium driver
         """
@@ -205,7 +204,7 @@ class ManageUi(object):
         """
         return helper.find_by_css(self.driver, css_value)
 
-    def find_all_by_css(self, css_value) -> List[WebElement]:
+    def find_all_by_css(self, css_value) -> list[WebElement]:
         """
         Return a list of elements indicated by CSS selector
         """
@@ -375,9 +374,8 @@ class ManageUi(object):
             alert.dismiss()
 
         if expected_text:
-            assert alert_text == expected_text, "Expecting alert text:%s found:%s" % (
-                expected_text,
-                alert_text,
+            assert alert_text == expected_text, (
+                f"Expecting alert text:{expected_text} found:{alert_text}"
             )
 
     def wait_for_waiting_finished(self) -> None:
@@ -442,7 +440,7 @@ class ManageUi(object):
         return json["result"]["value"]
 
 
-class MsgType(object):
+class MsgType:
     """
     Kind of an enum - Used in AlertBoxHandler to specify
     message types when needed for method paramaters
@@ -452,7 +450,7 @@ class MsgType(object):
     Info = "info"
 
 
-class AlertBoxInfoLine(object):
+class AlertBoxInfoLine:
     """
     Represenation of a line in the alert box
     """
@@ -481,7 +479,7 @@ class AlertBoxInfoLine(object):
             self.type = "info"
         else:
             warn(
-                "unknown info box message type. class={}".format(self.classes),
+                f"unknown info box message type. class={self.classes}",
                 stacklevel=1,
             )
             self.type = "unknown"
@@ -497,10 +495,10 @@ class AlertBoxInfoLine(object):
         self.ok_button.click()
 
     def __str__(self):
-        return "{}:{}".format(self.type, self.text)
+        return f"{self.type}:{self.text}"
 
 
-class AlertBoxHandler(object):
+class AlertBoxHandler:
     """
     The AlertBoxHandler class allows to check the info/error
     messages on the /manage page thrown by admin actions
@@ -526,7 +524,7 @@ class AlertBoxHandler(object):
         self.manageui = manage_ui
         self.driver = manage_ui.driver
         self.info_bar: WebElement = None
-        self.info_lines: List[AlertBoxInfoLine] = []
+        self.info_lines: list[AlertBoxInfoLine] = []
         self.close_all: WebElement = None
         self.ui_wait_time = manage_ui.testcase.ui_wait_time
 
@@ -570,9 +568,7 @@ class AlertBoxHandler(object):
                     self.close_all = e
                 else:
                     warn(
-                        "Could not parse info element box id={} class={}".format(
-                            id, classes
-                        ),
+                        f"Could not parse info element box id={id} class={classes}",
                         stacklevel=1,
                     )
 
@@ -608,7 +604,7 @@ class AlertBoxHandler(object):
         return len(self.info_lines)
 
     @property
-    def last_line(self) -> Optional[AlertBoxInfoLine]:
+    def last_line(self) -> AlertBoxInfoLine | None:
         """
         Return the last (latest) line in the box, or None if empty
 

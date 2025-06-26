@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -93,7 +92,7 @@ class MigrateController(BaseController):
                 backupid = self.request_params["backupid"]
                 passphrase = self.request_params["pass"]
             except KeyError as exx:
-                raise Exception("missing Parameter:%r" % exx) from exx
+                raise Exception(f"missing Parameter:{exx!r}") from exx
 
             backup_data = {}
 
@@ -102,7 +101,7 @@ class MigrateController(BaseController):
 
             # create the backup file
             b_name = hashlib.sha256(backupid).digest()[:16]
-            b_name = "%s.hbak" % binascii.hexlify(b_name)
+            b_name = f"{binascii.hexlify(b_name)}.hbak"
 
             with open(b_name, "w") as f:
                 f.write(json.dumps({"Salt": binascii.hexlify(salt)}))
@@ -178,20 +177,20 @@ class MigrateController(BaseController):
                 )
             except KeyError as exx:
                 missing_param = True
-                raise Exception("missing Parameter:%r" % exx) from exx
+                raise Exception(f"missing Parameter:{exx!r}") from exx
 
             mig = None
 
             # get the backup file
             backup_file = hashlib.sha256(backupid).digest()[:16]
-            backup_file = "%s.hbak" % binascii.hexlify(backup_file)
+            backup_file = f"{binascii.hexlify(backup_file)}.hbak"
 
             if not os.path.isfile(backup_file):
-                raise Exception("No restore file found for backupid=%s" % backupid)
+                raise Exception(f"No restore file found for backupid={backupid}")
 
             counters = {}
             counter_check_done = False
-            with open(backup_file, "r") as f:
+            with open(backup_file) as f:
                 for data in f.readlines():
                     if not data.strip():  # skip empty lines
                         continue

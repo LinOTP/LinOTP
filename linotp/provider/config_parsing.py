@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -32,7 +31,7 @@ from urllib.parse import urlparse
 import requests as http_requests
 
 
-class ConfigParsingMixin(object):
+class ConfigParsingMixin:
     @staticmethod
     def load_proxy(configDict):
         """
@@ -104,7 +103,7 @@ class ConfigParsingMixin(object):
             return None
 
         if not isinstance(server_cert, str):
-            raise ValueError("unsupported data type %r" % server_cert)
+            raise ValueError(f"unsupported data type {server_cert!r}")
 
         server_cert = server_cert.strip()
 
@@ -115,10 +114,10 @@ class ConfigParsingMixin(object):
             return False
 
         if not os.path.isfile(server_cert) and not os.path.isdir(server_cert):
-            raise IOError(
+            raise OSError(
                 "server certificate verification could not"
                 " be made as certificate could not be found"
-                " %r" % server_cert
+                f" {server_cert!r}"
             )
 
         return server_cert.encode("utf8")
@@ -134,9 +133,9 @@ class ConfigParsingMixin(object):
 
         client_cert = configDict.get(client_cert_key)
         if client_cert and not os.path.isfile(client_cert):
-            raise IOError(
+            raise OSError(
                 "required authenticating client"
-                " cert could not be found %r" % client_cert
+                f" cert could not be found {client_cert!r}"
             )
 
         return client_cert

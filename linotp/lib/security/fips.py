@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -79,7 +78,7 @@ class FipsSecurityModule(DefaultSecurityModule):
             }
 
         except SSLError as exx:
-            raise FatalHSMException("Failed to load library %r" % exx) from exx
+            raise FatalHSMException(f"Failed to load library {exx!r}") from exx
 
         DefaultSecurityModule.__init__(self, add_conf)
 
@@ -99,7 +98,7 @@ class FipsSecurityModule(DefaultSecurityModule):
         if hash_algo in self.hmac_func_map:
             digest = self.hmac_func_map[hash_algo](bkey, str(data_input))
         else:
-            raise Exception("unsupported Hash Algorithm %r" % hash_algo)
+            raise Exception(f"unsupported Hash Algorithm {hash_algo!r}")
 
         return digest
 

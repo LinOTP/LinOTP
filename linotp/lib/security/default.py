@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -151,7 +150,7 @@ class DefaultSecurityModule(SecurityModule):
                     self.secFile,
                 )
         except Exception as exx:
-            raise Exception("Exception: %r" % exx) from exx
+            raise Exception(f"Exception: {exx!r}") from exx
 
         if self.crypted:
             self.secrets[id] = secret

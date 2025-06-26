@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -31,7 +30,6 @@ import datetime
 import json
 import logging
 import secrets
-from typing import Dict, List, Union
 
 # for the temporary rendering context, we use 'c'
 from linotp.flap import render_mako as render
@@ -329,7 +327,7 @@ def get_pre_context(client):
 
 # This is the type of the dict for token-type specific limits
 # in the userservice context
-ContextTokenTypeLimit = Dict[str, Union[str, int]]
+ContextTokenTypeLimit = dict[str, str | int]
 
 
 def get_context(config, user: User, client: str):
@@ -365,7 +363,7 @@ def get_context(config, user: User, client: str):
     # Token limits
     all_token_limit = get_maxtoken_for_user(user)
 
-    token_types_limits: List[ContextTokenTypeLimit] = []
+    token_types_limits: list[ContextTokenTypeLimit] = []
     for token_type in get_token_type_list():
         token_limit = get_maxtoken_for_user_by_type(user, token_type)
         if token_limit is not None:

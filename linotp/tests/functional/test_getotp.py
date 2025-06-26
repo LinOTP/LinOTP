@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -249,9 +248,8 @@ class TestGetOtpController(TestController):
         }
         response = self.make_gettoken_request(action="getotp", params=parameters)
 
-        assert '"otpval": "427701"' in response, "current time %s;%r" % (
-            self.curTime,
-            response,
+        assert '"otpval": "427701"' in response, (
+            f"current time {self.curTime};{response!r}"
         )
 
         return

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -26,15 +25,14 @@
 #
 
 import json
-
-from mock import patch
+from unittest.mock import patch
 
 from linotp.flap import config
 from linotp.lib.context import request_context
 from linotp.tokens.qrtoken.qrtoken import QrTokenClass
 
 
-class FakeHSM(object):
+class FakeHSM:
     def isReady(self):
         return True
 
@@ -48,7 +46,7 @@ fake_hsm_wrapper = {"obj": FakeHSM()}
 # ---------------------------------------------------------------------------- -
 
 
-class FakeTokenModel(object):
+class FakeTokenModel:
     def __init__(self):
         self.info_dict = {}
 
@@ -71,7 +69,7 @@ class FakeTokenModel(object):
 # ---------------------------------------------------------------------------- -
 
 
-class QRTokenClassUnitTestCase(object):
+class QRTokenClassUnitTestCase:
     def test_unpair(self):
         """QRToken unittest: checking if unpairing works"""
 

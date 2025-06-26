@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -104,10 +103,10 @@ class TestSmsToken:
                 rad1 = check_output(call_array)
                 m = re.search(r"State:\['(\d+)'\]", rad1)
                 assert m is not None, (
-                    "'State' not found in linotp-auth-radius output. %r" % rad1
+                    f"'State' not found in linotp-auth-radius output. {rad1!r}"
                 )
                 state = m.group(1)
-                print("State: %s" % state)
+                print(f"State: {state}")
                 otp = smtpsvc.get_otp()
 
             call_array = "linotp-auth-radius -f ../../../test.ini".split()
@@ -127,7 +126,7 @@ class TestSmsToken:
             )
             rad2 = check_output(call_array)
             assert "Access granted to user " + username in rad2, (
-                "Access not granted to user. %r" % rad2
+                f"Access not granted to user. {rad2!r}"
             )
 
         # Authenticate over Web API
@@ -151,17 +150,16 @@ class TestSmsToken:
             except KeyError as exx:
                 raise KeyError(
                     exx.message
-                    + "| detail.message should be present %r" % validate_resp
+                    + f"| detail.message should be present {validate_resp!r}"
                 ) from exx
             assert message == "sms submitted", (
-                "Wrong validate response %r" % validate_resp
+                f"Wrong validate response {validate_resp!r}"
             )
             otp = smtpsvc.get_otp()
 
         access_granted, validate_resp = validate.validate(
             user=username + "@" + realm_name, password=sms_token_pin + otp
         )
-        assert access_granted, "Could not authenticate user %s %r" % (
-            username,
-            validate_resp,
+        assert access_granted, (
+            f"Could not authenticate user {username} {validate_resp!r}"
         )

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -44,9 +43,9 @@ import logging
 import re
 import time
 from datetime import datetime, timedelta
+from unittest.mock import patch
 
 import freezegun
-from mock import patch
 
 import linotp.provider.emailprovider
 import linotp.provider.smsprovider.HttpSMSProvider
@@ -181,7 +180,7 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         self.delete_all_token()
         self.delete_all_policies()
 
-        self.sms_url = "http://localhost:%s/testing/http2sms" % self.paster_port
+        self.sms_url = f"http://localhost:{self.paster_port}/testing/http2sms"
 
         if not hasattr(self, "once_init"):
             self.serials = []

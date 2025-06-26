@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -50,7 +49,7 @@ class AuthController(BaseController):
     jwt_exempt = True  # Don't do JWT auth in this controller
 
     def __init__(self, name, install_name="", **kwargs):
-        super(AuthController, self).__init__(name, install_name=install_name, **kwargs)
+        super().__init__(name, install_name=install_name, **kwargs)
 
         # Add a specific handler for /auth/index
         self.add_url_rule("index", "index", view_func=self.index)

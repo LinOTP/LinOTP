@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -105,7 +104,7 @@ class DefaultPushProvider(IPushProvider, ConfigParsingMixin):
             #
             push_server_urls = []
             push_url = configDict["push_url"]
-            if isinstance(push_url, (list, tuple)):
+            if isinstance(push_url, list | tuple):
                 # verify the url scheme of all entries
                 for url in configDict["push_url"]:
                     self._validate_url(url)
@@ -124,9 +123,9 @@ class DefaultPushProvider(IPushProvider, ConfigParsingMixin):
             self.client_cert = configDict.get("access_certificate")
 
             if self.client_cert and not os.path.isfile(self.client_cert):
-                raise IOError(
+                raise OSError(
                     "required authenticating client"
-                    " cert could not be found %r" % self.client_cert
+                    f" cert could not be found {self.client_cert!r}"
                 )
 
             # server cert can be a string (file location, cert dir)
@@ -349,7 +348,7 @@ class DefaultPushProvider(IPushProvider, ConfigParsingMixin):
             raise last_exception
 
         raise AllResourcesUnavailable(
-            "non of the resources %r available!" % self.push_server_urls
+            f"non of the resources {self.push_server_urls!r} available!"
         )
 
 
@@ -415,8 +414,8 @@ def main():
         push_provider = DefaultPushProvider()
         push_provider.loadConfig(configDict)
         res, resp = push_provider.push_notification(message=message, gda=gda)
-        print("Result: %r" % res)
-        print("Response: %r" % resp)
+        print(f"Result: {res!r}")
+        print(f"Response: {resp!r}")
 
     except Exception as exx:
         log.error("Failed to push the notification (%r): %r", exx, configDict)

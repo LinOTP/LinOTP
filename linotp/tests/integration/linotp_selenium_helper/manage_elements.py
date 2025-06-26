@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2015-2019 KeyIdentity GmbH
@@ -26,7 +25,6 @@
 #
 
 import typing
-from typing import Dict, List
 
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
@@ -42,7 +40,7 @@ in the Selenium tests.
 """
 
 
-class ManageElement(object):
+class ManageElement:
     """
     Base class for elements (tabs, dialogs) within the manage UI page.
 
@@ -110,15 +108,10 @@ class ManageTab(ManageElement):
     "Selector for the flexigrid widget"
 
     def __init__(self, manage_ui: "ManageUi"):
-        super(ManageTab, self).__init__(manage_ui)
-        self.tabbutton_css = (
-            "div#tabs > ul[role=tablist] > li[role=tab]:nth-of-type(%s) > a > span"
-            % (self.TAB_INDEX)
-        )
+        super().__init__(manage_ui)
+        self.tabbutton_css = f"div#tabs > ul[role=tablist] > li[role=tab]:nth-of-type({self.TAB_INDEX}) > a > span"
 
-        self.tabpane_css = "div#tabs > div.ui-tabs-panel:nth-of-type(%s)" % (
-            self.TAB_INDEX
-        )
+        self.tabpane_css = f"div#tabs > div.ui-tabs-panel:nth-of-type({self.TAB_INDEX})"
         self.flexigrid_css = self.tabpane_css + " div.flexigrid"
 
     def _is_tab_open(self):
@@ -170,9 +163,7 @@ class ManageTab(ManageElement):
             EC.visibility_of_element_located((By.CSS_SELECTOR, self.tabpane_css))
         )
 
-        assert self._is_tab_open(), "Tab should be open (css={})".format(
-            self.tabpane_css
-        )
+        assert self._is_tab_open(), f"Tab should be open (css={self.tabpane_css})"
 
         # Wait for tab pane to show up and return element
         tab_element = self.find_by_css(self.tabpane_css)
@@ -185,7 +176,7 @@ class ManageTab(ManageElement):
         if reload_page or not self.manage.is_manage_open():
             self.open_manage()
 
-    def get_grid_contents(self) -> List[Dict[str, str]]:
+    def get_grid_contents(self) -> list[dict[str, str]]:
         """
         Parse the flexigrid contents and return a list of dicts
 
@@ -247,7 +238,7 @@ class ManageDialog(ManageElement):
         :param menu_item_id: The ID of the menu item to open the dialog
         :param menu_css: Default is CSS selector for the LinOTP config menu
         """
-        self.manage: "ManageUi" = manage_ui
+        self.manage: ManageUi = manage_ui
 
         # Configure class. These are only set if not None, so alternatively,
         # derived classes can set these in their class definition
@@ -261,7 +252,7 @@ class ManageDialog(ManageElement):
         else:
             self.menu_css = manage_ui.MENU_LINOTP_CONFIG_CSS
 
-        self.dialog_css = 'div[aria-describedby="%s"]' % self.body_id
+        self.dialog_css = f'div[aria-describedby="{self.body_id}"]'
         self.buttonset_css = self.dialog_css + " div.ui-dialog-buttonset"
         self.closebutton_css = self.dialog_css + " " + self.CLOSEBUTTON_CSS
         self.title_css = self.dialog_css + " " + self.TITLE_CSS
@@ -319,7 +310,7 @@ class ManageDialog(ManageElement):
     def raise_if_closed(self):
         "Raise an exception if the dialog is not open"
         if not self.is_open():
-            raise RuntimeError("Dialog #%s is not open" % self.body_id)
+            raise RuntimeError(f"Dialog #{self.body_id} is not open")
 
     def click_button(self, button_id=None):
         """
@@ -391,8 +382,7 @@ class ManageDialog(ManageElement):
         "Check the text contents, raise an exception if not found"
         if text_contents != expected_text:
             raise RuntimeError(
-                '%s [%s] text does not match. Expected text:"%s" Found text:"%s"'
-                % (description, self.body_id, expected_text, text_contents)
+                f'{description} [{self.body_id}] text does not match. Expected text:"{expected_text}" Found text:"{text_contents}"'
             )
 
     def close_alert_and_get_its_text(self):

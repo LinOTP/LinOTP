@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,7 +26,7 @@
 """policy action processing"""
 
 import logging
-from typing import Any, Dict, Union
+from typing import Any
 from warnings import warn
 
 from linotp.lib.user import User
@@ -113,7 +112,7 @@ def get_selfservice_actions(user=None, action=None):
 
 
 def get_action_value(
-    policies: Dict,
+    policies: dict,
     scope: str,
     action: str,
     subkey: str | None = None,
@@ -135,7 +134,7 @@ def get_action_value(
     pat = PolicyActionTyping()
 
     if subkey:
-        action = "%s.%s" % (action, subkey)
+        action = f"{action}.{subkey}"
 
     all_actions = {}
     for policy in policies.values():
@@ -181,7 +180,7 @@ class PolicyActionTyping:
         self,
         scope: str,
         action_name: str,
-        action_value: Union[bool, int, str],
+        action_value: bool | int | str,
     ) -> Any:
         """Convert the action values according to the policy definitions.
 
@@ -204,8 +203,8 @@ class PolicyActionTyping:
                     return action_value
 
                 msg = (
-                    "%s:%s : action value %r is not compliant with "
-                    "action type 'bool'" % (scope, action_name, action_value)
+                    f"{scope}:{action_name} : action value {action_value!r} is not compliant with "
+                    "action type 'bool'"
                 )
                 warn(msg, DeprecationWarning, stacklevel=1)
 
@@ -253,7 +252,7 @@ class PolicyActionTyping:
                 f"Could not convert value '{action_value}' of '{scope}:{action_name}': {err}"
             ) from err
 
-    def convert_actions(self, scope: str, actions: Dict) -> Dict:
+    def convert_actions(self, scope: str, actions: dict) -> dict:
         """type conversion of an action dict.
 
         utility to be used in the by functions like get_selfservice_actions

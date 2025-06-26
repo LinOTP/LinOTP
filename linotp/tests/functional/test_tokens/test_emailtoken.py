@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -39,7 +38,7 @@ from linotp.provider.emailprovider import EMAIL_PROVIDER_TEMPLATE_KEY
 from linotp.tests import TestController
 
 
-class MockedSMTP(object):
+class MockedSMTP:
     def __init__(self):
         self.patch_smtp = patch("smtplib.SMTP", spec=smtplib.SMTP)
 

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 #
 #    LinOTP - the open source solution for two factor authentication
@@ -133,10 +132,8 @@ class TestSqlConnectStr(unittest.TestCase):
 
             sql_connect = build_simple_connect(**params)
 
-            assert sql_connect == result, "error in test set %s: %r:%r" % (
-                description,
-                sql_connect,
-                result,
+            assert sql_connect == result, (
+                f"error in test set {description}: {sql_connect!r}:{result!r}"
             )
 
             # finally we verify that sqlalchemy is able to interpret the url

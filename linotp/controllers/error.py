@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -79,7 +78,7 @@ class ErrorController(BaseController):
         """Call Paste's FileApp (a WSGI application) to serve the file
         at the specified path
         """
-        request.environ["PATH_INFO"] = "/%s" % path
+        request.environ["PATH_INFO"] = f"/{path}"
         return (
             "<html><body>"
             "<p>Failed to forward to WSGI application (Pylons "

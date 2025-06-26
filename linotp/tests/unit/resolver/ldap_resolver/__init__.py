@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -26,7 +25,7 @@
 #
 
 
-class Bindresult(object):
+class Bindresult:
     def __init__(self, uid_type):
         self.uid_type = uid_type
         self._filter_str = None

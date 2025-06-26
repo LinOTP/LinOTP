@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -29,7 +28,6 @@
 
 import logging
 import re
-from typing import List
 
 from flask import g
 from flask_babel import gettext as _
@@ -219,7 +217,7 @@ def _checkAdminPolicyPost(
             serials: set[str] = set()
             if isinstance(serial_param, str):
                 serials.add(serial_param)
-            elif isinstance(serial_param, (list, set)):
+            elif isinstance(serial_param, list | set):
                 serials.update(serial_param)
 
             ret["new_pins"] = []
@@ -740,7 +738,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
 
             for tt in token_type_list:
                 if tt.lower() == ttype.lower():
-                    policies = getAdminPolicies("init%s" % tt.upper())
+                    policies = getAdminPolicies(f"init{tt.upper()}")
                     token_type_found = True
                     break
 
@@ -2819,7 +2817,7 @@ def check_user_authorization(login, realm, exception=False):
 
     if res is False and exception:
         raise AuthorizeException(
-            "Authorization on client %s failed for %s@%s." % (client, login, realm)
+            f"Authorization on client {client} failed for {login}@{realm}."
         )
 
     return res
@@ -3231,8 +3229,8 @@ def check_auth_tokentype(serial, exception=False, user=None):
         g.audit["action_detail"] = "failed due to authorization/tokentype policy"
 
         raise AuthorizeException(
-            "Authorization for token %s with type %s "
-            "failed on client %s" % (serial, tokentype, client)
+            f"Authorization for token {serial} with type {tokentype} "
+            f"failed on client {client}"
         )
 
     return res
@@ -3303,7 +3301,7 @@ def check_auth_serial(serial, exception=False, user=None):
     if res is False and exception:
         g.audit["action_detail"] = "failed due to authorization/serial policy"
         raise AuthorizeException(
-            "Authorization for token %s failed on client %s" % (serial, client)
+            f"Authorization for token {serial} failed on client {client}"
         )
 
     return res
@@ -3384,7 +3382,7 @@ def get_pin_policies(user):
     if len(pin_policies) > 1:
         msg = (
             "conflicting authentication polices. "
-            "Check scope=authentication. policies: %r" % pin_policies
+            f"Check scope=authentication. policies: {pin_policies!r}"
         )
 
         log.error("[__checkToken] %r", msg)
@@ -3502,8 +3500,8 @@ def get_partition(realms, user):
 
     if len(action_values) > 1:
         raise Exception(
-            "conflicting policy values %r found for "
-            "realm set: %r" % (action_values, realms)
+            f"conflicting policy values {action_values!r} found for "
+            f"realm set: {realms!r}"
         )
 
     return action_values.pop()
@@ -3554,14 +3552,14 @@ def get_single_auth_policy(policy_name, user=None, realms=None):
 
     if len(action_values) > 1:
         raise Exception(
-            "conflicting policy values %r found for "
-            "realm set: %r" % (action_values, realms)
+            f"conflicting policy values {action_values!r} found for "
+            f"realm set: {realms!r}"
         )
 
     return action_values.pop()
 
 
-def match_allowed_realms(scope: str, action: str, requested_realms: List[str]):
+def match_allowed_realms(scope: str, action: str, requested_realms: list[str]):
     """Returns a list of realm names the user is allowed to access for given scope.action.
 
     Args:

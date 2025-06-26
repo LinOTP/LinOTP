@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -41,25 +40,22 @@ from linotp.tests import TestController
 log = logging.getLogger(__name__)
 
 
-class SQLUser(object):
+class SQLUser:
     def __init__(self, connect="sqlite://"):
         self.tableName = "User2"
         self.usercol = '"user"'
-        self.userTable = '"%s"' % (self.tableName)
+        self.userTable = f'"{self.tableName}"'
 
         self.connection = None
         try:
             self.engine = create_engine(connect)
             self.sqlurl = self.engine.url
             if self.sqlurl.drivername.startswith("mysql"):
-                self.userTable = "%s.%s" % (
-                    self.sqlurl.database,
-                    self.tableName,
-                )
+                self.userTable = f"{self.sqlurl.database}.{self.tableName}"
                 self.usercol = "user"
 
         except Exception as e:
-            print("%r" % e)
+            print(f"{e!r}")
 
         umap = {
             "userid": "id",
@@ -115,10 +111,10 @@ class SQLUser(object):
         return self.resolverDef
 
     def creatTable(self):
-        createStr = """
-            CREATE TABLE %s
+        createStr = f"""
+            CREATE TABLE {self.userTable}
             (
-              %s text,
+              {self.usercol} text,
               telephonenumber text,
               mobile text,
               sn text,
@@ -128,17 +124,14 @@ class SQLUser(object):
               id text,
               mail text
             )
-            """ % (
-            self.userTable,
-            self.usercol,
-        )
+            """
         t = sqlalchemy.sql.expression.text(createStr)
         with self.engine.begin() as conn:
             conn.execute(t)
         return
 
     def dropTable(self):
-        dropStr = "DROP TABLE %s;" % (self.userTable)
+        dropStr = f"DROP TABLE {self.userTable};"
         t = sqlalchemy.sql.expression.text(dropStr)
         with self.engine.begin() as conn:
             conn.execute(t)
@@ -155,15 +148,12 @@ class SQLUser(object):
         uid,
         mail,
     ):
-        intoStr = """
-            INSERT INTO %s( %s, telephonenumber, mobile,
+        intoStr = f"""
+            INSERT INTO {self.userTable}( {self.usercol}, telephonenumber, mobile,
             sn, givenname, password, salt, id, mail)
             VALUES (:user, :telephonenumber, :mobile, :sn, :givenname,
                     :password, :salt, :id, :mail);
-            """ % (
-            self.userTable,
-            self.usercol,
-        )
+            """
         t = sqlalchemy.sql.expression.text(intoStr)
 
         with self.engine.begin() as conn:
@@ -186,7 +176,7 @@ class SQLUser(object):
         # FROM Config WHERE Config.Key = :key"""), key=REPLICATION_CONFIG_KEY)
 
     def query(self):
-        selectStr = "select * from %s" % (self.userTable)
+        selectStr = f"select * from {self.userTable}"
         with self.engine.begin() as conn:
             result = conn.execute(selectStr)
         res = list(result)
@@ -194,25 +184,25 @@ class SQLUser(object):
 
     def delUsers(self, uid=None, username=None):
         if username is not None:
-            delStr = "DELETE FROM %s  WHERE user=:user;" % (self.userTable)
+            delStr = f"DELETE FROM {self.userTable}  WHERE user=:user;"
             t = sqlalchemy.sql.expression.text(delStr)
             with self.engine.begin() as conn:
                 conn.execute(t, {"user": username})
 
         elif type(uid) in (str, ""):
-            delStr = "DELETE FROM %s  WHERE id=:id;" % (self.userTable)
+            delStr = f"DELETE FROM {self.userTable}  WHERE id=:id;"
             t = sqlalchemy.sql.expression.text(delStr)
             with self.engine.begin() as conn:
                 conn.execute(t, {"id": uid})
 
         elif uid is None:
-            delStr = "DELETE FROM %s ;" % (self.userTable)
+            delStr = f"DELETE FROM {self.userTable} ;"
             t = sqlalchemy.sql.expression.text(delStr)
             with self.engine.begin() as conn:
                 conn.execute(t)
 
 
-class OrphandTestHelpers(object):
+class OrphandTestHelpers:
     def setUpSQL(self):
         self.sqlconnect = self.app.config.get("DATABASE_URI")
         sqlUser = SQLUser(connect=self.sqlconnect)
@@ -231,14 +221,14 @@ class OrphandTestHelpers(object):
             userAdd.delUsers()
 
         for i in range(1, usercount):
-            user = "hey%d" % i
-            telephonenumber = "012345-678-%d" % i
-            mobile = "00123-456-%d" % i
-            sn = "yak%d" % i
-            givenname = "kayak%d" % i
+            user = f"hey{i}"
+            telephonenumber = f"012345-678-{i}"
+            mobile = f"00123-456-{i}"
+            sn = f"yak{i}"
+            givenname = f"kayak{i}"
             password = "safr2r32"
             salt = "t123"
-            uid = "__%d" % i
+            uid = f"__{i}"
             mail = sn + "." + givenname + "@example.com"
 
             userAdd.addUser(
@@ -286,7 +276,7 @@ class OrphandTestHelpers(object):
             },
         ]
         for user in u_dict:
-            user["mail"] = "%s.%s@example.com" % (
+            user["mail"] = "{}.{}@example.com".format(
                 user["sn"],
                 user["givenname"],
             )
@@ -312,7 +302,7 @@ class OrphandTestHelpers(object):
         assert '"value": true' in resp, resp
 
         resp = self.make_system_request(action="getResolvers")
-        assert '"resolvername": "%s"' % (name) in resp, resp
+        assert f'"resolvername": "{name}"' in resp, resp
 
         param2 = {"resolver": name}
         resp = self.make_system_request(action="getResolver", params=param2)
@@ -330,7 +320,7 @@ class OrphandTestHelpers(object):
         return resp
 
     def addSqlRealm(self, realmName, resolverName, defaultRealm=False):
-        resolver = "useridresolver.SQLIdResolver.IdResolver.%s" % resolverName
+        resolver = f"useridresolver.SQLIdResolver.IdResolver.{resolverName}"
         parameters = {"resolvers": resolver, "realm": realmName}
 
         resp = self.make_system_request("setRealm", params=parameters)
@@ -503,7 +493,7 @@ class TestOrphandTokens(TestController, OrphandTestHelpers):
         try:
             empty_user_list = self.getUserList(resolverName)
         except Exception as e:
-            message = "%r" % e
+            message = f"{e!r}"
             log.error(message)
         assert len(empty_user_list) == 0, empty_user_list
         # assert "invalid resolver class specification" in message

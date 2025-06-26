@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -347,7 +346,7 @@ class HmacTokenClass(TokenClass):
 
         data = {
             "serial": self.token.getSerial(),
-            "date": "%s" % datetime.now(),
+            "date": f"{datetime.now()}",
         }
 
         return (True, message, data, None)
@@ -444,9 +443,9 @@ class HmacTokenClass(TokenClass):
             # need to do this manually here:
             self.incOtpCounter(res)
         if res == -1:
-            _msg = "otp counter %r was not found" % otp
+            _msg = f"otp counter {otp!r} was not found"
         else:
-            _msg = "otp counter %r was found" % otp
+            _msg = f"otp counter {otp!r} was found"
         return res
 
     def autosync(self, hmac2Otp, anOtpVal):
@@ -635,10 +634,10 @@ class HmacTokenClass(TokenClass):
         otpval = hmac2Otp.generate(inc_counter=False)
 
         pin = self.getPin()
-        combined = "%s%s" % (otpval, pin)
+        combined = f"{otpval}{pin}"
 
         if getFromConfig("PrependPin") == "True":
-            combined = "%s%s" % (pin, otpval)
+            combined = f"{pin}{otpval}"
 
         return (1, pin, otpval, combined)
 
@@ -695,7 +694,7 @@ class HmacTokenClass(TokenClass):
             response_detail["otpkey"] = {
                 "order": "1",
                 "description": _("OTP seed"),
-                "value": "seed://%s" % otpkey,
+                "value": f"seed://{otpkey}",
                 "img": create_img(otpkey, width=200),
             }
             try:

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -33,10 +32,10 @@ functional test for the CustomVoiceProvider:
 import json
 import logging
 import os
+from unittest.mock import patch
 
 import pytest
 import requests
-from mock import patch
 
 from linotp.provider.voiceprovider.custom_voice_provider import (
     CustomVoiceProvider,
@@ -88,7 +87,7 @@ class TestVoiceProviderController(TestController):
 
     def tearDown(self):
         self.delete_all_resolvers()
-        super(TestVoiceProviderController, self).tearDown()
+        super().tearDown()
 
     def test_read_config(self):
         """

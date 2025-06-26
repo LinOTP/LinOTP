@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -875,7 +874,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
                     content_type = int(content_type_as_str)
                 except BaseException as exx:
                     raise ValueError(
-                        "Unrecognized content type: %s" % content_type_as_str
+                        f"Unrecognized content type: {content_type_as_str}"
                     ) from exx
 
         # ------------------------------------------------------------------- --

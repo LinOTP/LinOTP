@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -90,7 +89,7 @@ class TestSelfserviceAuthController(TestController):
 
         response = self.make_system_request("setPolicy", params=policy)
         assert '"status": true' in response, response
-        assert ('"setPolicy %s": {' % name) in response, response
+        assert (f'"setPolicy {name}": {{') in response, response
 
     ##########################################################################
 

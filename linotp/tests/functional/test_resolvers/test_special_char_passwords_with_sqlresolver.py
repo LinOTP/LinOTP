@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -187,19 +186,19 @@ class SQLResolverSpecialPasswordTest(SQLTestController):
         # add users
         for password in PASSWORDS:
             i += 1
-            name = "bach%d" % i
+            name = f"bach{i}"
             bach_password = password
             bach_password_hash = passlib_bcrypt.hash(bach_password)
 
             users[name] = {
                 "login": name,
-                "uid": "%d" % i,
+                "uid": f"{i}",
                 "telephonenumber": "",
                 "mobile": bach_password,
-                "surname": "Bach%d" % i,
+                "surname": f"Bach{i}",
                 "givenname": "Johann Sebastian",
                 "password": bach_password_hash,
-                "mail": "j%d.s@bach.de" % i,
+                "mail": f"j{i}.s@bach.de",
             }
 
             assert passlib_bcrypt.verify(bach_password, bach_password_hash)

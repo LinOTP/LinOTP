@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -48,7 +47,7 @@ log = logging.getLogger(__name__)
 
 class TestMonitoringController(TestController):
     def setUp(self):
-        super(TestMonitoringController, self).setUp()
+        super().setUp()
         self.create_common_resolvers()
         self.create_common_realms()
         return
@@ -60,7 +59,7 @@ class TestMonitoringController(TestController):
         self.delete_all_resolvers()
         self.delete_license()
 
-        super(TestMonitoringController, self).tearDown()
+        super().tearDown()
 
     # helper functions
     def checkCurrentLicense(self):
@@ -372,7 +371,7 @@ class TestMonitoringController(TestController):
         license_data = None
         license_file = os.path.join(self.fixture_path, "linotp2.token_user.pem")
 
-        with open(license_file, "r") as f:
+        with open(license_file) as f:
             license_data = f.read()
 
         # -------------------------------------------------------------- --
@@ -423,7 +422,7 @@ class TestMonitoringController(TestController):
         license_data = None
         license_file = os.path.join(self.fixture_path, "expired-lic.pem")
 
-        with open(license_file, "r") as f:
+        with open(license_file) as f:
             license_data = f.read()
 
         # -------------------------------------------------------------- --

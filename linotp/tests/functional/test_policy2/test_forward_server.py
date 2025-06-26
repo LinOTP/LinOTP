@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -29,16 +28,16 @@
 """used to do functional testing of the server forwarding"""
 
 import logging
+from unittest.mock import patch
 
 import pytest
-from mock import patch
 
 from linotp.tests import TestController
 
 Rad_Serv = None
 
 
-class MockForwardServerPolicy(object):
+class MockForwardServerPolicy:
     @staticmethod
     def do_request(servers, env, user, passw, options):
         global Rad_Serv

@@ -1,8 +1,10 @@
+import builtins
 import json
 import os
 import textwrap
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Type
+from typing import Any
 
 import click
 from flask import current_app
@@ -134,8 +136,8 @@ class ConfigItem:
     """
 
     name: str  # Name of the item
-    type: Type = str  # Type of the item
-    convert: Callable[[str], Type] = None  # Converts strings to type
+    type: type = str  # Type of the item
+    convert: Callable[[str], builtins.type] = None  # Converts strings to type
     validate: Callable[[str, Any], None] = None  # Checks if value is valid
     default: Any = None  # Default value of item
     help: str = ""  # Help message string

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -71,7 +70,7 @@ def context_stack_trace(manager_id, allow_nesting=True):
 
     if not allow_nesting and manager_id in context_stack:
         raise ProgrammingError(
-            "Nesting of %s context managers is not allowed" % manager_id
+            f"Nesting of {manager_id} context managers is not allowed"
         )
     context_stack.append(manager_id)
     try:
@@ -84,7 +83,9 @@ def context_stack_trace(manager_id, allow_nesting=True):
             # tempers with context_stack directly, we check for stack
             # consistency
             raise ProgrammingError(
-                "Misuse of context stack trace. Entered %s but exited %s" % manager_id,
+                "Misuse of context stack trace. Entered {} but exited {}".format(
+                    *manager_id
+                ),
                 popped_manager_id,
             )
 

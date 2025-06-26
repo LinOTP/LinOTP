@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -32,7 +31,6 @@ Pytest fixtures for linotp integration tests
 
 from datetime import datetime
 from pathlib import Path
-from typing import Dict
 
 import integration_data as data
 import pytest
@@ -51,7 +49,7 @@ def testcase():
 
 
 @pytest.fixture
-def musicians_resolver(testcase: TestCase) -> Dict[str, str]:
+def musicians_resolver(testcase: TestCase) -> dict[str, str]:
     """Create the musicians LDAP resolver and remove it after test.
 
     manage a resolver for a test:
@@ -89,7 +87,7 @@ def musicians_resolver(testcase: TestCase) -> Dict[str, str]:
 
 
 @pytest.fixture
-def musicians_realm(testcase: TestCase, musicians_resolver: Dict[str, str]) -> str:
+def musicians_realm(testcase: TestCase, musicians_resolver: dict[str, str]) -> str:
     """Create the musician realm and remove it after the test.
 
     manage a realm for a test:

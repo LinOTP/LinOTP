@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -173,7 +172,7 @@ class HmacOtp:
         return sotp
 
 
-class TotpToken(object):
+class TotpToken:
     def __init__(
         self,
         key=None,
@@ -305,8 +304,8 @@ class TestTotpController(TestController):
                 raise
         else:
             raise Exception(
-                "[time2float] invalid curTime: %s. You need"
-                " to specify a datetime.datetime" % type(curTime)
+                f"[time2float] invalid curTime: {type(curTime)}. You need"
+                " to specify a datetime.datetime"
             )
 
         td = dt - datetime.datetime(1970, 1, 1)
@@ -744,10 +743,7 @@ class TestTotpController(TestController):
 
                 # start resync
                 res = self.checkOtp(user, otp)
-                assert '"value": false' in res.body, "%s: %s" % (
-                    offset,
-                    res.body,
-                )
+                assert '"value": false' in res.body, f"{offset}: {res.body}"
 
                 # finish resync
                 res = self.checkOtp(user, otp)
@@ -810,7 +806,7 @@ class TestTotpController(TestController):
         timeWindow = 180
         syncTimeout = 240
         step = 30
-        params = {"AutoResyncTimeout": "%s" % syncTimeout, "AutoResync": True}
+        params = {"AutoResyncTimeout": f"{syncTimeout}", "AutoResync": True}
 
         response = self.make_system_request("setConfig", params=params)
         assert "false" not in response.body
@@ -916,7 +912,7 @@ class TestTotpController(TestController):
             otps = tokData.get("otps")
             for o in otps:
                 tCounter = o[0]
-                counter = int(((tCounter) / step))
+                counter = int((tCounter) / step)
                 otp = o[1]
                 curTime = o[2]
 

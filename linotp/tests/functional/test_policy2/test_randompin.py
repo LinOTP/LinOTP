@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -564,11 +563,7 @@ class TestRandompinController(TestController):
         response = self.make_validate_request(action, params=params)
         content = response.json
         if not err_msg:
-            err_msg = "validate/%s failed for %r. Response: %r" % (
-                action,
-                params,
-                content,
-            )
+            err_msg = f"validate/{action} failed for {params!r}. Response: {content!r}"
         if expected == "success":
             assert content["result"]["status"], err_msg
             assert content["result"]["value"], err_msg
@@ -582,7 +577,7 @@ class TestRandompinController(TestController):
             assert not content["result"]["status"], err_msg
             assert not content["result"]["value"], err_msg
         else:
-            self.fail("Unknown 'expected' %s" % expected)
+            self.fail(f"Unknown 'expected' {expected}")
         return content
 
     def _assign_in_selfservice(self, user, pwd, serial):

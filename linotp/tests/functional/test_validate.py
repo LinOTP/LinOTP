@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -33,11 +32,11 @@ import hashlib
 import json
 import time
 from datetime import datetime
+from unittest.mock import patch
 
 import freezegun
 import httplib2
 import pytest
-from mock import patch
 
 # we need this for the radius token
 from pyrad.client import Client
@@ -47,7 +46,7 @@ from linotp.lib.HMAC import HmacOtp as LinHmac
 from linotp.tests import TestController
 
 
-class Response(object):
+class Response:
     code = AccessAccept
 
 
@@ -407,7 +406,7 @@ class TestValidateController(TestController):
         use_public_id=False,
         user="root",
     ):
-        serial = "UBAM%s_%s" % (serialnum, yubi_slot)
+        serial = f"UBAM{serialnum}_{yubi_slot}"
 
         valid_otps = [
             public_uid + "fcniufvgvjturjgvinhebbbertjnihit",
@@ -439,7 +438,7 @@ class TestValidateController(TestController):
             params["public_uid"] = public_uid
 
         response = self.make_admin_request("init", params=params)
-        assert '"value": true' in response, "Response: %r" % response
+        assert '"value": true' in response, f"Response: {response!r}"
 
         # test initial assign
         params = {
@@ -448,7 +447,7 @@ class TestValidateController(TestController):
         }
         response = self.make_admin_request("assign", params=params)
         # Test response...
-        assert '"value": true' in response, "Response: %r" % response
+        assert '"value": true' in response, f"Response: {response!r}"
 
         return (serial, valid_otps)
 
@@ -473,7 +472,7 @@ class TestValidateController(TestController):
         :return: the serial number of the remote token
         """
 
-        serial = "LSRE%s" % target_serial
+        serial = f"LSRE{target_serial}"
         params = {
             "serial": serial,
             "type": "remote",
@@ -488,7 +487,7 @@ class TestValidateController(TestController):
         }
 
         response = self.make_admin_request("init", params=params)
-        assert '"value": true' in response, "Response: %r" % response
+        assert '"value": true' in response, f"Response: {response!r}"
 
         return serial
 
@@ -1433,7 +1432,7 @@ class TestValidateController(TestController):
             for tupp in arry:
                 (T0, otp) = tupp
                 val = self.createTOtpValue(totp, T0)
-                assert otp == val, "otp verification failed %r " % tupp
+                assert otp == val, f"otp verification failed {tupp!r} "
 
     def test_checkTOtp(self):
         self.createTOtpToken("SHA1")

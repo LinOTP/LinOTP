@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -43,7 +42,7 @@ from linotp.model.token import Token
 from linotp.model.tokenRealm import TokenRealm
 
 
-class MonitorHandler(object):
+class MonitorHandler:
     """
     provide functions for monitor controller
     """
@@ -60,7 +59,7 @@ class MonitorHandler(object):
             assigned, unassigned, total
         """
 
-        if not isinstance(realm_list, (list, tuple)):
+        if not isinstance(realm_list, list | tuple):
             realms = [realm_list]
         else:
             # copy realms so that we can delete items safely
@@ -136,7 +135,7 @@ class MonitorHandler(object):
                 elif stati == "inactive":
                     conditions += (and_(Token.LinOtpIsactive == False),)  # noqa: E712
                 else:
-                    raise ValueError("Unknown token_status %r" % stati)
+                    raise ValueError(f"Unknown token_status {stati!r}")
 
             #  create the final condition as AND of all conditions
             condition = and_(*conditions)

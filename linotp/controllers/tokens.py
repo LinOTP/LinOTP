@@ -1,6 +1,6 @@
 import json
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from difflib import get_close_matches
 
 from flask import current_app, g
@@ -71,9 +71,7 @@ class TokensController(BaseController):
     """
 
     def __init__(self, name, install_name="", **kwargs):
-        super(TokensController, self).__init__(
-            name, install_name=install_name, **kwargs
-        )
+        super().__init__(name, install_name=install_name, **kwargs)
 
         self.add_url_rule("/", "tokens", self.get_tokens, methods=["GET"])
         self.add_url_rule(
@@ -245,7 +243,7 @@ class TokensController(BaseController):
             )
 
             g.audit["success"] = True
-            g.audit["info"] = "realm: {}".format(allowed_realms)
+            g.audit["info"] = f"realm: {allowed_realms}"
 
             # put in the result
             result = {}
@@ -265,14 +263,14 @@ class TokensController(BaseController):
             return sendResult(result)
 
         except PolicyException as pe:
-            log.exception("[get_tokens] policy failed: {}".format(pe))
+            log.exception(f"[get_tokens] policy failed: {pe}")
             db.session.rollback()
             error = sendError(pe)
             error.status_code = 403
             return error
 
         except Exception as e:
-            log.exception("[get_tokens] failed: {}".format(e))
+            log.exception(f"[get_tokens] failed: {e}")
             db.session.rollback()
             return sendError(e)
 
@@ -349,7 +347,7 @@ class TokensController(BaseController):
             result_count = tokens.getResultSetInfo()["tokens"]
 
             if result_count > 1:
-                raise Exception("Multiple tokens found with serial {}".format(serial))
+                raise Exception(f"Multiple tokens found with serial {serial}")
 
             formatted_token = {}
 
@@ -358,20 +356,20 @@ class TokensController(BaseController):
                 formatted_token = TokenAdapter(token).to_JSON_format()
 
             g.audit["success"] = True
-            g.audit["info"] = "realm: {}".format(filter_realm)
+            g.audit["info"] = f"realm: {filter_realm}"
 
             db.session.commit()
             return sendResult(formatted_token)
 
         except PolicyException as pe:
-            log.exception("[get_token_by_serial] policy failed: {}".format(pe))
+            log.exception(f"[get_token_by_serial] policy failed: {pe}")
             db.session.rollback()
             error = sendError(pe)
             error.status_code = 403
             return error
 
         except Exception as e:
-            log.exception("[get_token_by_serial] failed: {}".format(e))
+            log.exception(f"[get_token_by_serial] failed: {e}")
             db.session.rollback()
             return sendError(e)
 
@@ -452,7 +450,7 @@ class TokenAdapter:
         for field in ["validity_period_end", "validity_period_start"]:
             if field in self._token_info:
                 date = datetime.strptime(self._token_info[field], "%d/%m/%y %H:%M")
-                self._token_info[field] = date.replace(tzinfo=timezone.utc)
+                self._token_info[field] = date.replace(tzinfo=UTC)
 
         self.validity_start = self._token_info.get("validity_period_start", None)
         self.validity_end = self._token_info.get("validity_period_end", None)
@@ -527,7 +525,7 @@ def _parse_date_string(date_string):
     If the passed string is empty, return None.
     """
     return (
-        datetime.strptime(date_string, DEFAULT_TIMEFORMAT).replace(tzinfo=timezone.utc)
+        datetime.strptime(date_string, DEFAULT_TIMEFORMAT).replace(tzinfo=UTC)
         if date_string
         else None
     )
