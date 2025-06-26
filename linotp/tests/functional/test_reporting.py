@@ -676,7 +676,7 @@ class TestReportingController(TestController):
         response = self.make_reporting_request("maximum")
         resp = response.json
         values = resp.get("result")
-        assert values.get("status") == False, response
+        assert values.get("status") is False, response
         assert values.get("error").get("code") == 410, response
 
     def test_reporting_show_no_realms(self):

@@ -927,9 +927,9 @@ class TestValidateController(TestController):
         msg = '"linotp_tokendescription": "TestToken1"'
         assert msg in response, response
         msg = '"linotp_tokentype": "pw"'
-        assert not (msg in response), response
+        assert msg not in response, response
         msg = '"linotp_tokendescription": "token_description"'
-        assert not (msg in response), response
+        assert msg not in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -940,9 +940,9 @@ class TestValidateController(TestController):
         response = self.make_validate_request("check_s", params=parameters)
 
         msg = '"linotp_tokentype": "HMAC"'
-        assert not (msg in response), response
+        assert msg not in response, response
         msg = '"linotp_tokendescription": "TestToken1"'
-        assert not (msg in response), response
+        assert msg not in response, response
         msg = '"linotp_tokentype": "pw"'
         assert msg in response, response
         msg = '"linotp_tokendescription": "token_description"'
@@ -996,9 +996,9 @@ class TestValidateController(TestController):
         msg = '"linotp_tokendescription": "TestToken1"'
         assert msg in response, response
         msg = '"linotp_tokentype": "pw"'
-        assert not (msg in response), response
+        assert msg not in response, response
         msg = '"linotp_tokendescription": "token_description"'
-        assert not (msg in response), response
+        assert msg not in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -1009,9 +1009,9 @@ class TestValidateController(TestController):
         response = self.make_validate_request("check", params=parameters)
 
         msg = '"linotp_tokentype": "HMAC"'
-        assert not (msg in response), response
+        assert msg not in response, response
         msg = '"linotp_tokendescription": "TestToken1"'
-        assert not (msg in response), response
+        assert msg not in response, response
         msg = '"linotp_tokentype": "pw"'
         assert msg in response, response
         msg = '"linotp_tokendescription": "token_description"'

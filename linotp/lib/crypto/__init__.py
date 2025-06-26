@@ -24,12 +24,6 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-from linotp.lib.crypto.utils import compare
-
-"""
-Declare the SecretObject to encapsulate security aspects
-"""
-
 import binascii
 import logging
 
@@ -37,7 +31,11 @@ from Cryptodome.Cipher import AES
 from pysodium import crypto_scalarmult_curve25519 as calc_dh
 
 from linotp.lib.crypto import utils
+from linotp.lib.crypto.utils import compare
 
+"""
+Declare the SecretObject to encapsulate security aspects
+"""
 log = logging.getLogger(__name__)
 
 

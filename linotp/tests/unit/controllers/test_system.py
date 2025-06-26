@@ -130,7 +130,7 @@ class TestHSMFail(object):
         assert response.status_code == 200
 
         result = response.json["result"]
-        assert result["status"] == False
+        assert result["status"] is False
         assert result["error"]["code"] == 707
         assert "hsm not ready" in result["error"]["message"]
 

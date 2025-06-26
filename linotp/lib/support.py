@@ -197,20 +197,20 @@ def parseSupportLicense(licString: str):
     read_license = 0
     read_signature = 0
     for line in licArry:
-        l = line.strip()
-        if l == "-----BEGIN LICENSE-----":
+        stripped_line = line.strip()
+        if stripped_line == "-----BEGIN LICENSE-----":
             read_license = 1
-        elif l == "-----END LICENSE-----":
+        elif stripped_line == "-----END LICENSE-----":
             read_license = 0
-        elif l == "-----BEGIN LICENSE SIGNATURE-----":
+        elif stripped_line == "-----BEGIN LICENSE SIGNATURE-----":
             read_signature = 1
-        elif l == "-----END LICENSE SIGNATURE-----":
+        elif stripped_line == "-----END LICENSE SIGNATURE-----":
             read_signature = 0
         else:
             if 1 == read_license:
                 licInfo.add(line)
             if 1 == read_signature:
-                signature += l.rstrip()
+                signature += stripped_line.rstrip()
 
     if len(signature) < 20 or len(licInfo) < 10:
         log.error("Format error - not a valid license file! %r", licString[0:40])

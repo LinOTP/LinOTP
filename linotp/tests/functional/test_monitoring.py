@@ -308,7 +308,7 @@ class TestMonitoringController(TestController):
 
         resp = json.loads(response.body)
 
-        assert False == resp["result"]["status"], resp
+        assert resp["result"]["status"] is False, resp
         err_msg = resp["result"]["error"]["message"]
         assert "Unknown token_status 'invalid_status'" == err_msg, resp
 

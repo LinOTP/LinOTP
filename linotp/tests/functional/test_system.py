@@ -474,7 +474,7 @@ scope = authentication
             action="getPolicy", method="POST", params={}, auth_user="superuser"
         )
 
-        assert not ("ded-ee" in response), response
+        assert "ded-ee" not in response, response
 
         return
 
@@ -506,7 +506,7 @@ scope = authentication
             action="getPolicy", method="POST", params={}, auth_user="superuser"
         )
 
-        assert not ("ded-ee" in response), response
+        assert "ded-ee" not in response, response
 
         return
 

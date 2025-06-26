@@ -44,7 +44,7 @@ def render_calling_path(func):
 
     try:
         methods = ", ".join(func.methods)
-    except:
+    except Exception:
         methods = "GET, POST"
     return f"**{methods}** */{module_name}/{func_name}*\n "
 

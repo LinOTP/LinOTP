@@ -144,7 +144,7 @@ class TestSystemConfig:
         # 1-successful authentication
         tvar = timedelta(seconds=2)
         validation_result = validate.validate(username, otp + pasw)
-        assert validation_result[0] == True, (
+        assert validation_result[0] is True, (
             "unexpected behavior: validation of user with password failed"
         )
         validationtime = datetime.now()
@@ -162,7 +162,7 @@ class TestSystemConfig:
         time.sleep(tvar.seconds)
         validation_result = validate.validate(username, "wrong pass")
 
-        assert validation_result[0] == False, (
+        assert validation_result[0] is False, (
             "unexpected behavior: critical! validation of user should have failed here"
         )
 

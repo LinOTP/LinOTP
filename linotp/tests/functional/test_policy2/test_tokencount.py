@@ -101,7 +101,7 @@ class TestPolicyTokencount(TestController):
         i = 5
         params = {"serial": "#TCOUNT%d" % i, "user": "def"}
         response = self.make_admin_request("assign", params=params)
-        assert not ('"value": true' in response), response
+        assert '"value": true' not in response, response
         msg = (
             "The maximum allowed number of tokens for the realm 'mydefrealm'"
             " was reached. You can not init any more tokens. Check the "
@@ -128,7 +128,7 @@ class TestPolicyTokencount(TestController):
         i = 5
         params = {"serial": "#TCOUNT%d" % i, "user": "def"}
         response = self.make_admin_request("assign", params=params)
-        assert not ('"value": true' in response), response
+        assert '"value": true' not in response, response
         msg = (
             "The maximum allowed number of tokens for the realm 'mydefrealm'"
             " was reached. You can not init any more tokens. Check the "

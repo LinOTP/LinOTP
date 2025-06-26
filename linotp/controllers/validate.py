@@ -100,7 +100,7 @@ class ValidateController(BaseController):
                 if user_info:
                     user.info = user_info
                 request_context["RequestUser"] = user
-            except:
+            except Exception:
                 pass
 
     @staticmethod
@@ -404,7 +404,7 @@ class ValidateController(BaseController):
             (ok, opt) = self._check(param)
             attributes = {}
 
-            if True == ok:
+            if ok is True:
                 allowSAML = False
                 try:
                     allowSAML = getFromConfig("allowSamlAttributes")

@@ -625,7 +625,7 @@ class TestImportOTP(TestController):
         response = self.make_validate_request("check", params=params)
 
         for serial in serials:
-            assert not (serial in response), response
+            assert serial not in response, response
 
         return
 

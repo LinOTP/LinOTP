@@ -134,7 +134,7 @@ class MonitorHandler(object):
                 elif stati == "active":
                     conditions += (and_(Token.LinOtpIsactive),)
                 elif stati == "inactive":
-                    conditions += (and_(Token.LinOtpIsactive == False),)
+                    conditions += (and_(Token.LinOtpIsactive == False),)  # noqa: E712
                 else:
                     raise ValueError("Unknown token_status %r" % stati)
 

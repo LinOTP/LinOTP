@@ -100,24 +100,24 @@ def parseYubicoCSV(csv):
 
     log.debug("[parseYubicoCSV] the file contains %i tokens.", len(csv_array))
     for line in csv_array:
-        l = line.split(",")
+        cells = line.split(",")
         serial = ""
         key = ""
         otplen = 32
         public_id = ""
         slot = ""
-        if len(l) >= 6:
-            first_column = l[0].strip()
+        if len(cells) >= 6:
+            first_column = cells[0].strip()
             if first_column.lower() in [
                 "yubico otp",
                 "oath-hotp",
                 "static password",
             ]:
                 # traditional format
-                typ = l[0].strip()
-                slot = l[2].strip()
-                public_id = l[3].strip()
-                key = l[5].strip()
+                typ = cells[0].strip()
+                slot = cells[2].strip()
+                public_id = cells[3].strip()
+                key = cells[5].strip()
 
                 if public_id == "":
                     log.warning("No public ID in line %r", line)
@@ -144,8 +144,8 @@ def parseYubicoCSV(csv):
                     """
                     ttype = "hmac"
                     otplen = 6
-                    if l and len(l) > 11 and l[11] and l[11].strip():
-                        otplen = int(l[11])
+                    if cells and len(cells) > 11 and cells[11] and cells[11].strip():
+                        otplen = int(cells[11])
 
                     serial = "UBOM%08d_%s" % (serial_int, slot)
                     TOKENS[serial] = {
@@ -167,13 +167,13 @@ def parseYubicoCSV(csv):
                 serial = first_column
                 # the yubico format does not specify a slot
                 slot = "X"
-                key = l[3].strip()
-                if l[2].strip() == "0":
+                key = cells[3].strip()
+                if cells[2].strip() == "0":
                     # HOTP
                     typ = "hmac"
                     serial = "UBOM%s_%s" % (serial, slot)
                     otplen = 6
-                elif l[2].strip() == "":
+                elif cells[2].strip() == "":
                     # Static
                     typ = "pw"
                     serial = "UBSM%s_%s" % (serial, slot)
@@ -188,7 +188,7 @@ def parseYubicoCSV(csv):
                     # Yubico
                     typ = "yubikey"
                     serial = "UBAM%s_%s" % (serial, slot)
-                    public_id = l[1].strip()
+                    public_id = cells[1].strip()
                     otplen = 32 + len(public_id)
                 TOKENS[serial] = {
                     "type": typ,

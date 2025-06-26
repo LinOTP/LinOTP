@@ -439,7 +439,7 @@ class ManageUi(object):
         response.raise_for_status()
         json = response.json()
 
-        if not response.ok or response.json()["result"]["status"] == False:
+        if not response.ok or response.json()["result"]["status"] is False:
             raise BackendException(response, url=url)
 
         return json["result"]["value"]
@@ -586,8 +586,8 @@ class AlertBoxHandler(object):
             self.close_all.click()
         else:
             # 0 or 1 lines
-            for l in self.info_lines:
-                l.click_ok()
+            for line in self.info_lines:
+                line.click_ok()
 
     def check_info_message(self, msg: str) -> bool:
         """
@@ -667,6 +667,10 @@ class AlertBoxHandler(object):
         """
 
         self.parse()
-        lines = [l for l in self.info_lines if l.type == msg_type and msg in l.text]
+        lines = [
+            line
+            for line in self.info_lines
+            if line.type == msg_type and msg in line.text
+        ]
 
         return len(lines) > 0

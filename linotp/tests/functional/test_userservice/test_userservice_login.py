@@ -987,7 +987,7 @@ class TestUserserviceLogin(TestUserserviceController):
                 "myQrToken",
                 "myPushToken",
             ]
-            assert token["LinOtp.Isactive"] == False
+            assert token["LinOtp.Isactive"] is False
             assert token["Enrollment"]["status"] == "completed"
 
         return

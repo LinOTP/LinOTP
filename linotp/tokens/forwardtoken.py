@@ -114,7 +114,7 @@ class ForwardTokenClass(TokenClass):
             if forwardSerial:
                 self.forwardSerial = forwardSerial
                 self._update_targetToken()
-        except:
+        except Exception:
             self.forwardSerial = None
             self.mode = ["authenticate", "challenge"]
             self.targetToken: TokenClass = None

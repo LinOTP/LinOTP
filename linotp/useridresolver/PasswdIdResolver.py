@@ -408,7 +408,7 @@ class IdResolver(UserIdResolver):
                         if checkingFunc(user_value, searchTermValue):
                             orFilter = True
                             break
-                    except:
+                    except Exception:
                         pass
             # AND filter
             # is true if all `search_keys` match their `search_value`.

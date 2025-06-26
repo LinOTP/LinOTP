@@ -471,7 +471,7 @@ class UserServiceApi:
             "description": description,
         }
         r = self._make_userservice_request("enroll", params)
-        assert r.json()["result"]["value"] == True, (
+        assert r.json()["result"]["value"] is True, (
             "Failed to enroll mOTP token, params: %s, response: %s" % (params, r.text)
         )
 
@@ -497,7 +497,7 @@ class UserServiceApi:
             "otp2": otp2,
         }
         r = self._make_userservice_request("resync", params)
-        assert r.json()["result"]["value"]["resync Token"] == True, (
+        assert r.json()["result"]["value"]["resync Token"] is True, (
             "Failed to resync token, params: %s, response: %s" % (params, r.text)
         )
 
@@ -513,7 +513,7 @@ class UserServiceApi:
 
     def _make_userservice_request(self, endpoint, params):
         """Make a request to the userservice endpoint with the given params"""
-        assert not self._login_response is None, (
+        assert self._login_response is not None, (
             "No login response found, did you call login() before making a request?"
         )
         params["session"] = self._login_response.cookies.get("user_selfservice")
@@ -530,7 +530,7 @@ class UserServiceApi:
             % (endpoint, params, r.status_code, r.text)
         )
 
-        assert r.json()["result"]["status"] == True, (
+        assert r.json()["result"]["status"] is True, (
             "Request to userservice endpoint %s, params %s, response: %s did not return status True"
             % (endpoint, params, r.text)
         )

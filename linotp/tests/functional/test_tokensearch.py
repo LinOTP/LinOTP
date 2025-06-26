@@ -83,7 +83,7 @@ class TestTokensearch(TestController):
     def restore_splitAtSign(self):
         try:
             splitAtSig = self.splitAtSig
-        except:
+        except Exception:
             pass
         else:
             if splitAtSig:
@@ -233,7 +233,7 @@ class TestTokensearch(TestController):
         params = {"sortBy": "CreationDate"}
         response = self.make_api_v2_request("/tokens/", params=params)
         result = response.json["result"]
-        assert result["status"] == False
+        assert result["status"] is False
         assert result["error"]
 
     def test_search_token_with_no_realm(self):

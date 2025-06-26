@@ -485,7 +485,7 @@ class HmacTokenClass(TokenClass):
                 autosync = False
 
         # if autosync is enabled
-        if False == autosync:
+        if not autosync:
             log.debug("[autosync] end. autosync is not enabled : res %r", res)
             return res
 

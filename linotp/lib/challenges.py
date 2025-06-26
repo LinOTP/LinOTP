@@ -264,7 +264,7 @@ class Challenges(object):
         challenge["linotp_tokentype"] = token.type
         try:
             challenge["linotp_tokendescription"] = token.token.LinOtpTokenDesc
-        except:
+        except Exception:
             challenge["linotp_tokendescription"] = None
 
         return (res, challenge)

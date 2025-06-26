@@ -452,8 +452,8 @@ def sendCSVResult(obj, flat_lines=False, filename="linotp-tokendata.csv"):
                 output += "%s%s%s%s " % (delim, value, delim, seperator)
             output += "\n"
     else:
-        for l in obj:
-            for elem in l.get("cell", []):
+        for row in obj:
+            for elem in row.get("cell", []):
                 output += "'%s'%s " % (elem, seperator)
 
             output += "\n"
@@ -788,7 +788,7 @@ def get_details_for_response(response: Response) -> dict:
                         for k, v in user.info.items()
                         if k != "cryptpass"
                     }
-                except:
+                except Exception:
                     log.warning("No attributes found to return for user %s", user.login)
                     user_info = {"username": user.login}
                 res["user"] = user_info

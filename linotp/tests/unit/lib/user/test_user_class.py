@@ -89,19 +89,13 @@ class TestUserClass(unittest.TestCase):
         """test that no sensitive data got logged"""
 
         # check that u1 is zero: either None or empty
-
         u1 = User()
-        if u1:
-            assert True == False
+        assert not u1
 
         # check that u2 is zero: checks if the user has a login
-
         u2 = User(realm="heydo")
-        if u2:
-            assert True == False
+        assert not u2
 
         # check that u3 is not zero: neither None nor empty
-
         u3 = User(login="heinz")
-        if not u3:
-            assert True == False
+        assert u3

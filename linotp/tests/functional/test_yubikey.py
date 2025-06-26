@@ -308,7 +308,7 @@ class TestYubikeyController(TestController):
 
             params = {"user": user, "pass": pin + otp}
             response = self.make_validate_request("check", params=params)
-            assert not ('"value": true' in response), response
+            assert '"value": true' not in response, response
 
             # -------------------------------------------------------------- --
 

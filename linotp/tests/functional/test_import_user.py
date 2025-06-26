@@ -431,7 +431,7 @@ class TestImportUser(TestController):
             auth_user="hans",
         )
 
-        assert not (msg in response), response
+        assert msg not in response, response
         assert '"updated": {}' in response, response
         assert '"created": {}' in response, response
 

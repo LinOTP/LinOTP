@@ -326,7 +326,7 @@ class TokenIterator(object):
             ucondition = and_(
                 or_(
                     Token.LinOtpUserid == "",
-                    Token.LinOtpUserid == None,
+                    Token.LinOtpUserid == None,  # noqa: E711
                 )
             )
         elif searchType == "exact":
@@ -413,14 +413,14 @@ class TokenIterator(object):
             "/:token is active:/",
             "/:token is enabled:/",
         ]:
-            condition = and_(Token.LinOtpIsactive == True)
+            condition = and_(Token.LinOtpIsactive == True)  # noqa: E712
         elif filter in [
             "/:inactive:/",
             "/:disabled:/",
             "/:token is inactive:/",
             "/:token is disabled:/",
         ]:
-            condition = and_(Token.LinOtpIsactive == False)
+            condition = and_(Token.LinOtpIsactive == False)  # noqa: E712
         else:
             # search in other colums
             condition = or_(
@@ -460,7 +460,7 @@ class TokenIterator(object):
                 "[TokenIterator::init] search for all tokens, which are in no realm"
             )
 
-            return and_(Token.realms == None)
+            return and_(Token.realms == None)  # noqa: E711
 
         if filterRealm:
             # get all matching realms

@@ -1102,7 +1102,7 @@ class TestQRToken(TestController):
         assert "status" in result
 
         status = result.get("status")
-        assert status == False
+        assert status is False
 
         # FIXME: removed since the new interface doesn't
         # propagate error messages (should be fixed in
@@ -1135,7 +1135,7 @@ class TestQRToken(TestController):
         assert "status" in result
 
         status = result.get("status")
-        assert status == False
+        assert status is False
 
         # FIXME: removed since the new interface doesn't
         # propagate error messages (should be fixed in
@@ -1198,7 +1198,7 @@ class TestQRToken(TestController):
         assert status
 
         value = result.get("value")
-        assert value == False
+        assert value is False
 
     # --------------------------------------------------------------------------- --
 
@@ -1269,7 +1269,7 @@ class TestQRToken(TestController):
 
         assert "status" in result
         status = result.get("status")
-        assert status == False
+        assert status is False
 
         # FIXME: removed since the new interface doesn't
         # propagate error messages (should be fixed in
@@ -1356,7 +1356,7 @@ class TestQRToken(TestController):
 
         assert "status" in result
         status = result.get("status")
-        assert status == False
+        assert status is False
 
         # FIXME: removed since the new interface doesn't
         # propagate error messages (should be fixed in
@@ -1449,7 +1449,7 @@ class TestQRToken(TestController):
 
         assert "status" in result
         status = result.get("status")
-        assert status == False
+        assert status is False
 
         # FIXME: removed since the new interface doesn't
         # propagate error messages (should be fixed in
@@ -1536,7 +1536,7 @@ class TestQRToken(TestController):
 
         assert "status" in result
         status = result.get("status")
-        assert status == False
+        assert status is False
 
         # FIXME: removed since the new interface doesn't
         # propagate error messages (should be fixed in
@@ -1593,7 +1593,7 @@ class TestQRToken(TestController):
         assert "status" in result
 
         status = result.get("status")
-        assert status == False
+        assert status is False
 
         # FIXME: removed since the new interface doesn't
         # propagate error messages (should be fixed in
@@ -1672,7 +1672,7 @@ class TestQRToken(TestController):
         assert status
 
         value = result.get("value")
-        assert value == False
+        assert value is False
 
     # --------------------------------------------------------------------------- --
 
@@ -1745,7 +1745,7 @@ class TestQRToken(TestController):
         assert status, response
 
         value = result.get("value")
-        assert value == False, response
+        assert value is False, response
 
     # --------------------------------------------------------------------------- --
 
@@ -2141,7 +2141,7 @@ class TestQRToken(TestController):
                 == "root"
             ) == use_detail_policy, response
             assert (
-                response.json.get("detail", {}).get("is_linotp_admin") == False
+                response.json.get("detail", {}).get("is_linotp_admin") is False
             ) == use_detail_policy, response
             assert (
                 response.json.get("detail", {}).get("tokentype") == "qr"

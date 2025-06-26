@@ -173,7 +173,7 @@ class TestResolver(TestController):
         # and check that it is not available
 
         response = self.make_system_request("getResolvers", params={})
-        assert not ("LDA2" in response), response
+        assert "LDA2" not in response, response
 
         return
 

@@ -3995,7 +3995,7 @@ class TestPolicies(TestPoliciesBase):
         assert response.json["result"]["value"], response
         assert response.json["detail"]["serial"] == "detail01", response
         assert response.json["detail"]["realm"] == "mymixrealm", response
-        assert response.json["detail"]["is_linotp_admin"] == False, response
+        assert response.json["detail"]["is_linotp_admin"] is False, response
         assert response.json["detail"]["tokentype"] == "spass", response
         expected_user = {
             "username": "detail_user",
@@ -4092,7 +4092,7 @@ class TestPolicies(TestPoliciesBase):
 
         assert response.json["result"]["value"], response
         assert response.json["detail"]["realm"] == "myMixRealm", response
-        assert response.json["detail"]["is_linotp_admin"] == False, response
+        assert response.json["detail"]["is_linotp_admin"] is False, response
 
         expected_user = {
             "username": "passthru_user1",

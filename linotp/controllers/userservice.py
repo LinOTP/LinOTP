@@ -1451,7 +1451,7 @@ class UserserviceController(BaseController):
                 raise ParameterError("Missing parameter: '%s'" % exx)
 
             th = TokenHandler()
-            if True == th.isTokenOwner(serial, g.authUser):
+            if th.isTokenOwner(serial, g.authUser) is True:
                 log.info(
                     "[userreset] user %s@%s is resetting the failcounter"
                     " of his token with serial %s",
@@ -1508,7 +1508,7 @@ class UserserviceController(BaseController):
             upin = param.get("pin", None)
 
             th = TokenHandler()
-            if True == th.isTokenOwner(serial, g.authUser):
+            if th.isTokenOwner(serial, g.authUser) is True:
                 log.info(
                     "user %s@%s is unassigning his token with serial %s.",
                     g.authUser.login,
@@ -1568,7 +1568,7 @@ class UserserviceController(BaseController):
                 raise ParameterError("Missing parameter: '%s'" % exx)
 
             th = TokenHandler()
-            if True == th.isTokenOwner(serial, g.authUser):
+            if th.isTokenOwner(serial, g.authUser) is True:
                 log.info(
                     "user %s@%s is setting the OTP PIN for token with serial %s",
                     g.authUser.login,
@@ -1635,7 +1635,7 @@ class UserserviceController(BaseController):
                 raise ParameterError("Missing parameter: '%s'" % exx)
 
             th = TokenHandler()
-            if True == th.isTokenOwner(serial, g.authUser):
+            if th.isTokenOwner(serial, g.authUser) is True:
                 log.info(
                     "user %s@%s is setting the mOTP PIN for token with serial %s",
                     g.authUser.login,
@@ -1694,7 +1694,7 @@ class UserserviceController(BaseController):
                 raise ParameterError("Missing parameter: '%s'" % exx)
 
             th = TokenHandler()
-            if True == th.isTokenOwner(serial, g.authUser):
+            if th.isTokenOwner(serial, g.authUser) is True:
                 log.info(
                     "user %s@%s is resyncing his token with serial %s",
                     g.authUser.login,
@@ -2009,7 +2009,7 @@ class UserserviceController(BaseController):
 
             # check if token is in another realm
             source_realms = getTokenRealms(serial)
-            if not g.authUser.realm.lower() in source_realms and len(source_realms):
+            if g.authUser.realm.lower() not in source_realms and len(source_realms):
                 # if the token is assigned to realms, then the user must be in
                 # one of the realms, otherwise the token can not be assigned
                 raise Exception(
@@ -2371,7 +2371,7 @@ class UserserviceController(BaseController):
             curTime = param.get("curTime", None)
 
             th = TokenHandler()
-            if True != th.isTokenOwner(serial, g.authUser):
+            if th.isTokenOwner(serial, g.authUser) is False:
                 error = _("The serial %s does not belong to user %s@%s") % (
                     serial,
                     g.authUser.login,

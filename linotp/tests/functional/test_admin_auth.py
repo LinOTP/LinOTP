@@ -87,7 +87,7 @@ class TestAdminAuthController(TestController):
         }
         params = resolver_params["adminResolver"]
         response = self.create_resolver(name="adminResolver", params=params)
-        assert response.json["result"]["status"] == True, response
+        assert response.json["result"]["status"] is True, response
 
     def createPolicy(self, param=None, auth_user=None):
         policy = {
@@ -112,7 +112,7 @@ class TestAdminAuthController(TestController):
         resp_dict = "setPolicy %s" % policy["name"]
 
         response = self.make_system_request("setPolicy", params=policy, **pparams)
-        assert response.json["result"]["status"] == True, response
+        assert response.json["result"]["status"] is True, response
         assert isinstance(response.json["result"]["value"][resp_dict], dict), (
             "expected policy to have been set and details returned."
         )
@@ -136,7 +136,7 @@ class TestAdminAuthController(TestController):
 
         # simple match - backward compatible
         response = self.make_admin_request(action, auth_user="admin")
-        assert response.json["result"]["status"] == True, response
+        assert response.json["result"]["status"] is True, response
 
         # pattern match for domain
         authUser = User(
@@ -145,7 +145,7 @@ class TestAdminAuthController(TestController):
             resolver_config_identifier="notExistingResolver",
         )
         response = self.make_admin_request(action, auth_user=authUser)
-        assert response.json["result"]["status"] == True, response
+        assert response.json["result"]["status"] is True, response
 
         # existent user in resolver 'adminResolver'
         authUser = User(
@@ -154,7 +154,7 @@ class TestAdminAuthController(TestController):
             resolver_config_identifier="adminResolver",
         )
         response = self.make_admin_request(action, auth_user=authUser)
-        assert response.json["result"]["status"] == True, response
+        assert response.json["result"]["status"] is True, response
 
         # non existent user in resolver
         authUser = User(
@@ -163,7 +163,7 @@ class TestAdminAuthController(TestController):
             resolver_config_identifier="adminResolver",
         )
         response = self.make_admin_request(action, auth_user=authUser)
-        assert response.json["result"]["status"] == False, response
+        assert response.json["result"]["status"] is False, response
 
     def test_admin_resolver_and_domain(self):
         """
@@ -187,7 +187,7 @@ class TestAdminAuthController(TestController):
 
         # simple match - backward compatible
         response = self.make_admin_request(action, auth_user="admin")
-        assert response.json["result"]["status"] == True, response
+        assert response.json["result"]["status"] is True, response
 
         # pattern match for domain
         authUser = User(
@@ -196,7 +196,7 @@ class TestAdminAuthController(TestController):
             resolver_config_identifier="notExistingResolver",
         )
         response = self.make_admin_request(action, auth_user=authUser)
-        assert response.json["result"]["status"] == True, response
+        assert response.json["result"]["status"] is True, response
 
         # existent user in resolver 'adminResolver'
         authUser = User(
@@ -205,7 +205,7 @@ class TestAdminAuthController(TestController):
             resolver_config_identifier="adminResolver",
         )
         response = self.make_admin_request(action, auth_user=authUser)
-        assert response.json["result"]["status"] == True, response
+        assert response.json["result"]["status"] is True, response
 
         # non existent user in resolver
         authUser = User(
@@ -214,7 +214,7 @@ class TestAdminAuthController(TestController):
             resolver_config_identifier="adminResolver",
         )
         response = self.make_admin_request(action, auth_user=authUser)
-        assert response.json["result"]["status"] == False, response
+        assert response.json["result"]["status"] is False, response
 
     def test_admin_username_regex_and_domain(self):
         """
@@ -234,7 +234,7 @@ class TestAdminAuthController(TestController):
 
         # simple match - backward compatible
         response = self.make_admin_request(action, auth_user="admin")
-        assert response.json["result"]["status"] == True, response
+        assert response.json["result"]["status"] is True, response
 
         # matching pattern
         authUser = User(
@@ -243,7 +243,7 @@ class TestAdminAuthController(TestController):
             resolver_config_identifier="notExistingResolver",
         )
         response = self.make_admin_request(action, auth_user=authUser)
-        assert response.json["result"]["status"] == True, response
+        assert response.json["result"]["status"] is True, response
 
         # non-matching pattern
         authUser = User(
@@ -252,7 +252,7 @@ class TestAdminAuthController(TestController):
             resolver_config_identifier="notExistingResolver",
         )
         response = self.make_admin_request(action, auth_user=authUser)
-        assert response.json["result"]["status"] == False, response
+        assert response.json["result"]["status"] is False, response
 
     def test_admin_action_wildcard(self):
         """
@@ -287,7 +287,7 @@ class TestAdminAuthController(TestController):
         response = self.make_admin_request(
             "userlist", params=userlist_parameters, auth_user="admin"
         )
-        assert response.json["result"]["status"] == True, response
+        assert response.json["result"]["status"] is True, response
 
         response = self.make_manage_request(
             "userview_flexi", params=userview_parameters, auth_user="admin"
@@ -310,7 +310,7 @@ class TestAdminAuthController(TestController):
         response = self.make_admin_request(
             "userlist", params=userlist_parameters, auth_user="admin"
         )
-        assert response.json["result"]["status"] == True, response
+        assert response.json["result"]["status"] is True, response
 
         response = self.make_manage_request(
             "userview_flexi", params=userview_parameters, auth_user="admin"
@@ -361,7 +361,7 @@ class TestAdminAuthController(TestController):
         response = self.make_system_request(
             "setConfig", params=params, auth_user=authUser
         )
-        assert response.json["result"]["status"] == True, response
+        assert response.json["result"]["status"] is True, response
 
         authUser = User(
             login="admin",
@@ -372,14 +372,14 @@ class TestAdminAuthController(TestController):
         response = self.make_system_request(
             "setConfig", params=params, auth_user=authUser
         )
-        assert response.json["result"]["status"] == True, response
+        assert response.json["result"]["status"] is True, response
 
         # now do the test on setConfig
         params = {"testKey": "testVal"}
         response = self.make_system_request(
             "setConfig", params=params, auth_user="superadmin"
         )
-        assert response.json["result"]["status"] == True, response
+        assert response.json["result"]["status"] is True, response
 
         # The user 'seconduser' should only be matched by the policy 'sys_auth'
         # and therefore is not allowed to write system config
@@ -432,7 +432,7 @@ class TestAdminAuthController(TestController):
         response = self.make_system_request(
             "setConfig", params=params, auth_user=authUser
         )
-        assert response.json["result"]["status"] == True, response
+        assert response.json["result"]["status"] is True, response
 
         # Users that are not part of the example.com domain are not
         # allowed to write system config
@@ -467,4 +467,4 @@ class TestAdminAuthController(TestController):
         response = self.make_system_request(
             "setConfig", params=params, auth_user=authUser
         )
-        assert response.json["result"]["status"] == True, response
+        assert response.json["result"]["status"] is True, response

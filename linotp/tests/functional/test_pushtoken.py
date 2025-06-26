@@ -697,7 +697,7 @@ class TestPushToken(TestController):
         )
 
         response_dict = self.send_pairing_response(pairing_response)
-        assert response_dict["result"]["status"] == False
+        assert response_dict["result"]["status"] is False
 
         # ------------------------------------------------------------------ --
 

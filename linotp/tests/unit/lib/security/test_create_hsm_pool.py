@@ -62,7 +62,7 @@ def test_create_hsm_pool(mock_init, mock_get_hsm_pool, mock_load_security_module
 
     assert len(created_pool) == poolsize
     # test the content of one of the connections
-    assert created_pool[0]["obj"] == None
+    assert created_pool[0]["obj"] is None
     assert (
         created_pool[0]["error"]
         == "'default': " + mock_load_security_module.side_effect.__repr__()

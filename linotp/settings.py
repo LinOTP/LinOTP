@@ -177,7 +177,7 @@ class ConfigSchema:
             value = str(value)
         # If `value` is `str` but the schema wants non-`str`, do a
         # conversion, either using the function provided or the type itself.
-        if item.type != str and isinstance(value, str):
+        if item.type is not str and isinstance(value, str):
             value = (
                 item.convert(value) if item.convert is not None else item.type(value)
             )

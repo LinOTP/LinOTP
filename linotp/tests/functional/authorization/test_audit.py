@@ -94,7 +94,7 @@ class TestAuditAuthorisation(TestController):
         # 3. verify that nobody else is able to read the audit (view)
 
         response = self.make_audit_request("search", auth_user="hans")
-        assert not "page" in response.json
+        assert "page" not in response.json
 
         # 4. verify that nobody else is able to read the audit (view)
         #    as disabling a policy has the same effect as deleting it
@@ -111,7 +111,7 @@ class TestAuditAuthorisation(TestController):
         assert "false" not in response, response
 
         response = self.make_audit_request("search", auth_user="hans")
-        assert not "page" in response.json
+        assert "page" not in response.json
 
         # 5. verify that any admin with read permission is able to read the
         #   audit information.

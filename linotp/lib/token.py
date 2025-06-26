@@ -786,7 +786,7 @@ class TokenHandler(object):
             return False
 
         # should the password of the autoassignement be used as pin??
-        if True == linotp.lib.policy.ignore_autoassignment_pin(user):
+        if linotp.lib.policy.ignore_autoassignment_pin(user) is True:
             pin = None
 
         # if found, assign the found token to the user.login
@@ -966,7 +966,7 @@ class TokenHandler(object):
             # filter if assigned or not
             if "0" == str(assigned):
                 sqlQuery = sqlQuery.filter(
-                    or_(Token.LinOtpUserid == None, Token.LinOtpUserid == "")
+                    or_(Token.LinOtpUserid == None, Token.LinOtpUserid == "")  # noqa: E711
                 )
             elif "1" == str(assigned):
                 sqlQuery = sqlQuery.filter(func.length(Token.LinOtpUserid) > 0)
@@ -1835,7 +1835,7 @@ def tokenExist(serial):
     try:
         _token = get_token(serial)
         return True
-    except:
+    except Exception:
         return False
 
 

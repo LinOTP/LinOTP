@@ -1341,8 +1341,8 @@ class Ocra2TokenClass(TokenClass):
             log.error("autosync check undefined %r", ex)
             return res
 
-        " if autosync is not enabled: do nothing "
-        if False == autosync:
+        # if autosync is not enabled: do nothing
+        if not autosync:
             return res
 
         ##

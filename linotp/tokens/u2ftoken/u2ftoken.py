@@ -28,6 +28,7 @@
 import base64
 import binascii
 import json
+import logging
 import struct
 from hashlib import sha256
 
@@ -51,7 +52,6 @@ from linotp.tokens.base import TokenClass
     This file contains the U2F V2 token implementation as specified by the FIDO Alliance
 """
 
-import logging
 
 log = logging.getLogger(__name__)
 

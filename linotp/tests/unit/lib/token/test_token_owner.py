@@ -195,7 +195,7 @@ class TestTokenOwner(unittest.TestCase):
 
         res = th.hasOwner(serial)
 
-        assert res == False
+        assert res is False
 
         return
 

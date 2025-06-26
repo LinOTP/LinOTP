@@ -431,7 +431,7 @@ class TestUserserviceTokenTest(TestUserserviceController):
         )
 
         jresp = response.json
-        assert jresp["result"]["value"] == False
+        assert jresp["result"]["value"] is False
         assert jresp["detail"]["replyMode"] == ["offline"]
 
         otp = get_otp(seed, 1, digits=6)

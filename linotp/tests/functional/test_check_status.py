@@ -249,7 +249,7 @@ class TestCheckStatus(TestController):
                 == "passthru_user1"
             ) == use_detail_policy, response
             assert (
-                response.json.get("detail", {}).get("is_linotp_admin") == False
+                response.json.get("detail", {}).get("is_linotp_admin") is False
             ) == use_detail_policy, response
             assert (
                 response.json.get("detail", {}).get("tokentype") == "HMAC"
@@ -510,9 +510,9 @@ class TestCheckStatus(TestController):
         params = {"user": "passthru_user1", "transactionid": transid}
 
         response = self.make_validate_request("check_status", params)
-        assert not ('"received_tan": false' in response), response
-        assert not ('"valid_tan": false' in response), response
-        assert not ('"received_count": 0' in response), response
+        assert '"received_tan": false' not in response, response
+        assert '"valid_tan": false' not in response, response
+        assert '"received_count": 0' not in response, response
 
         # ----------------------------------------------------------------------
 

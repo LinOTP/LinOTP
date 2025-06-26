@@ -130,7 +130,11 @@ plugins = "sqlmypy"
 
 [tool.ruff]
 lint.select = [
+  "E",    # pycodestyle
   "F",    # pyflakes
   "I",    # isort
   "PERF", # perflint
+]
+lint.ignore = [
+  "E501", # line too long
 ]

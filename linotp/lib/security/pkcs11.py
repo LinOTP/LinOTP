@@ -759,7 +759,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
 
         return objHandle
 
-    def random(self, l: int = 32) -> bytes:
+    def random(self, l: int = 32) -> bytes:  # noqa: E741
         """
         create a random value and return it
         l specifies the length of the random data to be created.
