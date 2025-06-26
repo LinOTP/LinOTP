@@ -143,7 +143,7 @@ def backup_mysql_database():
     app.echo(f"MySQL backup {backup_filename!r}", v=1)
 
     cmd = " ".join(command)
-    result = subprocess.call(cmd, shell=True)  # nosec
+    result = subprocess.call(cmd, shell=True)  # nosec # nosemgrep B602
 
     if result != 0 or not os.path.isfile(backup_filename):
         app.echo(f"Failed to create MySQL backup file: {result!r}")
