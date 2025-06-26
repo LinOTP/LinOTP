@@ -113,68 +113,17 @@ install_certificates() {
 
 wait_for_database() {
     local max_retries=10
+    WAIT_FOR_DB_SCRIPT=${WAIT_FOR_DB_SCRIPT:-/app/wait_for_db.py}
+    # Ask LinOTP for the database URI – this means we need to do tweaks
+    # such as the `postgres://` to `postgresql://` conversion in one place
+    # only.
+    DB_URI="$(linotp config show --values DATABASE_URI)"
 
     log "Waiting for database to become available..."
 
     for i in $(seq 1 "$max_retries"); do
-        error_msg_and_exit_code=$(
-            python -c "
-try:
-    # we're using the following exit-codes for sys.exit()
-    # they'll be picked up and handled by the caller
-    # 0 - success
-    # 1 - known error; should continue
-    # 2 - known error; should abort
-    # 3 - unknown error; should continue
-    import sys
-    from sqlalchemy import create_engine
-    from sqlalchemy.exc import NoSuchModuleError, OperationalError
-
-    engine = create_engine('$LINOTP_DATABASE_URI')
-    with engine.connect():
-        # return on success
-        sys.exit(0)
-except (NoSuchModuleError, OperationalError) as e:
-    error_msg = str(e).lower()
-
-    msg_that_indicate_booting_db = (
-        'name or service not known',
-        'is the server running on that host',
-        'the database system is starting up',
-    )
-    if any(msg in error_msg for msg in msg_that_indicate_booting_db):
-        # continue - might resolve soon (when db-container starts and is healthy)
-        print(error_msg, file=sys.stderr)
-        sys.exit(1)
-    if 'password authentication failed' in error_msg :
-        # Exit on wrong creds
-        print('Error: Invalid credentials for user in LINOTP_DATABASE_URI', file=sys.stderr)
-        sys.exit(2)
-    if 'access denied' in error_msg:
-        # Exit on insufficient rights
-        print('Error: Insufficient rights for user in LINOTP_DATABASE_URI', file=sys.stderr)
-        sys.exit(2)
-    if 'failed: fatal:  database' in error_msg and 'does not exist' in error_msg:
-        # Exit on non-existing database
-        print('Error: Given database name does not exist in LINOTP_DATABASE_URI', file=sys.stderr)
-        sys.exit(2)
-    if 't load plugin: sqlalchemy.dialects:' in error_msg:
-        # Invalid dialect (like postgres, mariadb or sqlite)
-        print('Error: Invalid dialect in LINOTP_DATABASE_URI', file=sys.stderr)
-        sys.exit(2)
-    print(f'Unexpected Error: {error_msg}', file=sys.stderr)
-    sys.exit(3)
-except Exception as e:
-    error_msg = str(e).lower()
-    print(f'Unexpected Error: {error_msg}', file=sys.stderr)
-    sys.exit(3)
-" 2>&1
-            echo $?
-        ) # Capture both stdout/stderr + Python exit code in last line
-
-        # Extract last line (exit code) and error messages
-        exit_code=$(echo "$error_msg_and_exit_code" | tail -n 1)
-        error_msg=$(echo "$error_msg_and_exit_code" | head -n -1)
+	exit_code=0
+	error_msg="$(python3 "$WAIT_FOR_DB_SCRIPT" "$DB_URI" 2>&1)" || exit_code=$?
 
         case "$exit_code" in
         0)
