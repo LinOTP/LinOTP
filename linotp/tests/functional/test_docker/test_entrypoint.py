@@ -41,7 +41,7 @@ class TestDockerLinotpEntrypoint:
             done
             return 0
         }}
-        """
+        """  # noqa: W293
 
     @pytest.fixture
     def setup_env(self, tmp_path, monkeypatch: pytest.MonkeyPatch):
