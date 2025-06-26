@@ -130,12 +130,6 @@ plugins = "sqlmypy"
 
 [tool.ruff]
 lint.select = [
-  "I", # isort formatting.
-  # perflint rules
-  "PERF101",
-  "PERF102",
-  "PERF203",
-  "PERF401",
-  "PERF402",
-  "PERF403",
+  "I",    # isort
+  "PERF", # perflint
 ]
