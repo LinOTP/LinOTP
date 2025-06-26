@@ -70,7 +70,7 @@ class dpwOtp:
 
                 input_data = self.key + date_string.encode("utf-8")
 
-                md1 = md5(input_data).digest().hex()  # nosec B324
+                md1 = md5(input_data).hexdigest()  # nosec B324
                 md = md1[len(md1) - self.digits :]
                 otp = int(md, 16)
                 otp = str(otp)

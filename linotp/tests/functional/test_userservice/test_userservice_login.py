@@ -214,7 +214,7 @@ class TestUserserviceLogin(TestUserserviceController):
             "517407",
         ]
 
-        otps = otps[::-1]
+        otps.reverse()
 
         params = {
             "user": "passthru_user1@myDefRealm",
@@ -291,7 +291,7 @@ class TestUserserviceLogin(TestUserserviceController):
             "517407",
         ]
 
-        otps = otps[::-1]
+        otps.reverse()
 
         params = {
             "user": "passthru_user1@myDefRealm",

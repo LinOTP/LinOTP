@@ -194,11 +194,11 @@ class MigrateController(BaseController):
             counters = {}
             counter_check_done = False
             with open(backup_file) as f:
-                for data in f.readlines():
-                    if not data.strip():  # skip empty lines
+                for line in f:
+                    if not line.strip():  # skip empty lines
                         continue
 
-                    restore_data = json.loads(data)
+                    restore_data = json.loads(line)
 
                     if not mig and "Salt" in restore_data:
                         salt = restore_data["Salt"]

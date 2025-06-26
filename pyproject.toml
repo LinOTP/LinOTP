@@ -145,6 +145,7 @@ lint.select = [
   "PERF", # perflint
   "PL",   # pylint
   "RUF",  # Ruff-specific
+  "FURB", # refurb 
   "UP",   # pyupgrade
   "W",    # pycodestyle warnings
   # "C90",  # mccabe complexity (disabled for now)
