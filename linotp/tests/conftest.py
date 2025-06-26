@@ -100,10 +100,8 @@ def sqlalchemy_uri(request):
     uri = request.config.getoption("database_uri")
 
     # Prevent override through the environment
-    try:
+    with contextlib.suppress(KeyError):
         del os.environ["LINOTP_DATABASE_URI"]
-    except KeyError:
-        pass
     return uri
 
 
@@ -132,9 +130,10 @@ def base_app(tmp_path, request, sqlalchemy_uri, key_directory):
 
         # Skip test if incompatible with sqlite
 
-        if sqlalchemy_uri.startswith("sqlite:"):
-            if request.node.get_closest_marker("exclude_sqlite"):
-                pytest.skip("non sqlite database required for test")
+        if sqlalchemy_uri.startswith("sqlite:") and request.node.get_closest_marker(
+            "exclude_sqlite"
+        ):
+            pytest.skip("non sqlite database required for test")
 
         # ------------------------------------------------------------------ --
 

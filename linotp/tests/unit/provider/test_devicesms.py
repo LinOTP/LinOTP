@@ -43,13 +43,14 @@ class BaseClass:
     class BaseTestDeviceSMS(TestCase):
         @classmethod
         def setUpClass(cls):
-            super(BaseClass.BaseTestDeviceSMS, cls).setUpClass()
-
+            super().setUpClass()
             cls.gnokii_available = False
-            FNULL = open(os.devnull, "w")
+
             try:
-                _ret = subprocess.call(
-                    ["gnokii", "--version"], stdout=FNULL, stderr=FNULL
+                subprocess.run(
+                    ["gnokii", "--version"],
+                    capture_output=True,
+                    check=True,
                 )
                 cls.gnokii_available = True
             except Exception as e:
@@ -72,10 +73,7 @@ class BaseClass:
             sms.loadConfig(config)
             self.config = config
 
-            if self.gnokii_available:
-                wraps = subprocess.Popen
-            else:
-                wraps = None
+            wraps = subprocess.Popen if self.gnokii_available else None
 
             with patch("subprocess.Popen", wraps=wraps) as popen_mock:
                 if not self.gnokii_available:

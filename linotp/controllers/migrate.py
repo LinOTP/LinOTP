@@ -274,10 +274,13 @@ class MigrateController(BaseController):
             return sendError(err)
 
         finally:
-            if remove_backup_file and os.path.isfile(backup_file):
-                if not missing_param and not decryption_error:
-                    os.remove(backup_file)
-                    log.debug("removed backup file %r", backup_file)
+            if (
+                remove_backup_file
+                and os.path.isfile(backup_file)
+                and (not missing_param and not decryption_error)
+            ):
+                os.remove(backup_file)
+                log.debug("removed backup file %r", backup_file)
 
 
 # eof #########################################################################

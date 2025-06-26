@@ -43,14 +43,16 @@ class TestProviderFromPolicy(unittest.TestCase):
         """
         get the default providers if no policy
         """
-        with patch("linotp.lib.policy.get_client_policy") as mock_policy:
-            with patch("linotp.provider._get_default_provider_name") as mock_default:
-                mock_policy.return_value = {}
-                mock_default.return_value = "default"
+        with (
+            patch("linotp.lib.policy.get_client_policy") as mock_policy,
+            patch("linotp.provider._get_default_provider_name") as mock_default,
+        ):
+            mock_policy.return_value = {}
+            mock_default.return_value = "default"
 
-                provider = get_provider_from_policy("sms", user=User("login", "realm"))
+            provider = get_provider_from_policy("sms", user=User("login", "realm"))
 
-                assert provider == ["default"]
+            assert provider == ["default"]
 
     @patch("linotp.lib.policy.action.get_policy_definitions")
     @patch("linotp.provider.request_context", new=mocked_context)

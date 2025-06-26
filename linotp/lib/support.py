@@ -207,9 +207,9 @@ def parseSupportLicense(licString: str):
         elif stripped_line == "-----END LICENSE SIGNATURE-----":
             read_signature = 0
         else:
-            if 1 == read_license:
+            if read_license == 1:
                 licInfo.add(line)
-            if 1 == read_signature:
+            if read_signature == 1:
                 signature += stripped_line.rstrip()
 
     if len(signature) < 20 or len(licInfo) < 10:
@@ -662,10 +662,7 @@ def verify_signature(lic_dict, lic_sign, licStr=None):
     if not lic_dict:
         return None
 
-    if not licStr:
-        lic_str = lic_dict.info()
-    else:
-        lic_str = licStr
+    lic_str = licStr if licStr else lic_dict.info()
 
     log.debug(
         "Licence Signature check: Licence text is %r, signature is %r",

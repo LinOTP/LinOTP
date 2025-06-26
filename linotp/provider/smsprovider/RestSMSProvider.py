@@ -132,9 +132,12 @@ class RestSMSProvider(ISMSProvider, ConfigParsingMixin):
 
         # if the template is a simple string, we do a simple replace
 
-        if isinstance(sms_phone_template, str):
-            if sms_phone_template and "<phone>" in sms_phone_template:
-                return sms_phone_template.replace("<phone>", phone)
+        if (
+            isinstance(sms_phone_template, str)
+            and sms_phone_template
+            and "<phone>" in sms_phone_template
+        ):
+            return sms_phone_template.replace("<phone>", phone)
 
         # if the template is a list, we replace text items
         # while others are preserved

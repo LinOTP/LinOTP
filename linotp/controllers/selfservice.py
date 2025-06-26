@@ -188,18 +188,19 @@ class SelfserviceController(BaseController):
 
             # authenticated session verification
 
-            if auth_type == "user_selfservice":
+            if auth_type == "user_selfservice" and (
+                action not in self.form_access_methods
+            ):
                 # checking the session only for not_form_access actions
-                if action not in self.form_access_methods:
-                    valid_session = check_session(request, auth_user, g.client)
+                valid_session = check_session(request, auth_user, g.client)
 
-                    if not valid_session:
-                        g.audit["action"] = request.path[1:]
-                        g.audit["info"] = "session expired"
-                        current_app.audit_obj.log(g.audit)
+                if not valid_session:
+                    g.audit["action"] = request.path[1:]
+                    g.audit["info"] = "session expired"
+                    current_app.audit_obj.log(g.audit)
 
-                        msg = "No valid session"
-                        raise Unauthorized(msg)
+                    msg = "No valid session"
+                    raise Unauthorized(msg)
 
             # -------------------------------------------------------------- --
 

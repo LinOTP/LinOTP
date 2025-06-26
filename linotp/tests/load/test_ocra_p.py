@@ -606,10 +606,9 @@ class OcraTest(TestController):
 
         self.removeTokens(serial=ocra.serial)
 
-        f = open("/tmp/challengeTestSet", "w+")
-        testStr = json.dumps(tt, indent=4)
-        f.write(testStr)
-        f.close()
+        with open("/tmp/challengeTestSet", "w+") as f:
+            testStr = json.dumps(tt, indent=4)
+            f.write(testStr)
 
         return
 

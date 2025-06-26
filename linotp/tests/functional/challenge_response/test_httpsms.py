@@ -579,19 +579,14 @@ class TestHttpSmsController(TestingChallengeResponseController):
 
             params = {"sortorder": "desc", "rp": 3, "page": 1}
             response = self.make_audit_request(action="search", params=params)
-
-            found = False
             jresp = json.loads(response.body)
 
-            for row in jresp.get("rows", []):
-                entry = row.get("cell", [])
-                for info in entry:
-                    if isinstance(info, str):
-                        if "SMS could not be sent" in info:
-                            found = True
-                            break
-                if found:
-                    break
+            found = any(
+                "SMS could not be sent" in cell
+                for row in jresp.get("rows", [])
+                for cell in row.get("cell", [])
+                if isinstance(cell, str)
+            )
 
             assert found, "no entry 'SMS could not be sent' found"
 

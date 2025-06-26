@@ -566,7 +566,8 @@ def test_create_secret_key(monkeypatch, tmp_path, data, content):
 def create_secret_key_ok(filename, data=""):
     if not data:
         data = SECRET_KEY
-    open(filename, "wb").write(data)
+    with open(filename, "wb") as f:
+        f.write(data)
 
 
 def create_secret_key_exception(filename, data=""):

@@ -81,11 +81,11 @@ class User:
             resolver_name=resolver_name,
             resolver_class=resolver_type,
             username=user_dictionary["username"],
-            surname=user_dictionary.get("surname", None),
-            given_name=user_dictionary.get("givenname", None),
-            phone=user_dictionary.get("phone", None),
-            mobile=user_dictionary.get("mobile", None),
-            email=user_dictionary.get("email", None),
+            surname=user_dictionary.get("surname"),
+            given_name=user_dictionary.get("givenname"),
+            phone=user_dictionary.get("phone"),
+            mobile=user_dictionary.get("mobile"),
+            email=user_dictionary.get("email"),
         )
 
     def as_dict(self) -> dict[str, str | str | None]:

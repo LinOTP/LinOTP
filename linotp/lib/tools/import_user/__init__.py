@@ -77,7 +77,7 @@ class PasswdFormatReader(FormatReader):
             if len(attr) < 5:
                 attr.append("")
         else:
-            attr = ",,,,".split(",")
+            attr = ["", "", "", "", ""]
             attr[0] = row[4]
 
         # now split the name into surname and lastname

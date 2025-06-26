@@ -294,10 +294,7 @@ class TestTotpController(TestController):
         if isinstance(curTime, datetime.datetime):
             dt = curTime
         elif isinstance(curTime, str):
-            if "." in curTime:
-                tFormat = "%Y-%m-%d %H:%M:%S.%f"
-            else:
-                tFormat = "%Y-%m-%d %H:%M:%S"
+            tFormat = "%Y-%m-%d %H:%M:%S.%f" if "." in curTime else "%Y-%m-%d %H:%M:%S"
             try:
                 dt = datetime.datetime.strptime(curTime, tFormat)
             except Exception:

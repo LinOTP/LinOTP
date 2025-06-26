@@ -394,7 +394,7 @@ class HmacTokenClass(TokenClass):
         hmac2Otp = HmacOtp(secObj, counter, otplen, self.getHashlib(self.hashlibStr))
         res = hmac2Otp.checkOtp(anOtpVal, window)
 
-        if -1 == res:
+        if res == -1:
             res = self.autosync(hmac2Otp, anOtpVal)
 
         return res
@@ -476,9 +476,9 @@ class HmacTokenClass(TokenClass):
         if isinstance(setting, bool):
             autosync = setting
         else:
-            if "true" == setting.lower():
+            if setting.lower() == "true":
                 autosync = True
-            elif "false" == setting.lower():
+            elif setting.lower() == "false":
                 autosync = False
             else:
                 autosync = False
@@ -525,10 +525,7 @@ class HmacTokenClass(TokenClass):
 
                 res = -1
 
-        if res == -1:
-            _msg = "call was not successful"
-        else:
-            _msg = "call was successful"
+        _msg = "call was not successful" if res == -1 else "call was successful"
 
         return res
 

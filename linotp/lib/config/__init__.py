@@ -79,12 +79,13 @@ def getLinotpConfig():
                 raise exx
         ret = c.linotpConfig
 
-        if ret.delay is True:
-            if hasattr(c, "hsm") is True and isinstance(c.hsm, dict):
-                hsm = c.hsm.get("obj")
-                if hsm is not None and hsm.isReady() is True:
-                    ret = LinOtpConfig()
-                    c.linotpConfig = ret
+        if ret.delay is True and (
+            hasattr(c, "hsm") is True and isinstance(c.hsm, dict)
+        ):
+            hsm = c.hsm.get("obj")
+            if hsm is not None and hsm.isReady() is True:
+                ret = LinOtpConfig()
+                c.linotpConfig = ret
 
     except Exception:
         # FIXME: this happens once every server start and seems quite unnecessary.
@@ -93,11 +94,12 @@ def getLinotpConfig():
         log.debug("Bad Hack: Retrieving LinotpConfig without controller context")
         ret = LinOtpConfig()
 
-        if ret.delay is True:
-            if hasattr(c, "hsm") is True and isinstance(c.hsm, dict):
-                hsm = c.hsm.get("obj")
-                if hsm is not None and hsm.isReady() is True:
-                    ret = LinOtpConfig()
+        if ret.delay is True and (
+            hasattr(c, "hsm") is True and isinstance(c.hsm, dict)
+        ):
+            hsm = c.hsm.get("obj")
+            if hsm is not None and hsm.isReady() is True:
+                ret = LinOtpConfig()
 
     return ret
 
@@ -145,11 +147,8 @@ def updateConfig(confi):
     entries = set()
     update_entries = {}
 
-    for entry in confi.keys():
-        if entry.endswith((".type", ".desc")):
-            key = entry[: -len(".type")]
-        else:
-            key = entry
+    for entry in confi:
+        key = entry[: -len(".type")] if entry.endswith((".type", ".desc")) else entry
 
         if key in entries:
             continue

@@ -518,10 +518,9 @@ class OcraTest(TestController):
 
         self.removeTokens(serial=ocra.serial)
 
-        f = open("/tmp/challengeTestSet", "w+")
-        testStr = json.dumps(tt, indent=4)
-        f.write(testStr)
-        f.close()
+        with open("/tmp/challengeTestSet", "w+", encoding="utf-8") as f:
+            testStr = json.dumps(tt, indent=4)
+            f.write(testStr)
 
         return
 
@@ -1357,9 +1356,7 @@ class OcraTest(TestController):
                 - check OCRA Token with user pin
         """
         ocrasuite = "OCRA-1:HOTP-SHA256-8:QA64"
-        t_count = 0
-        for test in self.tests[0:1]:
-            t_count += 1
+        for t_count, test in enumerate(self.tests[0:1], 1):
             ocrasuite = test["ocrasuite"]
 
             key = test["keyh"]

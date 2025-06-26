@@ -667,4 +667,4 @@ class TestRandompinController(TestController):
         response = self.make_admin_request("tokenrealm", params=params)
         content = response.json
         assert content["result"]["status"]
-        assert 1 == content["result"]["value"]
+        assert content["result"]["value"] == 1

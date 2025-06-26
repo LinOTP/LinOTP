@@ -54,10 +54,7 @@ class UserView(ManageTab):
         """We assume we are one the main page /manage and then select
         the realm from the <select> dropdown on the left
         """
-        if not realm_name:
-            realm_name = self.realm_name
-        else:
-            realm_name = realm_name.lower()
+        realm_name = self.realm_name if not realm_name else realm_name.lower()
 
         realm_select = self.driver.find_element(By.ID, "realm")
 

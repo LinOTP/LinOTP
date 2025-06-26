@@ -266,10 +266,7 @@ class LinOtpConfig(dict):
         self.glo.delConfig(Key)
 
         # sync with db
-        if key.startswith("linotp."):
-            Key = key
-        else:
-            Key = "linotp." + key
+        Key = key if key.startswith("linotp.") else "linotp." + key
 
         _removeConfigDB(Key)
         _storeConfigDB("linotp.Config", datetime.now())

@@ -309,7 +309,7 @@ class TestMonitoringController(TestController):
 
         assert resp["result"]["status"] is False, resp
         err_msg = resp["result"]["error"]["message"]
-        assert "Unknown token_status 'invalid_status'" == err_msg, resp
+        assert err_msg == "Unknown token_status 'invalid_status'", resp
 
     def test_token_in_multiple_realms(self):
         """

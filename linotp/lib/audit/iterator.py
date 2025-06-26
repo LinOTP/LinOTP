@@ -71,7 +71,7 @@ class AuditQuery:
         search_dict = {}
 
         if "query" in param:
-            if "extsearch" == param["qtype"]:
+            if param["qtype"] == "extsearch":
                 search_list = param["query"].split(";")
 
                 for s in search_list:

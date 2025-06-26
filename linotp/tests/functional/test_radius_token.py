@@ -27,6 +27,7 @@
 
 """used to do testing of the radius token"""
 
+import contextlib
 import logging
 from unittest.mock import patch
 
@@ -81,10 +82,8 @@ class TestRadiusToken(TestController):
         self.create_common_realms()
 
         # cleanup from last run
-        try:
+        with contextlib.suppress(AssertionError):
             self.deleteRadiusToken()
-        except AssertionError:
-            pass
 
         self.create_radius_token()
 

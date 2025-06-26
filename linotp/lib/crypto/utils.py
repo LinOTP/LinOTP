@@ -194,10 +194,7 @@ def createActivationCode(acode: str | None = None, checksum=True):
     :param checksum: flag to indicate, if a checksum will be calculated
     :return: return the activation code
     """
-    if acode is None:
-        acode = geturandom(20)
-    else:
-        acode = acode.encode("utf-8")
+    acode = geturandom(20) if acode is None else acode.encode("utf-8")
 
     activationcode = base64.b32encode(acode)
     if checksum is True:
@@ -355,10 +352,7 @@ def _get_hsm_obj_from_context(hsm=None):
     :rtype:
     """
 
-    if hsm:
-        hsm_obj = hsm.get("obj")
-    else:
-        hsm_obj = context.get("hsm", {}).get("obj")
+    hsm_obj = hsm.get("obj") if hsm else context.get("hsm", {}).get("obj")
 
     if not hsm_obj:
         msg = "no hsm defined in execution context!"
@@ -472,7 +466,7 @@ def init_key_partition(config, partition, key_type="ed25519"):
     store it in the linotp config
     """
 
-    if not key_type == "ed25519":
+    if key_type != "ed25519":
         msg = f"Unsupported keytype: {key_type}"
         raise ValueError(msg)
 

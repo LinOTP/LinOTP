@@ -373,10 +373,7 @@ class OcraSuite:
             """' akey = binascii.hexlify(bkey) """
             h = hmac.new(bkey, data_input, self.hash_algo).digest()
 
-        if self.truncation:
-            ret = dec(h, self.truncation)
-        else:
-            ret = str(truncated_value(h))
+        ret = dec(h, self.truncation) if self.truncation else str(truncated_value(h))
 
         return ret
 
@@ -700,10 +697,7 @@ class OcraSuite:
                 # in case of a provided transactionid, we scroll back in
                 # counter to support asynchronous transaction verification
 
-                if counter > window // 2:
-                    start = counter - window // 2
-                else:
-                    start = 0
+                start = counter - window // 2 if counter > window // 2 else 0
             sdate = datetime.fromtimestamp(start)
             edate = datetime.fromtimestamp(end)
 

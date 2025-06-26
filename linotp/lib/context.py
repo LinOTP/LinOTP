@@ -76,7 +76,7 @@ def context_stack_trace(manager_id, allow_nesting=True):
         yield
     finally:
         popped_manager_id = context_stack.pop()
-        if not popped_manager_id == manager_id:
+        if popped_manager_id != manager_id:
             # this should not happen, when context stack is only accessed
             # through context_stack_trace. however, just in case someone
             # tempers with context_stack directly, we check for stack

@@ -41,6 +41,7 @@ We assume port 5001 is used (default). If you want to use another port you can
 specify it with nose-testconfig (e.g. --tc=paster.port:5005).
 """
 
+import contextlib
 import json
 import urllib.parse
 from unittest.mock import patch
@@ -397,10 +398,8 @@ class TestRemoteToken2(TestingChallengeResponseController):
         """
         global HTTP_RESPONSE_FUNC
 
-        try:
+        with contextlib.suppress(Exception):
             (y_serial, r_serial) = self.create_tokens()
-        except Exception:
-            pass
 
         params = {}
         params["serial"] = y_serial

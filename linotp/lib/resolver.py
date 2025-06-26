@@ -657,7 +657,7 @@ def _get_resolver_config(resolver_config_identifier):
 
     # identify the fully qualified resolver spec by all possible resolver
     # prefixes, which are taken from the resolver_classes list
-    lookup_keys = [f"linotp.{entry}" for entry in resolver_registry.keys()]
+    lookup_keys = [f"linotp.{entry}" for entry in resolver_registry]
 
     # we got the resolver prefix, now we can search in the config for
     # all resolver configuration entries

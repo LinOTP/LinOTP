@@ -221,10 +221,7 @@ def is_phone_editable(user=""):
         policies, scope="selfservice", action="edit_sms", default=1
     )
 
-    if edit_sms == 0:
-        return False
-
-    return True
+    return edit_sms != 0
 
 
 @tokenclass_registry.class_entry("sms")
@@ -427,7 +424,7 @@ class SmsTokenClass(HmacTokenClass):
         # (res, pin, otpval) = split_pin_otp(self, passw, user, options=options)
         # if policy to send sms on emtpy pin is set, return true
         realms = self.token.getRealmNames()
-        if trigger_sms(realms):
+        if trigger_sms(realms):  # noqa: SIM102
             if "check_s" in options.get("scope", {}) and "challenge" in options:
                 request_is_valid = True
                 return request_is_valid
@@ -680,33 +677,31 @@ class SmsTokenClass(HmacTokenClass):
             options = {}
 
         ret = HmacTokenClass.checkOtp(self, anOtpVal, counter, window)
-        if ret != -1:
-            if self.isValid() is False:
-                ret = -1
+        if ret != -1 and self.isValid() is False:
+            ret = -1
 
-        if ret >= 0:
-            if get_auth_AutoSMSPolicy():
-                user = None
-                message = "<otp>"
-                realms = self.getRealms()
-                if realms:
-                    _sms_ret, message = get_auth_smstext(realm=realms[0])
+        if ret >= 0 and get_auth_AutoSMSPolicy():
+            user = None
+            message = "<otp>"
+            realms = self.getRealms()
+            if realms:
+                _sms_ret, message = get_auth_smstext(realm=realms[0])
 
-                if "user" in options:
-                    user = options.get("user", None)
-                    if user:
-                        _sms_ret, message = get_auth_smstext(realm=user.realm)
-                realms = self.getRealms()
+            if "user" in options:
+                user = options.get("user", None)
+                if user:
+                    _sms_ret, message = get_auth_smstext(realm=user.realm)
+            realms = self.getRealms()
 
-                if "data" in options or "message" in options:
-                    message = options.get("data", options.get("message", "<otp>"))
+            if "data" in options or "message" in options:
+                message = options.get("data", options.get("message", "<otp>"))
 
-                try:
-                    _success, message = self.sendSMS(message=message)
-                except Exception as exx:
-                    log.error(exx)
-                finally:
-                    self.incOtpCounter(ret, reset=False)
+            try:
+                _success, message = self.sendSMS(message=message)
+            except Exception as exx:
+                log.error(exx)
+            finally:
+                self.incOtpCounter(ret, reset=False)
         if ret >= 0:
             msg = "otp verification was successful!"
         else:

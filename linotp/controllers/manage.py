@@ -29,6 +29,7 @@ manage controller - In provides the web gui management interface
 """
 
 import base64
+import contextlib
 import json
 import logging
 import os
@@ -348,9 +349,8 @@ class ManageController(BaseController):
 
             # check if we only want to see ONE realm or see all realms we are
             # allowerd to see.
-            if filter_realm:
-                if filter_realm in filterRealm or "*" in filterRealm:
-                    filterRealm = [filter_realm]
+            if filter_realm and (filter_realm in filterRealm or "*" in filterRealm):
+                filterRealm = [filter_realm]
 
             log.debug(
                 "[tokenview_flexi] admin >%s< may display the following realms: %s",
@@ -514,14 +514,14 @@ class ManageController(BaseController):
                     {
                         "id": u["username"],
                         "cell": [
-                            (u["username"]) if "username" in u else (""),
+                            u.get("username", ""),
                             (resolver_display),
-                            (u["surname"]) if "surname" in u else (""),
-                            (u["givenname"]) if "givenname" in u else (""),
-                            (u["email"]) if "email" in u else (""),
-                            (u["mobile"]) if "mobile" in u else (""),
-                            (u["phone"]) if "phone" in u else (""),
-                            (u["userid"]) if "userid" in u else (""),
+                            u.get("surname", ""),
+                            u.get("givenname", ""),
+                            u.get("email", ""),
+                            u.get("mobile", ""),
+                            u.get("phone", ""),
+                            u.get("userid", ""),
                         ],
                     }
                 )
@@ -621,14 +621,12 @@ class ManageController(BaseController):
             c.tokeninfo = token_info
 
             for k in c.tokeninfo:
-                if "LinOtp.TokenInfo" == k:
-                    try:
-                        # Try to convert string to Dictionary
+                if k == "LinOtp.TokenInfo":
+                    # Try to convert string to Dictionary
+                    with contextlib.suppress(BaseException):
                         c.tokeninfo["LinOtp.TokenInfo"] = json.loads(
                             c.tokeninfo["LinOtp.TokenInfo"]
                         )
-                    except BaseException:
-                        pass
 
             return render("/manage/tokeninfo.mako").decode("utf-8")
 

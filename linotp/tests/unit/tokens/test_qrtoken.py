@@ -85,7 +85,7 @@ class QRTokenClassUnitTestCase:
 
         assert "user_token_id" not in fake.info_dict
         assert "user_public_key" not in fake.info_dict
-        assert "pairing_url_sent" == token.current_state
+        assert token.current_state == "pairing_url_sent"
 
     # ------------------------------------------------------------------------ -
 

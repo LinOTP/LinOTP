@@ -194,10 +194,9 @@ class TagespasswortTokenClass(TokenClass):
 
     def update(self, param):
         # check for the required parameters
-        if self.hKeyRequired is True:
-            if "otpkey" not in param:
-                msg = "Missing parameter: 'otpkey'"
-                raise ParameterError(msg, id=905)
+        if self.hKeyRequired is True and "otpkey" not in param:
+            msg = "Missing parameter: 'otpkey'"
+            raise ParameterError(msg, id=905)
 
         TokenClass.update(self, param)
 

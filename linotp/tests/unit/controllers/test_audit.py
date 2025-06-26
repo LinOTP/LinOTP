@@ -114,8 +114,8 @@ class TestAuditSearch:
         # THEN the operation is logged and can be read by audit/search
         response = adminclient.get("/api/v2/auditlog/")
         assert (
-            "system/getConfig"
-            == response.json["result"]["value"]["pageRecords"][0]["action"]
+            response.json["result"]["value"]["pageRecords"][0]["action"]
+            == "system/getConfig"
         ), response.json
 
         # test auditlog can be filtered
@@ -142,7 +142,7 @@ class TestAuditSearch:
                 query_string={filter: "Empty response -> filtering works"},
             )
             returned_entries = response.json["result"]["value"]["pageRecords"]
-            assert 0 == len(returned_entries), (filter, response.json)
+            assert len(returned_entries) == 0, (filter, response.json)
 
         # test wildcard operator `*`
         response = adminclient.get(
@@ -150,7 +150,7 @@ class TestAuditSearch:
             query_string={"action": "*ystem/getConfi*"},
         )
         returned_entries = response.json["result"]["value"]["pageRecords"]
-        assert 1 == len(returned_entries), (filter, response.json)
+        assert len(returned_entries) == 1, (filter, response.json)
 
     def test_audit_with_v2_sorting(self, adminclient, search):
         # create an audit record by retrieving the system config
@@ -164,8 +164,8 @@ class TestAuditSearch:
             query_string={"sortBy": "action", "sortOrder": "asc"},
         )
         returned_entries_asc = response_asc.json["result"]["value"]["pageRecords"]
-        assert 2 == len(returned_entries_asc), response_asc.json
-        assert "api/v2/auditlog/" == returned_entries_asc[0]["action"], (
+        assert len(returned_entries_asc) == 2, response_asc.json
+        assert returned_entries_asc[0]["action"] == "api/v2/auditlog/", (
             returned_entries_asc
         )
 
@@ -175,8 +175,8 @@ class TestAuditSearch:
             query_string={"sortBy": "action", "sortOrder": "desc"},
         )
         returned_entries_desc = response_desc.json["result"]["value"]["pageRecords"]
-        assert 3 == len(returned_entries_desc), response_desc.json
-        assert "system/getConfig" == returned_entries_desc[0]["action"], (
+        assert len(returned_entries_desc) == 3, response_desc.json
+        assert returned_entries_desc[0]["action"] == "system/getConfig", (
             returned_entries_desc
         )
 

@@ -201,7 +201,7 @@ def create_oathtoken_url(user, realm, otpkey, type="hmac", serial=""):
     #                '&timeBased=false&counter=0&numDigites=6&lockdown=true',
 
     timebased = ""
-    if "totp" == type.lower():
+    if type.lower() == "totp":
         timebased = "&timeBased=true"
 
     label = get_tokenlabel(user, realm, serial)

@@ -2461,7 +2461,7 @@ class TestPolicies(TestPoliciesBase):
         )
 
         assert '"rows":' in response, response
-        assert 27 == len(response.json["result"]["value"]["rows"])
+        assert len(response.json["result"]["value"]["rows"]) == 27
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles", "userlist_admins")
     def test_503_check_userlist(self):
@@ -3504,7 +3504,7 @@ class TestPolicies(TestPoliciesBase):
 
             assert response.json["result"]["value"], response
 
-        for serial in tokens.keys():
+        for serial in tokens:
             # set realm of tokens
             params = {
                 "serial": serial,
@@ -3671,7 +3671,7 @@ class TestPolicies(TestPoliciesBase):
 
             assert response.json["result"]["value"], response
 
-        for serial in tokens.keys():
+        for serial in tokens:
             # set realm of tokens
             params = {
                 "serial": serial,

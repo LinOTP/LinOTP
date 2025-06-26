@@ -444,10 +444,7 @@ def sendCSVResult(obj, flat_lines=False, filename="linotp-tokendata.csv"):
                 headers_printed = True
 
             for val in list(row.values()):
-                if isinstance(val, str):
-                    value = val.replace("\n", " ")
-                else:
-                    value = val
+                value = val.replace("\n", " ") if isinstance(val, str) else val
                 output += f"{delim}{value}{delim}{seperator} "
             output += "\n"
     else:

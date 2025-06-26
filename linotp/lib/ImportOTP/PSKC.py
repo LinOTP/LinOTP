@@ -56,7 +56,7 @@ def getEncMethod(elem):
     m = re.search(r"#(.*)$", algo)
     if m:
         algo = m.group(1)
-    if "aes128-cbc" != algo:
+    if algo != "aes128-cbc":
         log.error("The algorithm %s is not supported", algo)
         msg = f"The algorithm {algo} is not supported"
         raise ImportException(msg)
@@ -68,7 +68,7 @@ def getMacMethod(elem):
     m = re.search(r"#(.*)$", meth)
     if m:
         meth = m.group(1)
-    if "hmac-sha1" != meth:
+    if meth != "hmac-sha1":
         log.error("The method %s is not supported", meth)
         msg = f"The method {meth} is not supported"
         raise ImportException(msg)
@@ -88,7 +88,7 @@ def aes_decrypt(transport_b64, key_hex, serial=""):
             return data
 
         padding = data[len(data) - a :]
-        if not (bytes([a]) * a == padding):
+        if bytes([a]) * a != padding:
             # it seems not to be padded
             return data
 
@@ -179,37 +179,37 @@ def parsePSKCdata(
         # Check for AES-128-CBC, preshared key (chapter 6.1)
         enckeyTag = getTagName(next(iter(elem_encKey)))
         # This will hold the name of the preshared key
-        if "KeyName" == enckeyTag:
+        if enckeyTag == "KeyName":
             KEYNAME = next(iter(elem_encKey)).text
             log.debug("The keyname of preshared encryption is <<%r>>", KEYNAME)
         # check for PasswordBasedEncyprion (chapter 6.2)
-        elif "DerivedKey" == enckeyTag:
+        elif enckeyTag == "DerivedKey":
             log.debug("We found PBE.")
             # Now we check for KeyDerivationMethod
             elem_keyderivation = list(next(iter(elem_encKey)))
             for e in elem_keyderivation:
-                if "KeyDerivationMethod" == getTagName(e):
+                if getTagName(e) == "KeyDerivationMethod":
                     deriv_algo = e.get("Algorithm")
                     m = re.search(r"#(.*)$", deriv_algo)
                     PBE_DERIVE_ALGO = m.group(1)
                     log.debug("Algorithm of the PBE: %r", PBE_DERIVE_ALGO)
-                    if "pbkdf2" == PBE_DERIVE_ALGO:
+                    if PBE_DERIVE_ALGO == "pbkdf2":
                         for p in list(e):
-                            if "PBKDF2-params" == getTagName(p):
+                            if getTagName(p) == "PBKDF2-params":
                                 for sp in list(p):
                                     spTag = getTagName(sp)
-                                    if "Salt" == spTag:
+                                    if spTag == "Salt":
                                         for salt in list(sp):
-                                            if "Specified" == getTagName(salt):
+                                            if getTagName(salt) == "Specified":
                                                 PBE_SALT = salt.text
                                             else:
                                                 log.warning(
                                                     "Unknown element in element Salt: %r",
                                                     getTagName(salt),
                                                 )
-                                    elif "IterationCount" == spTag:
+                                    elif spTag == "IterationCount":
                                         PBE_ITERATION_COUNT = sp.text
-                                    elif "KeyLength" == spTag:
+                                    elif spTag == "KeyLength":
                                         PBE_KEY_LENGTH = sp.text
                     else:
                         # probably pbkdf1
@@ -254,10 +254,10 @@ def parsePSKCdata(
         # Find the MAC: ENC_ALGO and MAC_bin
         for e in list(elem_mackey):
             tag = getTagName(e)
-            if "CipherData" == tag:
+            if tag == "CipherData":
                 for c in list(e):
                     cipher_tag = getTagName(c)
-                    if "CipherValue" == cipher_tag:
+                    if cipher_tag == "CipherValue":
                         cipherValue = c.text.strip()
                         log.debug(
                             "Found this MAC Key cipherValue: <<%r>>",
@@ -271,7 +271,7 @@ def parsePSKCdata(
                         )
                         msg = f"Found unsupported child in CipherData: {cipher_tag!r}"
                         raise ImportException(msg)
-            elif "EncryptionMethod" == tag:
+            elif tag == "EncryptionMethod":
                 ENC_ALGO = getEncMethod(e)
             else:
                 log.warning("Found unknown tag: %r", tag)
@@ -281,7 +281,7 @@ def parsePSKCdata(
     # Now we get the list of keypackages
 
     elem_KeyPackageList = elem_keycontainer.findall(namespace + TAG_NAME_KEYPACKAGE)
-    if 0 == len(elem_KeyPackageList):
+    if len(elem_KeyPackageList) == 0:
         msg = f"No element {TAG_NAME_KEYPACKAGE} contained!"
         raise ImportException(msg)
 
@@ -314,11 +314,11 @@ def parsePSKCdata(
         TOKEN_TYPE = None
 
         if algorithm:
-            if "hotp" == algorithm.lower():
+            if algorithm.lower() == "hotp":
                 TOKEN_TYPE = "hmac"
-            elif "totp" == algorithm.lower():
+            elif algorithm.lower() == "totp":
                 TOKEN_TYPE = "totp"
-            elif "ocra" == algorithm.lower():
+            elif algorithm.lower() == "ocra":
                 TOKEN_TYPE = "ocra2"
 
         if do_checkserial and not checkSerial(serial):
@@ -337,10 +337,10 @@ def parsePSKCdata(
             for e in list(elem_algoParam):
                 eTag = getTagName(e)
                 log.debug("Evaluating element <<%r>>", eTag)
-                if "ResponseFormat" == eTag:
+                if eTag == "ResponseFormat":
                     KD_otplen = int(e.get("Length"))
                     log.debug("Found length = %r", e.get("Length"))
-                elif "Suite" == eTag:
+                elif eTag == "Suite":
                     if TOKEN_TYPE == "ocra2":
                         KD_Suite = e.text
                         log.debug("Found OCRA Suite = %r", KD_Suite)
@@ -365,46 +365,46 @@ def parsePSKCdata(
             for e in list(elem_keydata):
                 eTag = getTagName(e)
                 log.debug("Evaluating element <<%r>>", eTag)
-                if "Secret" == eTag:
+                if eTag == "Secret":
                     for se in list(e):
                         seTag = getTagName(se)
-                        if "EncryptedValue" == seTag:
+                        if seTag == "EncryptedValue":
                             for ev in list(se):
                                 evTag = getTagName(ev)
-                                if "EncryptionMethod" == evTag:
+                                if evTag == "EncryptionMethod":
                                     KD_algo = getEncMethod(ev)
-                                elif "CipherData" == evTag:
+                                elif evTag == "CipherData":
                                     for ciph in list(ev):
                                         ciphTag = getTagName(ciph)
-                                        if "CipherValue" == ciphTag:
+                                        if ciphTag == "CipherValue":
                                             KD_cipher_b64 = ciph.text.strip()
 
-                        elif "PlainValue" == seTag:
+                        elif seTag == "PlainValue":
                             KD_hmac_key_b64 = se.text.strip()
-                        elif "ValueMAC" == seTag:
+                        elif seTag == "ValueMAC":
                             KD_mac_b64 = se.text.strip()
 
-                elif "Counter" == eTag:
+                elif eTag == "Counter":
                     for se in list(e):
                         seTag = getTagName(se)
-                        if "PlainValue" == seTag:
+                        if seTag == "PlainValue":
                             KD_counter = se.text
                         else:
                             log.warning("We do only support PlainValue counters")
-                elif "TimeInterval" == eTag:
+                elif eTag == "TimeInterval":
                     for se in list(e):
                         seTag = getTagName(se)
-                        if "PlainValue" == seTag:
+                        if seTag == "PlainValue":
                             KD_TimeInterval = se.text
                             log.debug("Found TimeInterval = %r", KD_TimeInterval)
                         else:
                             log.warning(
                                 "We do only support PlainValue for TimeInterval"
                             )
-                elif "Time" == eTag:
+                elif eTag == "Time":
                     for se in list(e):
                         seTag = getTagName(se)
-                        if "PlainValue" == seTag:
+                        if seTag == "PlainValue":
                             KD_Time = se.text
                             log.debug("Found Time offset = %s", KD_Time)
                         else:
@@ -420,11 +420,11 @@ def parsePSKCdata(
                     serial,
                 )
             else:
-                if "aes128-cbc" == ENC_ALGO:
+                if ENC_ALGO == "aes128-cbc":
                     #
                     #   Verifiy the MAC Value
                     #
-                    if "hmac-sha1" == MAC_Method:
+                    if MAC_Method == "hmac-sha1":
                         MAC_digest_bin = hmac.new(
                             MACKEY_bin, base64.b64decode(KD_cipher_b64), sha
                         ).digest()

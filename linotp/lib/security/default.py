@@ -134,9 +134,8 @@ class DefaultSecurityModule(SecurityModule):
         """
         id = int(id)
 
-        if self.crypted:
-            if id in self.secrets:
-                return self.secrets.get(id)
+        if self.crypted and id in self.secrets:
+            return self.secrets.get(id)
 
         secret = ""
         try:

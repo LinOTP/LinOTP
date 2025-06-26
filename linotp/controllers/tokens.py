@@ -211,7 +211,7 @@ class TokensController(BaseController):
             realm = param.get("realm", "*").lower()
             if "*" in allowed_realms:
                 realm_to_filter = [realm]
-            elif "*" == realm:
+            elif realm == "*":
                 realm_to_filter = allowed_realms
             elif realm in [realm.lower() for realm in allowed_realms]:
                 realm_to_filter = [realm]

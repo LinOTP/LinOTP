@@ -381,9 +381,7 @@ class User:
         if self.realm:
             return self.realm != other.realm
 
-        if self.resolverConf and self.resolverConf != other.resolverConf:
-            return True
-        return False
+        return bool(self.resolverConf and self.resolverConf != other.resolverConf)
 
     def __eq__(self, other):
         """support for: user1 == user2"""
@@ -636,7 +634,7 @@ def setRealm(realm, resolvers):
 
     # if this is the first one, make it the default
     realms = getRealms()
-    if 0 == len(realms):
+    if len(realms) == 0:
         setDefaultRealm(realm, check_if_exists=False)
 
     # clean the realm cache
@@ -655,10 +653,7 @@ def getUserRealms(user, allRealms=None, defaultRealm=None):
     if not allRealms:
         allRealms = getRealms()
 
-    if not defaultRealm:
-        defRealm = getDefaultRealm().lower()
-    else:
-        defRealm = defaultRealm.lower()
+    defRealm = getDefaultRealm().lower() if not defaultRealm else defaultRealm.lower()
 
     Realms = []
     if user.realm == "" and user.resolver_config_identifier == "":
@@ -701,7 +696,7 @@ def getRealmBox():
     conf = getLinotpConfig()
     if rb_string in conf:
         log.debug("[getRealmBox] read setting: %r", conf[rb_string])
-        return "True" == conf[rb_string]
+        return conf[rb_string] == "True"
     else:
         return False
 
@@ -713,7 +708,7 @@ def getSplitAtSign():
     if False, the username will be taken unchanged for loginname.
     """
     splitAtSign = getFromConfig("splitAtSign", "true") or "true"
-    return "true" == splitAtSign.lower()
+    return splitAtSign.lower() == "true"
 
 
 def find_resolver_spec_for_config_identifier(realms_dict, config_identifier):
@@ -1359,9 +1354,11 @@ def getSearchFields(user):
         """"""
         _cls_identifier, config_identifier = parse_resolver_spec(resolver_spec)
 
-        if len(user.resolver_config_identifier) > 0:
-            if config_identifier != user.resolver_config_identifier:
-                continue
+        if (
+            len(user.resolver_config_identifier) > 0
+            and config_identifier != user.resolver_config_identifier
+        ):
+            continue
 
         # try to load the UserIdResolver Class
         try:
@@ -1392,9 +1389,11 @@ def getUserList(param, search_user):
     for resolver_spec in resolverrrs:
         cls_identifier, config_identifier = parse_resolver_spec(resolver_spec)
 
-        if len(search_user.resolver_config_identifier) > 0:
-            if config_identifier != search_user.resolver_config_identifier:
-                continue
+        if (
+            len(search_user.resolver_config_identifier) > 0
+            and config_identifier != search_user.resolver_config_identifier
+        ):
+            continue
 
         # try to load the UserIdResolver Class
         try:
@@ -1473,9 +1472,11 @@ def getUserListIterators(param, search_user):
     for resolver_spec in resolverrrs:
         cls_identifier, config_identifier = parse_resolver_spec(resolver_spec)
 
-        if len(search_user.resolver_config_identifier) > 0:
-            if config_identifier != search_user.resolver_config_identifier:
-                continue
+        if (
+            len(search_user.resolver_config_identifier) > 0
+            and config_identifier != search_user.resolver_config_identifier
+        ):
+            continue
 
         # try to load the UserIdResolver Class
         try:

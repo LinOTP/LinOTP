@@ -198,10 +198,7 @@ class SecretObj:
         hash_pin = utils.hash_digest(pin.encode("utf-8"), iv)
 
         # TODO: position independend compare
-        if hashed_pin == hash_pin:
-            return True
-
-        return False
+        return hashed_pin == hash_pin
 
     @staticmethod
     def encrypt_pin(pin: str):
@@ -231,10 +228,7 @@ class SecretObj:
         crypted_pin = utils.encryptPin(pin.encode("utf-8"), iv)
 
         # TODO: position independend compare
-        if encrypted_pin == crypted_pin.encode("utf-8"):
-            return True
-
-        return False
+        return encrypted_pin == crypted_pin.encode("utf-8")
 
     @staticmethod
     def decrypt_pin(pin, hsm=None):

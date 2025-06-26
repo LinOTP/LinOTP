@@ -220,7 +220,7 @@ class AttributeCompare:
         else:
             if "@" in udef:
                 self.set_user_access(udef, "domain_compare")
-            elif ":" == udef[-1]:  # resolver match
+            elif udef[-1] == ":":  # resolver match
                 self.set_user_access(udef, "get_resolver")
             elif len(udef) > 0:  # simple username compare
                 self.set_user_access(udef, "simple_name")
@@ -359,9 +359,7 @@ class AttributeCompare:
         self.user_spec = user_spec
         if typ == "attribute_only":
             self.access_user = self._userinfo_direct
-        elif typ == "simple_name":
-            self.access_user = self._user_domain_compare
-        elif typ == "domain_compare":
+        elif typ == "simple_name" or typ == "domain_compare":
             self.access_user = self._user_domain_compare
         elif typ == "get_resolver":
             self.access_user = self._resolver_compare

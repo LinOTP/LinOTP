@@ -241,27 +241,27 @@ def _checkAdminPolicyPost(
 
     # check the enrollment.tokencount policy compliance
 
-    if method in ["assign", "init", "enable"]:
-        if not _check_token_count(realm=user.realm, post_check=True):
-            admin = _getAuthenticatedUser()
+    if method in ["assign", "init", "enable"] and (
+        not _check_token_count(realm=user.realm, post_check=True)
+    ):
+        admin = _getAuthenticatedUser()
 
-            log.warning(
-                "the admin >%r< is not allowed to enroll any more "
-                "tokens for the realm %r",
-                admin,
-                user.realm,
-            )
+        log.warning(
+            "the admin >%r< is not allowed to enroll any more tokens for the realm %r",
+            admin,
+            user.realm,
+        )
 
-            raise PolicyException(
-                _(
-                    "The maximum allowed number of tokens "
-                    "for the realm %r was reached. You can"
-                    " not init any more tokens. Check the "
-                    "policies scope=enrollment, "
-                    "action=tokencount."
-                )
-                % user.realm
+        raise PolicyException(
+            _(
+                "The maximum allowed number of tokens "
+                "for the realm %r was reached. You can"
+                " not init any more tokens. Check the "
+                "policies scope=enrollment, "
+                "action=tokencount."
             )
+            % user.realm
+        )
 
     # ---------------------------------------------------------------------- --
 
@@ -313,16 +313,16 @@ def _checkAdminPolicyPost(
 
     # enforce license restrictions
 
-    if method in ["assign", "init", "enable", "loadtokens"]:
-        if linotp.lib.support.check_license_restrictions():
-            log.warning(
-                "The maximum allowed number of tokens for your license is reached"
-            )
-            linotp.lib.support.check_license_restrictions()
+    if (
+        method in ["assign", "init", "enable", "loadtokens"]
+        and linotp.lib.support.check_license_restrictions()
+    ):
+        log.warning("The maximum allowed number of tokens for your license is reached")
+        linotp.lib.support.check_license_restrictions()
 
-            raise linotp.lib.support.LicenseException(
-                _("No more tokens can be enrolled due to license restrictions")
-            )
+        raise linotp.lib.support.LicenseException(
+            _("No more tokens can be enrolled due to license restrictions")
+        )
 
     return ret
 
@@ -417,11 +417,10 @@ def _checkSelfservicePolicyPost(method, param=None, user=None):
     # for selfservice "enroll" we check the license limits
     # - this hook covers 'enroll' userservice
 
-    if method == "enroll":
-        if linotp.lib.support.check_license_restrictions():
-            raise linotp.lib.support.LicenseException(
-                _("No more tokens can be enrolled due to license restrictions")
-            )
+    if method == "enroll" and linotp.lib.support.check_license_restrictions():
+        raise linotp.lib.support.LicenseException(
+            _("No more tokens can be enrolled due to license restrictions")
+        )
 
     return ret
 
@@ -797,22 +796,25 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         # this is a new token, we do not need to check this.
         log.debug("checking for token existens")
 
-        if policies["active"] and linotp.lib.token.tokenExist(serial):
-            if not checkAdminAuthorization(policies, serial, ""):
-                log.warning(
-                    "the admin >%s< is not allowed to enroll token %s of type %s.",
-                    policies["admin"],
-                    serial,
-                    ttype,
-                )
+        if (
+            policies["active"]
+            and linotp.lib.token.tokenExist(serial)
+            and not checkAdminAuthorization(policies, serial, "")
+        ):
+            log.warning(
+                "the admin >%s< is not allowed to enroll token %s of type %s.",
+                policies["admin"],
+                serial,
+                ttype,
+            )
 
-                raise PolicyException(
-                    _(
-                        "You do not have the administrative "
-                        "right to init token %s of type %s."
-                    )
-                    % (serial, ttype)
+            raise PolicyException(
+                _(
+                    "You do not have the administrative "
+                    "right to init token %s of type %s."
                 )
+                % (serial, ttype)
+            )
 
         log.debug("checking tokens in realm for user %r", user)
         if user and not _check_token_count(user=user):
@@ -1208,24 +1210,24 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         tokenrealm = param.get("tokenrealm")
         policies = getAdminPolicies("import")
 
-        if policies["active"]:
-            if not ("*" in policies["realms"] or tokenrealm in policies["realms"]):
-                log.warning(
-                    "the admin >%r< is not allowed to "
-                    "import token files to realm %r: %r",
-                    policies["admin"],
-                    tokenrealm,
-                    policies,
-                )
+        if policies["active"] and (
+            not ("*" in policies["realms"] or tokenrealm in policies["realms"])
+        ):
+            log.warning(
+                "the admin >%r< is not allowed to import token files to realm %r: %r",
+                policies["admin"],
+                tokenrealm,
+                policies,
+            )
 
-                raise PolicyException(
-                    _(
-                        "You do not have the administrative "
-                        "right to import token files to realm %r"
-                        ". Check the policies."
-                    )
-                    % tokenrealm
+            raise PolicyException(
+                _(
+                    "You do not have the administrative "
+                    "right to import token files to realm %r"
+                    ". Check the policies."
                 )
+                % tokenrealm
+            )
 
         if linotp.lib.support.check_license_restrictions():
             raise linotp.lib.support.LicenseException(
@@ -2392,11 +2394,8 @@ def _getOTPPINPolicies(user, scope="selfservice"):
 
         # find the minimum length
         log.debug("find the minimum length for OTP_PINs")
-        if not n_min == -1:
-            if ret["min"] == -1:
-                ret["min"] = n_min
-            elif n_min < ret["min"]:
-                ret["min"] = n_min
+        if n_min != -1 and (ret["min"] == -1 or n_min < ret["min"]):
+            ret["min"] = n_min
 
         # find all contents
         log.debug("find the allowed contents for OTP PINs")
@@ -2425,30 +2424,27 @@ def checkOTPPINPolicy(pin, user):
 
     pol = _getOTPPINPolicies(user)
     log.debug("checking for otp_pin_minlength")
-    if pol["min"] != -1:
-        if pol["min"] > len(pin):
-            return {
-                "success": False,
-                "error": _(
-                    "The provided PIN is too short. It should be "
-                    "at least %i characters."
-                )
-                % pol["min"],
-            }
+    if pol["min"] != -1 and pol["min"] > len(pin):
+        return {
+            "success": False,
+            "error": _(
+                "The provided PIN is too short. It should be at least %i characters."
+            )
+            % pol["min"],
+        }
 
     log.debug("checking for otp_pin_maxlength")
-    if pol["max"] != -1:
-        if pol["max"] < len(pin):
-            return {
-                "success": False,
-                "error": (
-                    _(
-                        "The provided PIN is too long. It should not "
-                        "be longer than %i characters."
-                    )
-                    % pol["max"]
-                ),
-            }
+    if pol["max"] != -1 and pol["max"] < len(pin):
+        return {
+            "success": False,
+            "error": (
+                _(
+                    "The provided PIN is too long. It should not "
+                    "be longer than %i characters."
+                )
+                % pol["max"]
+            ),
+        }
 
     log.debug("checking for otp_pin_contents")
     if pol["contents"]:

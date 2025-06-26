@@ -290,9 +290,8 @@ def create_policy_export_file(policy, filename):
     TMP_DIRECTORY = "/tmp"
     file_name = f"{TMP_DIRECTORY}/{filename}"
     if len(policy) == 0:
-        f = open(file_name, "w")
-        f.write("")
-        f.close()
+        with open(file_name, "w", encoding="utf-8") as f:
+            f.write("")
     else:
         for value in list(policy.values()):
             for k in list(value.keys()):

@@ -28,6 +28,7 @@
 Test challenge response functionality for the radius token
 """
 
+import contextlib
 import logging
 from unittest.mock import patch
 
@@ -80,10 +81,8 @@ def mocked_radius_SendPacket(Client, *argparams, **kwparams):
         # encrypted User-Password
         params["password"] = pkt.PwDecrypt(pkt[2][0])
 
-        try:
+        with contextlib.suppress(Exception):
             params["state"] = pkt["State"][0]
-        except Exception:
-            pass
 
         if test_func:
             auth, reply = test_func(params)

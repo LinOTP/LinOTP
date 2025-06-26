@@ -100,10 +100,9 @@ class FipsModule:
         #
         # activate FIPS mode
         #
-        if _libcrypto.FIPS_mode() != 1:
-            if _libcrypto.FIPS_mode_set(1) == 0:
-                msg = "can't enable OpenSSL FIPS mode"
-                raise SSLError(msg)
+        if _libcrypto.FIPS_mode() != 1 and _libcrypto.FIPS_mode_set(1) == 0:
+            msg = "can't enable OpenSSL FIPS mode"
+            raise SSLError(msg)
 
         self._libcrypto = _libcrypto
 

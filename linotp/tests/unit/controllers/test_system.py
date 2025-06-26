@@ -69,13 +69,15 @@ class TestSetResolver(unittest.TestCase):
             False,
         )
 
-        with patch("linotp.controllers.system.sendError") as mock_senderror:
-            with patch("linotp.controllers.system.sendResult") as mock_sendresult:
-                # sendError returns the exception
-                mock_senderror.side_effect = lambda exx: exx
-                mock_sendresult.side_effect = lambda obj, *args: obj
-                mock_request.json = params
-                ret = self.system.setResolver()
+        with (
+            patch("linotp.controllers.system.sendError") as mock_senderror,
+            patch("linotp.controllers.system.sendResult") as mock_sendresult,
+        ):
+            # sendError returns the exception
+            mock_senderror.side_effect = lambda exx: exx
+            mock_sendresult.side_effect = lambda obj, *args: obj
+            mock_request.json = params
+            ret = self.system.setResolver()
 
         return ret
 

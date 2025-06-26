@@ -163,10 +163,8 @@ class TestGetFromParam(unittest.TestCase):
         """
 
         errors = []
-        config_id = 0
 
         for test_set in self.test_sets:
-            config_id += 1
             config = test_set["config"]
 
             mock_getFromConfig.return_value = config["split@sign"]
@@ -175,9 +173,7 @@ class TestGetFromParam(unittest.TestCase):
             mock_getRealms.return_value = config["realms"]
 
             # ------------------------------------------------------------- --
-            run_id = 0
-            for run in test_set["runs"]:
-                run_id += 1
+            for run_id, run in enumerate(test_set["runs"], 1):
                 param = run["params"]
                 result = run["result"]
 
@@ -218,10 +214,7 @@ class TestGetFromParam(unittest.TestCase):
 
         raisedException = None
 
-        config_id = 0
-
         for test_set in self.test_sets:
-            config_id += 1
             config = test_set["config"]
 
             mock_getFromConfig.return_value = config["split@sign"]
@@ -247,9 +240,8 @@ class TestGetFromParam(unittest.TestCase):
             table.append("")
 
             # ------------------------------------------------------------- --
-            run_id = 0
+
             for run in test_set["runs"]:
-                run_id += 1
                 param = run["params"]
 
                 user = getUserFromParam(param)

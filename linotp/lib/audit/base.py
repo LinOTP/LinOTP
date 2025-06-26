@@ -198,7 +198,7 @@ def search(param, user=None, columns=None):
     search_dict = {}
 
     if "query" in param:
-        if "extsearch" == param["qtype"]:
+        if param["qtype"] == "extsearch":
             # search patterns are delimitered with ;
             search_list = param["query"].split(";")
             for s in search_list:

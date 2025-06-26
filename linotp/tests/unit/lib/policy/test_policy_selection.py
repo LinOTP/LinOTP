@@ -57,10 +57,7 @@ def fn_mock_domain_comp(user_obj, condition):
     if condition == f"*@{user_obj.realm}":
         return True
 
-    if condition == "*":
-        return True
-
-    return False
+    return condition == "*"
 
 
 # -------------------------------------------------------------------------- --

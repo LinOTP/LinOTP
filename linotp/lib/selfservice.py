@@ -43,9 +43,8 @@ def get_imprint(realm):
     directory = config.get("linotp.imprint_directory", "/etc/linotp/imprint")
     filename = f"{directory}/{realm}.imprint"
     try:
-        f = open(filename)
-        res = f.read()
-        f.close()
+        with open(filename) as f:
+            res = f.read()
     except Exception as e:
         log.info("[get_imprint] can not read imprint file: %s. (%r)", filename, e)
 

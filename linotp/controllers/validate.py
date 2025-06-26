@@ -412,7 +412,7 @@ class ValidateController(BaseController):
                     log.warning(
                         "[samlcheck] Calling controller samlcheck. But allowSamlAttributes is False."
                     )
-                if "True" == allowSAML:
+                if allowSAML == "True":
                     # Now we get the attributes of the user
                     user = request_context["RequestUser"]
                     (uid, resId, resIdC) = getUserId(user)
@@ -768,10 +768,7 @@ class ValidateController(BaseController):
 
             db.session.commit()
 
-            if ok is True:
-                ret = ":-)"
-            else:
-                ret = ":-("
+            ret = ":-)" if ok is True else ":-("
             res.append(ret)
 
             if opt is not None:

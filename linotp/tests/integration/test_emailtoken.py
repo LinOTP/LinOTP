@@ -104,9 +104,12 @@ class TestEmailTokenAuth(TestEmailToken):
         def radius_auth(
             username, realm_name, pin, radius_secret, radius_server, state=None
         ):
-            call_array = (
-                "python ../../../tools/linotp-auth-radius -f ../../../test.ini".split()
-            )
+            call_array = [
+                "python",
+                "../../../tools/linotp-auth-radius",
+                "-f",
+                "../../../test.ini",
+            ]
             call_array.extend(
                 [
                     "-u",

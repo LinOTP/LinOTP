@@ -47,6 +47,8 @@ try:
 except ImportError:
     ldap_api_version = 2.4
 
+import contextlib
+
 import click
 from flask import current_app
 from flask.cli import with_appcontext
@@ -1038,10 +1040,7 @@ class IdResolver(UserIdResolver):
             return False
 
         log.debug("[checkPass] uidType: %r", self.uidType)
-        if self.uidType.lower() == "dn":
-            DN = uid
-        else:
-            DN = self._getUserDN(uid)
+        DN = uid if self.uidType.lower() == "dn" else self._getUserDN(uid)
 
         log.debug("[checkPass] DN: %r", DN)
 
@@ -1489,7 +1488,7 @@ class IdResolver(UserIdResolver):
         # userid type especially for the objectguid or the userPrincipalName
 
         userid = None
-        for entry_key in result_data.keys():
+        for entry_key in result_data:
             if uidType.lower() == entry_key.lower():
                 userid = result_data.get(entry_key)[0]
 
@@ -1739,10 +1738,8 @@ def ldap_test(
             current_app.config["TLS_CA_CERTIFICATES_FILE"] = cert_file
             params0["only_trusted_certs"] = checking
             with current_app.test_request_context():
-                try:
+                with contextlib.suppress(ldap.SERVER_DOWN):
                     result = resolver_request(params0, silent=True)
-                except ldap.SERVER_DOWN:
-                    pass
                 cf_available = (
                     "Unavailable" if cert_file == "/dev/null" else "Available"
                 )

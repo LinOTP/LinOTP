@@ -73,10 +73,7 @@ def is_email_editable(user=""):
         policies, scope="selfservice", action="edit_email", default=1
     )
 
-    if edit_email == 0:
-        return False
-
-    return True
+    return edit_email != 0
 
 
 @tokenclass_registry.class_entry("email")

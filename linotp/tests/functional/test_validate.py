@@ -28,6 +28,7 @@
 """"""
 
 import binascii
+import contextlib
 import hashlib
 import json
 import time
@@ -93,20 +94,14 @@ class HmacOtp(LinHmac):
 
         hashlibStr = hLibStr.lower()
 
-        if hashlibStr == "md5":
-            return hashlib.md5
-        elif hashlibStr == "sha1":
-            return hashlib.sha1
-        elif hashlibStr == "sha224":
-            return hashlib.sha224
-        elif hashlibStr == "sha256":
-            return hashlib.sha256
-        elif hashlibStr == "sha384":
-            return hashlib.sha384
-        elif hashlibStr == "sha512":
-            return hashlib.sha512
-        else:
-            return hashlib.sha1
+        return {
+            "md5": hashlib.md5,
+            "sha1": hashlib.sha1,
+            "sha224": hashlib.sha224,
+            "sha256": hashlib.sha256,
+            "sha384": hashlib.sha384,
+            "sha512": hashlib.sha512,
+        }.get(hashlibStr, hashlib.sha1)
 
 
 @pytest.mark.usefixtures("client_class")
@@ -1526,10 +1521,8 @@ class TestValidateController(TestController):
     def test_totp_resync(self):
         # delete the 'TOTP' token if it exists
 
-        try:
+        with contextlib.suppress(AssertionError):
             self.delete_token("TOTP")
-        except AssertionError as _exx:
-            pass
 
         totp = self.createTOtpToken("SHA1")
 
@@ -1600,10 +1593,8 @@ class TestValidateController(TestController):
         assert 'setConfig AutoResync:true": true' in response, response
 
         # delete 'TOTP' token if it exists
-        try:
+        with contextlib.suppress(AssertionError):
             self.delete_token("TOTP")
-        except AssertionError as _exx:
-            pass
 
         totp = self.createTOtpToken("SHA512")
 

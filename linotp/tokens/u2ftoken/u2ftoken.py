@@ -184,12 +184,9 @@ class U2FTokenClass(TokenClass):
                 msg = "Wrong token pin!"
                 raise ValueError(msg)
         # check for set phases which are not "registration1" or "registration2"
-        elif requested_phase != "registration2" and requested_phase is not None:
-            msg = "Wrong phase parameter!"
-            raise Exception(msg)
-        # only allow empty phase parameters once the token is registered
-        # successfully
-        elif current_phase != "authentication" and requested_phase is None:
+        elif (requested_phase != "registration2" and requested_phase is not None) or (
+            current_phase != "authentication" and requested_phase is None
+        ):
             msg = "Wrong phase parameter!"
             raise Exception(msg)
         # only allow "registration2" if the token already completed
@@ -486,7 +483,7 @@ class U2FTokenClass(TokenClass):
         prevCounter = int(self.getFromTokenInfo("counter", None))
 
         # Did the counter not increase?
-        if not counter > prevCounter:
+        if not counter > prevCounter:  # noqa: SIM102
             # Is this a legal overflow?
             if self._checkCounterOverflow(counter, prevCounter) is False:
                 # Since a decreasing counter value is a hint to a device cloning, we
@@ -941,10 +938,9 @@ class U2FTokenClass(TokenClass):
                     )
 
                     # Check for appId conflicts
-                    if appId and policy_value:
-                        if appId != policy_value:
-                            msg = "Conflicting appId values in u2f policies."
-                            raise Exception(msg)
+                    if appId and policy_value and appId != policy_value:
+                        msg = "Conflicting appId values in u2f policies."
+                        raise Exception(msg)
                     appId = policy_value
 
             if not appId:

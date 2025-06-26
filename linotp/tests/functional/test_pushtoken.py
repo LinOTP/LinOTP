@@ -112,7 +112,7 @@ class TestPushToken(TestController):
         # we need a dummy file to sneak past the file existence check
         # in the initial provider configuration
 
-        self.dummy_temp_cert = NamedTemporaryFile()
+        self.dummy_temp_cert = NamedTemporaryFile()  # noqa: SIM115
 
         # ------------------------------------------------------------------ --
 

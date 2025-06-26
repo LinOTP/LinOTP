@@ -345,9 +345,8 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         request_is_valid = False
 
         pin_match = check_pin(self, passw, user=user, options=options)
-        if pin_match is True:
-            if "data" in options or "challenge" in options:
-                request_is_valid = True
+        if pin_match is True and ("data" in options or "challenge" in options):
+            request_is_valid = True
 
         return request_is_valid
 
@@ -783,18 +782,17 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
                 log.error(exx)
                 raise
 
-        if otp_count < 0 or pin_match is False:
-            if (
-                support_challenge_response is True
-                and self.isActive()
-                and self.is_challenge_request(passw, user, options=options)
-            ):
-                # we are in createChallenge mode
-                # fix for #12413:
-                # - moved the create_challenge call to the checkTokenList!
-                # after all tokens are processed and only one is challengeing
-                # (_res, reply) = create_challenge(self.token, options=options)
-                self.challenge_token.append(self)
+        if (otp_count < 0 or pin_match is False) and (
+            support_challenge_response is True
+            and self.isActive()
+            and self.is_challenge_request(passw, user, options=options)
+        ):
+            # we are in createChallenge mode
+            # fix for #12413:
+            # - moved the create_challenge call to the checkTokenList!
+            # after all tokens are processed and only one is challengeing
+            # (_res, reply) = create_challenge(self.token, options=options)
+            self.challenge_token.append(self)
 
         if len(self.challenge_token) == 0:
             if otp_count >= 0:
@@ -938,10 +936,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         :return: token seed / secret
         """
         if otpkeylen is None:
-            if hasattr(self, "otpkeylen"):
-                otpkeylen = self.otpkeylen
-            else:
-                otpkeylen = 20
+            otpkeylen = self.otpkeylen if hasattr(self, "otpkeylen") else 20
         return generate_otpkey(otpkeylen)
 
     def validate_seed(self, seed):
@@ -1135,7 +1130,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         storeHashed = True
         enc = param.get("encryptpin", None)
-        if enc is not None and "true" == enc.lower():
+        if enc is not None and enc.lower() == "true":
             storeHashed = False
 
         if storeHashed is True:
@@ -1237,16 +1232,14 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         self.token.LinOtpCount = counter + 1
 
-        if reset is True:
-            if getFromConfig("DefaultResetFailCount") == "True":
-                resetCounter = True
+        if reset is True and getFromConfig("DefaultResetFailCount") == "True":
+            resetCounter = True
 
-        if resetCounter is True:
-            if (
-                self.token.LinOtpFailCount < self.token.LinOtpMaxFail
-                and self.token.LinOtpIsactive is True
-            ):
-                self.token.LinOtpFailCount = 0
+        if resetCounter is True and (
+            self.token.LinOtpFailCount < self.token.LinOtpMaxFail
+            and self.token.LinOtpIsactive is True
+        ):
+            self.token.LinOtpFailCount = 0
 
         try:
             self.token.storeToken()
@@ -1407,10 +1400,9 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         url = None
         hparam = {}
 
-        if response_detail is not None:
-            if "enrollment_url" in response_detail:
-                url = response_detail.get("enrollment_url")
-                hparam["alt"] = url
+        if response_detail is not None and "enrollment_url" in response_detail:
+            url = response_detail.get("enrollment_url")
+            hparam["alt"] = url
 
         return url, hparam
 

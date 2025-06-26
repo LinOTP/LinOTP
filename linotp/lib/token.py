@@ -576,10 +576,7 @@ class TokenHandler:
 
         # compare the user with the owner
 
-        if token_idResolverClass == idResolverClass and token_userid == userid:
-            return True
-
-        return False
+        return bool(token_idResolverClass == idResolverClass and token_userid == userid)
 
     def hasOwner(self, serial):
         """
@@ -592,10 +589,7 @@ class TokenHandler:
 
         (uuserid, uidResolver, uidResolverClass) = token.getUser()
 
-        if uuserid and uidResolver and uidResolverClass:
-            return True
-
-        return False
+        return bool(uuserid and uidResolver and uidResolverClass)
 
     def getTokenOwner(self, serial):
         """
@@ -805,10 +799,7 @@ class TokenHandler:
 
         token = get_token(serial)
 
-        if user.login == "":
-            report = False
-        else:
-            report = True
+        report = user.login != ""
 
         token.setUser(user, report)
 
@@ -961,11 +952,11 @@ class TokenHandler:
             sqlQuery = sqlQuery.filter(func.lower(Token.LinOtpTokenType) == typ.lower())
         if assigned is not None:
             # filter if assigned or not
-            if "0" == str(assigned):
+            if str(assigned) == "0":
                 sqlQuery = sqlQuery.filter(
                     or_(Token.LinOtpUserid == None, Token.LinOtpUserid == "")  # noqa: E711
                 )
-            elif "1" == str(assigned):
+            elif str(assigned) == "1":
                 sqlQuery = sqlQuery.filter(func.length(Token.LinOtpUserid) > 0)
             else:
                 log.warning(
@@ -1799,15 +1790,17 @@ def get_raw_tokens(
                 # the user
                 t_realms = token.getRealmNames()
                 u_realm = user.realm
-                if u_realm != "*":
-                    if len(t_realms) > 0 and len(u_realm) > 0:
-                        if u_realm.lower() not in t_realms:
-                            log.debug(
-                                "user realm and token realm missmatch %r::%r",
-                                u_realm,
-                                t_realms,
-                            )
-                            continue
+                if (
+                    u_realm != "*"
+                    and (len(t_realms) > 0 and len(u_realm) > 0)
+                    and (u_realm.lower() not in t_realms)
+                ):
+                    log.debug(
+                        "user realm and token realm missmatch %r::%r",
+                        u_realm,
+                        t_realms,
+                    )
+                    continue
 
                 log.debug(
                     "[get_tokens] user serial (user): %r",

@@ -90,10 +90,11 @@ class TokenImport(ManageDialog):
 
         if file_content:
             # Create the temp xml file with the given file_content.
-            tf = tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".xml")
-            tf.write(file_content)
-            tf.close()
-            self.file_path = tf.name
+            with tempfile.NamedTemporaryFile(
+                mode="w", delete=False, suffix=".xml"
+            ) as tf:
+                tf.write(file_content)
+                self.file_path = tf.name
         else:
             # Use the provided xml token file.
             self.file_path = file_path

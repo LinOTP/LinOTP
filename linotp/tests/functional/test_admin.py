@@ -1402,10 +1402,10 @@ class TestAdminController(TestController):
         )
 
         audit_entry = self.get_last_audit_entry()
-        assert "admin/login" == audit_entry[4]
-        assert "1" == audit_entry[5]
+        assert audit_entry[4] == "admin/login"
+        assert audit_entry[5] == "1"
         assert username == audit_entry[8]
-        assert "linotp_admins" == audit_entry[9]
+        assert audit_entry[9] == "linotp_admins"
         assert f"{username}@linotp_admins (LinOTP_local_admins)" in audit_entry[10]
 
     def test_audit_for_unsuccessful_admin_login(
@@ -1423,10 +1423,10 @@ class TestAdminController(TestController):
         )
 
         audit_entry = self.get_last_audit_entry()
-        assert "admin/login" == audit_entry[4]
-        assert "0" == audit_entry[5]
+        assert audit_entry[4] == "admin/login"
+        assert audit_entry[5] == "0"
         assert username == audit_entry[8]
-        assert "linotp_admins" == audit_entry[9]
+        assert audit_entry[9] == "linotp_admins"
         assert f"{username}@linotp_admins" not in audit_entry[10]
 
     @patch("linotp.controllers.base.get_jwt")
@@ -1438,10 +1438,10 @@ class TestAdminController(TestController):
         _res = self._make_authenticated_request(controller="admin", action="logout")
 
         audit_entry = self.get_last_audit_entry()
-        assert "admin/logout" == audit_entry[4]
-        assert "1" == audit_entry[5]
+        assert audit_entry[4] == "admin/logout"
+        assert audit_entry[5] == "1"
         assert username == audit_entry[8]
-        assert "linotp_admins" == audit_entry[9]
+        assert audit_entry[9] == "linotp_admins"
         assert f"{username}@linotp_admins" in audit_entry[10]
 
     def create_reporting_policy(self, policy_params: dict | None = None):
@@ -1735,4 +1735,4 @@ class TestAdminController(TestController):
             # verify no reporting was triggered
             with DBSession() as session:
                 entries = session.query(Reporting).all()
-                assert [] == entries, action
+                assert entries == [], action

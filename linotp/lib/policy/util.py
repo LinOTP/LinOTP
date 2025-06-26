@@ -112,10 +112,7 @@ def are_the_same(dict1, dict2):
         return False
 
     unmatch = set(dict1.keys()) ^ set(dict2.keys())
-    if len(unmatch) != 0:
-        return False
-
-    return True
+    return len(unmatch) == 0
 
 
 def _tokenise_action(action_value, separators=None, escapes=None):
@@ -239,17 +236,20 @@ def _strip_quotes(value):
     """
     # make sure that if it starts with a quote and
     for quote in ["'", '"']:
-        if (value.startswith(quote) and not value.endswith(quote)) or (
-            not value.startswith(quote) and value.endswith(quote)
-        ):
-            if quote not in value[1:-1]:
-                msg = f"non terminated string value entry {value!r}"
-                raise Exception(msg)
+        if (
+            (value.startswith(quote) and not value.endswith(quote))
+            or (not value.startswith(quote) and value.endswith(quote))
+        ) and quote not in value[1:-1]:
+            msg = f"non terminated string value entry {value!r}"
+            raise Exception(msg)
 
     for quote in ["'", '"']:
-        if value.startswith(quote) and value.endswith(quote):
-            if quote not in value[1:-1]:
-                value = value.strip(quote)
+        if (
+            value.startswith(quote)
+            and value.endswith(quote)
+            and quote not in value[1:-1]
+        ):
+            value = value.strip(quote)
 
     return value
 

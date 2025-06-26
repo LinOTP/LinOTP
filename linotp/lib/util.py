@@ -303,9 +303,7 @@ def is_x_forwarded_for_active():
 
 def is_TRUSTED_PROXIES_active():
     trusted_proxies_settings = config["TRUSTED_PROXIES"]
-    if trusted_proxies_settings:
-        return True
-    return False
+    return bool(trusted_proxies_settings)
 
 
 def get_client(request):

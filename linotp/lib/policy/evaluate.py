@@ -502,7 +502,7 @@ def action_compare(policy_actions, action):
     # we only check if the action name is in the policy actions, the value
     # evaluation is done by using the get_action_value() function
 
-    for a_name in parse_action_value(action).keys():
+    for a_name in parse_action_value(action):
         if a_name in p_actions:
             return EXACT_MATCH, True
 
@@ -721,10 +721,7 @@ def user_list_compare(policy_conditions, login):
             if isinstance(login, str) and "@" in login:
                 usr, _sep, realm = login.rpartition("@")
 
-                if realm in getRealms():
-                    c_user = User(usr, realm)
-                else:
-                    c_user = User(login)
+                c_user = User(usr, realm) if realm in getRealms() else User(login)
 
             else:
                 c_user = user
@@ -753,10 +750,7 @@ def user_list_compare(policy_conditions, login):
             if isinstance(login, str) and "@" in login:
                 usr, _sep, realm = login.rpartition("@")
 
-                if realm in getRealms():
-                    c_user = User(usr, realm)
-                else:
-                    c_user = User(login)
+                c_user = User(usr, realm) if realm in getRealms() else User(login)
 
             else:
                 c_user = user

@@ -623,10 +623,7 @@ class SystemController(BaseController):
             if not previous_name:
                 mode = "create"
             else:
-                if new_resolver_name == previous_name:
-                    mode = "update"
-                else:
-                    mode = "rename"
+                mode = "update" if new_resolver_name == previous_name else "rename"
 
             log.info("[setResolver] saving configuration %r", list(param.keys()))
 
@@ -994,14 +991,15 @@ class SystemController(BaseController):
             admin_realm_name = auth_user.realm
             admin_resolver_name = auth_user.resolver_config_identifier
 
-            if realm == admin_realm_name:
-                if admin_resolver_name not in valid_resolver_names:
-                    msg = (
-                        f"Resolver {admin_resolver_name} can not be removed from {admin_realm_name}. "
-                        "It is not allowed to remove the resolver to which you belong to prevent "
-                        "locking yourself out."
-                    )
-                    raise RemoveForbiddenError(msg)
+            if realm == admin_realm_name and (
+                admin_resolver_name not in valid_resolver_names
+            ):
+                msg = (
+                    f"Resolver {admin_resolver_name} can not be removed from {admin_realm_name}. "
+                    "It is not allowed to remove the resolver to which you belong to prevent "
+                    "locking yourself out."
+                )
+                raise RemoveForbiddenError(msg)
 
             res = setRealm(realm, valid_resolver_specs_str)
             g.audit["success"] = res

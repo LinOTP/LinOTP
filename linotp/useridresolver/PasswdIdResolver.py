@@ -183,57 +183,50 @@ class IdResolver(UserIdResolver):
 
         log.info("[loadFile] loading users from file %s", self.fileName)
 
-        fileHandle = open(self.fileName)
-
-        line = fileHandle.readline()
-
         ID = self.sF["userid"]
         NAME = self.sF["username"]
         PASS = self.sF["cryptpass"]
         DESCRIPTION = self.sF["description"]
 
-        while line:
-            line = line.strip()
-            if len(line) == 0 or line.startswith("#"):
-                line = fileHandle.readline()
-                continue
+        with open(self.fileName, encoding="utf-8") as file:
+            for line in file:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
 
-            line = str2unicode(line)
-            fields = line.split(":", 7)
-            self.nameDict[f"{fields[NAME]}"] = fields[ID]
+                line = str2unicode(line)
+                fields = line.split(":", 7)
+                self.nameDict[f"{fields[NAME]}"] = fields[ID]
 
-            # for speed reason - build a revers lookup
-            self.reversDict[fields[ID]] = f"{fields[NAME]}"
+                # for speed reason - build a revers lookup
+                self.reversDict[fields[ID]] = f"{fields[NAME]}"
 
-            # for full info store the line
-            self.descDict[fields[ID]] = fields
+                # for full info store the line
+                self.descDict[fields[ID]] = fields
 
-            # store the crypted password
-            self.passDict[fields[ID]] = fields[PASS]
+                # store the crypted password
+                self.passDict[fields[ID]] = fields[PASS]
 
-            # store surname, givenname and phones
-            descriptions = fields[DESCRIPTION].split(",")
-            name = descriptions[0]
-            names = name.split(" ", 1)
-            self.givennameDict[fields[ID]] = names[0]
-            self.surnameDict[fields[ID]] = ""
-            self.officePhoneDict[fields[ID]] = ""
-            self.homePhoneDict[fields[ID]] = ""
-            self.emailDict[fields[ID]] = ""
-            if len(names) >= 2:
-                self.surnameDict[fields[ID]] = names[1]
-            if len(descriptions) >= 4:
-                self.officePhoneDict[fields[ID]] = descriptions[2]
-                self.homePhoneDict[fields[ID]] = descriptions[3]
-            if len(descriptions) >= 5:
-                for field in descriptions[4:]:
-                    # very basic e-mail regex
-                    email_match = re.search(r".+@.+\..+", field)
-                    if email_match:
-                        self.emailDict[fields[ID]] = email_match.group(0)
-
-            """ print ">>" + key[0] + "<< " + key[2] """
-            line = fileHandle.readline()
+                # store surname, givenname and phones
+                descriptions = fields[DESCRIPTION].split(",")
+                name = descriptions[0]
+                names = name.split(" ", 1)
+                self.givennameDict[fields[ID]] = names[0]
+                self.surnameDict[fields[ID]] = ""
+                self.officePhoneDict[fields[ID]] = ""
+                self.homePhoneDict[fields[ID]] = ""
+                self.emailDict[fields[ID]] = ""
+                if len(names) >= 2:
+                    self.surnameDict[fields[ID]] = names[1]
+                if len(descriptions) >= 4:
+                    self.officePhoneDict[fields[ID]] = descriptions[2]
+                    self.homePhoneDict[fields[ID]] = descriptions[3]
+                if len(descriptions) >= 5:
+                    for field in descriptions[4:]:
+                        # very basic e-mail regex
+                        email_match = re.search(r".+@.+\..+", field)
+                        if email_match:
+                            self.emailDict[fields[ID]] = email_match.group(0)
 
     def checkPass(self, uid, password):
         """
@@ -399,8 +392,8 @@ class IdResolver(UserIdResolver):
             # OR filter
             # is true if no `searchTerm` in given `searchDict` or
             # value of `searchTerm` matches at least one searchable field
-            searchTermValue = searchDict.get("searchTerm", None)
-            orFilter = False if searchTermValue else True
+            searchTermValue = searchDict.get("searchTerm")
+            orFilter = not searchTermValue
             if searchTermValue:
                 for checkingFunc in searchKeyToCheckFunctionMapping.values():
                     try:
@@ -528,13 +521,8 @@ class IdResolver(UserIdResolver):
                 if cUserId >= ival:
                     ret = True
 
-            elif op == "<":
-                if cUserId < ival:
-                    ret = True
-
-            elif op == "<=":
-                if cUserId < ival:
-                    ret = True
+            elif (op == "<" or op == "<=") and cUserId < ival:
+                ret = True
 
         return ret
 

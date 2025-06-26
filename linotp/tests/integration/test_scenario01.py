@@ -426,10 +426,7 @@ class UserServiceApi:
 
     def login(self, user, password, realm=None):
         """Login to the suserservice API with user and password"""
-        if realm:
-            login_user = f"{user}@{realm}"
-        else:
-            login_user = user
+        login_user = f"{user}@{realm}" if realm else user
         url = self.base_url + "/userservice/login"
         params = {"username": login_user, "password": password}
         r = requests.post(url, params=params, verify=False)

@@ -168,7 +168,7 @@ class RadiusTokenClass(RemoteTokenClass):
         """
         local_check = False
 
-        if 1 == int(self.getFromTokenInfo("radius.local_checkpin")):
+        if int(self.getFromTokenInfo("radius.local_checkpin")) == 1:
             local_check = True
 
         self.local_pin_check = local_check

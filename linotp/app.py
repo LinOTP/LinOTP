@@ -549,7 +549,7 @@ class LinOTPApp(Flask):
 
         provider = {
             provider_type: getProvider(provider_type)
-            for provider_type in Provider_types.keys()
+            for provider_type in Provider_types
         }
 
         request_context["Provider"] = provider

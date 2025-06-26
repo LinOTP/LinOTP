@@ -309,13 +309,13 @@ class TokenIterator:
 
         searchType = "any"
         # search for a 'blank' user
-        if len(loginUser) == 0 and len(user.login) > 0:
+        if (
+            (len(loginUser) == 0 and len(user.login) > 0)
+            or loginUser == "/:no user:/"
+            or loginUser == "/:none:/"
+        ):
             searchType = "blank"
-        elif loginUser == "/:no user:/" or loginUser == "/:none:/":
-            searchType = "blank"
-        elif loginUser == "/:no user info:/":
-            searchType = "wildcard"
-        elif "*" in loginUser:
+        elif loginUser == "/:no user info:/" or "*" in loginUser:
             searchType = "wildcard"
         else:
             # no blank and no wildcard search

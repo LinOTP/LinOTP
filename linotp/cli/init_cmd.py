@@ -131,15 +131,14 @@ init_cmds = AppGroup("init", help="Manage initialization of LinOTP")
 
 
 def erase_confirm(ctx, param, value):
-    if ctx.params["erase_all_data"]:
+    if ctx.params["erase_all_data"] and not value:
         # The user asked for data to be erased. We now look for a confirmation
         # or prompt the user
-        if not value:
-            prompt = click.prompt(
-                "Do you really want to erase the database?", type=click.BOOL
-            )
-            if not prompt:
-                sys.exit(0)
+        prompt = click.prompt(
+            "Do you really want to erase the database?", type=click.BOOL
+        )
+        if not prompt:
+            sys.exit(0)
 
 
 @init_cmds.command("database", help="Create tables in the database")
@@ -158,10 +157,7 @@ def init_db_command(erase_all_data):
     The database is initialized and optionally data is cleared.
     """
 
-    if erase_all_data:
-        info = "Recreating database"
-    else:
-        info = "Creating database"
+    info = "Recreating database" if erase_all_data else "Creating database"
 
     current_app.echo(info, v=1)
     try:
@@ -240,9 +236,8 @@ def init_enc_key_cmd(force, dump, keys):
     filename = current_app.config["SECRET_FILE"]
 
     if os.path.exists(filename):
-        if not force:
-            if not _overwrite_check("enc-key", filename):
-                sys.exit(0)
+        if not force and not _overwrite_check("enc-key", filename):
+            sys.exit(0)
         if not _make_backup("enc-key", filename):
             sys.exit(1)
 
@@ -296,9 +291,8 @@ def init_audit_keys_cmd(force):
     pubkey_filename = current_app.config["AUDIT_PUBLIC_KEY_FILE"]
 
     if os.path.exists(privkey_filename):
-        if not force:
-            if not _overwrite_check("private audit key", privkey_filename):
-                sys.exit(0)
+        if not force and not _overwrite_check("private audit key", privkey_filename):
+            sys.exit(0)
         if not _make_backup("private audit key", privkey_filename):
             sys.exit(1)
 

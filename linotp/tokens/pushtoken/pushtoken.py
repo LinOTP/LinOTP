@@ -576,9 +576,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
                 # or a challenge, that already received a number of wrong
                 # TANs but still has tries left (second case).
 
-                if not received_tan:
-                    filtered_challenges.append(challenge)
-                elif not tan_is_valid and fail_counter <= max_fail:
+                if not received_tan or (not tan_is_valid and fail_counter <= max_fail):
                     filtered_challenges.append(challenge)
 
         # ------------------------------------------------------------------ --

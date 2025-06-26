@@ -1713,17 +1713,14 @@ class TestChallengeResponseController(TestingChallengeResponseController):
             params = {"user": "passthru_user1", "pass": "shortpin"}
             response = self.make_validate_request(action="check", params=params)
 
-        found = False
         # assert 'SMS could not be sent' in response, response
         entries = self.get_audit_entries(num=3, page=1)
-        for entry in entries:
-            for info in entry:
-                if isinstance(info, str):
-                    if "SMS could not be sent" in info:
-                        found = True
-                        break
-            if found:
-                break
+        found = any(
+            "SMS could not be sent" in info
+            for entry in entries
+            for info in entry
+            if isinstance(info, str)
+        )
 
         assert found, "no entry 'SMS could not be sent' found"
 

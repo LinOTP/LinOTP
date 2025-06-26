@@ -269,10 +269,7 @@ class CustomVoiceProvider(ConfigParsingMixin, TwillioMixin):
                 self.voice_server_url, json=json, headers=headers, **pparams
             )
 
-            if not response.ok:
-                result = response.reason
-            else:
-                result = response.content
+            result = response.reason if not response.ok else response.content
 
         finally:
             log.debug("leaving voice token provider")

@@ -79,10 +79,7 @@ def checkUser(username, password, state):
 
     # handle a state request
     if state is not None and state == state_id:
-        if password in list(users.values()):
-            auth = True
-        else:
-            auth = False
+        auth = password in list(users.values())
 
     return auth
 

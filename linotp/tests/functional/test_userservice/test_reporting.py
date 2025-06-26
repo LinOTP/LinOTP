@@ -106,7 +106,7 @@ class TestUserserviceReporting(TestController):
             # verify no reporting was triggered
             with DBSession() as session:
                 entries = session.query(Reporting).all()
-                assert [] == entries, action
+                assert entries == [], action
 
     def test_authorized_request_does_trigger_reporting_userservice_controller(
         self,
@@ -147,7 +147,7 @@ class TestUserserviceReporting(TestController):
             # verify no reporting was triggered
             with DBSession() as session:
                 entries = session.query(Reporting).all()
-                assert 5 == len(entries), action
+                assert len(entries) == 5, action
 
                 # Clean up reporting and Tokens
                 session.query(Reporting).delete()
@@ -182,4 +182,4 @@ class TestUserserviceReporting(TestController):
             # verify no reporting was triggered
             with DBSession() as session:
                 entries = session.query(Reporting).all()
-                assert [] == entries, action
+                assert entries == [], action

@@ -108,10 +108,7 @@ class mTimeOtp:
                 self.oldtime,
             )
             res = -1
-        if res == -1:
-            _msg = "checking motp failed"
-        else:
-            _msg = "checking motp sucess"
+        _msg = "checking motp failed" if res == -1 else "checking motp sucess"
 
         return res
 

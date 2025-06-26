@@ -40,15 +40,13 @@ class TestSMS(TestCase):
         # setup the file sms provider to write into temporary file
 
         fsms = FileSMSProvider()
-        temp_file = tempfile.NamedTemporaryFile()
 
-        os.path.dirname(temp_file.name)
-
-        config = {
-            "file": os.path.basename(temp_file.name),
-            "here": os.path.dirname(temp_file.name),
-        }
-        fsms.loadConfig(config)
+        with tempfile.NamedTemporaryFile() as temp_file:
+            config = {
+                "file": os.path.basename(temp_file.name),
+                "here": os.path.dirname(temp_file.name),
+            }
+            fsms.loadConfig(config)
 
         # ------------------------------------------------------------------ --
 

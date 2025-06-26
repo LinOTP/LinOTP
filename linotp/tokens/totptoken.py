@@ -282,7 +282,7 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         if self.hKeyRequired is True:
             genkey = int(param.get("genkey", 0))
-            if 1 == genkey:
+            if genkey == 1:
                 # if hashlibStr not in keylen dict, this will raise an
                 # Exception
                 otpKey = generate_otpkey(keylen.get(self.hashlibStr))
@@ -383,10 +383,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         if isinstance(curTime, datetime.datetime):
             dt = curTime
         elif isinstance(curTime, str):
-            if "." in curTime:
-                tFormat = "%Y-%m-%d %H:%M:%S.%f"
-            else:
-                tFormat = "%Y-%m-%d %H:%M:%S"
+            tFormat = "%Y-%m-%d %H:%M:%S.%f" if "." in curTime else "%Y-%m-%d %H:%M:%S"
             try:
                 dt = datetime.datetime.strptime(curTime, tFormat)
             except Exception as ex:
@@ -744,10 +741,7 @@ class TimeHmacTokenClass(HmacTokenClass):
 
             ret = True
 
-        if ret is True:
-            msg = "resync was successful"
-        else:
-            msg = "resync was not successful"
+        msg = "resync was successful" if ret is True else "resync was not successful"
 
         log.debug(msg)
         return ret

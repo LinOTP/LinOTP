@@ -201,9 +201,10 @@ class HttpRequest(RemoteRequest):
             result = json.loads(content)
             status = result.get("result", {}).get("status", False)
 
-            if status is True:
-                if result.get("result", {}).get("value", False) is True:
-                    res = True
+            if status is True and (
+                result.get("result", {}).get("value", False) is True
+            ):
+                res = True
 
             # in case of a remote challenge respone transaction
             if "detail" in result:

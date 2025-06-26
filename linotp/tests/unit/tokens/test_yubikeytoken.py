@@ -313,12 +313,15 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         }
         class_info = YubikeyTokenClass.getClassInfo()
         assert full_class_info == class_info
-        assert "YubiKey in Yubico Mode" == YubikeyTokenClass.getClassInfo(key="title")
+        assert YubikeyTokenClass.getClassInfo(key="title") == "YubiKey in Yubico Mode"
         assert full_class_info == YubikeyTokenClass.getClassInfo(
             key="some_non_existent_key"
         )
-        assert "some_random_value" == YubikeyTokenClass.getClassInfo(
-            key="some_non_existent_key", ret="some_random_value"
+        assert (
+            YubikeyTokenClass.getClassInfo(
+                key="some_non_existent_key", ret="some_random_value"
+            )
+            == "some_random_value"
         )
 
     def test_check_otp_exist(self):
@@ -337,8 +340,8 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         otp = self.public_uid + "fcniufvgvjturjgvinhebbbertjnihit"  # counter 256
         self.yubikey_token.incOtpCounter.reset_mock()
         counter_actual = self.yubikey_token.check_otp_exist(otp)
-        assert 0 == self.yubikey_token.incOtpCounter.call_count
-        assert -1 == counter_actual
+        assert self.yubikey_token.incOtpCounter.call_count == 0
+        assert counter_actual == -1
 
     def test_is_challenge_request(self):
         """

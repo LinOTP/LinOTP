@@ -82,10 +82,7 @@ class Challenge(ChallengeSchema):
         return get_rand_digit_str(length)
 
     def setData(self, data: Any) -> None:
-        if type(data) in [dict, list]:
-            save_data = json.dumps(data)
-        else:
-            save_data = data
+        save_data = json.dumps(data) if type(data) in [dict, list] else data
 
         self.data = save_data.encode("utf-8")
 

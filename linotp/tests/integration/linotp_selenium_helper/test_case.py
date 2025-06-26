@@ -167,7 +167,7 @@ class TestCase:
 
             pparams = {}
             if "webdriver_executable_path" in os.environ:
-                pparams["executable_path"] = os.environ["webdriver_executable_path"]
+                pparams["executable_path"] = os.environ["WEBDRIVER_EXECUTABLE_PATH"]
 
             if selenium_driver == "chrome":
                 try:
@@ -228,7 +228,7 @@ class TestCase:
 
     def tearDown(self):
         """Closes the driver and displays all errors"""
-        assert [] == self.verification_errors
+        assert self.verification_errors == []
 
     def disableFileUploadForSendKeys(self):
         self.driver.file_detector = UselessFileDetector()

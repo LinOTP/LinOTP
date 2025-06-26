@@ -819,7 +819,7 @@ class TestController(TestCase):
         content = response.json
         err_msg = f"Error deleting token {serial}. Response {content}"
         assert content["result"]["status"], err_msg
-        assert 1 == content["result"]["value"], err_msg
+        assert content["result"]["value"] == 1, err_msg
 
     def create_common_resolvers(self):
         """

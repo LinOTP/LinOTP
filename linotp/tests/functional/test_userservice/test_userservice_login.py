@@ -268,7 +268,7 @@ class TestUserserviceLogin(TestUserserviceController):
     def test_audit_entry_login(self):
         self.test_mfa_login_one_step()
         audit_entry = self.get_last_audit_entry_for_action("userservice/login")
-        assert "1" == audit_entry[5]
+        assert audit_entry[5] == "1"
 
     def test_mfa_login_two_step(self):
         """test with multiple step mfa authentication."""

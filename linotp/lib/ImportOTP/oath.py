@@ -145,10 +145,7 @@ def parseOATHcsv(csv):
 
         else:
             otplen = line[3]
-            if otplen:
-                otplen = int(otplen)
-            else:
-                otplen = 6
+            otplen = int(otplen) if otplen else 6
 
             token["otplen"] = otplen
 

@@ -126,7 +126,7 @@ class TestReplyTestCase:
         result_dict = json.loads(result)
         value = result_dict.get("result", {}).get("value")
 
-        assert ["one", "two"] == value
+        assert value == ["one", "two"]
 
         try:
             res = sendResultIterator(obj=request_context_test_iterator(), rp=1, page=0)
@@ -141,4 +141,4 @@ class TestReplyTestCase:
         result_dict = json.loads(result)
         value = result_dict.get("result", {}).get("value")
 
-        assert ["one"] == value
+        assert value == ["one"]

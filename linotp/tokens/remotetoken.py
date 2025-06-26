@@ -206,7 +206,7 @@ class RemoteTokenClass(TokenClass):
         :return: bool
         """
         local_check = False
-        if 1 == int(self.getFromTokenInfo("remote.local_checkpin")):
+        if int(self.getFromTokenInfo("remote.local_checkpin")) == 1:
             local_check = True
 
         # preserve this info for later uasge

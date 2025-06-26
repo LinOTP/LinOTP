@@ -191,7 +191,7 @@ class TestAutoassignmentController(TestController):
         response = self.make_admin_request("assign", params=params)
         content = response.json
         assert content["result"]["status"]
-        assert 1 == content["result"]["value"]
+        assert content["result"]["value"] == 1
 
         # Try to autoassign token[0] to users[1] -> should fail because it is
         # already assigned to users[0]
@@ -246,7 +246,7 @@ class TestAutoassignmentController(TestController):
         response = self.make_admin_request("assign", params=params)
         content = response.json
         assert content["result"]["status"]
-        assert 1 == content["result"]["value"]
+        assert content["result"]["value"] == 1
 
         # Try to autoassign token[1] to users[0] -> should fail because the
         # user already has a token
@@ -356,7 +356,7 @@ class TestAutoassignmentController(TestController):
         response = self.make_admin_request("assign", params=params)
         content = response.json
         assert content["result"]["status"]
-        assert 1 == content["result"]["value"]
+        assert content["result"]["value"] == 1
         # No PIN was set
         self._validate(
             user_name,
@@ -441,7 +441,7 @@ class TestAutoassignmentController(TestController):
             response = self.make_admin_request("tokenrealm", params=params)
             content = response.json
             assert content["result"]["status"]
-            assert 1 == content["result"]["value"]
+            assert content["result"]["value"] == 1
 
     def _create_autoassignment_policy(self, name, realm, action="autoassignment"):
         """

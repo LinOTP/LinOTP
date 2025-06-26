@@ -43,6 +43,7 @@ instance from MySQL to PostgreSQL (for example).
 import binascii
 import os
 import sys
+from io import StringIO
 
 import click
 from flask import current_app
@@ -188,9 +189,7 @@ def backup_database_tables() -> int:
 
             data_query = model_class.query
 
-            pb_file = (
-                None if app.echo.verbosity > 1 else open("/dev/null", "w")
-            )  # None => stdout
+            pb_file = None if app.echo.verbosity > 1 else StringIO()  # None => stdout
 
             with click.progressbar(
                 data_query.all(), label=name, file=pb_file

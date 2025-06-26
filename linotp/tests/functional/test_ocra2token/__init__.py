@@ -98,10 +98,7 @@ class OcraOtp:
             self._setup_()
 
         signature = self.ocra.signData(data.encode("utf-8"), key=self.bkey)
-        if si.encode("utf-8") == signature:
-            return True
-
-        return False
+        return si.encode("utf-8") == signature
 
     def init_2(self, response, activationKey):
         self.activationkey = activationKey

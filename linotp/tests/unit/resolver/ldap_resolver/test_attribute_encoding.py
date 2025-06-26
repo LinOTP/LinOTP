@@ -117,11 +117,10 @@ class TestLDAPResolverAttributes(unittest.TestCase):
         userInfo = resolver.getUserInfo("Üßalad")
 
         for key, val in list(userInfo.items()):
+            # check if attribute is a python unicode str
             if not isinstance(key, str):
-                # check if attribute is a python unicode str
-                if not isinstance(key, str):
-                    msg = "Non Unicode character recieved"
-                    raise Exception(msg)
+                msg = "Non Unicode character recieved"
+                raise Exception(msg)
 
             # key could be str with ascii or non ascii (str.encode(utf-8).
             # If the str could converted to utf-8 and back it is ensured

@@ -303,11 +303,11 @@ class TestGetClientCase(unittest.TestCase):
             ip_address = get_ip_address("www.my.test.domain")
 
             ip_tuple = ip_address.words
-            assert (91, 208, 83, 132) == ip_tuple
+            assert ip_tuple == (91, 208, 83, 132)
 
         ip_addr = get_ip_address("93.184.216.34")
         ip_tuple = ip_addr.words
-        assert (93, 184, 216, 34) == ip_tuple
+        assert ip_tuple == (93, 184, 216, 34)
 
         ip_addr = get_ip_address("93.184.216.34/32")
         assert ip_addr is None
@@ -328,7 +328,7 @@ class TestGetClientCase(unittest.TestCase):
         ip_network = get_ip_network("93.184.216.34/29")
         assert len(list(ip_network)) == 8
         ip_tuple = ip_network.network.words
-        assert (93, 184, 216, 32) == ip_tuple
+        assert ip_tuple == (93, 184, 216, 32)
 
         with patch("linotp.lib.type_utils.socket.gethostbyname") as mHostName:
             mHostName.return_value = "140.181.3.144"
@@ -336,7 +336,7 @@ class TestGetClientCase(unittest.TestCase):
             ip_network = get_ip_network("my.local.test.domain")
             ip_tuple = ip_network.network.words
             ip_range = (ip_tuple[0], ip_tuple[1], ip_tuple[2])
-            assert (140, 181, 3) == ip_range
+            assert ip_range == (140, 181, 3)
 
         with patch("linotp.lib.type_utils.socket.gethostbyname") as mHostName:
             mHostName.return_value = "136.243.104.66"
@@ -345,7 +345,7 @@ class TestGetClientCase(unittest.TestCase):
             assert len(list(ip_network)) == 8
             ip_tuple = ip_network.network.words
             ip_range = (ip_tuple[0], ip_tuple[1], ip_tuple[2])
-            assert (136, 243, 104) == ip_range
+            assert ip_range == (136, 243, 104)
 
         with patch("linotp.lib.type_utils.socket.gethostbyname") as mHostName:
             mHostName.side_effect = socket.gaierror(

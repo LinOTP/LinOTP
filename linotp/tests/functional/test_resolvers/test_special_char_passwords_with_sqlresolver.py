@@ -28,6 +28,7 @@
 sql resolver tests
 """
 
+import contextlib
 import json
 import logging
 
@@ -181,11 +182,8 @@ class SQLResolverSpecialPasswordTest(SQLTestController):
 
         # ------------------------------------------------------------- --
 
-        i = 0
-
         # add users
-        for password in PASSWORDS:
-            i += 1
+        for i, password in enumerate(PASSWORDS, 1):
             name = f"bach{i}"
             bach_password = password
             bach_password_hash = passlib_bcrypt.hash(bach_password)
@@ -207,10 +205,8 @@ class SQLResolverSpecialPasswordTest(SQLTestController):
 
             user = users[name]["login"]
             password = users[name]["mobile"]
-            try:
+            with contextlib.suppress(Exception):
                 self.run_password_check(user, password, realm=realm)
-            except Exception:
-                pass
         return
 
 

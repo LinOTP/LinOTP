@@ -392,9 +392,8 @@ class Audit(AuditBase):
         if rp_dict is None:
             rp_dict = {}
 
-        if "or" in param:
-            if "true" == param["or"].lower():
-                AND = False
+        if "or" in param and param["or"].lower() == "true":
+            AND = False
 
         # build the condition / WHERE clause
         condition = self._buildCondition(param, AND)
@@ -402,35 +401,35 @@ class Audit(AuditBase):
         order = AuditTable.id
         if rp_dict.get("sortname"):
             sortn = rp_dict.get("sortname").lower()
-            if "serial" == sortn:
+            if sortn == "serial":
                 order = AuditTable.serial
-            elif "number" == sortn:
+            elif sortn == "number":
                 order = AuditTable.id
-            elif "user" == sortn:
+            elif sortn == "user":
                 order = AuditTable.user
-            elif "action" == sortn:
+            elif sortn == "action":
                 order = AuditTable.action
-            elif "action_detail" == sortn:
+            elif sortn == "action_detail":
                 order = AuditTable.action_detail
-            elif "realm" == sortn:
+            elif sortn == "realm":
                 order = AuditTable.realm
-            elif "date" == sortn:
+            elif sortn == "date":
                 order = AuditTable.timestamp
-            elif "administrator" == sortn:
+            elif sortn == "administrator":
                 order = AuditTable.administrator
-            elif "success" == sortn:
+            elif sortn == "success":
                 order = AuditTable.success
-            elif "tokentype" == sortn:
+            elif sortn == "tokentype":
                 order = AuditTable.tokentype
-            elif "info" == sortn:
+            elif sortn == "info":
                 order = AuditTable.info
-            elif "linotp_server" == sortn:
+            elif sortn == "linotp_server":
                 order = AuditTable.linotp_server
-            elif "client" == sortn:
+            elif sortn == "client":
                 order = AuditTable.client
-            elif "log_level" == sortn:
+            elif sortn == "log_level":
                 order = AuditTable.log_level
-            elif "clearance_level" == sortn:
+            elif sortn == "clearance_level":
                 order = AuditTable.clearance_level
 
         # build the ordering
@@ -438,7 +437,7 @@ class Audit(AuditBase):
 
         if rp_dict.get("sortorder"):
             sorto = rp_dict.get("sortorder").lower()
-            if "desc" == sorto:
+            if sorto == "desc":
                 order_dir = desc(order)
 
         if condition is None:

@@ -144,10 +144,7 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
             # Route the method to a URL of the same name,
             # except for index, which is routed to
             # /<controller-name>/
-            if method_name == "index":
-                url = "/"
-            else:
-                url = "/" + method_name
+            url = "/" if method_name == "index" else "/" + method_name
 
             method = getattr(self, method_name)
 

@@ -204,12 +204,11 @@ class DummySMPPServer:
                 print(f"> {pdu.command}", end="")
                 if pdu.command == "bind_transceiver":
                     status = consts.SMPP_ESME_ROK
-                    if self.password is not None:
-                        if (
-                            pdu.system_id.decode() != self.system_id
-                            or pdu.password.decode() != self.password
-                        ):
-                            status = consts.SMPP_ESME_RBINDFAIL
+                    if self.password is not None and (
+                        pdu.system_id.decode() != self.system_id
+                        or pdu.password.decode() != self.password
+                    ):
+                        status = consts.SMPP_ESME_RBINDFAIL
 
                     res_pdu = smpp.make_pdu(
                         "bind_transceiver_resp",

@@ -37,10 +37,7 @@ class FakeToken:
     type = "test"
 
     def checkPin(self, passw, options=None):
-        if passw == "good":
-            return True
-        else:
-            return False
+        return passw == "good"
 
 
 class TestOtppinPolicy(unittest.TestCase):

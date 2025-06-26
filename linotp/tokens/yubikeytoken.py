@@ -176,10 +176,7 @@ class YubikeyTokenClass(TokenClass):
         # we use the public_uid to calculate the otplen which is at 48 or 32
         # the public_uid is stored and used in validation
 
-        if "public_uid" in param:
-            otplen = 32 + len(param["public_uid"])
-        else:
-            otplen = 48
+        otplen = 32 + len(param["public_uid"]) if "public_uid" in param else 48
 
         if "otplen" not in param:
             param["otplen"] = otplen

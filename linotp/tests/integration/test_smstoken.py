@@ -86,7 +86,7 @@ class TestSmsToken:
                 "Testconfig option radius.disable is set to True. Skipping RADIUS test!"
             )
         else:
-            call_array = "linotp-auth-radius -f ../../../test.ini".split()
+            call_array = ["linotp-auth-radius", "-f", "../../../test.ini"]
             call_array.extend(
                 [
                     "-u",
@@ -109,7 +109,7 @@ class TestSmsToken:
                 print(f"State: {state}")
                 otp = smtpsvc.get_otp()
 
-            call_array = "linotp-auth-radius -f ../../../test.ini".split()
+            call_array = ["linotp-auth-radius", "-f", "../../../test.ini"]
             call_array.extend(
                 [
                     "-u",

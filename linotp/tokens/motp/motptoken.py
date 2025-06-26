@@ -207,10 +207,7 @@ class MotpTokenClass(HmacTokenClass):
 
         if res != -1:
             res = res - 1  # later on this will be incremented by 1
-        if res == -1:
-            msg = "verification failed"
-        else:
-            msg = "verifiction was successful"
+        msg = "verification failed" if res == -1 else "verifiction was successful"
 
         log.debug("[checkOtp] %s :res %r", msg, res)
         return res

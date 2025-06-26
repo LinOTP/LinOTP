@@ -456,10 +456,7 @@ def setDefaultRealm(defaultRealm, check_if_exists=True):
     """
 
     # TODO: verify merge
-    if check_if_exists:
-        ret = isRealmDefined(defaultRealm)
-    else:
-        ret = True
+    ret = isRealmDefined(defaultRealm) if check_if_exists else True
 
     if ret is True or defaultRealm == "":
         storeConfig("linotp.DefaultRealm", defaultRealm)
@@ -591,13 +588,11 @@ def match_realms(request_realms, allowed_realms):
     elif "*" in request_realms:
         realms = list(all_allowed_realms | {"/:no realm:/"})
     # other cases, we iterate through the realm list
-    elif len(request_realms) > 0 and not (request_realms == [""]):
+    elif len(request_realms) > 0 and request_realms != [""]:
         invalid_realms = []
         for search_realm in request_realms:
             search_realm = search_realm.strip().lower()
-            if search_realm in all_allowed_realms:
-                realms.append(search_realm)
-            elif search_realm == "/:no realm:/":
+            if search_realm in all_allowed_realms or search_realm == "/:no realm:/":
                 realms.append(search_realm)
             else:
                 invalid_realms.append(search_realm)

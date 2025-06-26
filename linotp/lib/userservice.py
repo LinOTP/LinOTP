@@ -490,10 +490,7 @@ def get_transaction_detail(transactionid):
     challenge = challenges[0]
 
     challenge_session = challenge.getSession()
-    if challenge_session:
-        challenge_session = json.loads(challenge_session)
-    else:
-        challenge_session = {}
+    challenge_session = json.loads(challenge_session) if challenge_session else {}
 
     details = {
         "received_count": challenge.received_count,

@@ -99,7 +99,7 @@ class TestPermissions(TestPoliciesBase):
         """
         permissions = self.get_permissions("admin")
 
-        assert 4 == len(permissions["inRealm"])
+        assert len(permissions["inRealm"]) == 4
         for realm_permissions in permissions["inRealm"].values():
             assert set(self.all_realmed_permissions) == set(realm_permissions)
         assert set(self.all_realmed_permissions) == set(permissions["anyRealm"])
@@ -122,11 +122,11 @@ class TestPermissions(TestPoliciesBase):
 
         permissions = self.get_permissions("adminR1")
 
-        assert 4 == len(permissions["inRealm"])
+        assert len(permissions["inRealm"]) == 4
         for realm_permissions in permissions["inRealm"].values():
-            assert [] == realm_permissions
-        assert [] == permissions["anyRealm"]
-        assert [] == permissions["global"]
+            assert realm_permissions == []
+        assert permissions["anyRealm"] == []
+        assert permissions["global"] == []
 
     def test_permissions_implicit_admin_show(self):
         policies = [
@@ -143,7 +143,7 @@ class TestPermissions(TestPoliciesBase):
 
         # for admin
         permissions = self.get_permissions("admin")
-        assert 4 == len(permissions["inRealm"])
+        assert len(permissions["inRealm"]) == 4
         expected_permissions = [
             perm
             for perm in self.all_realmed_permissions
@@ -156,7 +156,7 @@ class TestPermissions(TestPoliciesBase):
 
         # for adminR1
         permissions = self.get_permissions("adminR1")
-        assert 4 == len(permissions["inRealm"])
+        assert len(permissions["inRealm"]) == 4
         expected_permissions = [
             perm
             for perm in self.all_realmed_permissions
@@ -187,7 +187,7 @@ class TestPermissions(TestPoliciesBase):
 
         # for admin
         permissions = self.get_permissions("admin")
-        assert 4 == len(permissions["inRealm"])
+        assert len(permissions["inRealm"]) == 4
         expected_permissions = [
             perm
             for perm in self.all_realmed_permissions
@@ -200,7 +200,7 @@ class TestPermissions(TestPoliciesBase):
 
         # for adminR1
         permissions = self.get_permissions("adminR1")
-        assert 4 == len(permissions["inRealm"])
+        assert len(permissions["inRealm"]) == 4
         for realm, realm_permissions in permissions["inRealm"].items():
             if realm in ["mydefrealm"]:
                 assert {*expected_permissions, "admin/show"} == set(realm_permissions)
@@ -249,7 +249,7 @@ class TestPermissions(TestPoliciesBase):
         # for user `admin`
         # has all non-admin permissions for all/any realms
         permissions = self.get_permissions("admin")
-        assert 4 == len(permissions["inRealm"])
+        assert len(permissions["inRealm"]) == 4
         expected_permissions = [
             perm
             for perm in self.all_realmed_permissions
@@ -267,7 +267,7 @@ class TestPermissions(TestPoliciesBase):
         # has all non-admin permissions for all/any realms
         # additionally has "admin/show" for "linotp_admins", "mymixrealm"
         permissions = self.get_permissions("adminR2")
-        assert 4 == len(permissions["inRealm"])
+        assert len(permissions["inRealm"]) == 4
         expected_permissions = [
             perm
             for perm in self.all_realmed_permissions
@@ -284,7 +284,7 @@ class TestPermissions(TestPoliciesBase):
         # has all non-admin permissions and "admin/show"
         # for all/any realms
         permissions = self.get_permissions("adminR3")
-        assert 4 == len(permissions["inRealm"])
+        assert len(permissions["inRealm"]) == 4
         expected_permissions = {
             perm
             for perm in self.all_realmed_permissions
@@ -309,7 +309,7 @@ class TestPermissions(TestPoliciesBase):
 
         # for admin
         permissions = self.get_permissions("admin")
-        assert 4 == len(permissions["inRealm"])
+        assert len(permissions["inRealm"]) == 4
         for realm_permissions in permissions["inRealm"].values():
             assert set(self.all_realmed_permissions) == set(realm_permissions)
         assert set(self.all_realmed_permissions) == set(permissions["anyRealm"])
@@ -320,7 +320,7 @@ class TestPermissions(TestPoliciesBase):
 
         # for adminR1
         permissions = self.get_permissions("adminR1")
-        assert 4 == len(permissions["inRealm"])
+        assert len(permissions["inRealm"]) == 4
         for realm_permissions in permissions["inRealm"].values():
             assert set(self.all_realmed_permissions) == set(realm_permissions)
         assert set(self.all_realmed_permissions) == set(permissions["anyRealm"])
@@ -342,7 +342,7 @@ class TestPermissions(TestPoliciesBase):
 
         # for admin
         permissions = self.get_permissions("admin")
-        assert 4 == len(permissions["inRealm"])
+        assert len(permissions["inRealm"]) == 4
         for realm_permissions in permissions["inRealm"].values():
             assert set(self.all_realmed_permissions) == set(realm_permissions)
         assert set(self.all_realmed_permissions) == set(permissions["anyRealm"])
@@ -350,7 +350,7 @@ class TestPermissions(TestPoliciesBase):
 
         # for adminR1
         permissions = self.get_permissions("adminR1")
-        assert 4 == len(permissions["inRealm"])
+        assert len(permissions["inRealm"]) == 4
         for realm_permissions in permissions["inRealm"].values():
             assert set(self.all_realmed_permissions) == set(realm_permissions)
         assert set(self.all_realmed_permissions) == set(permissions["anyRealm"])

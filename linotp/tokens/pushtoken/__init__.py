@@ -111,7 +111,7 @@ def parse_and_verify_pushtoken_pairing_data(plaintext):
 
     # enforce format
 
-    if not len(str_parts) == 3 + 1:
+    if len(str_parts) != 3 + 1:
         msg = "Malformed pairing response for type PushToken"
         raise ParameterError(msg)
 

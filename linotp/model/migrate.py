@@ -62,10 +62,7 @@ def has_column(engine: Engine, table_name: str, column: sa.Column) -> bool:
     # get the list of all columns with their description as dict
 
     columns = insp.get_columns(table_name)
-    for column_item in columns:
-        if column_item.get("name") == column.name:
-            return True
-    return False
+    return any(column_item.get("name") == column.name for column_item in columns)
 
 
 def _compile_name(name: str, dialect: str | None = None) -> str:

@@ -396,31 +396,33 @@ class TestJwtAdmin:
         expiry_time = base_app.config["JWT_ACCESS_TOKEN_EXPIRES"]
         t_epsilon = 5
 
-        with scoped_authclient(verify_jwt=True) as client:
-            with freeze_time(initial_time) as frozen_time:
-                client.post(
-                    "/admin/login",
-                    data={"username": username, "password": password},
-                )
+        with (
+            scoped_authclient(verify_jwt=True) as client,
+            freeze_time(initial_time) as frozen_time,
+        ):
+            client.post(
+                "/admin/login",
+                data={"username": username, "password": password},
+            )
 
-                initial_cookie = self.extract_cookie(
-                    client,
-                    "access_token_cookie",
-                )
+            initial_cookie = self.extract_cookie(
+                client,
+                "access_token_cookie",
+            )
 
-                # after this time the token should already get refreshed
-                frozen_time.tick(
-                    delta=timedelta(seconds=expiry_time - refresh_time + t_epsilon)
-                )
+            # after this time the token should already get refreshed
+            frozen_time.tick(
+                delta=timedelta(seconds=expiry_time - refresh_time + t_epsilon)
+            )
 
-                self.do_authenticated_request(client)
+            self.do_authenticated_request(client)
 
-                second_cookie = self.extract_cookie(
-                    client,
-                    "access_token_cookie",
-                )
+            second_cookie = self.extract_cookie(
+                client,
+                "access_token_cookie",
+            )
 
-                assert initial_cookie is not second_cookie
+            assert initial_cookie is not second_cookie
 
     def test_no_unnecessary_refresh(
         self,
@@ -436,29 +438,31 @@ class TestJwtAdmin:
         expiry_time = base_app.config["JWT_ACCESS_TOKEN_EXPIRES"]
         epsilon_t = 5
 
-        with scoped_authclient(verify_jwt=True) as client:
-            with freeze_time(initial_time) as frozen_time:
-                client.post(
-                    "/admin/login",
-                    data={"username": username, "password": password},
-                )
+        with (
+            scoped_authclient(verify_jwt=True) as client,
+            freeze_time(initial_time) as frozen_time,
+        ):
+            client.post(
+                "/admin/login",
+                data={"username": username, "password": password},
+            )
 
-                initial_cookie = self.extract_cookie(
-                    client,
-                    "access_token_cookie",
-                )
+            initial_cookie = self.extract_cookie(
+                client,
+                "access_token_cookie",
+            )
 
-                frozen_time.tick(
-                    delta=timedelta(seconds=expiry_time - refresh_time - epsilon_t)
-                )
+            frozen_time.tick(
+                delta=timedelta(seconds=expiry_time - refresh_time - epsilon_t)
+            )
 
-                self.do_authenticated_request(client)
+            self.do_authenticated_request(client)
 
-                second_cookie = self.extract_cookie(
-                    client,
-                    "access_token_cookie",
-                )
+            second_cookie = self.extract_cookie(
+                client,
+                "access_token_cookie",
+            )
 
-                assert initial_cookie is second_cookie, (
-                    "The JWT cookie should not have been refreshed"
-                )
+            assert initial_cookie is second_cookie, (
+                "The JWT cookie should not have been refreshed"
+            )

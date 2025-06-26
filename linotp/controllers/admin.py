@@ -212,10 +212,7 @@ class AdminController(BaseController, JWTMixin):
 
         token_info = tok["LinOtp.TokenInfo"]
 
-        if token_info:
-            info = json.loads(token_info)
-        else:
-            info = {}
+        info = json.loads(token_info) if token_info else {}
 
         for field in ["validity_period_end", "validity_period_start"]:
             if field in info:
@@ -569,7 +566,7 @@ class AdminController(BaseController, JWTMixin):
             )
             log.debug("[getSerialByOtp] found %s with user %s", serial, username)
 
-            if "" != serial:
+            if serial != "":
                 checkPolicyPost("admin", "getserial", {"serial": serial})
 
             g.audit["success"] = 0
@@ -1474,7 +1471,7 @@ class AdminController(BaseController, JWTMixin):
                 msg = "[set] setting pin failed"
                 upin = param["pin"]
                 log.info("[set] setting pin for token with serial %r", serial)
-                if 1 == getOTPPINEncrypt(serial=serial, user=user):
+                if getOTPPINEncrypt(serial=serial, user=user) == 1:
                     param["encryptpin"] = "True"
                 ret = setPin(upin, user, serial, param)
                 res["set pin"] = ret
@@ -2158,16 +2155,16 @@ class AdminController(BaseController, JWTMixin):
             g.audit["action_detail"] = f"from {serial_from}"
 
             err_string = str(ret)
-            if -1 == ret:
+            if ret == -1:
                 err_string = "can not get PIN from source token"
-            elif -2 == ret:
+            elif ret == -2:
                 err_string = "can not set PIN to destination token"
-            if 1 != ret:
+            if ret != 1:
                 g.audit["action_detail"] += ", " + err_string
 
             db.session.commit()
             # Success
-            if 1 == ret:
+            if ret == 1:
                 return sendResult(True)
             else:
                 return sendError(f"copying token pin failed: {err_string}")
@@ -2238,17 +2235,17 @@ class AdminController(BaseController, JWTMixin):
             g.reporting["realms"] = set(token_realms or ["/:no realms"])
 
             err_string = str(ret)
-            if -1 == ret:
+            if ret == -1:
                 err_string = "can not get user from source token"
-            if -2 == ret:
+            if ret == -2:
                 err_string = "can not set user to destination token"
-            if 1 != ret:
+            if ret != 1:
                 g.audit["action_detail"] += ", " + err_string
                 g.audit["success"] = 0
 
             db.session.commit()
             # Success
-            if 1 == ret:
+            if ret == 1:
                 return sendResult(True)
             else:
                 return sendError(f"copying token user failed: {err_string}")
@@ -2390,7 +2387,7 @@ class AdminController(BaseController, JWTMixin):
 
             hashlib = None
 
-            if "pskc" == fileType:
+            if fileType == "pskc":
                 pskc_type = params["pskc_type"]
                 pskc_password = params["pskc_password"]
                 pskc_preshared = params["pskc_preshared"]
@@ -2426,7 +2423,7 @@ class AdminController(BaseController, JWTMixin):
             else:
                 typeString = fileType
             log.debug("[loadtokens] typeString: <<%s>>", typeString)
-            if "pskc" == typeString:
+            if typeString == "pskc":
                 log.debug(
                     "[loadtokens] passing password: %s, key: %s, checkserial: %s",
                     pskc_password,
@@ -2482,21 +2479,21 @@ class AdminController(BaseController, JWTMixin):
                 TOKENS = parsePSKCdata(fileString, do_feitian=True)
 
             elif typeString == "pskc":
-                if "key" == pskc_type:
+                if pskc_type == "key":
                     TOKENS = parsePSKCdata(
                         fileString,
                         preshared_key_hex=pskc_preshared,
                         do_checkserial=pskc_checkserial,
                     )
 
-                elif "password" == pskc_type:
+                elif pskc_type == "password":
                     TOKENS = parsePSKCdata(
                         fileString,
                         password=pskc_password,
                         do_checkserial=pskc_checkserial,
                     )
 
-                elif "plain" == pskc_type:
+                elif pskc_type == "plain":
                     TOKENS = parsePSKCdata(fileString, do_checkserial=pskc_checkserial)
 
             tokenrealm = ""
@@ -2558,8 +2555,8 @@ class AdminController(BaseController, JWTMixin):
 
             ret = ""
             th = TokenHandler()
-            for serial in TOKENS:
-                log.debug("[loadtokens] importing token %s", TOKENS[serial])
+            for serial, token in TOKENS.items():
+                log.debug("[loadtokens] importing token %s", token)
 
                 log.info(
                     "[loadtokens] initialize token. serial: %r, realm: %r",
@@ -2571,23 +2568,22 @@ class AdminController(BaseController, JWTMixin):
                 # init parameters in correct format
 
                 if typeString == "dat":
-                    init_param = TOKENS[serial]
+                    init_param = token
 
                 else:
                     init_param = {
                         "serial": serial,
-                        "type": TOKENS[serial]["type"],
-                        "description": TOKENS[serial].get("description", "imported"),
-                        "otpkey": TOKENS[serial]["hmac_key"],
-                        "otplen": TOKENS[serial].get("otplen"),
-                        "timeStep": TOKENS[serial].get("timeStep"),
-                        "hashlib": TOKENS[serial].get("hashlib"),
+                        "type": token["type"],
+                        "description": token.get("description", "imported"),
+                        "otpkey": token["hmac_key"],
+                        "otplen": token.get("otplen"),
+                        "timeStep": token.get("timeStep"),
+                        "hashlib": token.get("hashlib"),
                     }
 
                 # add ocrasuite for ocra tokens, only if ocrasuite is not empty
-                if TOKENS[serial]["type"] in ["ocra2"]:
-                    if TOKENS[serial].get("ocrasuite", "") != "":
-                        init_param["ocrasuite"] = TOKENS[serial].get("ocrasuite")
+                if token["type"] in ["ocra2"] and token.get("ocrasuite", "") != "":
+                    init_param["ocrasuite"] = token.get("ocrasuite")
 
                 if hashlib and hashlib != "auto":
                     init_param["hashlib"] = hashlib

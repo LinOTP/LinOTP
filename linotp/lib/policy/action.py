@@ -238,11 +238,12 @@ class PolicyActionTyping:
             elif typing in ["str", "string"]:
                 return str(action_value)
 
-            elif typing == "set":
+            elif typing == "set" and (
+                isinstance(action_value, str) and action_value.isdigit()
+            ):
                 # in case of a set, we try our best:
                 # if int() else return as is
-                if isinstance(action_value, str) and action_value.isdigit():
-                    return int(action_value)
+                return int(action_value)
 
             return action_value
         except Exception as err:

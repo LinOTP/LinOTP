@@ -333,13 +333,14 @@ class ToolsController(BaseController):
             checkPolicyPre("system", "setResolver")
 
             resolvers = getResolverList()
-            if resolver_name in resolvers:
-                if not resolvers[resolver_name].get("readonly", False):
-                    msg = (
-                        f"Unmanged resolver with same name: {resolver_name!r}"
-                        " already exists!"
-                    )
-                    raise Exception(msg)
+            if resolver_name in resolvers and (
+                not resolvers[resolver_name].get("readonly", False)
+            ):
+                msg = (
+                    f"Unmanged resolver with same name: {resolver_name!r}"
+                    " already exists!"
+                )
+                raise Exception(msg)
             # -------------------------------------------------------------- --
 
             # feed the engine :)

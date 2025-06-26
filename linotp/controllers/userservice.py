@@ -1131,9 +1131,9 @@ class UserserviceController(BaseController):
         """
 
         try:
-            if self.request_params.get("active", "").lower() in ["true"]:
-                active = True
-            elif self.request_params.get("active", "").lower() in ["false"]:
+            if self.request_params.get("active", "").lower() in [
+                "true"
+            ] or self.request_params.get("active", "").lower() in ["false"]:
                 active = True
             else:
                 active = None
@@ -1601,7 +1601,7 @@ class UserserviceController(BaseController):
 
                     return sendError(_("Error: %s") % check_res["error"])
 
-                if 1 == getOTPPINEncrypt(serial=serial, user=g.authUser):
+                if getOTPPINEncrypt(serial=serial, user=g.authUser) == 1:
                     param["encryptpin"] = "True"
                 ret = setPin(userPin, None, serial, param)
                 res["set userpin"] = ret
@@ -2225,9 +2225,8 @@ class UserserviceController(BaseController):
 
             # enrollment of hotp (hmac), totp, or motp token
 
-            if tok_type in ["hmac", "totp", "motp"]:
-                if "otpkey" not in param:
-                    param["genkey"] = param.get("genkey", "1")
+            if tok_type in ["hmac", "totp", "motp"] and "otpkey" not in param:
+                param["genkey"] = param.get("genkey", "1")
 
             if tok_type == "hmac":
                 # --------------------------------------------------------- --

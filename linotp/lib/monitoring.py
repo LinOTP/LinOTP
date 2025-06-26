@@ -256,10 +256,7 @@ class MonitorHandler:
 
         # if new_value_enc != old_value: something new was written into db
         # if new_value_enc != new_value_plain: the new value got encrypted
-        if new_value_enc and new_value_plain != new_value_enc != old_value:
-            return True
-
-        return False
+        return bool(new_value_enc and new_value_plain != new_value_enc != old_value)
 
     def resolverinfo(self, realm):
         """

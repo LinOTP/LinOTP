@@ -316,10 +316,7 @@ class DefaultPushProvider(IPushProvider, ConfigParsingMixin):
                     uri, json=json_challenge, headers=headers, **pparams
                 )
 
-                if not response.ok:
-                    result = response.reason
-                else:
-                    result = response.content
+                result = response.reason if not response.ok else response.content
 
                 return response.ok, result
 

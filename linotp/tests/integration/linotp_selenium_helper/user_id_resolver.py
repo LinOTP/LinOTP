@@ -25,6 +25,7 @@
 #
 """Contains UserIdResolver class"""
 
+import contextlib
 import logging
 import re
 
@@ -166,10 +167,8 @@ class UserIdResolverManager(ManageDialog):
 
         formdata = dict(data)
 
-        try:
+        with contextlib.suppress(KeyError):
             del formdata["certificate"]
-        except KeyError:
-            pass
 
         # Fill in new resolver form
         resolver.fill_form(formdata)

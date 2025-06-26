@@ -67,7 +67,7 @@ class TestTokensearch(TestController):
 
         response = self.make_api_v2_request("/tokens/")
         token_list = response.json["result"]["value"]["pageRecords"]
-        assert [] == token_list
+        assert token_list == []
 
     def _cache_splitAtSign(self):
         response = self.make_system_request("getConfig", params={"key": "splitAtSign"})

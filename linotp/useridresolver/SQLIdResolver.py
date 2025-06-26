@@ -898,9 +898,7 @@ class IdResolver(UserIdResolver):
                 typ = "text"
                 if isinstance(sqlTyp, types.String):
                     typ = "text"
-                elif isinstance(sqlTyp, types.Numeric):
-                    typ = "numeric"
-                elif isinstance(sqlTyp, types.Integer):
+                elif isinstance(sqlTyp, types.Numeric | types.Integer):
                     typ = "numeric"
                 sf[key] = typ
 
@@ -993,10 +991,7 @@ class IdResolver(UserIdResolver):
         # use the Where clause to only see certain users.
         if self.sqlWhere != "":
             clause = expression.text(self.sqlWhere)
-            if filtr is None:
-                filtr = clause
-            else:
-                filtr = and_(clause, filtr)
+            filtr = clause if filtr is None else and_(clause, filtr)
             log.debug("[__add_where_clause_filter] searchString: %r", filtr)
         return filtr
 
@@ -1129,7 +1124,7 @@ class IdResolver(UserIdResolver):
         # OR filter
         searchTermValue = searchDict.get("searchTerm")
         if searchTermValue:
-            for column_name in self.sqlUserInfo.keys():
+            for column_name in self.sqlUserInfo:
                 column = get_column(column_name)
                 if exp is None:
                     exp = get_sql_expression(column, searchTermValue)

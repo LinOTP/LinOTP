@@ -176,7 +176,7 @@ class TestRealms(TestController):
         )
         result = response.json
         # myDefRealm has 27 users
-        assert 27 == len(result["result"]["value"])
+        assert len(result["result"]["value"]) == 27
 
         response = self.make_api_v2_request(
             f"/realms/{realm_name}/users",
@@ -185,7 +185,7 @@ class TestRealms(TestController):
         )
         result = response.json
         # 2 passthru_user in myDefRealm
-        assert 2 == len(result["result"]["value"])
+        assert len(result["result"]["value"]) == 2
 
         response = self.make_api_v2_request(
             f"/realms/{realm_name}/users",
@@ -193,4 +193,4 @@ class TestRealms(TestController):
             auth_user="admin",
         )
         result = response.json
-        assert 3 == len(result["result"]["value"])
+        assert len(result["result"]["value"]) == 3

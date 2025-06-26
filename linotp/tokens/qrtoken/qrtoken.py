@@ -306,13 +306,12 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
                 msg, "message must be equal to serial in pairing mode"
             )
 
-        if content_type == CONTENT_TYPE_AUTH:
-            if "@" not in message:
-                msg = "message"
-                raise InvalidFunctionParameter(
-                    msg,
-                    "For content type auth, message must have format <login>@<server>",
-                )
+        if content_type == CONTENT_TYPE_AUTH and "@" not in message:
+            msg = "message"
+            raise InvalidFunctionParameter(
+                msg,
+                "For content type auth, message must have format <login>@<server>",
+            )
 
         # ------------------------------------------------------------------- --
 
@@ -794,9 +793,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
                 # or a challenge, that already received a number of wrong
                 # TANs but still has tries left (second case).
 
-                if not received_tan:
-                    filtered_challenges.append(challenge)
-                elif not tan_is_valid and fail_counter <= max_fail:
+                if not received_tan or (not tan_is_valid and fail_counter <= max_fail):
                     filtered_challenges.append(challenge)
 
             # --------------------------------------------------------------- --
@@ -940,10 +937,9 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         url = None
         hparam = {}
 
-        if response_detail is not None:
-            if "pairing_url" in response_detail:
-                url = response_detail.get("pairing_url")
-                hparam["alt"] = url
+        if response_detail is not None and "pairing_url" in response_detail:
+            url = response_detail.get("pairing_url")
+            hparam["alt"] = url
 
         return url, hparam
 

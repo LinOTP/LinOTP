@@ -42,8 +42,8 @@ class TestGetUserInfo(unittest.TestCase):
 
         mock_lookup_user_in_resolver.return_value = None, None, None
 
-        assert {} == getUserInfo("userId", "resolver", "resolver_conf")
-        assert {} == getUserInfo(None, "resolver", "resolver_conf")
+        assert getUserInfo("userId", "resolver", "resolver_conf") == {}
+        assert getUserInfo(None, "resolver", "resolver_conf") == {}
 
     @patch("linotp.lib.user.lookup_user_in_resolver")
     def test_getUserInfo_good(self, mock_lookup_user_in_resolver):
