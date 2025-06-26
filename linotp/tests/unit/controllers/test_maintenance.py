@@ -69,10 +69,7 @@ class TestMaintenance(object):
         config_entry = db.session.get(LoggingConfig, name)
         assert not config_entry
 
-        params = dict(
-            loggerName=name,
-            level=10,
-        )
+        params = {"loggerName": name, "level": 10}
         adminclient.post("/maintenance/setLogLevel", json=params)
 
         config_entry = db.session.get(LoggingConfig, name)

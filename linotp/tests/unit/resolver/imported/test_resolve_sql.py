@@ -149,18 +149,16 @@ class TestSQLResolver(TestCase):
         SQL: Check the search field detection.
         """
         search_fields = self.y.getSearchFields()
-        assert set(search_fields.keys()) == set(
-            [
-                "username",
-                "userid",
-                "password",
-                "salt",
-                "givenname",
-                "surname",
-                "email",
-            ]
-        )
-        assert set(search_fields.values()) == set(["numeric", "text"])
+        assert set(search_fields.keys()) == {
+            "username",
+            "userid",
+            "password",
+            "salt",
+            "givenname",
+            "surname",
+            "email",
+        }
+        assert set(search_fields.values()) == {"numeric", "text"}
 
     def test_sql_search_escapes(self):
         """
@@ -176,13 +174,13 @@ class TestSQLResolver(TestCase):
 
         res3 = self.getUserList(self.y, {"username": "user.3"})
         assert len(res3) == 2
-        assert set(s["username"] for s in res3) == set(["user_3", "userx3"])
+        assert {s["username"] for s in res3} == {"user_3", "userx3"}
 
         res4 = self.getUserList(self.y, {"username": "user*"})
         assert len(res4) == 4
 
         res5 = self.getUserList(self.y, {"surname": "...."})
-        assert set(s["userid"] for s in res5) == set([1, 3])
+        assert {s["userid"] for s in res5} == {1, 3}
 
     def test_sql_complex_search(self):
         """
@@ -190,7 +188,7 @@ class TestSQLResolver(TestCase):
         """
         res1 = self.getUserList(self.y, {"userid": "> 2"})
         assert len(res1) == 2
-        assert set(s["userid"] for s in res1) == set((3, 4))
+        assert {s["userid"] for s in res1} == {3, 4}
 
         res2 = self.getUserList(self.y, {"userid": "  <=   3  "})
         assert len(res2) == 3
@@ -204,7 +202,7 @@ class TestSQLResolver(TestCase):
         users with IDs > 2.
         """
         res1 = self.getUserList(self.w, {})
-        assert set(s["username"] for s in res1) == set(("user_3", "userx3"))
+        assert {s["username"] for s in res1} == {"user_3", "userx3"}
         assert self.w.getUsername(1) == ""
         assert self.w.getUsername(2) == ""
         assert self.w.getUsername(3) == "user_3"

@@ -250,7 +250,7 @@ def int2beint64(i):
 
 
 def bytearray_to_bytes(a_bytearray):
-    return bytes([a_byte for a_byte in a_bytearray])
+    return bytes(list(a_bytearray))
 
 
 PERIODS = {"H": 3600, "M": 60, "S": 1}

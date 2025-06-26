@@ -141,22 +141,22 @@ def base_app(tmp_path, request, sqlalchemy_uri, key_directory):
 
         # create the app with common test config
 
-        base_app_config = dict(
-            ENV="testing",  # doesn't make a huge difference for us
-            TESTING=True,
-            DATABASE_URI=sqlalchemy_uri,
-            AUDIT_DATABASE_URI="SHARED",
-            SQLALCHEMY_TRACK_MODIFICATIONS=False,
-            ROOT_DIR=tmp_path,
-            CACHE_DIR=tmp_path / "cache",
-            LOG_FILE_DIR=tmp_path / "logs",
-            AUDIT_PUBLIC_KEY_FILE=key_directory / "audit-public.pem",
-            AUDIT_PRIVATE_KEY_FILE=key_directory / "audit-private.pem",
-            SECRET_FILE=key_directory / "encKey",
-            LOG_LEVEL="DEBUG",
-            LOG_CONSOLE_LEVEL="DEBUG",
-            DISABLE_CONTROLLERS="",
-        )
+        base_app_config = {
+            "ENV": "testing",  # doesn't make a huge difference for us
+            "TESTING": True,
+            "DATABASE_URI": sqlalchemy_uri,
+            "AUDIT_DATABASE_URI": "SHARED",
+            "SQLALCHEMY_TRACK_MODIFICATIONS": False,
+            "ROOT_DIR": tmp_path,
+            "CACHE_DIR": tmp_path / "cache",
+            "LOG_FILE_DIR": tmp_path / "logs",
+            "AUDIT_PUBLIC_KEY_FILE": key_directory / "audit-public.pem",
+            "AUDIT_PRIVATE_KEY_FILE": key_directory / "audit-private.pem",
+            "SECRET_FILE": key_directory / "encKey",
+            "LOG_LEVEL": "DEBUG",
+            "LOG_CONSOLE_LEVEL": "DEBUG",
+            "DISABLE_CONTROLLERS": "",
+        }
 
         config = request.node.get_closest_marker("app_config")
         if config is not None:
@@ -584,7 +584,7 @@ def create_common_realms(scoped_authclient: Callable) -> None:
         assert response.json["result"]["status"] is True
         realms = response.json["result"]["value"]
 
-        lookup_realm = set(["def_realm", "dom_realm", "mixed_realm"])
+        lookup_realm = {"def_realm", "dom_realm", "mixed_realm"}
         assert lookup_realm == set(realms).intersection(lookup_realm)
         assert "def_realm" in realms
         assert "default" in realms["def_realm"]

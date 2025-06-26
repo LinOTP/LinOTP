@@ -214,7 +214,7 @@ def search(param, user=None, columns=None):
         else:
             search_dict[param["qtype"]] = param["query"]
     else:
-        search_dict = {k: v for k, v in param.items()}
+        search_dict = dict(param.items())
 
     rp_dict = {
         k: v

@@ -96,7 +96,7 @@ class TestJwtAdmin:
         expected_status: bool,
     ) -> None:
         res = client.post(
-            "/admin/login", data=dict(username=username, password=password)
+            "/admin/login", data={"username": username, "password": password}
         )
 
         assert res.json["result"]["value"] == expected_status
@@ -112,10 +112,7 @@ class TestJwtAdmin:
         with scoped_authclient(verify_jwt=True) as client:
             client.post(
                 "/admin/login",
-                data=dict(
-                    username="admin",
-                    password="Test123!",
-                ),
+                data={"username": "admin", "password": "Test123!"},
             )
 
             response = self.do_authenticated_request(client)
@@ -181,10 +178,7 @@ class TestJwtAdmin:
         with scoped_authclient(verify_jwt=True) as client:
             client.post(
                 "/admin/login",
-                data=dict(
-                    username="admin",
-                    password="Test123!",
-                ),
+                data={"username": "admin", "password": "Test123!"},
             )
 
             response = client.post(
@@ -240,10 +234,7 @@ class TestJwtAdmin:
         with scoped_authclient(verify_jwt=True) as client:
             client.post(
                 "/admin/login",
-                data=dict(
-                    username="admin",
-                    password="Test123!",
-                ),
+                data={"username": "admin", "password": "Test123!"},
             )
 
             csrf_token = self.extract_cookie(client, "csrf_access_token")
@@ -264,10 +255,7 @@ class TestJwtAdmin:
         with scoped_authclient(verify_jwt=True) as client:
             client.post(
                 "/admin/login",
-                data=dict(
-                    username="admin",
-                    password="Test123!",
-                ),
+                data={"username": "admin", "password": "Test123!"},
             )
 
             csrf_token = self.extract_cookie(client, "csrf_access_token")
@@ -295,10 +283,7 @@ class TestJwtAdmin:
         with scoped_authclient(verify_jwt=True) as client:
             client.post(
                 "/admin/login",
-                data=dict(
-                    username="admin",
-                    password="Test123!",
-                ),
+                data={"username": "admin", "password": "Test123!"},
             )
 
             csrf_token = self.extract_cookie(client, "csrf_access_token")
@@ -340,10 +325,7 @@ class TestJwtAdmin:
         with scoped_authclient(verify_jwt=True) as client:
             client.post(
                 "/admin/login",
-                data=dict(
-                    username="admin",
-                    password="Test123!",
-                ),
+                data={"username": "admin", "password": "Test123!"},
             )
 
             csrf_token_saved = self.extract_cookie(client, "csrf_access_token")
@@ -389,7 +371,7 @@ class TestJwtAdmin:
             with freeze_time(initial_time) as frozen_time:
                 client.post(
                     "/admin/login",
-                    data=dict(username=username, password=password),
+                    data={"username": username, "password": password},
                 )
 
                 expiry_time = base_app.config["JWT_ACCESS_TOKEN_EXPIRES"]
@@ -418,7 +400,7 @@ class TestJwtAdmin:
             with freeze_time(initial_time) as frozen_time:
                 client.post(
                     "/admin/login",
-                    data=dict(username=username, password=password),
+                    data={"username": username, "password": password},
                 )
 
                 initial_cookie = self.extract_cookie(
@@ -458,7 +440,7 @@ class TestJwtAdmin:
             with freeze_time(initial_time) as frozen_time:
                 client.post(
                     "/admin/login",
-                    data=dict(username=username, password=password),
+                    data={"username": username, "password": password},
                 )
 
                 initial_cookie = self.extract_cookie(

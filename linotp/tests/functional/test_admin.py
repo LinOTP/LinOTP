@@ -1405,7 +1405,7 @@ class TestAdminController(TestController):
 
         client = FlaskClient(self.app)
         _res = client.post(
-            "/admin/login", data=dict(username=username, password=password)
+            "/admin/login", data={"username": username, "password": password}
         )
 
         audit_entry = self.get_last_audit_entry()
@@ -1426,8 +1426,7 @@ class TestAdminController(TestController):
 
         client = FlaskClient(self.app)
         _res = client.post(
-            "/admin/login",
-            data=dict(username=username, password=password + "WRONG"),
+            "/admin/login", data={"username": username, "password": password + "WRONG"}
         )
 
         audit_entry = self.get_last_audit_entry()

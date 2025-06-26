@@ -273,8 +273,7 @@ class U2FTokenClass(TokenClass):
             "appId": appId,
         }
         message = "U2F challenge"
-        attributes = dict()
-        attributes["signrequest"] = data
+        attributes = {"signrequest": data}
 
         return (True, message, data, attributes)
 

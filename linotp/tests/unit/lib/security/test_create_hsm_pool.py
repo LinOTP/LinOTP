@@ -70,7 +70,7 @@ def test_create_hsm_pool(mock_init, mock_get_hsm_pool, mock_load_security_module
 
     # check that all elements are the same:
     first_elem = created_pool[0]
-    assert all([elem == first_elem for elem in created_pool])
+    assert all(elem == first_elem for elem in created_pool)
 
 
 def test_hsm_functionality(app):

@@ -92,7 +92,7 @@ class TestPushProviderController(TestController):
 
         push_prov = DefaultPushProvider()
         with pytest.raises(ValueError):
-            push_prov.loadConfig(dict(timeout="-1", push_url="https://x"))
+            push_prov.loadConfig({"timeout": "-1", "push_url": "https://x"})
 
     def test_timeout_invalid_tuple_size(self):
         """
@@ -101,16 +101,16 @@ class TestPushProviderController(TestController):
 
         push_prov = DefaultPushProvider()
         with pytest.raises(ValueError):
-            push_prov.loadConfig(dict(timeout="1,", push_url="https://x"))
+            push_prov.loadConfig({"timeout": "1,", "push_url": "https://x"})
 
         with pytest.raises(ValueError):
-            push_prov.loadConfig(dict(timeout="1,2,3", push_url="https://x"))
+            push_prov.loadConfig({"timeout": "1,2,3", "push_url": "https://x"})
 
         with pytest.raises(ValueError):
-            push_prov.loadConfig(dict(timeout="1,2,3,", push_url="https://x"))
+            push_prov.loadConfig({"timeout": "1,2,3,", "push_url": "https://x"})
 
         with pytest.raises(ValueError):
-            push_prov.loadConfig(dict(timeout="1,2,3,4", push_url="https://x"))
+            push_prov.loadConfig({"timeout": "1,2,3,4", "push_url": "https://x"})
 
     def test_timeout_doesnt_accept_strings(self):
         """
@@ -128,16 +128,18 @@ class TestPushProviderController(TestController):
         ]:
             v = str(s)
             with pytest.raises(ValueError):
-                push_prov.loadConfig(dict(timeout=v, push_url="https://x"))
+                push_prov.loadConfig({"timeout": v, "push_url": "https://x"})
 
         with pytest.raises(ValueError):
-            push_prov.loadConfig(dict(timeout="invalid,timeout", push_url="https://x"))
+            push_prov.loadConfig(
+                {"timeout": "invalid,timeout", "push_url": "https://x"}
+            )
 
         with pytest.raises(ValueError):
-            push_prov.loadConfig(dict(timeout="1,timeout", push_url="https://x"))
+            push_prov.loadConfig({"timeout": "1,timeout", "push_url": "https://x"})
 
         with pytest.raises(ValueError):
-            push_prov.loadConfig(dict(timeout="invalid,1", push_url="https://x"))
+            push_prov.loadConfig({"timeout": "invalid,1", "push_url": "https://x"})
 
     def test_read_config(self):
         """

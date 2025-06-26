@@ -78,11 +78,11 @@ def musicians_resolver(testcase: TestCase) -> Dict[str, str]:
     if not existing:
         useridresolver_manager.create_resolver_via_api(data.musicians_ldap_resolver)
 
-    yield dict(
-        name=music_resolver["name"],
-        type=music_resolver["type"],
-        fullname=music_resolver["type"] + "." + music_resolver["name"],
-    )
+    yield {
+        "name": music_resolver["name"],
+        "type": music_resolver["type"],
+        "fullname": music_resolver["type"] + "." + music_resolver["name"],
+    }
 
     if not existing:
         useridresolver_manager.delete_resolver_via_api(music_resolver["name"])

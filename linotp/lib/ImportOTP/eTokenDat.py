@@ -378,7 +378,7 @@ def get_session(lino_url, user=None, pwd=None):
 
     if user is not None:
         url = lino_url + "admin/login"
-        body = json.dumps(dict(username=user, password=pwd))
+        body = json.dumps({"username": user, "password": pwd})
         resp, content = http.request(
             url,
             "POST",

@@ -70,7 +70,7 @@ class MonitorHandler(object):
             realms = ["/:no realm:/"]
 
         result = {}
-        cond = tuple()
+        cond = ()
 
         for realm in realms:
             realm = realm.strip().lower()
@@ -339,7 +339,7 @@ class MonitorHandler(object):
         :param realmlist: list of (existing and allowed) realms
         :return: number of users in allowed realms who own an active token
         """
-        realm_cond = tuple()
+        realm_cond = ()
         for realm in realmlist:
             realm_cond += (or_(Realm.name == realm),)
 

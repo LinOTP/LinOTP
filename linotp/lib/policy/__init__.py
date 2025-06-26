@@ -2144,7 +2144,7 @@ def get_auto_enrollment(user):
 
     token_types = [x.strip() for x in t_typ.lower().split()]
 
-    if token_types and set(token_types).issubset(set(["sms", "email", "*"])):
+    if token_types and set(token_types).issubset({"sms", "email", "*"}):
         log.info("token type for auto enrollment: %r", t_typ)
         return True, token_types
 

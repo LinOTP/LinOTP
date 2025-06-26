@@ -195,7 +195,7 @@ class ConfigSchema:
         This is useful to populate the configuration with initial values
         without having to repeat any of the defaults.
         """
-        return dict((item.name, item.default) for item in self.schema.values())
+        return {item.name: item.default for item in self.schema.values()}
 
     def items(self):
         """Return the names and schema items of the schema as a dictionary

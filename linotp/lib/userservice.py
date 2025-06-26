@@ -80,7 +80,7 @@ def getTokenForUser(user, active=None, exclude_rollout=True):
             # skip the rollout tokens from the selfservice token list
 
             path = token_info.get("scope", {}).get("path", [])
-            if set(path) & set(["userservice", "validate"]) and exclude_rollout:
+            if set(path) & {"userservice", "validate"} and exclude_rollout:
                 continue
 
             tok["LinOtp.TokenInfo"] = token_info
@@ -356,7 +356,7 @@ def get_context(config, user: User, client: str):
         token_access = True
     context["settings"]["last_access"] = token_access
 
-    context["actions"] = list()
+    context["actions"] = []
     for action_name, action_value in get_selfservice_actions(user).items():
         if action_value is True:
             context["actions"].append(action_name)

@@ -713,9 +713,7 @@ class TestController(TestCase):
         """
         lparams = {"user": "*", "realm": "*", "client": "", "time": ""}
         lparams.update(params)
-        expected_keys = set(
-            ["name", "scope", "action", "user", "realm", "client", "time"]
-        )
+        expected_keys = {"name", "scope", "action", "user", "realm", "client", "time"}
         diff_set = expected_keys - set(lparams.keys())
         assert len(diff_set) == 0, (
             "Some key is missing to create a policy %r" % diff_set
@@ -931,7 +929,7 @@ class TestController(TestCase):
 
         assert content["result"]["status"]
         realms = content["result"]["value"]
-        lookup_realm = set(["mydefrealm", "mymixrealm", "myotherrealm"])
+        lookup_realm = {"mydefrealm", "mymixrealm", "myotherrealm"}
         assert lookup_realm == set(realms).intersection(lookup_realm)
         assert "mydefrealm" in realms
         assert "default" in realms["mydefrealm"]

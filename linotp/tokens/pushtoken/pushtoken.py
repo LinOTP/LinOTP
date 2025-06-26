@@ -687,22 +687,20 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         """
 
         param_keys = set(params.keys())
-        init_rollout_state_keys = set(
-            [
-                "type",
-                "serial",
-                "::scope::",
-                "user.login",
-                "description",
-                "user.realm",
-                "session",
-                "key_size",
-                "resConf",
-                "user",
-                "realm",
-                "pin",
-            ]
-        )
+        init_rollout_state_keys = {
+            "type",
+            "serial",
+            "::scope::",
+            "user.login",
+            "description",
+            "user.realm",
+            "session",
+            "key_size",
+            "resConf",
+            "user",
+            "realm",
+            "pin",
+        }
 
         # ------------------------------------------------------------------- --
 

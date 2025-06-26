@@ -104,7 +104,7 @@ class TestRemoteServiceList(TestCase):
         args, kwargs = services.call_first_available(1, 2, 3, one=1, two=2, three=3)
 
         assert args == (1, 2, 3)
-        assert kwargs == dict(one=1, two=2, three=3)
+        assert kwargs == {"one": 1, "two": 2, "three": 3}
 
     def test_service_failover(self):
         """

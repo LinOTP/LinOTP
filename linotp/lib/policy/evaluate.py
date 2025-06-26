@@ -110,7 +110,7 @@ class PolicyEvaluator(object):
 
         try:
             # preserve the old filters
-            sec_filters = [old_filter for old_filter in self.filters]
+            sec_filters = list(self.filters)
 
             self.set_filters(param)
             policies = self.evaluate(strict_matches=strict_matches)

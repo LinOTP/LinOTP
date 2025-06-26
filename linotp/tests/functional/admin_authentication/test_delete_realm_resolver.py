@@ -33,20 +33,14 @@ class TestDeleteRealmAndResolver:
         with scoped_authclient(verify_jwt=False) as client:
             client.post(
                 "/system/setRealm",
-                data=dict(
-                    realm=realm_name,
-                    resolvers=resolver_classes,
-                ),
+                data={"realm": realm_name, "resolvers": resolver_classes},
             )
 
         # add a local admin
         LocalAdminResolver(base_app).add_user("test", "test")
 
         # login as user from realm myDefRes to get the cookies
-        client.post(
-            "/admin/login",
-            data=dict(username="user1", password="geheim1"),
-        )
+        client.post("/admin/login", data={"username": "user1", "password": "geheim1"})
 
         # extract csrf token
         csrf_token = client._cookies[("localhost", "/", "csrf_access_token")].value
@@ -101,23 +95,14 @@ class TestDeleteRealmAndResolver:
         with scoped_authclient(verify_jwt=False) as client:
             client.post(
                 "/system/setRealm",
-                data=dict(
-                    realm=realm_name,
-                    resolvers=resolver_classes,
-                ),
+                data={"realm": realm_name, "resolvers": resolver_classes},
             )
 
         # add a local admin
         LocalAdminResolver(base_app).add_user("test", "test")
 
         # login as user from realm myDefRes to get the cookies
-        client.post(
-            "/admin/login",
-            data=dict(
-                username="user1",
-                password="geheim1",
-            ),
-        )
+        client.post("/admin/login", data={"username": "user1", "password": "geheim1"})
 
         # extract csrf token
         csrf_token = client._cookies[("localhost", "/", "csrf_access_token")].value
@@ -163,7 +148,7 @@ class TestDeleteRealmAndResolver:
         realm_name = base_app.config["ADMIN_REALM_NAME"].lower()
 
         with scoped_authclient(verify_jwt=False) as client:
-            response = client.post("/system/delRealm", data=dict(realm=realm_name))
+            response = client.post("/system/delRealm", data={"realm": realm_name})
 
             assert response.json["result"]["status"] is False
 

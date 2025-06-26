@@ -394,7 +394,7 @@ def janitor_to_remove_enrollment_token(valid_tokens):
         # if the authenticated token is a rollout token, we dont count him
 
         path = token.getFromTokenInfo("scope", {}).get("path", [])
-        if set(path) & set(["userservice", "validate"]):
+        if set(path) & {"userservice", "validate"}:
             continue
 
         # TODO: get owner sadly throws a genric exception in case of
@@ -430,7 +430,7 @@ def janitor_to_remove_enrollment_token(valid_tokens):
 
         for token in user_tokens:
             path = token.getFromTokenInfo("scope", {}).get("path", [])
-            if set(path) & set(["userservice", "validate"]):
+            if set(path) & {"userservice", "validate"}:
                 to_be_removed_tokens.append(token)
 
     # ------------------------------------------------------------------ --

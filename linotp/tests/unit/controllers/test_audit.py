@@ -40,20 +40,20 @@ def auditparams():
     Fixture that provides parameters that can be used to construct
     a test audit log entry
     """
-    params = dict(
-        serial="ABC123",
-        action="testAction",
-        success="1",
-        tokentype="pw",
-        user="operator",
-        realm="realmtest",
-        administrator="admin",
-        action_detail="This is a test audit entry",
-        info="info entry",
-        client="client1",
-        log_level="debug",
-        clearance_level="1",
-    )
+    params = {
+        "serial": "ABC123",
+        "action": "testAction",
+        "success": "1",
+        "tokentype": "pw",
+        "user": "operator",
+        "realm": "realmtest",
+        "administrator": "admin",
+        "action_detail": "This is a test audit entry",
+        "info": "info entry",
+        "client": "client1",
+        "log_level": "debug",
+        "clearance_level": "1",
+    }
     return params
 
 

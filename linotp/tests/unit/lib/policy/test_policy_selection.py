@@ -134,7 +134,7 @@ class TestPoliciesSelection(unittest.TestCase):
 
         # compare the results
 
-        expected_matches = set(["self2", "self3", "self4", "self5"])
+        expected_matches = {"self2", "self3", "self4", "self5"}
 
         matching_policies_names = set(matching_policies.keys())
         assert matching_policies_names == expected_matches
@@ -178,7 +178,7 @@ class TestPoliciesSelection(unittest.TestCase):
 
         # compare the results
 
-        expected_matches = set(["self6", "self8"])
+        expected_matches = {"self6", "self8"}
 
         matching_policies_names = set(matching_policies.keys())
         assert matching_policies_names == expected_matches, matching_policies_names
@@ -223,7 +223,7 @@ class TestPoliciesSelection(unittest.TestCase):
 
         # compare the results
 
-        expected_matches = set(["self6"])
+        expected_matches = {"self6"}
 
         matching_policies_names = set(matching_policies.keys())
         assert matching_policies_names == expected_matches
@@ -272,7 +272,7 @@ class TestPoliciesSelection(unittest.TestCase):
 
         # compare the results
 
-        expected_matches = set(["self6", "self7"])
+        expected_matches = {"self6", "self7"}
 
         matching_policies_names = set(matching_policies.keys())
         assert matching_policies_names == expected_matches
@@ -320,7 +320,7 @@ class TestPoliciesSelection(unittest.TestCase):
 
         # compare the results
 
-        expected_matches = set(["self1", "self4", "self5", "self8"])
+        expected_matches = {"self1", "self4", "self5", "self8"}
 
         matching_policies_names = set(matching_policies.keys())
         assert matching_policies_names == expected_matches

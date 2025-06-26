@@ -58,11 +58,11 @@ class ErrorController(BaseController):
 
         code = request.GET.get("code", request.POST.get("code", str(resp.status_int)))
 
-        page = error_document_template % dict(
-            prefix=request.environ.get("SCRIPT_NAME", ""),
-            code=escape(code),
-            message=content,
-        )
+        page = error_document_template % {
+            "prefix": request.environ.get("SCRIPT_NAME", ""),
+            "code": escape(code),
+            "message": content,
+        }
         return page
 
     @deprecated_methods(["POST"])

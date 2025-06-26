@@ -225,15 +225,15 @@ class ReportingIterator(object):
         if "*" in status:
             status = []
 
-        realm_cond = tuple()
+        realm_cond = ()
         for realm in realms:
             realm_cond += (or_(func.lower(Reporting.realm) == func.lower(realm)),)
 
-        status_cond = tuple()
+        status_cond = ()
         for stat in status:
             status_cond += (or_(Reporting.parameter == stat),)
 
-        date_cond = tuple()
+        date_cond = ()
         if date:
             date_cond += (and_(Reporting.timestamp >= date),)
 

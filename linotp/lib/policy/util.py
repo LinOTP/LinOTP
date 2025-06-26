@@ -381,7 +381,7 @@ def parse_policies(lConfig):
     #  "empty values are treated as wildcards"
     # by replacing these empty values by '*'
 
-    for _name, policy in sorted(list(Policies.items())):
+    for _name, policy in sorted(Policies.items()):
         # time has not been used before, so we can define the empty as wildcard
 
         if "time" in policy and policy["time"] == "":

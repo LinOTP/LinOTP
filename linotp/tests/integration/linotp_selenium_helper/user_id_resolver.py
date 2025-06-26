@@ -264,7 +264,7 @@ class UserIdResolverManager(ManageDialog):
         Checks that the status was ok and returns the resulting data
         """
         return self.manage.admin_api_call(
-            "system/getResolver", dict(resolver=resolver_name)
+            "system/getResolver", {"resolver": resolver_name}
         )
 
     def close(self):

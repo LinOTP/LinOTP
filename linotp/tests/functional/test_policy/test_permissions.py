@@ -292,13 +292,11 @@ class TestPermissions(TestPoliciesBase):
         # for all/any realms
         permissions = self.get_permissions("adminR3")
         assert 4 == len(permissions["inRealm"])
-        expected_permissions = set(
-            [
-                perm
-                for perm in self.all_realmed_permissions
-                if not perm.startswith("admin") or perm == "admin/show"
-            ]
-        )
+        expected_permissions = {
+            perm
+            for perm in self.all_realmed_permissions
+            if not perm.startswith("admin") or perm == "admin/show"
+        }
         for realm_permissions in permissions["inRealm"].values():
             assert expected_permissions == set(realm_permissions)
         assert expected_permissions == set(permissions["anyRealm"])
@@ -322,13 +320,9 @@ class TestPermissions(TestPoliciesBase):
         for realm_permissions in permissions["inRealm"].values():
             assert set(self.all_realmed_permissions) == set(realm_permissions)
         assert set(self.all_realmed_permissions) == set(permissions["anyRealm"])
-        expected_global_permissions = set(
-            [
-                perm
-                for perm in self.all_global_permissions
-                if not perm.startswith("audit")
-            ]
-        )
+        expected_global_permissions = {
+            perm for perm in self.all_global_permissions if not perm.startswith("audit")
+        }
         assert expected_global_permissions == set(permissions["global"])
 
         # for adminR1

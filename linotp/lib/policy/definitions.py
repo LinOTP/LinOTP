@@ -682,7 +682,7 @@ def validate_policy_definition(policy):
         elif "range" in definition:
             # normalize the value so that we always deal with the set()
             if not isinstance(value, set):
-                value = set([value])
+                value = {value}
 
             if len(value - set(definition["range"])) != 0:
                 raise Exception(

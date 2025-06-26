@@ -907,7 +907,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
             if not param.get("description"):
                 path = scope.get("path", [])
-                if set(path) & set(["userservice", "validate"]):
+                if set(path) & {"userservice", "validate"}:
                     param["description"] = "rollout token"
 
         if param.get("description"):

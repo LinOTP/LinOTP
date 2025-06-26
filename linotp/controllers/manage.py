@@ -226,9 +226,8 @@ class ManageController(BaseController):
         render the tokentype info mako
         """
         c.title = "TokenTypeInfo"
-        ttinfo = [tok for tok in tokenclass_registry.keys()]
-        for tok in tokenclass_registry:
-            tclass_object = tokenclass_registry.get(tok)
+        ttinfo = list(tokenclass_registry.keys())
+        for tclass_object in tokenclass_registry.values():
             if hasattr(tclass_object, "getClassType"):
                 ii = tclass_object.getClassType()
                 ttinfo.append(ii)

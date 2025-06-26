@@ -528,25 +528,23 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
     def update(self, params):
         param_keys = set(params.keys())
-        init_rollout_state_keys = set(
-            [
-                "type",
-                "hashlib",
-                "serial",
-                "::scope::",
-                "key_size",
-                "user.login",
-                "description",
-                "user.realm",
-                "session",
-                "otplen",
-                "resConf",
-                "user",
-                "realm",
-                "qr",
-                "pin",
-            ]
-        )
+        init_rollout_state_keys = {
+            "type",
+            "hashlib",
+            "serial",
+            "::scope::",
+            "key_size",
+            "user.login",
+            "description",
+            "user.realm",
+            "session",
+            "otplen",
+            "resConf",
+            "user",
+            "realm",
+            "qr",
+            "pin",
+        }
 
         # ------------------------------------------------------------------- --
 
@@ -632,25 +630,23 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         response_detail = {}
 
         param_keys = set(params.keys())
-        init_rollout_state_keys = set(
-            [
-                "type",
-                "hashlib",
-                "serial",
-                "::scope::",
-                "key_size",
-                "user.login",
-                "description",
-                "user.realm",
-                "session",
-                "otplen",
-                "pin",
-                "resConf",
-                "user",
-                "realm",
-                "qr",
-            ]
-        )
+        init_rollout_state_keys = {
+            "type",
+            "hashlib",
+            "serial",
+            "::scope::",
+            "key_size",
+            "user.login",
+            "description",
+            "user.realm",
+            "session",
+            "otplen",
+            "pin",
+            "resConf",
+            "user",
+            "realm",
+            "qr",
+        }
 
         # ------------------------------------------------------------------- --
 

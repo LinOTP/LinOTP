@@ -793,7 +793,7 @@ def load_provider_ini(ini_file):
     parser.read(ini_file)
 
     for section_name in parser.sections():
-        provider_config = {name: value for name, value in parser.items(section_name)}
+        provider_config = dict(parser.items(section_name))
 
         provider_type, provider_name = section_name.split(":")
         provider_config["type"] = provider_type

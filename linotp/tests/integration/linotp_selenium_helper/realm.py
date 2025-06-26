@@ -358,5 +358,5 @@ class RealmManager(ManageDialog):
         if isinstance(resolvers, list):
             resolvers = ",".join(resolvers)
 
-        params = dict(realm=name, resolvers=resolvers)
+        params = {"realm": name, "resolvers": resolvers}
         self.manage.admin_api_call("system/setRealm", params)

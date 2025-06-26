@@ -82,7 +82,7 @@ class AuditQuery(object):
             else:
                 search_dict[param["qtype"]] = param["query"]
         else:
-            search_dict = {key: value for key, value in param.items()}
+            search_dict = dict(param.items())
 
         if user:
             search_dict["user"] = user.login

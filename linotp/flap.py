@@ -57,7 +57,7 @@ class RequestContextProxy(object):
         return flask.g.request_context.items()
 
     def __repr__(self, *_args, **_kwargs):
-        repr_dict = {key: value for key, value in flask.g.request_context.items()}
+        repr_dict = dict(flask.g.request_context.items())
         return "%r" % repr_dict
 
 
