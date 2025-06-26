@@ -3406,7 +3406,7 @@ def get_active_token_statuses_for_reporting(realm):
     report_policies = getPolicy({"scope": "reporting", "realm": realm})
     unique_statuses = set()
 
-    for polname, policy in sorted(report_policies.items()):
+    for _polname, policy in sorted(report_policies.items()):
         actions = str(policy.get("action", "")).split(",")
 
         for act in actions:

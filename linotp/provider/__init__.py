@@ -83,7 +83,7 @@ def load_provider_classes():
         import_submodules("%s.%s" % (__name__, "voiceprovider"))
     except ImportError as exx:
         log.error("unable to load provider module : %s (%r)", __name__, exx)
-        raise Exception(exx)
+        raise
 
 
 load_provider_classes()
@@ -887,7 +887,7 @@ def _build_provider_config(provider_info):
         log.error("Failed to load provider config %r", provider_config)
         raise ValueError(
             "Failed to load provider config:%r %r" % (provider_config, exx)
-        )
+        ) from exx
 
     # we have to add the other, additional parameters like timeout
     for additional, value in list(provider_info.items()):
@@ -945,15 +945,15 @@ def _load_provider_class(provider_slass_spec):
             mod = __import__(packageName, globals(), locals(), [className], 1)
             provider_class_obj = getattr(mod, className)
 
-        except ImportError as err:
+        except ImportError as exx:
             raise Exception(
-                "Unknown provider class: Identifier was %s - %r" % (provider_class, err)
-            )
+                "Unknown provider class: Identifier was %s - %r" % (provider_class, exx)
+            ) from exx
 
-        except AttributeError as err:
+        except AttributeError as exx:
             raise Exception(
-                "Unknown provider class: Identifier was %s - %r" % (provider_class, err)
-            )
+                "Unknown provider class: Identifier was %s - %r" % (provider_class, exx)
+            ) from exx
 
     #
     # as not all providers are inherited from a super provider,

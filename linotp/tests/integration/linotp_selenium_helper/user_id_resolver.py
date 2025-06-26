@@ -316,7 +316,7 @@ class UserIdResolverManager(ManageDialog):
         assert self.find_by_id("dialog_resolver_ask_delete")
 
         t = find_by_css(driver, "#dialog_resolver_ask_delete > p").text
-        t == "Do you want to delete the resolver?"
+        assert t == "Do you want to delete the resolver?"
 
         self.find_by_id("button_resolver_ask_delete_delete").click()
 

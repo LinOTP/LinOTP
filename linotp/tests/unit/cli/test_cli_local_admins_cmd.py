@@ -307,4 +307,4 @@ def test_local_admins_enable_command(app, runner, resolver, res_list):
             == "useridresolver.SQLIdResolver.IdResolver." + resolver.admin_resolver_name
         )
     else:
-        assert False, "still no resolvers in admin realm"
+        raise AssertionError("still no resolvers in admin realm")

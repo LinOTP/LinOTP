@@ -185,7 +185,7 @@ class TokenHandler(object):
             token.storeToken()
         except Exception as exx:
             log.error("Could not create token")
-            raise TokenAdminError("token create failed %r" % exx, id=1112)
+            raise TokenAdminError("token create failed %r" % exx, id=1112) from exx
 
         log.debug("Token object %r was created", tokenObj)
         return (True, tokenObj)
@@ -210,7 +210,7 @@ class TokenHandler(object):
             auto, token_types = linotp.lib.policy.get_auto_enrollment(user)
         except Exception as exx:
             log.error("%r", exx)
-            raise Exception("[auto_enrollToken] %r" % exx)
+            raise Exception("[auto_enrollToken] %r" % exx) from exx
 
         if not auto:
             msg = "no auto_enrollToken configured"
@@ -835,7 +835,7 @@ class TokenHandler(object):
             raise TokenAdminError(
                 "Token assign failed for %s/%s : %r" % (user.login, serial, exx),
                 id=1105,
-            )
+            ) from exx
 
         log.debug(
             "[assignToken] successfully assigned token with serial %r to user %r",
@@ -863,7 +863,7 @@ class TokenHandler(object):
             raise TokenAdminError(
                 "Token unassign failed for %r/%r: %r" % (user, serial, exx),
                 id=1105,
-            )
+            ) from exx
 
         log.debug(
             "[unassignToken] successfully unassigned token with serial %r",
@@ -1038,7 +1038,9 @@ class TokenHandler(object):
             )
 
         except Exception as exx:
-            raise TokenAdminError("removeToken: Token update failed: %r" % exx, id=1132)
+            raise TokenAdminError(
+                "removeToken: Token update failed: %r" % exx, id=1132
+            ) from exx
 
         return len(serials)
 
@@ -1310,7 +1312,9 @@ def createTokenClassObject(token: Token, token_type: string = None):
             token_class: TokenClass = constructor(token)
 
         except Exception as exx:
-            raise TokenAdminError("createTokenClassObject failed:  %r" % exx, id=1609)
+            raise TokenAdminError(
+                "createTokenClassObject failed:  %r" % exx, id=1609
+            ) from exx
 
     else:
         # we try to use the parent class, which is able to handle most
@@ -1732,7 +1736,7 @@ def get_raw_tokens(
 
             except ResourceClosedError as exx:
                 log.warning("Token already locked for update: %r", exx)
-                raise Exception("Token already locked for update: (%r)" % exx)
+                raise Exception("Token already locked for update: (%r)" % exx) from exx
 
         with db.session.no_autoflush:
             sqlQuery = db.session.execute(stmt).scalars()
@@ -1777,7 +1781,9 @@ def get_raw_tokens(
 
                 except ResourceClosedError as exx:
                     log.warning("Token already locked for update: %r", exx)
-                    raise Exception("Token already locked for update: (%r)" % exx)
+                    raise Exception(
+                        "Token already locked for update: (%r)" % exx
+                    ) from exx
 
             # ---------------------------------------------------------- --
 

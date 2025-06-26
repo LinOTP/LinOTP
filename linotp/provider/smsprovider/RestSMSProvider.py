@@ -282,16 +282,18 @@ class RestSMSProvider(ISMSProvider, ConfigParsingMixin):
                 log.info("RestSMSProvider request failed: %r", response.reason)
                 return False
 
-            except requests.exceptions.Timeout as exc:
-                log.error("RestSMSProvider timed out %r", exc)
+            except requests.exceptions.Timeout as exx:
+                log.error("RestSMSProvider timed out %r", exx)
                 retry -= 1
                 if retry <= 0:
-                    raise ProviderNotAvailable("RestSMSProvider timed out %r" % exc)
+                    raise ProviderNotAvailable(
+                        "RestSMSProvider timed out %r" % exx
+                    ) from exx
 
-            except Exception as exc:
-                log.error("RestSMSProvider %r", exc)
+            except Exception as exx:
+                log.error("RestSMSProvider %r", exx)
                 retry = 0
-                raise Exception("Failed to send SMS. %s" % str(exc))
+                raise Exception("Failed to send SMS. %s" % str(exx)) from exx
 
 
 def json_replace(payload, key, value):

@@ -275,7 +275,7 @@ def _get_client_from_request(request=None):
                             ipvalue = value.split(":")[0]
                         else:
                             ipvalue = value
-                        ipvalue = ipvalue.strip('""')
+                        ipvalue = ipvalue.strip('"')
                         break
 
                 if ipvalue is not None:
@@ -407,8 +407,8 @@ def remove_empty_lines(doc):
 hexHexChars = "0123456789abcdef"
 modHexChars = "cbdefghijklnrtuv"
 
-hex2ModDict = dict(list(zip(hexHexChars, modHexChars)))
-mod2HexDict = dict(list(zip(modHexChars, hexHexChars)))
+hex2ModDict = dict(zip(hexHexChars, modHexChars, strict=True))
+mod2HexDict = dict(zip(modHexChars, hexHexChars, strict=True))
 
 
 def modhex_encode(s: str) -> str:

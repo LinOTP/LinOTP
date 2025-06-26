@@ -596,8 +596,8 @@ class ManageController(BaseController):
         try:
             try:
                 serial = param["serial"]
-            except KeyError:
-                raise ParameterError("Missing parameter: 'serial'")
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: 'serial'") from exx
 
             filterRealm = ""
             # check admin authorization
@@ -770,13 +770,13 @@ def _getTokenTypeConfig(section="config"):
                 t_html = render(os.path.sep + tab.get("html")).decode("utf-8")
                 t_html = remove_empty_lines(t_html)
 
-            except CompileException as cex:
+            except CompileException as exx:
                 log.error(
                     "[_getTokenTypeConfig] compile error while processing %r.%r:",
                     tok,
                     section,
                 )
-                raise Exception(cex)
+                raise Exception(exx) from exx
 
             except Exception as exx:
                 log.debug("no config for token type %r (%r)", tok, exx)

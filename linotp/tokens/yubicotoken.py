@@ -183,8 +183,8 @@ class YubicoTokenClass(TokenClass):
     def update(self, param):
         try:
             tokenid = param["yubico.tokenid"]
-        except KeyError:
-            raise ParameterError("Missing parameter: 'yubico.tokenid'")
+        except KeyError as exx:
+            raise ParameterError("Missing parameter: 'yubico.tokenid'") from exx
 
         if len(tokenid) < YUBICO_LEN_ID:
             raise Exception(

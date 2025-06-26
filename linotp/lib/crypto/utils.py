@@ -144,7 +144,7 @@ def compare(one, two):
     :return: boolean
 
     """
-    return all(tup1 == tup2 for tup1, tup2 in zip(one, two))
+    return all(tup1 == tup2 for tup1, tup2 in zip(one, two, strict=True))
 
 
 def get_hashalgo_from_description(description, fallback="sha1"):
@@ -162,7 +162,7 @@ def get_hashalgo_from_description(description, fallback="sha1"):
     try:
         hash_func = Hashlib_map.get(description.lower(), Hashlib_map[fallback.lower()])
     except Exception as exx:
-        raise Exception("unsupported hash function %r:%r", description, exx)
+        raise Exception("unsupported hash function %r:%r", description, exx) from exx
     if not callable(hash_func):
         raise Exception("hash function not callable %r", hash_func)
 
@@ -260,7 +260,7 @@ def kdf2(
     except Exception as exx:
         error = "Error during decoding activation code %r: %r" % (acode, exx)
         log.error(error)
-        raise Exception(error)
+        raise Exception(error) from exx
 
     if checksum is True:
         checkCode = str(activationcode[-2:])

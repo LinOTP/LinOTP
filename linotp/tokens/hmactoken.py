@@ -619,9 +619,9 @@ class HmacTokenClass(TokenClass):
 
         try:
             otplen = int(self.token.LinOtpOtpLen)
-        except ValueError as ex:
-            log.error("[getOtp]: Could not convert otplen - value error %r ", ex)
-            raise Exception(ex)
+        except ValueError as exx:
+            log.error("[getOtp]: Could not convert otplen - value error %r ", exx)
+            raise
 
         self.hashlibStr = self.getFromTokenInfo("hashlib", "sha1")
         secObj = self._get_secret_object()
@@ -658,12 +658,12 @@ class HmacTokenClass(TokenClass):
         error = "No count specified"
         try:
             otplen = int(self.token.LinOtpOtpLen)
-        except ValueError as ex:
+        except ValueError as exx:
             log.error(
                 "[get_multi_otp]: Could not convert otplen - value error %r ",
-                ex,
+                exx,
             )
-            raise Exception(ex)
+            raise
         s_count = self.getOtpCount()
         secObj = self._get_secret_object()
         hmac2Otp = HmacOtp(secObj, s_count, otplen, self.getHashlib(self.hashlibStr))

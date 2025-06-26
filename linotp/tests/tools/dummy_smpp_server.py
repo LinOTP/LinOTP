@@ -143,27 +143,27 @@ class DummySMPPServer:
             pdu_bytes = sock.recv(4)
         except socket.timeout:
             raise
-        except socket.error as e:
-            self.logger.warning(e)
-            raise exceptions.ConnectionError()
+        except socket.error as exx:
+            self.logger.warning(exx)
+            raise exceptions.ConnectionError() from exx
         if not pdu_bytes:
             raise exceptions.ConnectionError()
 
         try:
             length = struct.unpack(">L", pdu_bytes)[0]
-        except struct.error:
+        except struct.error as exx:
             bad_pdu_msg = "Bad PDU: %r"
             self.logger.warning(bad_pdu_msg, pdu_bytes)
-            raise exceptions.PDUError(bad_pdu_msg.format(pdu_bytes))
+            raise exceptions.PDUError(bad_pdu_msg.format(pdu_bytes)) from exx
 
         while len(pdu_bytes) < length:
             try:
                 more_bytes = sock.recv(length - len(pdu_bytes))
             except socket.timeout:
                 raise
-            except socket.error as e:
-                self.logger.warning(e)
-                raise exceptions.ConnectionError()
+            except socket.error as exx:
+                self.logger.warning(exx)
+                raise exceptions.ConnectionError() from exx
             if not pdu_bytes:
                 raise exceptions.ConnectionError()
             pdu_bytes += more_bytes

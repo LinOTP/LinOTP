@@ -943,7 +943,9 @@ class IdResolver(UserIdResolver):
 
         except Exception as exx:
             log.error("failed to parse configuration: %r", exx)
-            raise ResolverLoadConfigError("failed to parse configuration: %r" % exx)
+            raise ResolverLoadConfigError(
+                "failed to parse configuration: %r" % exx
+            ) from exx
 
         if missing:
             log.error("missing config entries: %r", missing)
@@ -970,7 +972,7 @@ class IdResolver(UserIdResolver):
             raise ResolverLoadConfigError(
                 "Invalid userinfo - no json"
                 " document: %s %r" % (l_config["USERINFO"], exx)
-            )
+            ) from exx
 
         # ------------------------------------------------------------------ --
 

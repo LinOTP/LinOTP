@@ -187,10 +187,11 @@ class TestEmailTokenAuth(TestEmailToken):
             )
             try:
                 message = validate_resp["detail"]["message"]
-            except KeyError as e:
+            except KeyError as exx:
                 raise KeyError(
-                    e.message + " | detail.message should be present %r" % validate_resp
-                )
+                    exx.message
+                    + " | detail.message should be present %r" % validate_resp
+                ) from exx
             assert message == "e-mail sent successfully", (
                 "Wrong validate response %r" % validate_resp
             )

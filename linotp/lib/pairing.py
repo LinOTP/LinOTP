@@ -169,13 +169,13 @@ def generate_pairing_url(
 
     try:
         TOKEN_TYPE = TOKEN_TYPES[token_type]
-    except KeyError:
+    except KeyError as exx:
         allowed_types = ", ".join(list(TOKEN_TYPES.keys()))
         raise InvalidFunctionParameter(
             "token_type",
             "Unsupported token type %s. Supported "
             "types for pairing are: %s" % (token_type, allowed_types),
-        )
+        ) from exx
 
     # ---------------------------------------------------------------------- --
 
@@ -274,13 +274,13 @@ def generate_pairing_url(
     if flags & FLAG_PAIR_HMAC:
         try:
             HASH_ALGO = hash_algorithms[hash_algorithm]
-        except KeyError:
+        except KeyError as exx:
             allowed_values = ", ".join(list(hash_algorithms.keys()))
             raise InvalidFunctionParameter(
                 "hash_algorithm",
                 "Unsupported hash algorithm %s, "
                 "allowed values are %s" % (hash_algorithm, allowed_values),
-            )
+            ) from exx
         data += struct.pack("<b", HASH_ALGO)
 
     # ---------------------------------------------------------------------- --
@@ -478,12 +478,12 @@ def decrypt_pairing_response(enc_pairing_response):
 
     try:
         token_type_as_str = INV_TOKEN_TYPES[token_type]
-    except KeyError:
+    except KeyError as exx:
         raise ProgrammingError(
             "token_type %d is in SUPPORTED_TOKEN_TYPES",
             "however an appropriate mapping entry in "
             "TOKEN_TYPES is missing" % token_type,
-        )
+        ) from exx
 
     return PairingResponse(token_type_as_str, pairing_data)
 

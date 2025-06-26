@@ -497,9 +497,9 @@ def getResolverDictByName(resolver_name):
     resolvers_dict = getResolverList()
     try:
         return resolvers_dict[resolver_name]
-    except KeyError:
+    except KeyError as exx:
         message = f"Could not find a resolver with this name: {resolver_name}"
-        raise linotp.lib.user.NoResolverFound(message)
+        raise linotp.lib.user.NoResolverFound(message) from exx
 
 
 # external in token.py user.py validate.py
@@ -772,7 +772,7 @@ def setupResolvers(config=None, cache_dir="/tmp"):
 
         try:
             resolver_cls.setup(config=config, cache_dir=cache_dir)
-            setattr(resolver_cls, "_setup_done", True)
+            resolver_cls._setup_done = True
         except Exception as exx:
             log.error(
                 "Resolver setup: Failed to call setup of %r. Exception was %r",

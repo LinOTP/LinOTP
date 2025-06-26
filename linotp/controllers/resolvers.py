@@ -298,8 +298,10 @@ class ResolversController(BaseController):
                     key=lambda user_dict: user_dict[sort_key] or "",
                     reverse=reverse,
                 )
-            except KeyError:
-                raise KeyError(f"users can't be sorted by parameter {sort_key}")
+            except KeyError as exx:
+                raise KeyError(
+                    f"users can't be sorted by parameter {sort_key}"
+                ) from exx
             total_pages = 1
             total_records = len(users)
 

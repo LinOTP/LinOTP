@@ -109,10 +109,10 @@ def google_authenticator_url(label, param):
 
     try:
         token_type = Valid_Token_Types[param.get("type", "hotp").lower()]
-    except KeyError:
+    except KeyError as exx:
         raise NoOtpAuthTokenException(
             "not supported otpauth token type: %r" % param.get("type")
-        )
+        ) from exx
 
     digits = int(param.get("otplen", 6))
     if digits not in [6, 8]:

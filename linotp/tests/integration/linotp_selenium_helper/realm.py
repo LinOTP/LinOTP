@@ -337,7 +337,7 @@ class RealmManager(ManageDialog):
                 ",".join(old_realms),
                 ".".join(new_realm_list),
             )
-            assert False, "Realm was not sucessfully created"
+            raise AssertionError("Realm was not sucessfully created")
 
     def set_default(self, name):
         self.open()

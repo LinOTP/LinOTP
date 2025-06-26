@@ -620,7 +620,7 @@ class OcraTest(TestController):
         lenotp = len(str(otp))
         if lenotp > 1:
             while rotp == otp:
-                for i in range(0, 3):
+                for _i in range(0, 3):
                     idx1 = random.randint(0, lenotp - 1)
                     idx2 = random.randint(0, lenotp - 1)
                     if idx1 != idx2:
@@ -1019,10 +1019,10 @@ class OcraTest(TestController):
 
             # verify that the failcounter increments (max is 10)
             fcount = 0
-            for count in range(1, 3):
+            for _count in range(1, 3):
                 # create more than one challenge
                 chals = random.randint(2, 5)
-                for cc in range(1, chals):
+                for _cc in range(1, chals):
                     """-2- fetch the challenge"""
                     p = {
                         "serial": serial,

@@ -428,8 +428,7 @@ def getUserResolverId(user, report=False):
         )
 
         if report is True:
-            raise UserError("getUserResolverId failed: %r" % exx, id=1112)
-
+            raise UserError("getUserResolverId failed: %r" % exx, id=1112) from exx
         return ("", "", "")
 
 

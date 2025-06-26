@@ -999,10 +999,10 @@ class Ocra2TokenClass(TokenClass):
             c_data = ocraSuite.combineData(**param)
             ocraSuite.compute(c_data)
 
-        except Exception as ex:
+        except Exception as exx:
             raise Exception(
-                "[Ocra2TokenClass] Failed to create ocrasuite challenge: %r" % (ex)
-            )
+                "[Ocra2TokenClass] Failed to create ocrasuite challenge: %r" % (exx)
+            ) from exx
 
         # create a non exisiting challenge
         try:
@@ -1011,12 +1011,12 @@ class Ocra2TokenClass(TokenClass):
             transid = opt.get("transactionid")
             challenge = opt.get("challenge")
 
-        except Exception as ex:
+        except Exception as exx:
             # this might happen if we have a db problem or
             # the uniqnes constrain does not fit
             raise Exception(
-                "[Ocra2TokenClass] Failed to create challenge object: %s" % (ex)
-            )
+                "[Ocra2TokenClass] Failed to create challenge object: %s" % (exx)
+            ) from exx
 
         tokenrealms = self.token.getRealms()
         realms = [realm.name for realm in tokenrealms]
@@ -1493,14 +1493,14 @@ class Ocra2TokenClass(TokenClass):
 
                 log.info("rollout for token %r not completed", self.getSerial())
 
-        except Exception as ex:
+        except Exception as exx:
             log.error(
                 "[Ocra2TokenClass:statusValidationFail] Error during "
                 "validation finalisation for token %r :%r",
                 self.getSerial(),
-                ex,
+                exx,
             )
-            raise Exception(ex)
+            raise Exception(exx) from exx
 
         finally:
             if challenge is not None:
@@ -1653,8 +1653,10 @@ class Ocra2TokenClass(TokenClass):
                             self.addToTokenInfo("timeShift", timeShift)
                             ret = True
 
-        except Exception as ex:
-            raise Exception("[Ocra2TokenClass:resync] unknown error: %s" % (ex))
+        except Exception as exx:
+            raise Exception(
+                "[Ocra2TokenClass:resync] unknown error: %s" % (exx)
+            ) from exx
 
         return ret
 

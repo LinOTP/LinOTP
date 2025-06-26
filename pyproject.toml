@@ -130,6 +130,7 @@ plugins = "sqlmypy"
 
 [tool.ruff]
 lint.select = [
+  "B",    # flake8-bugbear
   "E",    # pycodestyle errors
   "F",    # pyflakes
   "I",    # isort

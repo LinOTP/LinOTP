@@ -337,8 +337,10 @@ class OcraSuite:
                         quantity = int(part[:-1])
                         length += quantity * PERIODS[period]
                     self.T = length
-                except ValueError:
-                    raise ValueError("Invalid timestamp descriptor %r" % complement)
+                except ValueError as exx:
+                    raise ValueError(
+                        "Invalid timestamp descriptor %r" % complement
+                    ) from exx
 
     def compute(self, data, key=None):
         """
@@ -406,8 +408,8 @@ class OcraSuite:
                 raise ValueError(
                     "Invalid truncation length [0,10] %r" % truncation_length
                 )
-        except ValueError:
-            raise ValueError("Invalid truncation length %r" % trunc)
+        except ValueError as exx:
+            raise ValueError("Invalid truncation length %r" % trunc) from exx
         return truncation_length
 
     ########################################
@@ -446,8 +448,8 @@ class OcraSuite:
                 C = int(C)
                 if C < 0 or C > 2**64:
                     raise Exception()
-            except BaseException:
-                raise ValueError("Invalid counter value %r" % C)
+            except BaseException as exx:
+                raise ValueError("Invalid counter value %r" % C) from exx
             datainput = int2beint64(int(C))
         return datainput
 
@@ -474,8 +476,8 @@ class OcraSuite:
             if self.Q[0] == "H":
                 try:
                     int(Q, 16)
-                except ValueError:
-                    raise ValueError("challenge is hex only: %s" % (Q))
+                except ValueError as exx:
+                    raise ValueError("challenge is hex only: %s" % (Q)) from exx
 
             # now encode the challenge acordingly
             if self.Q[0] == "N":

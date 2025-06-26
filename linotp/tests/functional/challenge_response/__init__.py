@@ -192,10 +192,10 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         self.create_common_realms()
 
         if hasattr(self, "policies") is False:
-            setattr(self, "policies", [])
+            self.policies = []
 
         if hasattr(self, "serials") is False:
-            setattr(self, "serials", [])
+            self.serials = []
 
         self.patch_smtp = None
         self.patch_sms = None

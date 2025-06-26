@@ -645,7 +645,7 @@ class ValidationHandler(object):
 
         return (res, opt)
 
-    def checkTokenList(self, tokenList, passw, user=User(), options=None):
+    def checkTokenList(self, tokenList, passw, user: User | None = None, options=None):
         """
         identify a matching token and test, if the token is valid, locked ..
         This function is called by checkSerialPass and checkUserPass to
@@ -937,7 +937,7 @@ class ValidationHandler(object):
         # the PIN for authentication, we need to do something different here...
         #  and avoid PIN checking in __checkToken.
         #  We could pass an "option" to __checkToken.
-        (res, opt) = self.checkTokenList(tokenList, passw)
+        (res, opt) = self.checkTokenList(tokenList, passw, user=User())
 
         # Now we need to get the user
         if res is not False and "serial" in g.audit:

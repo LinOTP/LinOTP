@@ -3505,7 +3505,7 @@ class TestPolicies(TestPoliciesBase):
 
             assert response.json["result"]["value"], response
 
-        for serial, descr in list(tokens.items()):
+        for serial in tokens.keys():
             # set realm of tokens
             params = {
                 "serial": serial,
@@ -3658,7 +3658,7 @@ class TestPolicies(TestPoliciesBase):
             tokens[serial] = descr
 
         # enroll tokens in realm myOtherRealm
-        for serial, descr in list(tokens.items()):
+        for serial, descr in tokens.items():
             params = {
                 "type": "hmac",
                 "serial": serial,
@@ -3672,7 +3672,7 @@ class TestPolicies(TestPoliciesBase):
 
             assert response.json["result"]["value"], response
 
-        for serial, descr in list(tokens.items()):
+        for serial in tokens.keys():
             # set realm of tokens
             params = {
                 "serial": serial,

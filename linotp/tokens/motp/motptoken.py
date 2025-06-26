@@ -161,8 +161,8 @@ class MotpTokenClass(HmacTokenClass):
         # motp token specific
         try:
             otpPin = param["otppin"]
-        except KeyError:
-            raise ParameterError("Missing parameter: 'otppin'")
+        except KeyError as exx:
+            raise ParameterError("Missing parameter: 'otppin'") from exx
 
         self.setUserPin(otpPin)
 

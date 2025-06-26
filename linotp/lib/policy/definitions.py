@@ -658,11 +658,11 @@ def validate_policy_definition(policy):
         if "type" in definition:
             try:
                 value = convert_policy_value(value, definition["type"])
-            except ValueError:
+            except ValueError as exx:
                 raise Exception(
                     "Action value %r for %s.%s not of the expected type %r"
                     % (value, scope, action, definition["type"])
-                )
+                ) from exx
 
         # .3. a "value" comparison:
         # if there is a "value" definition, we have to assur that the value is

@@ -66,7 +66,7 @@ warnings.filterwarnings(action="ignore", category=DeprecationWarning)
 
 
 def fxn():
-    warnings.warn("deprecated", DeprecationWarning)
+    warnings.warn("deprecated", DeprecationWarning, stacklevel=1)
 
 
 with warnings.catch_warnings():
@@ -85,7 +85,7 @@ def url(controller, action):
     Generate URL for a given controller and action
     """
     if controller.endswith("/"):
-        warnings.warn("Controller name should not have a trailing slash")
+        warnings.warn("Controller name should not have a trailing slash", stacklevel=1)
         controller = controller.rpartition("/")[0]
 
     return "/".join([controller, action or ""]).replace("//", "/")
@@ -974,7 +974,7 @@ class TestController(TestCase):
             params = {}
 
         if not hasattr(self, "user_service"):
-            setattr(self, "user_service", {})
+            self.user_service = {}
 
         otp = None
         if len(auth_user) == 3:
@@ -1047,7 +1047,7 @@ class TestController(TestCase):
         # ------------------------------------------------------------------ --
 
         if not hasattr(self, "user_selfservice"):
-            setattr(self, "user_selfservice", {})
+            self.user_selfservice = {}
 
         auth_cookie = self.user_selfservice.get(user)
 
@@ -1094,7 +1094,7 @@ class TestController(TestCase):
         # ------------------------------------------------------------------ --
 
         if not hasattr(self, "user_selfservice"):
-            setattr(self, "user_selfservice", {})
+            self.user_selfservice = {}
 
         auth_cookie = self.user_selfservice.get(user)
 

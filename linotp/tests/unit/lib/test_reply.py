@@ -114,8 +114,10 @@ class TestReplyTestCase(object):
             res = sendResultIterator(
                 obj=request_context_test_iterator(), rp=None, page=None
             )
-        except ProgrammingError:
-            assert False, "request_context was used outside of request_context_safety"
+        except ProgrammingError as exx:
+            raise AssertionError(
+                "request_context was used outside of request_context_safety"
+            ) from exx
 
         result = ""
         for chunk in res:
@@ -128,8 +130,10 @@ class TestReplyTestCase(object):
 
         try:
             res = sendResultIterator(obj=request_context_test_iterator(), rp=1, page=0)
-        except ProgrammingError:
-            assert False, "request_context was used outside of request_context_safety"
+        except ProgrammingError as exx:
+            raise AssertionError(
+                "request_context was used outside of request_context_safety"
+            ) from exx
 
         result = ""
         for chunk in res:

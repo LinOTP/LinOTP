@@ -129,9 +129,9 @@ def parse_and_verify_pushtoken_pairing_data(plaintext):
 
     try:
         crypto_sign_verify_detached(signature, message, user_public_key)
-    except ValueError:
+    except ValueError as exx:
         # original value error is too generic
-        raise ValueError("Invalid signature for pairing response data")
+        raise ValueError("Invalid signature for pairing response data") from exx
 
     # ----------------------------------------------------------------------- --
 

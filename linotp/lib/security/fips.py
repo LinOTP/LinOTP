@@ -79,7 +79,7 @@ class FipsSecurityModule(DefaultSecurityModule):
             }
 
         except SSLError as exx:
-            raise FatalHSMException("Failed to load library %r" % exx)
+            raise FatalHSMException("Failed to load library %r" % exx) from exx
 
         DefaultSecurityModule.__init__(self, add_conf)
 

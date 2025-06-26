@@ -172,13 +172,13 @@ class SetPasswordHandler(ToolsHandler):
                     username=username
                 ).one()
 
-            except NoResultFound:
+            except NoResultFound as exx:
                 log.error("no user %r found!", username)
-                raise Exception("no user %r found!" % username)
+                raise Exception("no user %r found!" % username) from exx
 
-            except MultipleResultsFound:
+            except MultipleResultsFound as exx:
                 log.error("multiple users %r found!", username)
-                raise Exception("multiple users %r found!" % username)
+                raise Exception("multiple users %r found!" % username) from exx
 
             crypted_password = admin_user.password
 

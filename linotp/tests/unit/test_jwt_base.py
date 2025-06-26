@@ -74,7 +74,7 @@ def test_session_cookie_secure(base_app, client, secure_cookies, auth_type):
             assert cookie.secure is secure_cookies
             break
     else:
-        assert False, "no jwt access token cookie found"
+        raise AssertionError("no jwt access token cookie found")
 
 
 @pytest.mark.skip(reason="JWT_SECRET_KEY as configurable item is obsolete in LinOTP")

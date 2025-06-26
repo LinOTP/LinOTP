@@ -240,18 +240,17 @@ class SmtpSMSProvider(ISMSProvider):
             log.debug("quit: (%r) %r", code, response)
             ret = True
 
-        except smtplib.socket.error as exc:
+        except smtplib.socket.error as exx:
             log.error("Error: could not connect to server")
             if boolean(self.config.get("raise_exception", True)):
                 raise ProviderNotAvailable(
-                    "Error: could not connect to server: %r" % exc
-                )
+                    "Error: could not connect to server: %r" % exx
+                ) from exx
             ret = False
-
         except Exception as exx:
             log.error("[submitMessage] %s", exx)
             if boolean(self.config.get("raise_exception", False)):
-                raise Exception(exx)
+                raise
             ret = False
 
         finally:

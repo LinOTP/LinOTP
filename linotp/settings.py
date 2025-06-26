@@ -73,10 +73,12 @@ def check_int_in_range(min=None, max=None):
     return f
 
 
-def check_json_schema(schema={}):
+def check_json_schema(schema: dict | None = None):
     """Factory function that will return a function that ensures that
     `value` agrees to the schema
     """
+    if schema is None:
+        schema = {}
     Draft4Validator.check_schema(schema)
 
     def f(key, value):
@@ -92,10 +94,12 @@ def check_json_schema(schema={}):
     return f
 
 
-def check_membership(allowed={}):
+def check_membership(allowed: dict | None = None):
     """Factory function that will return a function that ensures that
     `value` is contained in `allowed` (the set of allowed values).
     """
+    if allowed is None:
+        allowed = {}
     allowed_values = ", ".join(repr(s) for s in sorted(allowed))
 
     def f(key, value):

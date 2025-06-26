@@ -877,10 +877,10 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
                     # pylons silently converts all ints in json
                     # to unicode :(
                     content_type = int(content_type_as_str)
-                except BaseException:
+                except BaseException as exx:
                     raise ValueError(
                         "Unrecognized content type: %s" % content_type_as_str
-                    )
+                    ) from exx
 
         # ------------------------------------------------------------------- --
 

@@ -363,7 +363,7 @@ class dbObject:
             log.error("Connection error: %r", exx)
             msg = str(exx)
             if "timeout expired" in msg or "can't connect to" in msg:
-                raise ResolverNotAvailable(msg)
+                raise ResolverNotAvailable(msg) from exx
 
             raise
 
@@ -725,10 +725,10 @@ class IdResolver(UserIdResolver):
         except ValueError as exx:
             raise ResolverLoadConfigError(
                 "Invalid userinfo - no json document: %s %r" % (userInfo, exx)
-            )
+            ) from exx
 
         except Exception as exx:
-            raise Exception("linotp.sqlresolver.Map: %r" % exx)
+            raise Exception("linotp.sqlresolver.Map: %r" % exx) from exx
 
         self.checkMapping()
 
@@ -942,7 +942,7 @@ class IdResolver(UserIdResolver):
 
         except KeyError as exx:
             log.error("[getUserList] Invalid Mapping Error: %r", exx)
-            raise KeyError("Invalid Mapping %r " % exx)
+            raise KeyError("Invalid Mapping %r " % exx) from exx
 
         except Exception as exx:
             log.error("[getUserList] Exception: %r", exx)

@@ -295,12 +295,13 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
                 warn(
                     "Returning Request is no longer necessary",
                     DeprecationWarning,
+                    stacklevel=1,
                 )
                 return None
             return response
 
 
-def methods(mm=["GET"]):
+def methods(mm: list[str] | None = None):
     """
     Decorator to specify the allowable HTTP methods for a
     controller/blueprint method. It turns out that `Flask.add_url_rule`
@@ -308,6 +309,8 @@ def methods(mm=["GET"]):
     what HTTP methods should be allowed on a view, so that's where we're
     putting the methods list.
     """
+    if mm is None:
+        mm = ["GET"]
 
     def inner_func(func):
         func.methods = mm[:]

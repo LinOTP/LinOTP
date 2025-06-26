@@ -117,8 +117,8 @@ def parse_dat_data(data, d_string=None):
                 tokens[serial] = token.get_initparams()
             del lines[:]
 
-    except Exception as err:
-        raise ImportException(err)
+    except Exception as exx:
+        raise ImportException(exx) from exx
 
     return tokens
 

@@ -223,7 +223,7 @@ class Resolver:
                 result.add(realm_name)
         return result
 
-    def get_users(self, search_dictionary: dict = {}) -> List[User]:
+    def get_users(self, search_dictionary: dict | None = None) -> List[User]:
         """
         List users of a resolver. Some resolvers might limit this result, so it
         is not always guaranteed that the list is complete.
@@ -231,6 +231,8 @@ class Resolver:
         The list of users can be restricted by supplying a search dictionary,
         where the key maps to a user's attribute.
         """
+        if search_dictionary is None:
+            search_dictionary = {}
         log.debug(
             "[get_users_of_resolver] with this search dictionary: %r",
             search_dictionary,

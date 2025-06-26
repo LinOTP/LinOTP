@@ -608,13 +608,13 @@ class SystemController(BaseController):
                 else:
                     try:
                         boolean(param["readonly"])
-                    except Exception:
+                    except Exception as exx:
                         msg = (
                             "Failed to convert attribute 'readonly' to"
                             " a boolean value! %r"
                         )
                         log.error(msg, param["readonly"])
-                        raise Exception(msg % param["readonly"])
+                        raise Exception(msg % param["readonly"]) from exx
 
             if not previous_name:
                 mode = "create"
@@ -1949,7 +1949,7 @@ class SystemController(BaseController):
                 _provider_class = params["class"]
                 _timeout = params["timeout"]
             except KeyError as exx:
-                raise ParameterError("missing key %r" % exx)
+                raise ParameterError("missing key %r" % exx) from exx
 
             # -------------------------------------------------------------- --
 
@@ -2019,7 +2019,7 @@ class SystemController(BaseController):
             try:
                 provider_type = param["type"]
             except KeyError as exx:
-                raise ParameterError("missing key %r" % exx)
+                raise ParameterError("missing key %r" % exx) from exx
 
             # optional parameters
             provider_name = param.get("name")
@@ -2062,7 +2062,7 @@ class SystemController(BaseController):
                 provider_name = self.request_params["name"]
                 provider_type = self.request_params["type"]
             except KeyError as exx:
-                raise ParameterError("missing key %r" % exx)
+                raise ParameterError("missing key %r" % exx) from exx
 
             provider = loadProvider(
                 provider_type=provider_type, provider_name=provider_name
@@ -2103,7 +2103,7 @@ class SystemController(BaseController):
                 provider_name = self.request_params["name"]
                 provider_type = self.request_params["type"]
             except KeyError as exx:
-                raise ParameterError("missing key %r" % exx)
+                raise ParameterError("missing key %r" % exx) from exx
 
             provider_def = getProvider(provider_type, provider_name)
 
@@ -2156,7 +2156,7 @@ class SystemController(BaseController):
                 provider_name = self.request_params["name"]
                 provider_type = self.request_params["type"]
             except KeyError as exx:
-                raise ParameterError("missing key %r" % exx)
+                raise ParameterError("missing key %r" % exx) from exx
 
             res, reply = setDefaultProvider(provider_type, provider_name)
 
@@ -2194,7 +2194,7 @@ class SystemController(BaseController):
                 _provider_name = self.request_params["name"]
                 _provider_type = self.request_params["type"]
             except KeyError as exx:
-                raise ParameterError("missing key %r" % exx)
+                raise ParameterError("missing key %r" % exx) from exx
 
             # TODO:  to be implemented
             res = {}

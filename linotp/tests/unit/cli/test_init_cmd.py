@@ -683,12 +683,12 @@ def test_init_enc_key_cmd(
         assert secret_file_name.read_bytes() == SECRET_KEY
     else:
         if secret_file_name.exists() and secret_file_name.read_bytes() == SECRET_KEY:  # noqa: E129
-            assert False, "secret file was created but shouldn't have been"
+            raise AssertionError("secret file was created but shouldn't have been")
         elif has_file and secret_file_name.exists():
             if secret_file_name.read_bytes() == ZERO_KEY:
                 pass  # still the old file, this is OK
             else:
-                assert False, "shouldn't touch secret file but it was changed"
+                raise AssertionError("shouldn't touch secret file but it was changed")
 
 
 def test_init_enc_key_cmd_failed_backup(app, tmp_path, runner):

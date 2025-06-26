@@ -874,8 +874,8 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         if otpKey is None and self.hKeyRequired is True:
             try:
                 otpKey = param["otpkey"]
-            except KeyError:
-                raise ParameterError("Missing parameter: 'otpkey'")
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: 'otpkey'") from exx
 
         if otpKey is not None:
             self.validate_seed(otpKey)
@@ -939,7 +939,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         """
         if otpkeylen is None:
             if hasattr(self, "otpkeylen"):
-                otpkeylen = getattr(self, "otpkeylen")
+                otpkeylen = self.otpkeylen
             else:
                 otpkeylen = 20
         return generate_otpkey(otpkeylen)
@@ -1187,9 +1187,9 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         try:
             self.token.storeToken()
-        except BaseException:
+        except BaseException as exx:
             log.error("Token fail counter update failed")
-            raise TokenAdminError("Token Fail Counter update failed", id=1106)
+            raise TokenAdminError("Token Fail Counter update failed", id=1106) from exx
 
         return self.token.LinOtpFailCount
 
@@ -1251,9 +1251,11 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         try:
             self.token.storeToken()
 
-        except Exception as ex:
-            log.error("Token Counter update failed: %r", ex)
-            raise TokenAdminError("Token Counter update failed: %r" % (ex), id=1106)
+        except Exception as exx:
+            log.error("Token Counter update failed: %r", exx)
+            raise TokenAdminError(
+                "Token Counter update failed: %r" % (exx), id=1106
+            ) from exx
 
         return self.token.LinOtpCount
 

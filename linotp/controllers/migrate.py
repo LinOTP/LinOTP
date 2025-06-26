@@ -93,7 +93,7 @@ class MigrateController(BaseController):
                 backupid = self.request_params["backupid"]
                 passphrase = self.request_params["pass"]
             except KeyError as exx:
-                raise Exception("missing Parameter:%r" % exx)
+                raise Exception("missing Parameter:%r" % exx) from exx
 
             backup_data = {}
 
@@ -178,7 +178,7 @@ class MigrateController(BaseController):
                 )
             except KeyError as exx:
                 missing_param = True
-                raise Exception("missing Parameter:%r" % exx)
+                raise Exception("missing Parameter:%r" % exx) from exx
 
             mig = None
 

@@ -135,7 +135,7 @@ class SmtpMessageServer(object):
     def get_config_parameters(self):
         # This function can be overridden to provide configuration parameters to configure
         # specific parts of LinOTP
-        assert False, "This function should be overridden"
+        raise AssertionError("This function should be overridden")
 
     def get_otp(self):
         messagestr = self.smtp_process_queue.get(True, 10)

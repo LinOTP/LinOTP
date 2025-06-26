@@ -104,10 +104,10 @@ class SecurityProvider(object):
                 security_provider_config = {"pkcs11": config.get("HSM_PKCS11_CONFIG")}
                 self.config.update(security_provider_config)
 
-        except Exception as e:
+        except Exception as exx:
             log.error("[load_config] failed to identify module")
-            error = "failed to identify module: %r " % e
-            raise HSMException(error, id=707)
+            error = "failed to identify module: %r " % exx
+            raise HSMException(error, id=707) from exx
 
         # now create a pool of hsm objects for each module
         self.rwLock.acquire_write()
@@ -207,10 +207,10 @@ class SecurityProvider(object):
                 hsm.setup_module(config)
 
             self.activeOne = hsm_id
-        except Exception as e:
-            error = "[setupModule] failed to load hsm : %r" % e
+        except Exception as exx:
+            error = "[setupModule] failed to load hsm : %r" % exx
             log.error(error)
-            raise HSMException(error, id=707)
+            raise HSMException(error, id=707) from exx
 
         finally:
             self.rwLock.release()

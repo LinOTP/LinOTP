@@ -272,9 +272,9 @@ class EmailTokenClass(HmacTokenClass):
 
         try:
             otplen = int(self.token.LinOtpOtpLen)
-        except ValueError as ex:
-            LOG.error("[getNextOtp] ValueError %r", ex)
-            raise Exception(ex)
+        except ValueError as exx:
+            LOG.error("[getNextOtp] ValueError %r", exx)
+            raise
 
         secObj = self._get_secret_object()
         counter = self.token.getOtpCounter()

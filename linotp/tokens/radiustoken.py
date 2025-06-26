@@ -126,8 +126,8 @@ class RadiusTokenClass(RemoteTokenClass):
     def update(self, param):
         try:
             self.radiusServer = param["radius.server"]
-        except KeyError:
-            raise ParameterError("Missing parameter: 'radius.server'")
+        except KeyError as exx:
+            raise ParameterError("Missing parameter: 'radius.server'") from exx
 
         # if another OTP length would be specified in /admin/init this would
         # be overwritten by the parent class, which is ok.
@@ -139,13 +139,13 @@ class RadiusTokenClass(RemoteTokenClass):
 
         try:
             self.radiusUser = param["radius.user"]
-        except KeyError:
-            raise ParameterError("Missing parameter: 'radius.user'")
+        except KeyError as exx:
+            raise ParameterError("Missing parameter: 'radius.user'") from exx
 
         try:
             self.radiusSecret = param["radius.secret"]
-        except KeyError:
-            raise ParameterError("Missing parameter: 'radius.secret'")
+        except KeyError as exx:
+            raise ParameterError("Missing parameter: 'radius.secret'") from exx
 
         if self.radiusSecret == VOID_RADIUS_SECRET:
             log.warning("Usage of default radius secret is not recomended!!")

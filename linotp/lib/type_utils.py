@@ -197,16 +197,16 @@ def get_timeout(timeout, seperator=","):
         if seperator not in timeout:
             return float(timeout)
 
-    except ValueError:
-        raise ValueError("Failed to convert timeout %r values!" % timeout)
+    except ValueError as exx:
+        raise ValueError("Failed to convert timeout %r values!" % timeout) from exx
 
     try:
         timeouts = tuple(
             float(x.strip()) for x in timeout.strip().strip(seperator).split(seperator)
         )
 
-    except ValueError:
-        raise ValueError("Failed to convert timeout %r values!" % timeout)
+    except ValueError as exx:
+        raise ValueError("Failed to convert timeout %r values!" % timeout) from exx
 
     if len(timeouts) == 1:
         return timeouts[0]

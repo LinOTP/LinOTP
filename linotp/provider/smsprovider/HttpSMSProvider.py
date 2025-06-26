@@ -262,13 +262,15 @@ class HttpSMSProvider(ISMSProvider, ConfigParsingMixin):
             requests.exceptions.Timeout,
             requests.exceptions.ReadTimeout,
             requests.exceptions.TooManyRedirects,
-        ) as exc:
+        ) as exx:
             log.error("HttpSMSProvider timed out")
-            raise ProviderNotAvailable("Failed to send SMS - timed out %r" % exc)
+            raise ProviderNotAvailable(
+                "Failed to send SMS - timed out %r" % exx
+            ) from exx
 
-        except Exception as exc:
-            log.error("HttpSMSProvider %r", exc)
-            raise Exception("Failed to send SMS. %r" % exc)
+        except Exception as exx:
+            log.error("HttpSMSProvider %r", exx)
+            raise Exception("Failed to send SMS. %r" % exx) from exx
 
         return ret
 

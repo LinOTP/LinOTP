@@ -280,7 +280,7 @@ class TestSupport(TestController):
             # 2. enroll tokens up to the license limit, which is
             #    6 tokens + 2 grace tokens
 
-            for i in range(1, 6 + 2):
+            for _i in range(1, 6 + 2):
                 response = self.make_userselfservice_request(
                     "enroll", params={"type": "hmac"}, auth_user=auth_user
                 )

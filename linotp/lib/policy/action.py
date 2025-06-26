@@ -207,7 +207,7 @@ class PolicyActionTyping:
                     "%s:%s : action value %r is not compliant with "
                     "action type 'bool'" % (scope, action_name, action_value)
                 )
-                warn(msg, DeprecationWarning)
+                warn(msg, DeprecationWarning, stacklevel=1)
 
                 if action_value in [-1, "-1"]:
                     return False

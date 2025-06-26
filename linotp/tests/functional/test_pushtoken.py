@@ -307,7 +307,7 @@ class TestPushToken(TestController):
         :return: the activation challenge and signature
         """
 
-        for i in range(0, retry_activation):
+        for _i in range(0, retry_activation):
             # ------------------------------------------------------------- --
 
             # request activation challenge
@@ -380,7 +380,7 @@ class TestPushToken(TestController):
 
         # pair the token
 
-        for i in range(0, retry_pairing):
+        for _i in range(0, retry_pairing):
             user_token_id = self.pair_token(pairing_url, pin)
 
         # ------------------------------------------------------------------ --

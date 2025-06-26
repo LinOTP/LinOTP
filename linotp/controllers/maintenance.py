@@ -104,11 +104,13 @@ class MaintenanceController(BaseController):
 
             # ----------------------------------------------------------------
 
+            level = self.request_params.get("level", 0)
             try:
-                level = self.request_params.get("level", 0)
                 level = int(level)
-            except ValueError:
-                raise Exception("debug level {} contains nondigits!".format(level))
+            except ValueError as exx:
+                raise Exception(
+                    "debug level {} contains nondigits!".format(level)
+                ) from exx
 
             # ----------------------------------------------------------------------
 
@@ -147,7 +149,7 @@ class MaintenanceController(BaseController):
         except Exception as exx:
             db.session.rollback()  # why?
             log.error(exx)
-            raise InternalServerError(str(exx))
+            raise InternalServerError(str(exx)) from exx
 
 
 # eof #

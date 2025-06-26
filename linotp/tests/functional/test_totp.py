@@ -301,8 +301,8 @@ class TestTotpController(TestController):
                 tFormat = "%Y-%m-%d %H:%M:%S"
             try:
                 dt = datetime.datetime.strptime(curTime, tFormat)
-            except Exception as e:
-                raise Exception(e)
+            except Exception:
+                raise
         else:
             raise Exception(
                 "[time2float] invalid curTime: %s. You need"

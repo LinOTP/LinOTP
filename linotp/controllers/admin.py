@@ -550,8 +550,8 @@ class AdminController(BaseController, JWTMixin):
         try:
             try:
                 otp = param["otp"]
-            except KeyError:
-                raise ParameterError("Missing parameter: 'otp'")
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: 'otp'") from exx
 
             typ = param.get("type")
             realm = param.get("realm")
@@ -701,8 +701,8 @@ class AdminController(BaseController, JWTMixin):
             try:
                 serial = self.request_params["serial"]
                 g.audit["serial"] = serial
-            except KeyError:
-                raise ParameterError("Missing parameter: 'serial'")
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: 'serial'") from exx
 
             log.info("[check_serial] checking serial %s", serial)
             th = TokenHandler()
@@ -1005,8 +1005,8 @@ class AdminController(BaseController, JWTMixin):
         try:
             try:
                 serial = param["serial"]
-            except KeyError:
-                raise ParameterError("Missing parameter: 'serial'")
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: 'serial'") from exx
 
             user = request_context["RequestUser"]
 
@@ -1174,8 +1174,8 @@ class AdminController(BaseController, JWTMixin):
             try:
                 serial = param["serial"]
                 g.audit["serial"] = serial
-            except KeyError:
-                raise ParameterError("Missing parameter: 'serial'")
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: 'serial'") from exx
 
             token = get_token(serial)
             g.audit["token_type"] = token.type
@@ -1187,8 +1187,8 @@ class AdminController(BaseController, JWTMixin):
                 msg = "setting userPin failed"
                 try:
                     userPin = param["userpin"]
-                except KeyError:
-                    raise ParameterError("Missing parameter: 'userpin'")
+                except KeyError as exx:
+                    raise ParameterError("Missing parameter: 'userpin'") from exx
 
                 # check admin authorization
                 checkPolicyPre("admin", "setPin", param)
@@ -1203,8 +1203,8 @@ class AdminController(BaseController, JWTMixin):
                 msg = "setting soPin failed"
                 try:
                     soPin = param["sopin"]
-                except KeyError:
-                    raise ParameterError("Missing parameter: 'userpin'")
+                except KeyError as exx:
+                    raise ParameterError("Missing parameter: 'userpin'") from exx
 
                 # check admin authorization
                 checkPolicyPre("admin", "setPin", param)
@@ -1308,8 +1308,8 @@ class AdminController(BaseController, JWTMixin):
             try:
                 serials = self.request_params["tokens"]
                 g.audit["serial"] = " ".join(serials)
-            except KeyError:
-                raise ParameterError("missing parameter: tokens[]")
+            except KeyError as exx:
+                raise ParameterError("missing parameter: tokens[]") from exx
 
             tokens = [
                 token for serial in serials for token in get_tokens(serial=serial)
@@ -1793,13 +1793,13 @@ class AdminController(BaseController, JWTMixin):
 
             try:
                 otp1 = param["otp1"]
-            except KeyError:
-                raise ParameterError("Missing parameter: 'otp1'")
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: 'otp1'") from exx
 
             try:
                 otp2 = param["otp2"]
-            except KeyError:
-                raise ParameterError("Missing parameter: 'otp2'")
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: 'otp2'") from exx
 
             # to support the challenge based resync, we have to pass the challenges
             #    down to the token implementation
@@ -1974,13 +1974,13 @@ class AdminController(BaseController, JWTMixin):
             try:
                 serial = param["serial"]
                 g.audit["serial"] = serial
-            except KeyError:
-                raise ParameterError("Missing parameter: 'serial'")
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: 'serial'") from exx
 
             try:
                 realms = param["realms"]
-            except KeyError:
-                raise ParameterError("Missing parameter: 'realms'")
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: 'realms'") from exx
             realmList = list({r.strip() for r in realms.split(",")})
             g.audit["realm"] = ", ".join(realmList)
 
@@ -2115,14 +2115,14 @@ class AdminController(BaseController, JWTMixin):
         try:
             try:
                 serial_from = param["from"]
-            except KeyError:
-                raise ParameterError("Missing parameter: 'from'")
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: 'from'") from exx
 
             try:
                 serial_to = param["to"]
                 g.audit["serial"] = serial_to
-            except KeyError:
-                raise ParameterError("Missing parameter: 'to'")
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: 'to'") from exx
 
             # check admin authorization
             checkPolicyPre("admin", "copytokenpin", param)
@@ -2192,14 +2192,14 @@ class AdminController(BaseController, JWTMixin):
         try:
             try:
                 serial_from = param["from"]
-            except KeyError:
-                raise ParameterError("Missing parameter: 'from'")
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: 'from'") from exx
 
             try:
                 serial_to = param["to"]
                 g.audit["serial"] = serial_to
-            except KeyError:
-                raise ParameterError("Missing parameter: 'to'")
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: 'to'") from exx
 
             # check admin authorization
             checkPolicyPre("admin", "copytokenuser", param)
@@ -2640,7 +2640,7 @@ class AdminController(BaseController, JWTMixin):
                 resolvername = self.request_params["name"]
 
             except KeyError as exx:
-                raise ParameterError(_("Missing parameter: %r") % exx)
+                raise ParameterError(_("Missing parameter: %r") % exx) from exx
 
             if resolvername not in request_context["Resolvers"]:
                 raise Exception("no such resolver %r defined!" % resolvername)

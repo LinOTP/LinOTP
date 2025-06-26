@@ -123,10 +123,10 @@ class TestProviderTestCase(unittest.TestCase):
                 val="smsprovider.FileSMSProvider.FileSMSProvider",
             )
 
-        except AssertionError as aserror:
+        except AssertionError as exx:
             call_args_list = mock_storeConfig.call_args_list
             raise Exception(
-                "Error was: %r, calls were: %r" % (aserror.message, call_args_list)
-            )
+                "Error was: %r, calls were: %r" % (exx.message, call_args_list)
+            ) from exx
 
         assert res == (True, {})

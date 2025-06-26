@@ -48,7 +48,7 @@ class TestExpiringList(unittest.TestCase):
         ]
         expiry_times = [12, 10, 10, 140, 150, 600]
 
-        for item, ex in zip(someitems, expiry_times):
+        for item, ex in zip(someitems, expiry_times, strict=True):
             ex_list.add_item(item, ex)
 
         for item in someitems:

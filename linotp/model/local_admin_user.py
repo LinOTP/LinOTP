@@ -113,8 +113,8 @@ class LocalAdminResolver:
         try:
             self.session.add(user)
             self.session.commit()
-        except IntegrityError:
-            raise DuplicateUserError(username)
+        except IntegrityError as exx:
+            raise DuplicateUserError(username) from exx
 
     def update_user(
         self,

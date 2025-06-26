@@ -334,8 +334,8 @@ class SelfserviceController(BaseController):
         try:
             try:
                 act = self.request_params["type"]
-            except KeyError:
-                raise ParameterError("Missing parameter: 'type'", id=905)
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: 'type'", id=905) from exx
 
             try:
                 (tok, section, scope) = act.split(".")

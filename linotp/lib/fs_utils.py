@@ -84,13 +84,13 @@ def ensure_dir(
         if not os.path.isdir(dir_name):
             try:
                 os.makedirs(dir_name, mode=mode, exist_ok=True)
-            except OSError as ex:
+            except OSError as exx:
                 raise OSError(
-                    ex.errno,
+                    exx.errno,
                     f"Error creating {what} directory '{dir_name}': "
-                    f"{ex.strerror} ({ex.errno})",
+                    f"{exx.strerror} ({exx.errno})",
                     dir_name,
-                )
+                ) from exx
         return dir_name
 
     return base_name

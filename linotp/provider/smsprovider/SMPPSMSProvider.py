@@ -123,7 +123,7 @@ class SMPPSMSProvider(ISMSProvider):
             # connected, to avoid "Client is not closed" message
             if client:
                 client.disconnect()
-            raise ProviderNotAvailable("Failed to connect to server %r" % exx)
+            raise ProviderNotAvailable("Failed to connect to server %r" % exx) from exx
 
         try:
             log.debug(

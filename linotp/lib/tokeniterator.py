@@ -544,12 +544,12 @@ class TokenIterator(object):
         }
         try:
             return mapping[sort_param]
-        except KeyError:
+        except KeyError as exx:
             error_msg = f"Tokens can't be sorted by {sort_param}."
             potential_sort_params = get_close_matches(sort_param, mapping.keys())
             if potential_sort_params:
                 error_msg += f" Did you mean any of {potential_sort_params}?"
-            raise KeyError(error_msg)
+            raise KeyError(error_msg) from exx
 
     def getResultSetInfo(self):
         resSet = {

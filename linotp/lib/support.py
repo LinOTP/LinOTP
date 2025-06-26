@@ -538,8 +538,10 @@ def set_duration(lic_dict, raiseException=False):
     days = lic_dict.license_expiration.replace("days", "").strip()
     try:
         days = int(days)
-    except ValueError as _val:
-        raise LicenseException("Unable to interpret duration in license description")
+    except ValueError as exx:
+        raise LicenseException(
+            "Unable to interpret duration in license description"
+        ) from exx
 
     # we have a timely limited version, so we have to check if there is
     # already a license like this installed by comparing the signatures

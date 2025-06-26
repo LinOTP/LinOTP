@@ -169,11 +169,12 @@ def get_from_tconfig(key_array, default=None, required=False):
         for key in key_array:
             current_config = current_config[key]
         return current_config
-    except KeyError:
+    except KeyError as exx:
         if not required:
             return default
-        else:
-            raise Exception("Testconfig entry %s is required" % ".".join(key_array))
+        raise Exception(
+            "Testconfig entry %s is required" % ".".join(key_array)
+        ) from exx
 
 
 # Helper for skipping tests if there is no radius server

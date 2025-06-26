@@ -238,7 +238,7 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
             registry = MockedResourceRegistry.registry
 
-            for key, value in list(registry.items()):
+            for value in registry.values():
                 assert value is not None
 
             # -------------------------------------------------------------- --

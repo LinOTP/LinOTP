@@ -117,9 +117,9 @@ class RemoteService(object):
                     result = self.func(*args, **kwargs)
                     self.on_recovery()
                     return result
-                except self.expected_exception as e:
+                except self.expected_exception as exx:
                     self.on_failure()
-                    raise ServiceUnavailable(repr(e))
+                    raise ServiceUnavailable(repr(exx)) from exx
 
             else:
                 # recovery time is not over.
@@ -132,9 +132,9 @@ class RemoteService(object):
         try:
             result = self.func(*args, **kwargs)
             return result
-        except self.expected_exception as e:
+        except self.expected_exception as exx:
             self.on_failure()
-            raise ServiceUnavailable(repr(e))
+            raise ServiceUnavailable(repr(exx)) from exx
 
 
 class RemoteServiceList(list):

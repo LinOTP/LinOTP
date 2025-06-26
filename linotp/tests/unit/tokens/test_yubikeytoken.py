@@ -110,7 +110,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         def _get_secret_object():
             return secret_obj
 
-        setattr(self.yubikey_token, "_get_secret_object", _get_secret_object)
+        self.yubikey_token._get_secret_object = _get_secret_object
         model_token.setType.assert_called_once_with("yubikey")
 
     def test_checkotp_positive(self):

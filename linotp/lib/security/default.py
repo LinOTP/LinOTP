@@ -151,7 +151,7 @@ class DefaultSecurityModule(SecurityModule):
                     self.secFile,
                 )
         except Exception as exx:
-            raise Exception("Exception: %r" % exx)
+            raise Exception("Exception: %r" % exx) from exx
 
         if self.crypted:
             self.secrets[id] = secret
@@ -451,7 +451,7 @@ class DefaultSecurityModule(SecurityModule):
             # as we compare on hex, we have to multiply by 2
             digest_size = hmac_obj.digest_size * 2
 
-            for x, y in zip(hex_mac, sign_mac):
+            for x, y in zip(hex_mac, sign_mac, strict=True):
                 res |= ord(x) ^ ord(y)
 
             if len(sign_mac) != digest_size:

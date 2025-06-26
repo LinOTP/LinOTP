@@ -354,8 +354,8 @@ class ValidateController(BaseController):
         try:
             try:
                 passw = self.request_params["pass"]
-            except KeyError:
-                raise ParameterError("Missing parameter: 'pass'")
+            except KeyError as exx:
+                raise ParameterError("Missing parameter: 'pass'") from exx
 
             ok = False
             try:

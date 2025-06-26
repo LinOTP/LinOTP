@@ -124,7 +124,7 @@ class TestSelfserviceController(TestController):
         print(response)
         assert '"status": true' in response
 
-        for i in "12345678901234567890":
+        for _i in "12345678901234567890":
             response = self.make_validate_request(
                 "check",
                 params={

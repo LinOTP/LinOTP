@@ -50,6 +50,7 @@
 ###########################################################################
 
 
+import builtins
 import hmac
 import secrets
 from base64 import b64encode as _b64encode
@@ -77,7 +78,7 @@ def isinteger(n):
 
 
 def callable(obj):
-    return hasattr(obj, "__call__")
+    return builtins.callable(obj)
 
 
 def b(s):
@@ -85,7 +86,7 @@ def b(s):
 
 
 def binxor(a, b):
-    return bytes([x ^ y for (x, y) in zip(a, b)])
+    return bytes([x ^ y for (x, y) in zip(a, b, strict=True)])
 
 
 def b64encode(data, chars="+/"):

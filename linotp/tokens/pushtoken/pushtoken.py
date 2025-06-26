@@ -417,8 +417,10 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
                 content_type = int(content_type_as_str)
 
-            except BaseException:
-                raise ValueError("Unrecognized content type: %s" % content_type_as_str)
+            except BaseException as exx:
+                raise ValueError(
+                    "Unrecognized content type: %s" % content_type_as_str
+                ) from exx
 
             # --------------------------------------------------------------- --
 
@@ -512,11 +514,11 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             signature_accept = passwd.get("accept", None)
             signature_reject = passwd.get("reject", None)
 
-        except AttributeError:  # will be raised with a get() on a str object
+        except AttributeError as exx:  # will be raised with a get() on a str object
             raise Exception(
                 'Pushtoken version %r requires "accept" or'
                 ' "reject" as parameter' % CHALLENGE_URL_VERSION
-            )
+            ) from exx
 
         if signature_accept is not None and signature_reject is not None:
             raise Exception(

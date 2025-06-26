@@ -174,7 +174,7 @@ def init_db_command(erase_all_data):
         init_db_tables(current_app, erase_all_data)
     except Exception as exx:
         current_app.echo(f"Failed to create database: {exx!s}")
-        raise sys.exit(1)
+        raise sys.exit(1) from exx
     current_app.echo("Database created", v=1)
 
 

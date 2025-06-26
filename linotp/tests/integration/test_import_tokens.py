@@ -163,15 +163,13 @@ def test_token_import_oath_csv_invalid_seed(
 
     # check that no token was imported
     tokens_after_import_attempt = testcase.manage_ui.token_view._get_token_list()
-    tokens_at_first == tokens_after_import_attempt
+    assert tokens_at_first == tokens_after_import_attempt
 
 
 def assert_tokens_are_in_grid(
     manage_ui,
     token_serials,
-    token_types=[
-        "HMAC",
-    ],
+    token_types: list | None = None,
 ):
     """
     Checks all the tokens in the list and their corresponding
@@ -182,10 +180,12 @@ def assert_tokens_are_in_grid(
     :param token_types: list of corresponding token types or only one token type for all cases
     """
 
+    if token_types is None:
+        token_types = ["HMAC"]
     if len(token_types) == 1 or isinstance(token_types, str):
         token_iterator = zip(token_serials, itertools.repeat(token_types))
     else:
-        token_iterator = zip(token_serials, token_types)
+        token_iterator = zip(token_serials, token_types, strict=True)
 
     tokenview = manage_ui.token_view
     grid = tokenview.get_grid_contents()

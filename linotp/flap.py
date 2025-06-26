@@ -34,7 +34,7 @@ class RequestContextProxy(object):
         try:
             return flask.g.request_context.__getitem__(name)
         except KeyError as exx:
-            raise AttributeError(exx)
+            raise AttributeError(exx) from exx
 
     def get(self, name, default=None):
         return flask.g.request_context.get(name, default)

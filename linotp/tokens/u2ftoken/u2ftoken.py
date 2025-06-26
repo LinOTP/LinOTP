@@ -372,16 +372,16 @@ class U2FTokenClass(TokenClass):
         """
         try:
             clientData = json.loads(clientData)
-        except ValueError:
-            raise Exception("Invalid client data JSON format")
+        except ValueError as exx:
+            raise Exception("Invalid client data JSON format") from exx
 
         try:
             cdType = clientData["typ"]
             cdChallenge = clientData["challenge"]
             cdOrigin = clientData["origin"]
             # TODO: Check for optional cid_pubkey
-        except KeyError:
-            raise Exception("Wrong client data format!")
+        except KeyError as exx:
+            raise Exception("Wrong client data format!") from exx
 
         # validate typ
         if clientDataType == "registration":
@@ -651,8 +651,8 @@ class U2FTokenClass(TokenClass):
         # decode the retrieved passw object
         try:
             authResponse = json.loads(passw)
-        except ValueError:
-            raise Exception("Invalid JSON format")
+        except ValueError as exx:
+            raise Exception("Invalid JSON format") from exx
 
         self._handle_client_errors(authResponse)
 
@@ -660,8 +660,8 @@ class U2FTokenClass(TokenClass):
             signatureData = authResponse.get("signatureData", None)
             clientData = authResponse["clientData"]
             keyHandle = authResponse["keyHandle"]
-        except AttributeError:
-            raise Exception("Couldn't find keyword in JSON object")
+        except AttributeError as exx:
+            raise Exception("Couldn't find keyword in JSON object") from exx
 
         # Does the keyHandle match the saved keyHandle created on registration?
         # Remove trailing '=' on the saved keyHandle
@@ -864,7 +864,7 @@ class U2FTokenClass(TokenClass):
 
         except InvalidSignature as exx:
             log.info("Failed to verify signature %r", exx)
-            raise ValueError("Attestation signature is invalid")
+            raise ValueError("Attestation signature is invalid") from exx
 
         except Exception as exx:
             log.error("Failed to verify signature %r", exx)
@@ -884,8 +884,8 @@ class U2FTokenClass(TokenClass):
         # get requested phase
         try:
             requested_phase = params["phase"]
-        except KeyError:
-            raise ParameterError("Missing parameter: 'phase'")
+        except KeyError as exx:
+            raise ParameterError("Missing parameter: 'phase'") from exx
 
         if requested_phase == "registration1":
             # We are in registration phase 1
@@ -958,16 +958,16 @@ class U2FTokenClass(TokenClass):
                 # the FIDO Alliance
                 try:
                     registerResponse = json.loads(otpkey)
-                except ValueError:
-                    raise Exception("Invalid JSON format")
+                except ValueError as exx:
+                    raise Exception("Invalid JSON format") from exx
 
                 self._handle_client_errors(registerResponse)
 
                 try:
                     registrationData = registerResponse["registrationData"]
                     clientData = registerResponse["clientData"]
-                except AttributeError:
-                    raise Exception("Couldn't find keyword in JSON object")
+                except AttributeError as exx:
+                    raise Exception("Couldn't find keyword in JSON object") from exx
 
                 # registrationData and clientData are urlsafe base64 encoded
                 # correct padding errors (length should be multiples of 4)

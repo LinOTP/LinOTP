@@ -259,8 +259,10 @@ def _removeConfigDB(key):
             # Session.add(theConf)
             db.session.delete(entry)
 
-    except Exception as e:
-        raise ConfigAdminError("remove Config failed for %r: %r" % (key, e), id=1133)
+    except Exception as exx:
+        raise ConfigAdminError(
+            "remove Config failed for %r: %r" % (key, exx), id=1133
+        ) from exx
 
     return len(to_be_deleted)
 

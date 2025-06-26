@@ -377,7 +377,7 @@ class TestRemoteToken(TestingChallengeResponseController):
                 # to do the same before comparing
                 l_pin = params.get("pass")
 
-                value = l_pin == pin
+                value = l_pin == pin  # noqa: B023
                 content = {
                     "version": "LinOTP MOCK",
                     "jsonrpc": "2.0",

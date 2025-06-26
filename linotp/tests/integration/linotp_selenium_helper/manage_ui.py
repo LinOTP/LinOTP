@@ -483,7 +483,10 @@ class AlertBoxInfoLine(object):
         elif "info_box" in self.classes:
             self.type = "info"
         else:
-            warn("unknown info box message type. class={}".format(self.classes))
+            warn(
+                "unknown info box message type. class={}".format(self.classes),
+                stacklevel=1,
+            )
             self.type = "unknown"
 
     @property
@@ -572,7 +575,8 @@ class AlertBoxHandler(object):
                     warn(
                         "Could not parse info element box id={} class={}".format(
                             id, classes
-                        )
+                        ),
+                        stacklevel=1,
                     )
 
     def clear_messages(self) -> None:

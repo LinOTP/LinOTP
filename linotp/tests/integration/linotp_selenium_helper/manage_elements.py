@@ -203,7 +203,7 @@ class ManageTab(ManageElement):
 
         for row in rows:
             values = [cell.text for cell in row.find_elements(By.CSS_SELECTOR, "td")]
-            result.append(dict(zip(headings, values)))
+            result.append(dict(zip(headings, values, strict=True)))
 
         return result
 

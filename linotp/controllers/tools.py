@@ -240,7 +240,7 @@ class ToolsController(BaseController):
 
             except KeyError as exx:
                 log.error("Missing parameter: %r", exx)
-                raise ParameterError("Missing parameter: %r" % exx)
+                raise ParameterError("Missing parameter: %r" % exx) from exx
 
             if resolver_name == current_app.config["ADMIN_RESOLVER_NAME"]:
                 raise DeleteForbiddenError(

@@ -140,7 +140,7 @@ def notify_user_by_email(provider_name, user, action, info):
         log.error("Failed to notify user %r by email", user_email)
         raise NotificationException(
             "Failed to notify user %r by email:%r" % (user_email, exx)
-        )
+        ) from exx
 
 
 # eof
