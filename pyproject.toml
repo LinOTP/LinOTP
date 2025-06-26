@@ -133,6 +133,7 @@ lint.select = [
   "B",    # flake8-bugbear
   "C4",   # flake8-comprehensions
   "EM",   # flake8-errmsg
+  "INT",  # flake8-gettext 
   "E",    # pycodestyle errors
   "F",    # pyflakes
   "I",    # isort

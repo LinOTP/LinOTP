@@ -1883,19 +1883,26 @@ def get_token_owner(token):
         if len(common_realms) > 1:
             raise Exception(
                 _(
-                    f"get_token_owner: The user {uid}/{resolverClass} and the token"
-                    f" {serial} is located in several realms: "
-                    f"{common_realms}!"
+                    "get_token_owner: The user %(uid)s/%(resolver)s and the token"
+                    " %(serial)s is located in several realms: "
+                    "%(realms)s!"
                 )
+                % {
+                    "uid": uid,
+                    "resolver": resolverClass,
+                    "serial": serial,
+                    "realms": common_realms,
+                }
             )
         realm = common_realms[0]
     elif len(realms) == 0:
         raise Exception(
             _(
-                f"get_token_owner: The user {uid} in the resolver"
-                f" {resolverClass} for token {serial} could not be found in any "
+                "get_token_owner: The user %(uid)s in the resolver"
+                " %(resolver)s for token %(serial)s could not be found in any "
                 "realm!"
             )
+            % {"uid": uid, "resolver": resolverClass, "serial": serial}
         )
     else:
         realm = realms[0]

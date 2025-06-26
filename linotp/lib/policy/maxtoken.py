@@ -164,10 +164,10 @@ def check_maxtoken_for_user_by_type(user: User, type_of_token: str):
 
     if token_count + 1 > token_limit:
         error_msg = _(
-            f"The maximum number of allowed tokens of type {type_of_token} "
+            "The maximum number of allowed tokens of type %(type)s "
             "per user is exceeded. Check the policies "
-            f"scope=enrollment, action=maxtoken{type_of_token.upper()}"
-        )
+            "scope=enrollment, action=maxtoken%(type_upper)s"
+        ) % {"type": type_of_token, "type_upper": type_of_token.upper()}
 
         raise linotp.lib.policy.MaxTokenTypeUserPolicyException(error_msg)
 
