@@ -79,7 +79,8 @@ class UserIdResolverManager(ManageDialog):
         elif resolver_type == "passwdresolver":
             return PasswdUserIdResolver
         else:
-            raise Exception(f"Unknown UserIdResolver type:{resolver_type}")
+            msg = f"Unknown UserIdResolver type:{resolver_type}"
+            raise Exception(msg)
 
     @staticmethod
     def parse_resolver_element(line):
@@ -343,7 +344,8 @@ class UserIdResolverManager(ManageDialog):
         resolvers = self.manage.admin_api_call("system/getResolvers")
 
         if resolver_name not in resolvers:
-            raise UserIdResolverException(f"resolver {resolver_name!r} does not found!")
+            msg = f"resolver {resolver_name!r} does not found!"
+            raise UserIdResolverException(msg)
 
         self.manage.admin_api_call("system/delResolver", {"resolver": resolver_name})
 
@@ -429,7 +431,8 @@ class UserIdResolverManager(ManageDialog):
 
             m = re.search(r"Number of users found: (?P<nusers>\d+)", alert_box_text)
             if m is None:
-                raise Exception(f"test_connection for {name} failed: {alert_box_text}")
+                msg = f"test_connection for {name} failed: {alert_box_text}"
+                raise Exception(msg)
             num_found = int(m.group("nusers"))
 
             if expected_users:

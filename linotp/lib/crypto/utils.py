@@ -161,9 +161,11 @@ def get_hashalgo_from_description(description, fallback="sha1"):
     try:
         hash_func = Hashlib_map.get(description.lower(), Hashlib_map[fallback.lower()])
     except Exception as exx:
-        raise Exception("unsupported hash function %r:%r", description, exx) from exx
+        msg = "unsupported hash function %r:%r"
+        raise Exception(msg, description, exx) from exx
     if not callable(hash_func):
-        raise Exception("hash function not callable %r", hash_func)
+        msg = "hash function not callable %r"
+        raise Exception(msg, hash_func)
 
     return hash_func
 
@@ -265,10 +267,11 @@ def kdf2(
         checkCode = str(activationcode[-2:])
         veriCode = str(check(bcode)[-2:])
         if checkCode != veriCode:
-            raise Exception(
+            msg = (
                 "[crypt:kdf2] activation code checksum error."
                 f" [{acode}]{veriCode}:{checkCode}"
             )
+            raise Exception(msg)
 
     activ = binascii.hexlify(bcode).decode()
 
@@ -358,10 +361,12 @@ def _get_hsm_obj_from_context(hsm=None):
         hsm_obj = context.get("hsm", {}).get("obj")
 
     if not hsm_obj:
-        raise HSMException("no hsm defined in execution context!")
+        msg = "no hsm defined in execution context!"
+        raise HSMException(msg)
 
     if hsm_obj.isReady() is False:
-        raise HSMException("hsm not ready!")
+        msg = "hsm not ready!"
+        raise HSMException(msg)
     return hsm_obj
 
 
@@ -468,7 +473,8 @@ def init_key_partition(config, partition, key_type="ed25519"):
     """
 
     if not key_type == "ed25519":
-        raise ValueError(f"Unsupported keytype: {key_type}")
+        msg = f"Unsupported keytype: {key_type}"
+        raise ValueError(msg)
 
     import linotp.lib.config
 
@@ -504,16 +510,16 @@ def get_secret_key(partition):
     secret_key_b64 = linotp.lib.config.getFromConfig(key).get_unencrypted()
 
     if not secret_key_b64:
-        raise ConfigAdminError(f"No secret key found for {partition}")
+        msg = f"No secret key found for {partition}"
+        raise ConfigAdminError(msg)
 
     secret_key = base64.b64decode(secret_key_b64)
 
     # TODO: key type checking
 
     if len(secret_key) != 64:
-        raise ValidateError(
-            "Secret key has an invalid format. Key must be 64 bytes long"
-        )
+        msg = "Secret key has an invalid format. Key must be 64 bytes long"
+        raise ValidateError(msg)
 
     return secret_key
 
@@ -532,16 +538,16 @@ def get_public_key(partition):
     public_key_b64 = linotp.lib.config.getFromConfig(key).get_unencrypted()
 
     if not public_key_b64:
-        raise ConfigAdminError(f"No public key found for {partition}")
+        msg = f"No public key found for {partition}"
+        raise ConfigAdminError(msg)
 
     public_key = base64.b64decode(public_key_b64)
 
     # TODO: key type checking
 
     if len(public_key) != 32:
-        raise ValidateError(
-            "Public key has an invalid format. Key must be 32 bytes long"
-        )
+        msg = "Public key has an invalid format. Key must be 32 bytes long"
+        raise ValidateError(msg)
 
     return public_key
 

@@ -216,9 +216,8 @@ class TokensController(BaseController):
             elif realm in [realm.lower() for realm in allowed_realms]:
                 realm_to_filter = [realm]
             else:
-                raise PolicyException(
-                    "You dont have permissions on any of your requested realms."
-                )
+                msg = "You dont have permissions on any of your requested realms."
+                raise PolicyException(msg)
 
             if page_size == 0:
                 # Retrieve all available tokens
@@ -347,7 +346,8 @@ class TokensController(BaseController):
             result_count = tokens.getResultSetInfo()["tokens"]
 
             if result_count > 1:
-                raise Exception(f"Multiple tokens found with serial {serial}")
+                msg = f"Multiple tokens found with serial {serial}"
+                raise Exception(msg)
 
             formatted_token = {}
 

@@ -102,7 +102,8 @@ class DefaultSecurityModule(SecurityModule):
                 "[getSecret] no secret file defined. The SECRET_FILE "
                 " parameter is missing in your linotp.cfg."
             )
-            raise Exception("no secret file defined: linotpSecretFile!")
+            msg = "no secret file defined: linotpSecretFile!"
+            raise Exception(msg)
 
         self.secFile = config.get("file")
         self.secrets = {}
@@ -144,13 +145,15 @@ class DefaultSecurityModule(SecurityModule):
                     secret = f.read(32)
             if not secret:
                 # secret = setupKeyFile(secFile, id+1)
+                msg = "No secret key defined for index: %r !\nPlease extend your %s !"
                 raise Exception(
-                    "No secret key defined for index: %r !\nPlease extend your %s !",
+                    msg,
                     id,
                     self.secFile,
                 )
         except Exception as exx:
-            raise Exception(f"Exception: {exx!r}") from exx
+            msg = f"Exception: {exx!r}"
+            raise Exception(msg) from exx
 
         if self.crypted:
             self.secrets[id] = secret
@@ -171,7 +174,8 @@ class DefaultSecurityModule(SecurityModule):
         if self.crypted is False:
             return
         if "password" not in params:
-            raise Exception("missing password")
+            msg = "missing password"
+            raise Exception(msg)
 
         # if we have a crypted file and a password, we take all keys
         # from the file and put them in a hash
@@ -224,7 +228,8 @@ class DefaultSecurityModule(SecurityModule):
         """
 
         if self.is_ready is False:
-            raise Exception("setup of security module incomplete")
+            msg = "setup of security module incomplete"
+            raise Exception(msg)
 
         key = self.getSecret(id)
         input_data = binascii.b2a_hex(data)
@@ -257,7 +262,8 @@ class DefaultSecurityModule(SecurityModule):
         """
 
         if self.is_ready is False:
-            raise Exception("setup of security module incomplete")
+            msg = "setup of security module incomplete"
+            raise Exception(msg)
 
         key = self.getSecret(id)
         aes = AES.new(key, AES.MODE_CBC, iv)

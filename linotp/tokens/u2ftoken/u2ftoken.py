@@ -181,24 +181,25 @@ class U2FTokenClass(TokenClass):
             if pin is None:
                 pin = ""
             if check_pin(self, pin) is False:
-                raise ValueError("Wrong token pin!")
+                msg = "Wrong token pin!"
+                raise ValueError(msg)
         # check for set phases which are not "registration1" or "registration2"
         elif requested_phase != "registration2" and requested_phase is not None:
-            raise Exception("Wrong phase parameter!")
+            msg = "Wrong phase parameter!"
+            raise Exception(msg)
         # only allow empty phase parameters once the token is registered
         # successfully
         elif current_phase != "authentication" and requested_phase is None:
-            raise Exception("Wrong phase parameter!")
+            msg = "Wrong phase parameter!"
+            raise Exception(msg)
         # only allow "registration2" if the token already completed
         # "registration1"
         elif current_phase != "registration" and requested_phase == "registration2":
-            raise Exception(
-                "Phase 'registration2' requested but we are not in the correct phase to process the request."
-            )
+            msg = "Phase 'registration2' requested but we are not in the correct phase to process the request."
+            raise Exception(msg)
         else:
-            raise Exception(
-                'Unknown "phase" and "current_phase" parameter combination!'
-            )
+            msg = 'Unknown "phase" and "current_phase" parameter combination!'
+            raise Exception(msg)
 
     def splitPinPass(self, passw):
         """
@@ -328,7 +329,8 @@ class U2FTokenClass(TokenClass):
         # Get the appId from TokenInfo
         appId = self.getFromTokenInfo("appId", "")
         if appId == "":
-            raise Exception("appId could not be determined.")
+            msg = "appId could not be determined."
+            raise Exception(msg)
 
         return appId
 
@@ -353,9 +355,8 @@ class U2FTokenClass(TokenClass):
             error_code = client_response["errorCode"]
             error_text = error_codes.get(error_code, "")
             error_msg = client_response.get("errorMessage", "")
-            raise Exception(
-                f"U2F client error code: {error_text} ({error_code}): {error_msg}"
-            )
+            msg = f"U2F client error code: {error_text} ({error_code}): {error_msg}"
+            raise Exception(msg)
 
     def _checkClientData(self, clientData, clientDataType, challenge):
         """
@@ -370,7 +371,8 @@ class U2FTokenClass(TokenClass):
         try:
             clientData = json.loads(clientData)
         except ValueError as exx:
-            raise Exception("Invalid client data JSON format") from exx
+            msg = "Invalid client data JSON format"
+            raise Exception(msg) from exx
 
         try:
             cdType = clientData["typ"]
@@ -378,18 +380,22 @@ class U2FTokenClass(TokenClass):
             cdOrigin = clientData["origin"]
             # TODO: Check for optional cid_pubkey
         except KeyError as exx:
-            raise Exception("Wrong client data format!") from exx
+            msg = "Wrong client data format!"
+            raise Exception(msg) from exx
 
         # validate typ
         if clientDataType == "registration":
             if cdType != "navigator.id.finishEnrollment":
-                raise Exception("Incorrect client data object received!")
+                msg = "Incorrect client data object received!"
+                raise Exception(msg)
         elif clientDataType == "authentication":
             if cdType != "navigator.id.getAssertion":
-                raise Exception("Incorrect client data object received!")
+                msg = "Incorrect client data object received!"
+                raise Exception(msg)
         else:
             # Wrong function call
-            raise Exception("Wrong validClientData function call.")
+            msg = "Wrong validClientData function call."
+            raise Exception(msg)
 
         # validate challenge
         if cdChallenge != challenge:
@@ -423,14 +429,16 @@ class U2FTokenClass(TokenClass):
         # are not yet supported by the U2F specification
         if FIRST_BIT_MASK & ord(signatureData[:1]) != 0b00000001:
             log.error("Wrong signature data format: User presence bit must be set")
-            raise ValueError("Wrong signature data format")
+            msg = "Wrong signature data format"
+            raise ValueError(msg)
         userPresenceByte = signatureData[:1]
         signatureData = signatureData[1:]
 
         # next 4 bytes refer to the counter
         if len(signatureData) < COUNTER_LEN:
             log.error("Wrong signature data format: signature data too short")
-            raise ValueError("Wrong signature data format")
+            msg = "Wrong signature data format"
+            raise ValueError(msg)
         counter = signatureData[:COUNTER_LEN]
         signatureData = signatureData[COUNTER_LEN:]
 
@@ -438,7 +446,8 @@ class U2FTokenClass(TokenClass):
         # We do not allow an empty string as a signature
         if len(signatureData) == 0:
             log.error("Wrong signature data format: signature data too short")
-            raise ValueError("Wrong signature data format")
+            msg = "Wrong signature data format"
+            raise ValueError(msg)
         signature = signatureData
 
         return (userPresenceByte, counter, signature)
@@ -484,7 +493,8 @@ class U2FTokenClass(TokenClass):
                 # deactivate the token. This could also happen if you use the token
                 # A LOT with other applications and very seldom with LinOTP.
                 self.token.LinOtpIsactive = False
-                raise ValueError("Counter not increased! Possible device cloning!")
+                msg = "Counter not increased! Possible device cloning!"
+                raise ValueError(msg)
 
         # save the new counter
         self.addToTokenInfo("counter", counter)
@@ -620,7 +630,8 @@ class U2FTokenClass(TokenClass):
         serial = self.getSerial()
         transid = options.get("transactionid", None)
         if transid is None:
-            raise Exception("Could not checkOtp due to missing transaction id")
+            msg = "Could not checkOtp due to missing transaction id"
+            raise Exception(msg)
 
         # get all challenges with a matching trasactionid
         if "challenges" in options:
@@ -646,7 +657,8 @@ class U2FTokenClass(TokenClass):
         try:
             authResponse = json.loads(passw)
         except ValueError as exx:
-            raise Exception("Invalid JSON format") from exx
+            msg = "Invalid JSON format"
+            raise Exception(msg) from exx
 
         self._handle_client_errors(authResponse)
 
@@ -655,7 +667,8 @@ class U2FTokenClass(TokenClass):
             clientData = authResponse["clientData"]
             keyHandle = authResponse["keyHandle"]
         except AttributeError as exx:
-            raise Exception("Couldn't find keyword in JSON object") from exx
+            msg = "Couldn't find keyword in JSON object"
+            raise Exception(msg) from exx
 
         # Does the keyHandle match the saved keyHandle created on registration?
         # Remove trailing '=' on the saved keyHandle
@@ -756,27 +769,31 @@ class U2FTokenClass(TokenClass):
         # Reserved byte (0x05)
         if len(registrationData) < 1 or registrationData[0] != 0x05:
             log.error("Wrong registration data format: Reserved byte does not match")
-            raise ValueError("Invalid reserved byte")
+            msg = "Invalid reserved byte"
+            raise ValueError(msg)
         offset += 1
 
         # User public key (65 bytes)
         USER_PUBLIC_KEY_LEN = 65
         if len(registrationData) < offset + USER_PUBLIC_KEY_LEN:
             log.error("Wrong registration data format: User public key is missing")
-            raise ValueError("Data too short for public key")
+            msg = "Data too short for public key"
+            raise ValueError(msg)
         userPublicKey = registrationData[offset : offset + USER_PUBLIC_KEY_LEN]
         offset += USER_PUBLIC_KEY_LEN
 
         # Key handle length and data
         if len(registrationData) < offset + 1:
             log.error("Wrong registration data format: Key handle length is missing")
-            raise ValueError("Data too short for key handle length")
+            msg = "Data too short for key handle length"
+            raise ValueError(msg)
         keyHandleLength = registrationData[offset]
         offset += 1
 
         if len(registrationData) < offset + keyHandleLength:
             log.error("Wrong registration data format: Key handle is missing")
-            raise ValueError("Data too short for key handle")
+            msg = "Data too short for key handle"
+            raise ValueError(msg)
         keyHandle = registrationData[offset : offset + keyHandleLength]
         offset += keyHandleLength
 
@@ -786,7 +803,8 @@ class U2FTokenClass(TokenClass):
             log.error(
                 "Wrong registration data format: Certificate start marker not found"
             )
-            raise ValueError("Certificate start marker not found")
+            msg = "Certificate start marker not found"
+            raise ValueError(msg)
         cert_start += offset
 
         # Get certificate length from ASN.1 length bytes
@@ -798,7 +816,8 @@ class U2FTokenClass(TokenClass):
 
         if len(registrationData) < cert_end:
             log.error("Wrong registration data format: Certificate data is missing")
-            raise ValueError("Data too short for certificate")
+            msg = "Data too short for certificate"
+            raise ValueError(msg)
 
         # Extract and parse certificate
         cert_data = registrationData[cert_start:cert_end]
@@ -808,7 +827,8 @@ class U2FTokenClass(TokenClass):
         signature = registrationData[cert_end:]
         if not signature:
             log.error("Wrong registration data format: No signature data found")
-            raise ValueError("No signature data found")
+            msg = "No signature data found"
+            raise ValueError(msg)
 
         return (userPublicKey, keyHandle, cert, signature)
 
@@ -858,7 +878,8 @@ class U2FTokenClass(TokenClass):
 
         except InvalidSignature as exx:
             log.info("Failed to verify signature %r", exx)
-            raise ValueError("Attestation signature is invalid") from exx
+            msg = "Attestation signature is invalid"
+            raise ValueError(msg) from exx
 
         except Exception as exx:
             log.error("Failed to verify signature %r", exx)
@@ -879,7 +900,8 @@ class U2FTokenClass(TokenClass):
         try:
             requested_phase = params["phase"]
         except KeyError as exx:
-            raise ParameterError("Missing parameter: 'phase'") from exx
+            msg = "Missing parameter: 'phase'"
+            raise ParameterError(msg) from exx
 
         if requested_phase == "registration1":
             # We are in registration phase 1
@@ -921,11 +943,13 @@ class U2FTokenClass(TokenClass):
                     # Check for appId conflicts
                     if appId and policy_value:
                         if appId != policy_value:
-                            raise Exception("Conflicting appId values in u2f policies.")
+                            msg = "Conflicting appId values in u2f policies."
+                            raise Exception(msg)
                     appId = policy_value
 
             if not appId:
-                raise Exception("No appId defined.")
+                msg = "No appId defined."
+                raise Exception(msg)
             self.addToTokenInfo("appId", appId)
 
             # create U2F RegisterRequest object and append it to the response
@@ -953,7 +977,8 @@ class U2FTokenClass(TokenClass):
                 try:
                     registerResponse = json.loads(otpkey)
                 except ValueError as exx:
-                    raise Exception("Invalid JSON format") from exx
+                    msg = "Invalid JSON format"
+                    raise Exception(msg) from exx
 
                 self._handle_client_errors(registerResponse)
 
@@ -961,7 +986,8 @@ class U2FTokenClass(TokenClass):
                     registrationData = registerResponse["registrationData"]
                     clientData = registerResponse["clientData"]
                 except AttributeError as exx:
-                    raise Exception("Couldn't find keyword in JSON object") from exx
+                    msg = "Couldn't find keyword in JSON object"
+                    raise Exception(msg) from exx
 
                 # registrationData and clientData are urlsafe base64 encoded
                 # correct padding errors (length should be multiples of 4)
@@ -989,7 +1015,8 @@ class U2FTokenClass(TokenClass):
                     "registration",
                     self.getFromTokenInfo("challenge", None),
                 ):
-                    raise ValueError("Received invalid clientData object. Aborting...")
+                    msg = "Received invalid clientData object. Aborting..."
+                    raise ValueError(msg)
 
                 # prepare the applicationParameter and challengeParameter needed for
                 # verification of the registration signature
@@ -1024,9 +1051,11 @@ class U2FTokenClass(TokenClass):
                 # Activate the token
                 self.token.LinOtpIsactive = True
             else:
-                raise ValueError("No otpkey set")
+                msg = "No otpkey set"
+                raise ValueError(msg)
         else:
-            raise Exception("Unsupported phase: %s", requested_phase)
+            msg = "Unsupported phase: %s"
+            raise Exception(msg, requested_phase)
 
         return response_detail
 

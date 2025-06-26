@@ -299,7 +299,8 @@ def get_legacy_provider(provider_type):
 
     defintion = Legacy_Provider.get(provider_type, {})
     if not defintion:
-        raise Exception(f"unknown provider type {provider_type!r}")
+        msg = f"unknown provider type {provider_type!r}"
+        raise Exception(msg)
 
     for key, translation in list(defintion.items()):
         if key in config:
@@ -328,7 +329,8 @@ def get_all_new_providers(provider_type, show_managed_config=False):
     # find out, which provider type we have, currently only push, sms or email
     prefix = Provider_types.get(provider_type, {}).get("prefix")
     if not prefix:
-        raise Exception(f"unknown provider type {provider_type!r}")
+        msg = f"unknown provider type {provider_type!r}"
+        raise Exception(msg)
 
     # find out, which providers we have
     config = getLinotpConfig()
@@ -443,7 +445,8 @@ def delProvider(provider_type, provider_name):
 
     prefix = Provider_types.get(provider_type, {}).get("prefix")
     if not prefix:
-        raise Exception(f"unknown provider type {provider_type!r}")
+        msg = f"unknown provider type {provider_type!r}"
+        raise Exception(msg)
 
     # find out, which providers we have
     config = getLinotpConfig()
@@ -552,7 +555,8 @@ def save_legacy_provider(provider_type, params):
 
     defintion = Legacy_Provider.get(provider_type, {})
     if not defintion:
-        raise Exception(f"unknown provider type {provider_type!r}")
+        msg = f"unknown provider type {provider_type!r}"
+        raise Exception(msg)
 
     for config_name, spec in list(defintion.items()):
         if spec == "Class" and "class" in params:
@@ -583,7 +587,8 @@ def save_new_provider(provider_type, provider_name, params):
 
     prefix = Provider_types.get(provider_type, {}).get("prefix")
     if not prefix:
-        raise Exception(f"unknown provider type {provider_type!r}")
+        msg = f"unknown provider type {provider_type!r}"
+        raise Exception(msg)
 
     provider_prefix = prefix + provider_name
 
@@ -665,10 +670,12 @@ def loadProviderFromPolicy(provider_type, realm=None, user=None):
     # lookup the policy action name
     provider_action_name = Policy_action_name.get(provider_type)
     if not provider_action_name:
-        raise Exception(f"unknown provider_type for policy lookup! {provider_type!r}")
+        msg = f"unknown provider_type for policy lookup! {provider_type!r}"
+        raise Exception(msg)
 
     if user is None:
-        raise Exception(f"unknown user for policy lookup! {user!r}")
+        msg = f"unknown user for policy lookup! {user!r}"
+        raise Exception(msg)
 
     if user and user.login:
         realm = user.realm
@@ -709,10 +716,12 @@ def get_provider_from_policy(
     # lookup the policy action name
     provider_action_name = Policy_action_name.get(provider_type)
     if not provider_action_name:
-        raise Exception(f"unknown provider_type for policy lookup! {provider_type!r}")
+        msg = f"unknown provider_type for policy lookup! {provider_type!r}"
+        raise Exception(msg)
 
     if user is None:
-        raise Exception(f"unknown user for policy lookup! {user!r}")
+        msg = f"unknown user for policy lookup! {user!r}"
+        raise Exception(msg)
 
     if user and user.login:
         realm = user.realm
@@ -757,7 +766,8 @@ def _lookup_provider_policies(provider_type):
     # lookup the policy action name
     provider_action_name = Policy_action_name.get(provider_type)
     if not provider_action_name:
-        raise Exception(f"unknown provider_type for policy lookup! {provider_type!r}")
+        msg = f"unknown provider_type for policy lookup! {provider_type!r}"
+        raise Exception(msg)
 
     # now have a look at all authentication policies
     policies = linotp.lib.policy.getPolicy(
@@ -851,7 +861,8 @@ def loadProvider(provider_type, provider_name=None):
         provider_info = providers.get(provider_name)
 
     if not provider_info:
-        raise Exception(f"Unable to load provider: {provider_name!r}")
+        msg = f"Unable to load provider: {provider_name!r}"
+        raise Exception(msg)
 
     provider_info = provider_info.get(provider_name, provider_info)
     provider_class = provider_info.get("Class")
@@ -884,9 +895,8 @@ def _build_provider_config(provider_info):
         provider_config = json.loads(line_config)
     except ValueError as exx:
         log.error("Failed to load provider config %r", provider_config)
-        raise ValueError(
-            f"Failed to load provider config:{provider_config!r} {exx!r}"
-        ) from exx
+        msg = f"Failed to load provider config:{provider_config!r} {exx!r}"
+        raise ValueError(msg) from exx
 
     # we have to add the other, additional parameters like timeout
     for additional, value in list(provider_info.items()):
@@ -925,14 +935,16 @@ def _load_provider_class(provider_slass_spec):
     helper method to load the EmailProvider class from config
     """
     if not provider_slass_spec:
-        raise Exception("No provider class defined.")
+        msg = "No provider class defined."
+        raise Exception(msg)
 
     provider_class = ProviderClass_lookup.get(provider_slass_spec, provider_slass_spec)
     provider_class_obj = provider_registry.get(provider_class)
 
     if provider_class_obj is None:
         if "." not in provider_class:
-            raise Exception(f"Unknown provider class: Identifier was {provider_class}")
+            msg = f"Unknown provider class: Identifier was {provider_class}"
+            raise Exception(msg)
 
         # if there is no entry in the registry we try to fall back to
         # the old style of loading a module definition
@@ -943,14 +955,12 @@ def _load_provider_class(provider_slass_spec):
             provider_class_obj = getattr(mod, className)
 
         except ImportError as exx:
-            raise Exception(
-                f"Unknown provider class: Identifier was {provider_class} - {exx!r}"
-            ) from exx
+            msg = f"Unknown provider class: Identifier was {provider_class} - {exx!r}"
+            raise Exception(msg) from exx
 
         except AttributeError as exx:
-            raise Exception(
-                f"Unknown provider class: Identifier was {provider_class} - {exx!r}"
-            ) from exx
+            msg = f"Unknown provider class: Identifier was {provider_class} - {exx!r}"
+            raise Exception(msg) from exx
 
     #
     # as not all providers are inherited from a super provider,
@@ -969,11 +979,10 @@ def _load_provider_class(provider_slass_spec):
             is_provider = True
 
     if not is_provider:
-        raise NameError(
-            "Provider AttributeError: {} Provider has no method {}".format(
-                provider_class_obj.__name__, " or ".join(required_method)
-            )
+        msg = "Provider AttributeError: {} Provider has no method {}".format(
+            provider_class_obj.__name__, " or ".join(required_method)
         )
+        raise NameError(msg)
 
     return provider_class_obj
 

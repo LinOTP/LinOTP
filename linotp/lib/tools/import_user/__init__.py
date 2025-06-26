@@ -200,10 +200,11 @@ class UserImport:
                 if (user.userid in processed_users) or (
                     user.username in processed_users.values()
                 ):
-                    raise Exception(
+                    msg = (
                         "Violation of unique constraint - "
                         f"duplicate user in data: {user!r}"
                     )
+                    raise Exception(msg)
                 else:
                     processed_users[user.userid] = user.username
 

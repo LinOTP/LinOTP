@@ -241,7 +241,8 @@ class RealmManager(ManageDialog):
 
         realms = self.get_realms_via_api()
         if realm_name.lower() not in realms:
-            raise RealmException("realm does not exist")
+            msg = "realm does not exist"
+            raise RealmException(msg)
 
         self.manage.admin_api_call("system/delRealm", {"realm": realm_name})
 
@@ -334,7 +335,8 @@ class RealmManager(ManageDialog):
                 ",".join(old_realms),
                 ".".join(new_realm_list),
             )
-            raise AssertionError("Realm was not sucessfully created")
+            msg = "Realm was not sucessfully created"
+            raise AssertionError(msg)
 
     def set_default(self, name):
         self.open()

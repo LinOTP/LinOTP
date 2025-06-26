@@ -49,7 +49,8 @@ log = logging.getLogger(__name__)
 class SMPPSMSProvider(ISMSProvider):
     def __init__(self):
         if not SMPP_SUPPORT:
-            raise RuntimeError("SMPP Error: no smpp library installed")
+            msg = "SMPP Error: no smpp library installed"
+            raise RuntimeError(msg)
 
         self.config = {}
 
@@ -101,7 +102,8 @@ class SMPPSMSProvider(ISMSProvider):
 
         # setup the configuration
         if not self.config:
-            raise Exception("missing configuration!")
+            msg = "missing configuration!"
+            raise Exception(msg)
 
         try:
             client = smpplib.client.Client(
@@ -122,7 +124,8 @@ class SMPPSMSProvider(ISMSProvider):
             # connected, to avoid "Client is not closed" message
             if client:
                 client.disconnect()
-            raise ProviderNotAvailable(f"Failed to connect to server {exx!r}") from exx
+            msg = f"Failed to connect to server {exx!r}"
+            raise ProviderNotAvailable(msg) from exx
 
         try:
             log.debug(

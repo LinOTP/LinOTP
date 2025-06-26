@@ -75,13 +75,15 @@ def mock_getUserId_func(*args, **_kwargs):
         return login + "_id"
 
     if raise_exception:
-        raise ResolverNotAvailable("unable to bind")
+        msg = "unable to bind"
+        raise ResolverNotAvailable(msg)
 
     return None
 
 
 def mock_getUserId_exc_func(*args, **_kwargs):
-    raise ResolverNotAvailable("unable to bind")
+    msg = "unable to bind"
+    raise ResolverNotAvailable(msg)
 
 
 class LdapResolverTest(TestController):

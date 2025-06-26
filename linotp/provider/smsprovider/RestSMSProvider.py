@@ -54,7 +54,8 @@ class RestSMSProvider(ISMSProvider, ConfigParsingMixin):
 
     def loadConfig(self, configDict):
         if not configDict:
-            raise Exception("missing configuration")
+            msg = "missing configuration"
+            raise Exception(msg)
 
         self.config = configDict
 
@@ -81,7 +82,8 @@ class RestSMSProvider(ISMSProvider, ConfigParsingMixin):
 
         self.auth_type = configDict.get("AUTHENTICATION", "BASIC").lower()
         if self.auth_type not in ["basic", "digest"]:
-            raise Exception("no valid Authentication type provided")
+            msg = "no valid Authentication type provided"
+            raise Exception(msg)
 
         # support for multiple urls
 
@@ -285,14 +287,14 @@ class RestSMSProvider(ISMSProvider, ConfigParsingMixin):
                 log.error("RestSMSProvider timed out %r", exx)
                 retry -= 1
                 if retry <= 0:
-                    raise ProviderNotAvailable(
-                        f"RestSMSProvider timed out {exx!r}"
-                    ) from exx
+                    msg = f"RestSMSProvider timed out {exx!r}"
+                    raise ProviderNotAvailable(msg) from exx
 
             except Exception as exx:
                 log.error("RestSMSProvider %r", exx)
                 retry = 0
-                raise Exception(f"Failed to send SMS. {exx!s}") from exx
+                msg = f"Failed to send SMS. {exx!s}"
+                raise Exception(msg) from exx
 
 
 def json_replace(payload, key, value):

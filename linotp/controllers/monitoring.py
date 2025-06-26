@@ -235,11 +235,13 @@ class MonitoringController(BaseController):
         """
         try:
             if hasattr(c, "hsm") is False or isinstance(c.hsm, dict) is False:
-                raise HSMException("no hsm defined in execution context!")
+                msg = "no hsm defined in execution context!"
+                raise HSMException(msg)
 
             hsm = c.hsm.get("obj")
             if hsm is None or hsm.isReady() is False:
-                raise HSMException("hsm not ready!")
+                msg = "hsm not ready!"
+                raise HSMException(msg)
 
             hsm_class = str(type(hsm))
             enc_type = hsm_class.split(".")[-1]

@@ -102,10 +102,11 @@ class UserView(ManageTab):
             return 0
         numbers = [int(s) for s in pPageStat.split() if s.isdigit()]
         if len(numbers) != 3:
-            raise UserViewException(
+            msg = (
                 "Could not determine number of users. "
                 f"Missing: 'Displaying N1 to N2 of N3'. Found:<{pPageStat}>"
             )
+            raise UserViewException(msg)
         return numbers[2]
 
     def _get_searchbox_element(self):

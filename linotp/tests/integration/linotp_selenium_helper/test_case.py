@@ -348,9 +348,8 @@ class TestCase:
         filtered_version_string = ".".join(filtered_version)
 
         if parse_version(filtered_version_string) < parse_version(version_minimum):
-            raise SkipTest(
-                f"LinOTP version {filtered_version_string} ({self.linotp_version}) <  {version_minimum}"
-            )
+            msg = f"LinOTP version {filtered_version_string} ({self.linotp_version}) <  {version_minimum}"
+            raise SkipTest(msg)
 
     def reset_resolvers_and_realms(self, resolver=None, realm=None):
         """

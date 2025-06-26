@@ -2816,9 +2816,8 @@ def check_user_authorization(login, realm, exception=False):
         res = True
 
     if res is False and exception:
-        raise AuthorizeException(
-            f"Authorization on client {client} failed for {login}@{realm}."
-        )
+        msg = f"Authorization on client {client} failed for {login}@{realm}."
+        raise AuthorizeException(msg)
 
     return res
 
@@ -3228,10 +3227,11 @@ def check_auth_tokentype(serial, exception=False, user=None):
     if res is False and exception:
         g.audit["action_detail"] = "failed due to authorization/tokentype policy"
 
-        raise AuthorizeException(
+        msg = (
             f"Authorization for token {serial} with type {tokentype} "
             f"failed on client {client}"
         )
+        raise AuthorizeException(msg)
 
     return res
 
@@ -3300,9 +3300,8 @@ def check_auth_serial(serial, exception=False, user=None):
 
     if res is False and exception:
         g.audit["action_detail"] = "failed due to authorization/serial policy"
-        raise AuthorizeException(
-            f"Authorization for token {serial} failed on client {client}"
-        )
+        msg = f"Authorization for token {serial} failed on client {client}"
+        raise AuthorizeException(msg)
 
     return res
 
@@ -3386,7 +3385,8 @@ def get_pin_policies(user):
         )
 
         log.error("[__checkToken] %r", msg)
-        raise Exception("multiple pin policies found")
+        msg = "multiple pin policies found"
+        raise Exception(msg)
 
     return pin_policies
 
@@ -3499,10 +3499,11 @@ def get_partition(realms, user):
         return 0
 
     if len(action_values) > 1:
-        raise Exception(
+        msg = (
             f"conflicting policy values {action_values!r} found for "
             f"realm set: {realms!r}"
         )
+        raise Exception(msg)
 
     return action_values.pop()
 
@@ -3551,10 +3552,11 @@ def get_single_auth_policy(policy_name, user=None, realms=None):
         return None
 
     if len(action_values) > 1:
-        raise Exception(
+        msg = (
             f"conflicting policy values {action_values!r} found for "
             f"realm set: {realms!r}"
         )
+        raise Exception(msg)
 
     return action_values.pop()
 

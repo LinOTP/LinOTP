@@ -312,7 +312,8 @@ def cond_failing_http_response(*args, **kwargs):
     if "success" in url:
         return generate_mocked_http_response()(*args, **kwargs)
 
-    raise requests.ConnectionError("this request should fail")
+    msg = "this request should fail"
+    raise requests.ConnectionError(msg)
 
 
 class TestPushProviderFailover(TestController):

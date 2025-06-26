@@ -303,10 +303,11 @@ class TestTotpController(TestController):
             except Exception:
                 raise
         else:
-            raise Exception(
+            msg = (
                 f"[time2float] invalid curTime: {type(curTime)}. You need"
                 " to specify a datetime.datetime"
             )
+            raise Exception(msg)
 
         td = dt - datetime.datetime(1970, 1, 1)
         tCounter = (

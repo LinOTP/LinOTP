@@ -215,10 +215,11 @@ def get_qrtan_url(qrtan_policy_name, realms, callback_id=None):
     if len(urls) > 1:
         for url in urls:
             if url != url[0]:
-                raise Exception(
+                msg = (
                     f"multiple enrollement urls {urls!r} found for "
                     f"realm set: {realms!r}"
                 )
+                raise Exception(msg)
 
     url = ""
     if urls:
@@ -319,9 +320,8 @@ class Ocra2TokenClass(TokenClass):
             genkey = None
             serial = getRolloutToken4User(user=user, serial=serial, tok_type=tok_type)
             if serial is None:
-                raise Exception(
-                    f"no token found for user: {user!r} or serial: {serial!r}"
-                )
+                msg = f"no token found for user: {user!r} or serial: {serial!r}"
+                raise Exception(msg)
             helper_param["serial"] = serial
             helper_param["activationcode"] = normalize_activation_code(activationcode)
 
@@ -654,10 +654,11 @@ class Ocra2TokenClass(TokenClass):
             # genkey might have created a new key, so we have to rely on
             encSharedSecret = self.getFromTokenInfo("sharedSecret", None)
             if encSharedSecret is None:
-                raise Exception(
+                msg = (
                     "missing shared secret of initialition for "
                     f"token {self.getSerial()!r}"
                 )
+                raise Exception(msg)
 
             sharedSecret = SecretObj.decrypt_pin(encSharedSecret)
 
@@ -996,9 +997,8 @@ class Ocra2TokenClass(TokenClass):
             ocraSuite.compute(c_data)
 
         except Exception as exx:
-            raise Exception(
-                f"[Ocra2TokenClass] Failed to create ocrasuite challenge: {exx!r}"
-            ) from exx
+            msg = f"[Ocra2TokenClass] Failed to create ocrasuite challenge: {exx!r}"
+            raise Exception(msg) from exx
 
         # create a non exisiting challenge
         try:
@@ -1010,9 +1010,8 @@ class Ocra2TokenClass(TokenClass):
         except Exception as exx:
             # this might happen if we have a db problem or
             # the uniqnes constrain does not fit
-            raise Exception(
-                f"[Ocra2TokenClass] Failed to create challenge object: {exx}"
-            ) from exx
+            msg = f"[Ocra2TokenClass] Failed to create challenge object: {exx}"
+            raise Exception(msg) from exx
 
         tokenrealms = self.token.getRealms()
         realms = [realm.name for realm in tokenrealms]
@@ -1279,9 +1278,8 @@ class Ocra2TokenClass(TokenClass):
                 challenge["challenge"] = ch.get("challenge")
 
             if challenge.get("challenge") is None:
-                raise Exception(
-                    f"could not checkOtp due to missing challenge in request: {ch!r}"
-                )
+                msg = f"could not checkOtp due to missing challenge in request: {ch!r}"
+                raise Exception(msg)
 
             ret = ocraSuite.checkOtp(
                 passw,
@@ -1532,7 +1530,8 @@ class Ocra2TokenClass(TokenClass):
             log.info("rollout for token %r completed", self.getSerial())
 
         elif rolloutState == "1":
-            raise Exception("unable to complete the rollout ")
+            msg = "unable to complete the rollout "
+            raise Exception(msg)
 
         return
 
@@ -1579,7 +1578,8 @@ class Ocra2TokenClass(TokenClass):
 
         if len(challenge1) == 0 or len(challenge2) == 0:
             error = "No challeges found!"
-            raise Exception(f"[Ocra2TokenClass:resync] {error}")
+            msg = f"[Ocra2TokenClass:resync] {error}"
+            raise Exception(msg)
 
         secObj = self._get_secret_object()
         ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secObj)
@@ -1649,7 +1649,8 @@ class Ocra2TokenClass(TokenClass):
                             ret = True
 
         except Exception as exx:
-            raise Exception(f"[Ocra2TokenClass:resync] unknown error: {exx}") from exx
+            msg = f"[Ocra2TokenClass:resync] unknown error: {exx}"
+            raise Exception(msg) from exx
 
         return ret
 

@@ -692,7 +692,8 @@ def user_list_compare(policy_conditions, login):
         else:
             user = User(login)
     else:
-        raise Exception("unsupported type of login")
+        msg = "unsupported type of login"
+        raise Exception(msg)
 
     full_qualified_names = user.get_full_qualified_names()
 
@@ -871,10 +872,11 @@ def cron_compare(condition, now):
     condition_parts = [part for part in parts if part.strip()]
 
     if len(condition_parts) != 6:
-        raise Exception(
+        msg = (
             "Error in Time Condition format: Expected 6 but "
             f"got {len(condition_parts)} parts in cron notation"
         )
+        raise Exception(msg)
 
     #
     # extract the members of the cron condition

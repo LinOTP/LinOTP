@@ -56,9 +56,8 @@ class Challenges:
         )
 
         if transid_len < 12 or transid_len > 17:
-            raise Exception(
-                f"TransactionIdLength must be between 12 and 17, was {transid_len}"
-            )
+            msg = f"TransactionIdLength must be between 12 and 17, was {transid_len}"
+            raise Exception(msg)
         return transid_len
 
     @staticmethod
@@ -165,7 +164,8 @@ class Challenges:
                     retry_counter,
                     reason,
                 )
-                raise Exception(f"Failed to create challenge {reason!r}")
+                msg = f"Failed to create challenge {reason!r}"
+                raise Exception(msg)
 
         expired_challenges, valid_challenges = Challenges.get_challenges(token)
 
@@ -336,7 +336,8 @@ class Challenges:
             transid = state
 
         if not token and not transid:
-            raise Exception("unqualified query")
+            msg = "unqualified query"
+            raise Exception(msg)
 
         serial = token and token.getSerial()
 

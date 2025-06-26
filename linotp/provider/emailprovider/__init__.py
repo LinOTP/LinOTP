@@ -97,9 +97,8 @@ class IEmailProvider:
         :return: A tuple of success and a message
         :rtype: bool, string
         """
-        raise NotImplementedError(
-            "Every subclass of IEmailProvider has to implement this method."
-        )
+        msg = "Every subclass of IEmailProvider has to implement this method."
+        raise NotImplementedError(msg)
 
     def loadConfig(self, configDict):
         """
@@ -154,7 +153,8 @@ class SMTPEmailProvider(IEmailProvider):
         self.smtp_server = configDict.get("SMTP_SERVER")
 
         if not self.smtp_server:
-            raise Exception("Invalid EmailProviderConfig. SMTP_SERVER is required")
+            msg = "Invalid EmailProviderConfig. SMTP_SERVER is required"
+            raise Exception(msg)
 
         self.start_tls = boolean(self.config.get("START_TLS", False))
         if self.start_tls:
@@ -201,7 +201,8 @@ class SMTPEmailProvider(IEmailProvider):
             LOG.error(
                 "Configuration error: no email provider template directory found: %r"
             )
-            raise Exception("Email provider template directory not found")
+            msg = "Email provider template directory not found"
+            raise Exception(msg)
 
         return template_root
 
@@ -354,9 +355,8 @@ class SMTPEmailProvider(IEmailProvider):
             # provider template root directory
 
             if not absolute_filename.startswith(provider_template_root):
-                raise Exception(
-                    f"Template {absolute_filename!r} - not in email provider template root {provider_template_root!r}"
-                )
+                msg = f"Template {absolute_filename!r} - not in email provider template root {provider_template_root!r}"
+                raise Exception(msg)
 
             with open(absolute_filename, "rb") as f:
                 template_data = f.read()
@@ -492,7 +492,8 @@ class SMTPEmailProvider(IEmailProvider):
         """
 
         if not self.smtp_server:
-            raise Exception("Invalid EmailProviderConfig. SMTP_SERVER is required")
+            msg = "Invalid EmailProviderConfig. SMTP_SERVER is required"
+            raise Exception(msg)
 
         # ------------------------------------------------------------------ --
 
@@ -527,10 +528,11 @@ class SMTPEmailProvider(IEmailProvider):
         if self.start_tls and not self.use_ssl:
             if not smtp_connection.has_extn("STARTTLS"):
                 LOG.error("Start_TLS not supported:")
-                raise Exception(
+                msg = (
                     "Start_TLS requested but not supported"
                     f" by server {self.smtp_server!r}"
                 )
+                raise Exception(msg)
 
             smtp_connection.starttls(
                 self.start_tls_params_keyfile, self.start_tls_params_certfile
@@ -544,7 +546,8 @@ class SMTPEmailProvider(IEmailProvider):
         if self.smtp_user:
             if not smtp_connection.has_extn("AUTH"):
                 LOG.error("AUTH not supported:")
-                raise Exception(f"AUTH not supported by server {self.smtp_server!r}")
+                msg = f"AUTH not supported by server {self.smtp_server!r}"
+                raise Exception(msg)
 
             LOG.debug("authenticating to mailserver, user: %r", self.smtp_user)
             smtp_connection.login(self.smtp_user, self.smtp_password)

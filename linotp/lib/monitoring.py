@@ -135,7 +135,8 @@ class MonitorHandler:
                 elif stati == "inactive":
                     conditions += (and_(Token.LinOtpIsactive == False),)  # noqa: E712
                 else:
-                    raise ValueError(f"Unknown token_status {stati!r}")
+                    msg = f"Unknown token_status {stati!r}"
+                    raise ValueError(msg)
 
             #  create the final condition as AND of all conditions
             condition = and_(*conditions)

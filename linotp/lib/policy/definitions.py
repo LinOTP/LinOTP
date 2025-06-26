@@ -647,11 +647,10 @@ def validate_policy_definition(policy):
                 " definitions!".format(policy["name"], action)
             )
 
-            raise ValueError(
-                "unsupported policy action {!r} in policy {!r} ".format(
-                    action, policy["name"]
-                )
+            msg = "unsupported policy action {!r} in policy {!r} ".format(
+                action, policy["name"]
             )
+            raise ValueError(msg)
 
         # .2. type conversion
         # if there is a policy definition and there is a type declaration
@@ -660,22 +659,22 @@ def validate_policy_definition(policy):
             try:
                 value = convert_policy_value(value, definition["type"])
             except ValueError as exx:
-                raise Exception(
+                msg = (
                     "Action value {!r} for {}.{} not of the expected type {!r}".format(
                         value, scope, action, definition["type"]
                     )
-                ) from exx
+                )
+                raise Exception(msg) from exx
 
         # .3. a "value" comparison:
         # if there is a "value" definition, we have to assur that the value is
         # in the value range or in the set
         if "value" in definition:
             if value not in definition["value"]:
-                raise Exception(
-                    "Action value {!r} for {}.{} not in supported values {!r}".format(
-                        value, scope, action, definition["value"]
-                    )
+                msg = "Action value {!r} for {}.{} not in supported values {!r}".format(
+                    value, scope, action, definition["value"]
                 )
+                raise Exception(msg)
 
         # .3. b "range" comparison
         # if there is a "range" definition all provided entries of the action
@@ -688,11 +687,10 @@ def validate_policy_definition(policy):
                 value = {value}
 
             if len(value - set(definition["range"])) != 0:
-                raise Exception(
-                    "Action value {!r} for {}.{} not in supported range {!r}".format(
-                        value, scope, action, definition["range"]
-                    )
+                msg = "Action value {!r} for {}.{} not in supported range {!r}".format(
+                    value, scope, action, definition["range"]
                 )
+                raise Exception(msg)
 
     return
 
@@ -711,7 +709,8 @@ def convert_policy_value(value, value_type):
 
         elif value_type in ["str", "string"]:
             if not isinstance(value, str):
-                raise ValueError("value %r is not of type string!")
+                msg = "value %r is not of type string!"
+                raise ValueError(msg)
             return value
 
         elif value_type == "int":
@@ -729,7 +728,8 @@ def convert_policy_value(value, value_type):
                 pass
         # if we end up here, none of the proposed types could be applied
         log.error(f"unable to convert value {value!r} to {val_type!r}")
-        raise ValueError(f"unable to convert {value!r} to {val_type!r}")
+        msg = f"unable to convert {value!r} to {val_type!r}"
+        raise ValueError(msg)
 
     elif value_type == "set":
         # there is no easy way to deal with a set currently as a set defines

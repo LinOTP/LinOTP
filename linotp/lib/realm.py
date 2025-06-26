@@ -500,9 +500,8 @@ def deleteRealm(realmname):
     admin_realm_name = current_app.config["ADMIN_REALM_NAME"].lower()
 
     if realmname == admin_realm_name:
-        raise DeleteForbiddenError(
-            f"It is not allowed to delete the admin realm {admin_realm_name}"
-        )
+        msg = f"It is not allowed to delete the admin realm {admin_realm_name}"
+        raise DeleteForbiddenError(msg)
 
     log.debug("deleting realm object with name=%s", realmname)
     r = getRealmObject(name=realmname)

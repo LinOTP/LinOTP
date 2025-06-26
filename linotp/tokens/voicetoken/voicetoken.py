@@ -255,7 +255,8 @@ class VoiceTokenClass(HmacTokenClass):
         # set the required phone / mobile number
 
         if "phone" not in param:
-            raise ParameterError("Missing parameter: 'phone'")
+            msg = "Missing parameter: 'phone'"
+            raise ParameterError(msg)
 
         self.set_phone(param["phone"])
 
@@ -525,7 +526,8 @@ class VoiceTokenClass(HmacTokenClass):
         """
         :raises NotImplementedError
         """
-        raise NotImplementedError("method getOtp is not implemented for VoiceToken")
+        msg = "method getOtp is not implemented for VoiceToken"
+        raise NotImplementedError(msg)
 
     def _calc_otp(self, input_data):
         """

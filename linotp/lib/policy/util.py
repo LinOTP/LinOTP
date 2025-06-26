@@ -223,7 +223,8 @@ def parse_action(action_value):
         action = []
 
     if action:
-        raise Exception(f"non terminated action {action!r}")
+        msg = f"non terminated action {action!r}"
+        raise Exception(msg)
 
     return
 
@@ -242,7 +243,8 @@ def _strip_quotes(value):
             not value.startswith(quote) and value.endswith(quote)
         ):
             if quote not in value[1:-1]:
-                raise Exception(f"non terminated string value entry {value!r}")
+                msg = f"non terminated string value entry {value!r}"
+                raise Exception(msg)
 
     for quote in ["'", '"']:
         if value.startswith(quote) and value.endswith(quote):
@@ -262,7 +264,8 @@ def parse_action_value(action_value):
 
     for key, value in parse_action(action_value):
         if key in params and params[key] != value:
-            raise Exception(f"duplicate key definition {key!r}")
+            msg = f"duplicate key definition {key!r}"
+            raise Exception(msg)
 
         params[key] = value
 

@@ -480,7 +480,8 @@ class TestPushToken(TestController):
         if flags & FLAG_PAIR_CBURL:
             callback_url, __, custom_data = custom_data.partition(b"\x00")
         else:
-            raise NotImplementedError("Callback URL is mandatory for PushToken")
+            msg = "Callback URL is mandatory for PushToken"
+            raise NotImplementedError(msg)
 
         # ------------------------------------------------------------------ --
 

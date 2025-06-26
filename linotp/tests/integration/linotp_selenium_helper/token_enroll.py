@@ -75,13 +75,15 @@ class EnrollTokenDialog(ManageDialog):
         # Check the last alert line
         info = self.manage.alert_box_handler.last_line
         if info.type != "info" or not info.text.startswith("created token with serial"):
-            raise RuntimeError(f"Password not correctly created. Message:{info}")
+            msg = f"Password not correctly created. Message:{info}"
+            raise RuntimeError(msg)
 
         # Find the token serial number
         token_serial = info.element.find_element(By.CSS_SELECTOR, ".text_param1").text
 
         if not token_serial or not token_serial.startswith(token_prefix):
-            raise Exception("Token was not enrolled correctly.")
+            msg = "Token was not enrolled correctly."
+            raise Exception(msg)
 
         return token_serial
 

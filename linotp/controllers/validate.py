@@ -354,7 +354,8 @@ class ValidateController(BaseController):
             try:
                 passw = self.request_params["pass"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: 'pass'") from exx
+                msg = "Missing parameter: 'pass'"
+                raise ParameterError(msg) from exx
 
             ok = False
             try:
@@ -464,7 +465,8 @@ class ValidateController(BaseController):
 
         try:
             if "pass" not in param:
-                raise ParameterError("Missing parameter: 'pass'")
+                msg = "Missing parameter: 'pass'"
+                raise ParameterError(msg)
 
             passw = param["pass"]
 
@@ -477,7 +479,8 @@ class ValidateController(BaseController):
                 transid = param.get("transactionid", None)
 
             if transid is None:
-                raise Exception("missing parameter: state or transactionid!")
+                msg = "missing parameter: state or transactionid!"
+                raise Exception(msg)
 
             vh = ValidationHandler()
             (ok, opt) = vh.check_by_transactionid(
@@ -535,10 +538,12 @@ class ValidateController(BaseController):
             # check the parameters
 
             if "signature" not in param:
-                raise ParameterError("Missing parameter: 'signature'!")
+                msg = "Missing parameter: 'signature'!"
+                raise ParameterError(msg)
 
             if "transactionid" not in param:
-                raise ParameterError("Missing parameter: 'transactionid'!")
+                msg = "Missing parameter: 'transactionid'!"
+                raise ParameterError(msg)
 
             # -------------------------------------------------------------- --
 
@@ -601,10 +606,12 @@ class ValidateController(BaseController):
             # check the parameters
 
             if "signature" not in param:
-                raise ParameterError("Missing parameter: 'signature'!")
+                msg = "Missing parameter: 'signature'!"
+                raise ParameterError(msg)
 
             if "transactionid" not in param:
-                raise ParameterError("Missing parameter: 'transactionid'!")
+                msg = "Missing parameter: 'transactionid'!"
+                raise ParameterError(msg)
 
             # -------------------------------------------------------------- --
 
@@ -675,9 +682,11 @@ class ValidateController(BaseController):
                     user = request_context["RequestUser"]
                     toks = get_tokens(user=user)
                     if len(toks) == 0:
-                        raise Exception("No token found!")
+                        msg = "No token found!"
+                        raise Exception(msg)
                     elif len(toks) > 1:
-                        raise Exception("More than one token found!")
+                        msg = "More than one token found!"
+                        raise Exception(msg)
                     else:
                         tok = toks[0].token
                         desc = tok.get()
@@ -887,7 +896,8 @@ class ValidateController(BaseController):
             enc_response = self.request_params.get("pairing_response")
 
             if enc_response is None:
-                raise Exception("Parameter missing")
+                msg = "Parameter missing"
+                raise Exception(msg)
 
             # -------------------------------------------------------------- --
 
@@ -896,10 +906,11 @@ class ValidateController(BaseController):
             pairing_data = dec_response.pairing_data
 
             if not hasattr(pairing_data, "serial") or pairing_data.serial is None:
-                raise ValidateError(
+                msg = (
                     "Pairing responses with no serial attached"
                     " are currently not implemented."
                 )
+                raise ValidateError(msg)
 
             # --------------------------------------------------------------- -
 
@@ -920,9 +931,8 @@ class ValidateController(BaseController):
             # --------------------------------------------------------------- --
 
             if token.type != token_type:
-                raise Exception(
-                    "Serial in pairing response doesn't match supplied token_type"
-                )
+                msg = "Serial in pairing response doesn't match supplied token_type"
+                raise Exception(msg)
 
             # --------------------------------------------------------------- --
 

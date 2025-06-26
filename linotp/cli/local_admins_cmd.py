@@ -67,7 +67,8 @@ def list_cmd(format, long):
         try:
             print(format.format_map(user_info))
         except KeyError as exx:
-            raise click.ClickException(f"invalid key {exx!s} in template") from exx
+            msg = f"invalid key {exx!s} in template"
+            raise click.ClickException(msg) from exx
 
 
 # ----------------------------------------------------------------------

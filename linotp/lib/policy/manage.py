@@ -120,9 +120,8 @@ def setPolicy(policy):
     required_attributes = ["action", "scope", "realm"]
     for required_attribute in required_attributes:
         if required_attribute not in policy or not policy[required_attribute]:
-            raise PolicyWarning(
-                f"Missing attribute {required_attribute} in policy {name}"
-            )
+            msg = f"Missing attribute {required_attribute} in policy {name}"
+            raise PolicyWarning(msg)
 
     # before storing the policy, we have to check the impact:
     # if there is a problem, we will raise an exception with a warning
@@ -169,8 +168,9 @@ def deletePolicy(name, enforce=False):
     """
     res = {}
     if not re.match("^[a-zA-Z0-9_]*$", name):
+        msg = "policy name may only contain the characters a-zA-Z0-9_"
         raise ServerError(
-            "policy name may only contain the characters a-zA-Z0-9_",
+            msg,
             id=8888,
         )
 
@@ -276,9 +276,8 @@ def _check_policy_impact(
         reason = "no active system policy with 'write' permission defined!"
 
     if reason and enforce is False:
-        raise PolicyWarning(
-            f"Warning: potential lockout due to policy defintion: {reason}"
-        )
+        msg = f"Warning: potential lockout due to policy defintion: {reason}"
+        raise PolicyWarning(msg)
 
     # admin policy could as well result in lockout
     return

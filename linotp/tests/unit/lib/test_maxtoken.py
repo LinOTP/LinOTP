@@ -36,9 +36,8 @@ def fake_get_client_policy(client, scope, action, realm, user, userObj):
 
         return fake_policies
 
-    raise Exception(
-        f"fake_get_client_policy has no fake return value for realm {realm}"
-    )
+    msg = f"fake_get_client_policy has no fake return value for realm {realm}"
+    raise Exception(msg)
 
 
 @pytest.mark.usefixtures("app")

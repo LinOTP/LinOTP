@@ -266,7 +266,8 @@ class DummySMPPServer:
                     done = True
                     print("\n< OK")
                 else:
-                    raise ValueError(f"Unsupported SMPP command {pdu.command}")
+                    msg = f"Unsupported SMPP command {pdu.command}"
+                    raise ValueError(msg)
                 self.pdus.append(res_pdu)
                 response = res_pdu.generate()
                 # self.logger.debug(f'<< {response.hex(" ", -4)}')  # Python 3.8

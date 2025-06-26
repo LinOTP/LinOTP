@@ -262,7 +262,8 @@ class TokenView(ManageTab):
         for t in contents:
             if t["Serial Number"] == token_serial:
                 return t
-        raise RuntimeError("Token serial not found")
+        msg = "Token serial not found"
+        raise RuntimeError(msg)
 
     def get_token_info(self, token_serial):
         """

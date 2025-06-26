@@ -123,10 +123,11 @@ class DefaultPushProvider(IPushProvider, ConfigParsingMixin):
             self.client_cert = configDict.get("access_certificate")
 
             if self.client_cert and not os.path.isfile(self.client_cert):
-                raise OSError(
+                msg = (
                     "required authenticating client"
                     f" cert could not be found {self.client_cert!r}"
                 )
+                raise OSError(msg)
 
             # server cert can be a string (file location, cert dir)
             # None or not present (cert gets fetched from local trust
@@ -204,13 +205,16 @@ class DefaultPushProvider(IPushProvider, ConfigParsingMixin):
         """
 
         if not self.push_server_urls:
-            raise Exception("Missing Server Push Url configurations!")
+            msg = "Missing Server Push Url configurations!"
+            raise Exception(msg)
 
         if not challenge:
-            raise Exception("No challenge to submit!")
+            msg = "No challenge to submit!"
+            raise Exception(msg)
 
         if not gda:
-            raise Exception("Missing target description!")
+            msg = "Missing target description!"
+            raise Exception(msg)
 
         (success, result_message) = self._http_push(challenge, gda, transactionId)
 
@@ -347,9 +351,8 @@ class DefaultPushProvider(IPushProvider, ConfigParsingMixin):
             log.error("Last Exception was %r", last_exception)
             raise last_exception
 
-        raise AllResourcesUnavailable(
-            f"non of the resources {self.push_server_urls!r} available!"
-        )
+        msg = f"non of the resources {self.push_server_urls!r} available!"
+        raise AllResourcesUnavailable(msg)
 
 
 def main():

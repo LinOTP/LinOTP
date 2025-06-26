@@ -104,9 +104,8 @@ def get_selfservice_actions(user=None, action=None):
             elif action in actions:
                 all_actions[action] = pat.convert(scope, action, actions[action])
         except PolicyConversionError as err:
-            raise PolicyConversionError(
-                f"Could not parse selfservice-policy '{policy['name']}': {err}"
-            ) from err
+            msg = f"Could not parse selfservice-policy '{policy['name']}': {err}"
+            raise PolicyConversionError(msg) from err
 
     return all_actions
 
@@ -145,9 +144,8 @@ def get_action_value(
             try:
                 current.append(pat.convert(scope, action, actions[action]))
             except PolicyConversionError as err:
-                raise PolicyConversionError(
-                    f"Could not parse policy '{policy['name']}': {err}"
-                ) from err
+                msg = f"Could not parse policy '{policy['name']}': {err}"
+                raise PolicyConversionError(msg) from err
             all_actions[action] = current
 
     if action not in all_actions:
@@ -248,9 +246,8 @@ class PolicyActionTyping:
 
             return action_value
         except Exception as err:
-            raise PolicyConversionError(
-                f"Could not convert value '{action_value}' of '{scope}:{action_name}': {err}"
-            ) from err
+            msg = f"Could not convert value '{action_value}' of '{scope}:{action_name}': {err}"
+            raise PolicyConversionError(msg) from err
 
     def convert_actions(self, scope: str, actions: dict) -> dict:
         """type conversion of an action dict.

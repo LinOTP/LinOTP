@@ -158,7 +158,8 @@ class TestProviderController(TestController):
         """Wrapper function to create provider and check success"""
         response = self.define_new_provider(provider_params)
         if '"value": true' not in response:
-            raise ProviderCreationError(f"Provider creation failed: {response}")
+            msg = f"Provider creation failed: {response}"
+            raise ProviderCreationError(msg)
         return response
 
     def define_new_provider(self, provider_params=None):

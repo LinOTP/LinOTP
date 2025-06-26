@@ -86,7 +86,8 @@ class TestReplyTestCase:
     def test_httperror_with_Exception(self, monkeypatch):
         class fake_current_app:
             def getRequestParams(self):
-                raise Exception("Random exception")
+                msg = "Random exception"
+                raise Exception(msg)
 
         monkeypatch.setattr(reply, "current_app", fake_current_app())
 
@@ -115,9 +116,8 @@ class TestReplyTestCase:
                 obj=request_context_test_iterator(), rp=None, page=None
             )
         except ProgrammingError as exx:
-            raise AssertionError(
-                "request_context was used outside of request_context_safety"
-            ) from exx
+            msg = "request_context was used outside of request_context_safety"
+            raise AssertionError(msg) from exx
 
         result = ""
         for chunk in res:
@@ -131,9 +131,8 @@ class TestReplyTestCase:
         try:
             res = sendResultIterator(obj=request_context_test_iterator(), rp=1, page=0)
         except ProgrammingError as exx:
-            raise AssertionError(
-                "request_context was used outside of request_context_safety"
-            ) from exx
+            msg = "request_context was used outside of request_context_safety"
+            raise AssertionError(msg) from exx
 
         result = ""
         for chunk in res:

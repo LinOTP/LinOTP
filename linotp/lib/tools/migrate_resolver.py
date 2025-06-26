@@ -61,7 +61,8 @@ class MigrateResolverHandler(ToolsHandler):
         ret = {}
 
         if not src or not target:
-            raise Exception("Missing src or target resolver defintion!")
+            msg = "Missing src or target resolver defintion!"
+            raise Exception(msg)
 
         now = datetime.now()
         stime = now.strftime("%s")

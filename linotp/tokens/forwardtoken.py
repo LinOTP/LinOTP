@@ -370,7 +370,8 @@ class ForwardTokenClass(TokenClass):
         tokens = get_tokens(serial=forwardSerial)
 
         if not tokens:
-            raise Exception(f"no target token with serial {forwardSerial!r} found")
+            msg = f"no target token with serial {forwardSerial!r} found"
+            raise Exception(msg)
 
         targetToken = tokens[0]
         return targetToken

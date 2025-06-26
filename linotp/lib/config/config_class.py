@@ -198,7 +198,8 @@ class LinOtpConfig(dict):
             typ, check_type_function = Config_Types[key]
 
             if not check_type_function(value):
-                raise ValueError(f"Config Error: {key} must be of type {typ!r}")
+                msg = f"Config Error: {key} must be of type {typ!r}"
+                raise ValueError(msg)
 
     def get(self, key, default=None):
         """

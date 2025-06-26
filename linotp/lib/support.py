@@ -188,8 +188,9 @@ def parseSupportLicense(licString: str):
         and licArry[-1].strip() != "-----END LICENSE SIGNATURE-----"
     ):
         log.error("Invalid licence: Format error: %r", licString[0:40])
+        msg = "Format error - not a valid license file!"
         raise InvalidLicenseException(
-            "Format error - not a valid license file!",
+            msg,
             type="INVALID_FORMAT",
         )
 
@@ -213,8 +214,9 @@ def parseSupportLicense(licString: str):
 
     if len(signature) < 20 or len(licInfo) < 10:
         log.error("Format error - not a valid license file! %r", licString[0:40])
+        msg = "Format error - not a valid license file!"
         raise InvalidLicenseException(
-            "Format error - not a valid license file!",
+            msg,
             type="INVALID_FORMAT",
         )
 
@@ -538,9 +540,8 @@ def set_duration(lic_dict, raiseException=False):
     try:
         days = int(days)
     except ValueError as exx:
-        raise LicenseException(
-            "Unable to interpret duration in license description"
-        ) from exx
+        msg = "Unable to interpret duration in license description"
+        raise LicenseException(msg) from exx
 
     # we have a timely limited version, so we have to check if there is
     # already a license like this installed by comparing the signatures
@@ -778,7 +779,8 @@ def verify_volume(lic_dict):
     elif "user-num" in lic_dict:
         return verify_user_volume(lic_dict)
 
-    raise InvalidLicenseException("licenses is neither token nor user based!")
+    msg = "licenses is neither token nor user based!"
+    raise InvalidLicenseException(msg)
 
 
 def verify_user_volume(lic_dict):

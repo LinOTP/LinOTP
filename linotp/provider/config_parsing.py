@@ -103,7 +103,8 @@ class ConfigParsingMixin:
             return None
 
         if not isinstance(server_cert, str):
-            raise ValueError(f"unsupported data type {server_cert!r}")
+            msg = f"unsupported data type {server_cert!r}"
+            raise ValueError(msg)
 
         server_cert = server_cert.strip()
 
@@ -114,11 +115,12 @@ class ConfigParsingMixin:
             return False
 
         if not os.path.isfile(server_cert) and not os.path.isdir(server_cert):
-            raise OSError(
+            msg = (
                 "server certificate verification could not"
                 " be made as certificate could not be found"
                 f" {server_cert!r}"
             )
+            raise OSError(msg)
 
         return server_cert.encode("utf8")
 
@@ -133,10 +135,11 @@ class ConfigParsingMixin:
 
         client_cert = configDict.get(client_cert_key)
         if client_cert and not os.path.isfile(client_cert):
-            raise OSError(
+            msg = (
                 "required authenticating client"
                 f" cert could not be found {client_cert!r}"
             )
+            raise OSError(msg)
 
         return client_cert
 

@@ -83,10 +83,11 @@ class TestSQLResolver_Password:
         """Deal with a missing bcrypt backend."""
 
         def mock_verify(pwd, crypted_pwd):
-            raise MissingBackendError(
+            msg = (
                 "bcrypt: no backends available -- recommend you install one "
                 "(e.g., 'pip install bcrypt')"
             )
+            raise MissingBackendError(msg)
 
         context = CryptContext(schemes=["bcrypt"])
         monkeypatch.setattr(context, "verify", mock_verify)

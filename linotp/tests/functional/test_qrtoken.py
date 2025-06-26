@@ -694,9 +694,8 @@ class TestQRToken(TestController):
         if flags & FLAG_PAIR_CBURL:
             callback_url, __, custom_data = custom_data.partition(b"\x00")
         else:
-            raise NotImplementedError(
-                "SMS is not implemented. Callback URLis mandatory."
-            )
+            msg = "SMS is not implemented. Callback URLis mandatory."
+            raise NotImplementedError(msg)
 
         callback_sms = None
         if flags & FLAG_PAIR_CBSMS:

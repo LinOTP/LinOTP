@@ -73,11 +73,12 @@ class StatefulTokenMixin:
 
         current_state_id = self.getFromTokenInfo("state")
         if current_state_id not in valid_state_ids:
-            raise TokenStateError(
+            msg = (
                 "Token {!r} must be in one of the following "
                 "states for this action: {}, but current "
                 "state is {}".format(self, ",".join(valid_state_ids), current_state_id)
             )
+            raise TokenStateError(msg)
 
     def change_state(self, state_id):
         """

@@ -107,7 +107,8 @@ class MaintenanceController(BaseController):
             try:
                 level = int(level)
             except ValueError as exx:
-                raise Exception(f"debug level {level} contains nondigits!") from exx
+                msg = f"debug level {level} contains nondigits!"
+                raise Exception(msg) from exx
 
             # ----------------------------------------------------------------------
 

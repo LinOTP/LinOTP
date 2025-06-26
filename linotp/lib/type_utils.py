@@ -85,7 +85,8 @@ def parse_duration(duration_str, time_delta_compliant=False):
         parts = duration_regex.match(duration_str.lower())
 
     if not parts:
-        raise DurationParsingException(f"must be of type 'duration': {duration_str!r}")
+        msg = f"must be of type 'duration': {duration_str!r}"
+        raise DurationParsingException(msg)
 
     parts = parts.groupdict()
 
@@ -93,9 +94,8 @@ def parse_duration(duration_str, time_delta_compliant=False):
         if "months" in parts or "weeks" in parts or "years" in parts:
             # iso8601 defines month, weeks and years, while the python
             # timedelta does not support it for good reasons
-            raise DurationParsingException(
-                f"definition {duration_str} is not python timedelta supported!"
-            )
+            msg = f"definition {duration_str} is not python timedelta supported!"
+            raise DurationParsingException(msg)
 
     time_params = {
         "days": 0,
@@ -137,7 +137,8 @@ def get_duration(value):
         if res:
             return int(res.total_seconds())
 
-    raise ValueError(f"not of type 'duration': {value}")
+    msg = f"not of type 'duration': {value}"
+    raise ValueError(msg)
 
 
 def is_integer(value):
@@ -169,7 +170,8 @@ def encrypted_data(value):
     # anything other than string will raise an error
 
     if not isinstance(value, str) and not isinstance(value, str):
-        raise Exception("Unable to encode non textual data")
+        msg = "Unable to encode non textual data"
+        raise Exception(msg)
 
     # if value is already encrypted we can just return
 
@@ -190,14 +192,16 @@ def get_timeout(timeout, seperator=","):
         return timeout
 
     if not isinstance(timeout, str):
-        raise ValueError("Unsupported timeout input type %r", timeout)
+        msg = "Unsupported timeout input type %r"
+        raise ValueError(msg, timeout)
 
     try:
         if seperator not in timeout:
             return float(timeout)
 
     except ValueError as exx:
-        raise ValueError(f"Failed to convert timeout {timeout!r} values!") from exx
+        msg = f"Failed to convert timeout {timeout!r} values!"
+        raise ValueError(msg) from exx
 
     try:
         timeouts = tuple(
@@ -205,7 +209,8 @@ def get_timeout(timeout, seperator=","):
         )
 
     except ValueError as exx:
-        raise ValueError(f"Failed to convert timeout {timeout!r} values!") from exx
+        msg = f"Failed to convert timeout {timeout!r} values!"
+        raise ValueError(msg) from exx
 
     if len(timeouts) == 1:
         return timeouts[0]
@@ -213,7 +218,8 @@ def get_timeout(timeout, seperator=","):
     if len(timeouts) == 2:
         return timeouts
 
-    raise Exception("Unsupported timeout format %r", timeout)
+    msg = "Unsupported timeout format %r"
+    raise Exception(msg, timeout)
 
 
 def boolean(value):
@@ -227,7 +233,8 @@ def boolean(value):
         value = value.lower()
 
     if value not in true_def and value not in false_def:
-        raise ValueError(f"unable to convert {value!r} to a boolean")
+        msg = f"unable to convert {value!r} to a boolean"
+        raise ValueError(msg)
 
     return value in true_def
 
@@ -414,7 +421,8 @@ def parse_timeout(timeout_val, seperator=","):
     if isinstance(timeout_val, float | int):
         return timeout_val
 
-    raise ValueError("unsupported timeout format")
+    msg = "unsupported timeout format"
+    raise ValueError(msg)
 
 
 def convert_to_datetime(date_str, time_formats):
@@ -424,7 +432,8 @@ def convert_to_datetime(date_str, time_formats):
     :param time_formats: list of time formats, which the date string should match
     """
     if not isinstance(date_str, str):
-        raise Exception("given parameter is not a string")
+        msg = "given parameter is not a string"
+        raise Exception(msg)
 
     err = []
     for time_format_string in time_formats:
@@ -434,4 +443,5 @@ def convert_to_datetime(date_str, time_formats):
         except ValueError as exx:
             err.append(f"{exx!r}")
 
-    raise Exception(f"Failed to convert start time paramter to timestamp {err!r}")
+    msg = f"Failed to convert start time paramter to timestamp {err!r}"
+    raise Exception(msg)

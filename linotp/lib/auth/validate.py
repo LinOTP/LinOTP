@@ -273,7 +273,8 @@ class ValidationHandler:
                 continue
 
             if not tokens and not token_type:
-                raise Exception(f"tokenmismatch for token serial: {serial!r}")
+                msg = f"tokenmismatch for token serial: {serial!r}"
+                raise Exception(msg)
 
             # there could be only one
             token = tokens[0]
@@ -334,12 +335,12 @@ class ValidationHandler:
                     (res, opt) = Challenges.create_challenge(theToken, options)
                     res = False
                 else:
-                    raise ParameterError("Missing parameter: pass", id=905)
+                    msg = "Missing parameter: pass"
+                    raise ParameterError(msg, id=905)
 
             else:
-                raise Exception(
-                    f"No token found: unable to create challenge for {serial}"
-                )
+                msg = f"No token found: unable to create challenge for {serial}"
+                raise Exception(msg)
 
         else:
             (res, opt) = self.checkTokenList(
@@ -620,7 +621,8 @@ class ValidationHandler:
             return False, opt
 
         if passw is None:
-            raise ParameterError("Missing parameter:pass", id=905)
+            msg = "Missing parameter:pass"
+            raise ParameterError(msg, id=905)
 
         (res, opt) = self.checkTokenList(tokenList, passw, user, options=options)
 
@@ -745,7 +747,8 @@ class ValidationHandler:
                 elif token.is_expired():
                     msg = "Authentication validity period exceeded"
                 else:
-                    raise Exception("Validity check failed without reason")
+                    msg = "Validity check failed without reason"
+                    raise Exception(msg)
 
                 audit_entry["action_detail"] = msg
                 token.incOtpFailCounter()

@@ -62,7 +62,8 @@ def ensure_dir(
     """
 
     if (not conf_name.endswith("_DIR")) or (conf_name not in app.config):
-        raise KeyError(f"Invalid LinOTP configuration setting '{conf_name}'")
+        msg = f"Invalid LinOTP configuration setting '{conf_name}'"
+        raise KeyError(msg)
 
     base_name = app.config[conf_name]
     if not os.path.exists(base_name):

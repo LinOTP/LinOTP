@@ -248,7 +248,8 @@ class FinishTokens:
                     user.login,
                 )
 
-            raise UserError("multiple token match error", id=-33)
+            msg = "multiple token match error"
+            raise UserError(msg, id=-33)
 
     def finish_challenge_token(self):
         """

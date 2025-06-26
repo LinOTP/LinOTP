@@ -162,7 +162,8 @@ def get_from_tconfig(key_array, default=None, required=False):
     current_config = config
 
     if required and not len(current_config):
-        raise Exception("Testconfig is empty. See Readme for details (--tc-file)")
+        msg = "Testconfig is empty. See Readme for details (--tc-file)"
+        raise Exception(msg)
 
     try:
         for key in key_array:
@@ -171,9 +172,8 @@ def get_from_tconfig(key_array, default=None, required=False):
     except KeyError as exx:
         if not required:
             return default
-        raise Exception(
-            "Testconfig entry {} is required".format(".".join(key_array))
-        ) from exx
+        msg = "Testconfig entry {} is required".format(".".join(key_array))
+        raise Exception(msg) from exx
 
 
 # Helper for skipping tests if there is no radius server

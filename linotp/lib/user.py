@@ -416,7 +416,8 @@ def getUserResolverId(user, report=False):
         )
 
         if report is True:
-            raise UserError(f"getUserResolverId failed: {exx!r}", id=1112) from exx
+            msg = f"getUserResolverId failed: {exx!r}"
+            raise UserError(msg, id=1112) from exx
         return ("", "", "")
 
 
@@ -901,7 +902,8 @@ def get_resolvers_of_user(login, realm):
             Resolvers.append(resolver_spec)
 
         if not Resolvers:
-            raise NoResolverFound(f"no user {login!r} found in realm {realm!r}")
+            msg = f"no user {login!r} found in realm {realm!r}"
+            raise NoResolverFound(msg)
 
         return Resolvers
 
@@ -1040,19 +1042,22 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
 
         if not resolver_spec:
             log.error("missing resolver spec %r", resolver_spec)
-            raise Exception(f"missing resolver spec {resolver_spec!r}")
+            msg = f"missing resolver spec {resolver_spec!r}"
+            raise Exception(msg)
 
         y = getResolverObject(resolver_spec)
 
         if not y:
             log.error("[resolver with spec %r not found!]", resolver_spec)
-            raise NoResolverFound(f"Failed to access Resolver: {resolver_spec!r}")
+            msg = f"Failed to access Resolver: {resolver_spec!r}"
+            raise NoResolverFound(msg)
 
         if login:
             r_user_id = y.getUserId(login)
             if not r_user_id:
                 log.error("Failed get user info for login %r", login)
-                raise NoResolverFound(f"Failed get user info for login {login!r}")
+                msg = f"Failed get user info for login {login!r}"
+                raise NoResolverFound(msg)
 
             r_user_info = y.getUserInfo(r_user_id)
             return login, r_user_id, r_user_info
@@ -1062,14 +1067,16 @@ def lookup_user_in_resolver(login, user_id, resolver_spec, user_info=None):
 
             if not r_user_info:
                 log.error("Failed get user info for user_id %r", user_id)
-                raise NoResolverFound(f"Failed get user info for user_id {user_id!r}")
+                msg = f"Failed get user info for user_id {user_id!r}"
+                raise NoResolverFound(msg)
 
             r_login = r_user_info.get("username")
             return r_login, user_id, r_user_info
 
         else:
             log.error("neither user_id nor login id provided!")
-            raise NoResolverFound("neither user_id nor login id provided!")
+            msg = "neither user_id nor login id provided!"
+            raise NoResolverFound(msg)
 
     # ---------------------------------------------------------------------- --
 
@@ -1324,7 +1331,8 @@ def getUserId(user, check_existance=False):
             user.realm,
         )
 
-        raise UserError(f"getUserId failed: no user >{user.login}< found!", id=1205)
+        msg = f"getUserId failed: no user >{user.login}< found!"
+        raise UserError(msg, id=1205)
 
     if len(uids) > 1:
         log.warning(
@@ -1333,8 +1341,9 @@ def getUserId(user, check_existance=False):
             user.realm,
         )
 
+        msg = f"getUserId failed: multiple uids for user >{user.login}< found!"
         raise UserError(
-            f"getUserId failed: multiple uids for user >{user.login}< found!",
+            msg,
             id=1205,
         )
 
@@ -1646,8 +1655,9 @@ def get_authenticated_user(
                 continue
 
             if found_uid and uid != found_uid:
+                msg = "user login %r : missmatch for userid: %r:%r"
                 raise Exception(
-                    "user login %r : missmatch for userid: %r:%r",
+                    msg,
                     user.login,
                     found_uid,
                     uid,
@@ -1666,9 +1676,8 @@ def get_authenticated_user(
             else:
                 log.info("user %r failed to authenticate.", username)
                 if found_uid:
-                    raise Exception(
-                        "previous authenticated user mismatch - password missmatch!"
-                    )
+                    msg = "previous authenticated user mismatch - password missmatch!"
+                    raise Exception(msg)
                 continue
 
             # add the fully qualified resolver to the resolver list

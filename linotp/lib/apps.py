@@ -109,13 +109,13 @@ def google_authenticator_url(label, param):
     try:
         token_type = Valid_Token_Types[param.get("type", "hotp").lower()]
     except KeyError as exx:
-        raise NoOtpAuthTokenException(
-            "not supported otpauth token type: {!r}".format(param.get("type"))
-        ) from exx
+        msg = "not supported otpauth token type: {!r}".format(param.get("type"))
+        raise NoOtpAuthTokenException(msg) from exx
 
     digits = int(param.get("otplen", 6))
     if digits not in [6, 8]:
-        raise Exception("unsupported digits {!r}".format(param.get("otplen")))
+        msg = "unsupported digits {!r}".format(param.get("otplen"))
+        raise Exception(msg)
 
     algorithm = param.get("hashlib", "SHA1").upper()
     if algorithm not in ["SHA1", "SHA256", "SHA512"]:
@@ -129,14 +129,14 @@ def google_authenticator_url(label, param):
         otpkey.encode("ascii") if token_type == "motp" else binascii.unhexlify(otpkey)
     )
     if not seed:
-        raise Exception("Failed to create token url due to missing seed!")
+        msg = "Failed to create token url due to missing seed!"
+        raise Exception(msg)
     secret = base64.b32encode(seed).decode().strip("=")
 
     period = int(param.get("timeStep", 30))
     if period not in [30, 60]:
-        raise Exception(
-            "unsupported period for totp token {!r}".format(param.get("timeStep"))
-        )
+        msg = "unsupported period for totp token {!r}".format(param.get("timeStep"))
+        raise Exception(msg)
 
     # --------------------------------------------------------------------- --
 

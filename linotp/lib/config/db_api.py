@@ -259,9 +259,8 @@ def _removeConfigDB(key):
             db.session.delete(entry)
 
     except Exception as exx:
-        raise ConfigAdminError(
-            f"remove Config failed for {key!r}: {exx!r}", id=1133
-        ) from exx
+        msg = f"remove Config failed for {key!r}: {exx!r}"
+        raise ConfigAdminError(msg, id=1133) from exx
 
     return len(to_be_deleted)
 

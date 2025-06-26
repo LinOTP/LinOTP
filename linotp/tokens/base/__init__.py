@@ -104,14 +104,12 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         self.token.setType(typ)
 
     def pair(self, response_data):
-        raise NotImplementedError(
-            f"token type {self.getType()} doesn't support pairing "
-        )
+        msg = f"token type {self.getType()} doesn't support pairing "
+        raise NotImplementedError(msg)
 
     def unpair(self):
-        raise NotImplementedError(
-            f"token type {self.getType()} doesn't support unpairing "
-        )
+        msg = f"token type {self.getType()} doesn't support unpairing "
+        raise NotImplementedError(msg)
 
     def is_auth_only_token(self, user):
         """
@@ -217,7 +215,8 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
     def setInfo(self, info):
         if type(info) not in (dict):
-            raise Exception("Info setting: wron data type - msut be dict")
+            msg = "Info setting: wron data type - msut be dict"
+            raise Exception(msg)
         self.info = info
         return self.info
 
@@ -855,14 +854,15 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         genkey = int(param.get("genkey", 0))
 
         if genkey not in [0, 1]:
-            raise Exception(
-                f"TokenClass supports only genkey in range [0,1] : {genkey!r}"
-            )
+            msg = f"TokenClass supports only genkey in range [0,1] : {genkey!r}"
+            raise Exception(msg)
 
         if genkey == 1 and otpKey is not None:
+            msg = (
+                "[ParameterError] You may either specifygenkey or otpkey, but not both!"
+            )
             raise ParameterError(
-                "[ParameterError] You may either specify"
-                "genkey or otpkey, but not both!",
+                msg,
                 id=344,
             )
 
@@ -874,7 +874,8 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
             try:
                 otpKey = param["otpkey"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: 'otpkey'") from exx
+                msg = "Missing parameter: 'otpkey'"
+                raise ParameterError(msg) from exx
 
         if otpKey is not None:
             self.validate_seed(otpKey)
@@ -1188,7 +1189,8 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
             self.token.storeToken()
         except BaseException as exx:
             log.error("Token fail counter update failed")
-            raise TokenAdminError("Token Fail Counter update failed", id=1106) from exx
+            msg = "Token Fail Counter update failed"
+            raise TokenAdminError(msg, id=1106) from exx
 
         return self.token.LinOtpFailCount
 
@@ -1252,9 +1254,8 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         except Exception as exx:
             log.error("Token Counter update failed: %r", exx)
-            raise TokenAdminError(
-                f"Token Counter update failed: {exx!r}", id=1106
-            ) from exx
+            msg = f"Token Counter update failed: {exx!r}"
+            raise TokenAdminError(msg, id=1106) from exx
 
         return self.token.LinOtpCount
 

@@ -144,15 +144,15 @@ class HttpSMSProvider(ISMSProvider, ConfigParsingMixin):
                     "Reply does not match the RETURN_SUCCESS_REGEX "
                     "definition"
                 )
-                raise Exception(
-                    "We received a none success reply from the SMS Gateway."
-                )
+                msg = "We received a none success reply from the SMS Gateway."
+                raise Exception(msg)
 
         elif "RETURN_FAIL_REGEX" in self.config:
             ret = re.search(self.config["RETURN_FAIL_REGEX"], reply)
             if ret is not None:
                 log.warning("[_check_success] sending SMS fail")
-                raise Exception("We received a predefined error from the SMS Gateway.")
+                msg = "We received a predefined error from the SMS Gateway."
+                raise Exception(msg)
             else:
                 log.debug(
                     "[_check_success] sending sms success full. "
@@ -170,16 +170,16 @@ class HttpSMSProvider(ISMSProvider, ConfigParsingMixin):
                     "[_check_success] failed to send SMS. Reply does "
                     "not match the RETURN_SUCCESS definition"
                 )
-                raise Exception(
-                    "We received a none success reply from the SMS Gateway."
-                )
+                msg = "We received a none success reply from the SMS Gateway."
+                raise Exception(msg)
 
         elif "RETURN_FAIL" in self.config:
             fail = self.config.get("RETURN_FAIL")
             log.debug("[_check_success] fail: %r", fail)
             if reply[: len(fail)] == fail:
                 log.warning("[_check_success] sending SMS fail")
-                raise Exception("We received a predefined error from the SMS Gateway.")
+                msg = "We received a predefined error from the SMS Gateway."
+                raise Exception(msg)
             else:
                 log.debug(
                     "[_check_success] sending sms success full. "
@@ -260,19 +260,20 @@ class HttpSMSProvider(ISMSProvider, ConfigParsingMixin):
             requests.exceptions.TooManyRedirects,
         ) as exx:
             log.error("HttpSMSProvider timed out")
-            raise ProviderNotAvailable(
-                f"Failed to send SMS - timed out {exx!r}"
-            ) from exx
+            msg = f"Failed to send SMS - timed out {exx!r}"
+            raise ProviderNotAvailable(msg) from exx
 
         except Exception as exx:
             log.error("HttpSMSProvider %r", exx)
-            raise Exception(f"Failed to send SMS. {exx!r}") from exx
+            msg = f"Failed to send SMS. {exx!r}"
+            raise Exception(msg) from exx
 
         return ret
 
     def loadConfig(self, configDict):
         if not configDict:
-            raise Exception("missing configuration")
+            msg = "missing configuration"
+            raise Exception(msg)
 
         self.config = configDict
 

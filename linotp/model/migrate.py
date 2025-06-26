@@ -524,7 +524,8 @@ class Migration:
 
                 if not hasattr(self, function_name):
                     log.error("unknown migration function %r", function_name)
-                    raise Exception(f"unknown migration to {next_version!r}")
+                    msg = f"unknown migration to {next_version!r}"
+                    raise Exception(msg)
 
                 migration_step = getattr(self, function_name)
 
@@ -774,13 +775,15 @@ class Migration:
                 eof = len(output) - 1
 
                 if eof == -1:
-                    raise Exception("invalid encoded secret!")
+                    msg = "invalid encoded secret!"
+                    raise Exception(msg)
 
                 while output[eof] == 0x00:
                     eof -= 1
 
                 if not (output[eof - 1] == 0x01 and output[eof] == 0x02):
-                    raise Exception("invalid encoded secret!")
+                    msg = "invalid encoded secret!"
+                    raise Exception(msg)
 
                 return output[: eof - 1]
 

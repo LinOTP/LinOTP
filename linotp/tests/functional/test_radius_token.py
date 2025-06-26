@@ -65,7 +65,8 @@ def mocked_SendPacket_reject(rad_client, *argparams, **kwparams):
 
 def mocked_SendPacket_error(rad_client, *argparams, **kwparams):
     """mock the radius accept response"""
-    raise pyrad.server.ServerPacketError("bad packet")
+    msg = "bad packet"
+    raise pyrad.server.ServerPacketError(msg)
 
 
 class TestRadiusToken(TestController):

@@ -86,7 +86,8 @@ class RSA_Signature:
             self.verifier = PKCS115_SigScheme(public_key)
 
         if not self.verifier:
-            raise Exception("At least a public or private key is required!")
+            msg = "At least a public or private key is required!"
+            raise Exception(msg)
 
     def verify(self, message: bytes, signature: bytes) -> bool:
         """
@@ -98,7 +99,8 @@ class RSA_Signature:
         """
 
         if not self.verifier:
-            raise Exception("Verifier not initialized!")
+            msg = "Verifier not initialized!"
+            raise Exception(msg)
 
         hashed_message = SHA256.new(message)
 
@@ -123,10 +125,12 @@ class RSA_Signature:
         """
 
         if not self.signer:
-            raise Exception("Signer not initialized!")
+            msg = "Signer not initialized!"
+            raise Exception(msg)
 
         if not self.signer.can_sign():
-            raise Exception("unable to sign - signer not initialized?")
+            msg = "unable to sign - signer not initialized?"
+            raise Exception(msg)
 
         return self.signer.sign(SHA256.new(message))
 

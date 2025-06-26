@@ -196,7 +196,8 @@ class TagespasswortTokenClass(TokenClass):
         # check for the required parameters
         if self.hKeyRequired is True:
             if "otpkey" not in param:
-                raise ParameterError("Missing parameter: 'otpkey'", id=905)
+                msg = "Missing parameter: 'otpkey'"
+                raise ParameterError(msg, id=905)
 
         TokenClass.update(self, param)
 
@@ -287,9 +288,12 @@ class TagespasswortTokenClass(TokenClass):
                 elif isinstance(curTime, str):
                     now = datetime.strptime(curTime, "%Y-%m-%d %H:%M:%S.%f")
                 else:
-                    raise TokenAdminError(
+                    msg = (
                         "[get_multi_otp] wrong curTime type:"
-                        f" {type(curTime)} ({curTime})",
+                        f" {type(curTime)} ({curTime})"
+                    )
+                    raise TokenAdminError(
+                        msg,
                         id=2001,
                     )
 

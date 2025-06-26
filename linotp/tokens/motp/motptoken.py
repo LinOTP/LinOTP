@@ -155,13 +155,15 @@ class MotpTokenClass(HmacTokenClass):
             param["otpkey"] = secrets.token_hex(MOTP_KEY_BYTES).upper()
 
         if "otpkey" not in param:
-            raise ParameterError("Missing parameter: 'otpkey'")
+            msg = "Missing parameter: 'otpkey'"
+            raise ParameterError(msg)
 
         # motp token specific
         try:
             otpPin = param["otppin"]
         except KeyError as exx:
-            raise ParameterError("Missing parameter: 'otppin'") from exx
+            msg = "Missing parameter: 'otppin'"
+            raise ParameterError(msg) from exx
 
         self.setUserPin(otpPin)
 

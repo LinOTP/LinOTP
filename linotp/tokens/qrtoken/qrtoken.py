@@ -291,8 +291,9 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             CONTENT_TYPE_AUTH,
             CONTENT_TYPE_FREE,
         ]:
+            msg = "content_type"
             raise InvalidFunctionParameter(
-                "content_type",
+                msg,
                 "content_type must "
                 "be CONTENT_TYPE_PAIRING, "
                 "CONTENT_TYPE_AUTH or "
@@ -300,14 +301,16 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             )
 
         if content_type == CONTENT_TYPE_PAIRING and message != serial:
+            msg = "message"
             raise InvalidFunctionParameter(
-                "message", "message must be equal to serial in pairing mode"
+                msg, "message must be equal to serial in pairing mode"
             )
 
         if content_type == CONTENT_TYPE_AUTH:
             if "@" not in message:
+                msg = "message"
                 raise InvalidFunctionParameter(
-                    "message",
+                    msg,
                     "For content type auth, message must have format <login>@<server>",
                 )
 
@@ -408,19 +411,20 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         # enforce max sizes specified by protocol
 
         if content_type == CONTENT_TYPE_FREE and len(utf8_message) > 511:
-            raise ParameterError(
-                "message (encoded as utf8) can only be 511 characters long"
-            )
+            msg = "message (encoded as utf8) can only be 511 characters long"
+            raise ParameterError(msg)
 
         elif content_type == CONTENT_TYPE_PAIRING and len(utf8_message) > 63:
+            msg = "message"
             raise InvalidFunctionParameter(
-                "message",
+                msg,
                 "max string length (encoded as utf8) is 511 for content type PAIRING",
             )
 
         elif content_type == CONTENT_TYPE_AUTH and len(utf8_message) > 511:
+            msg = "message"
             raise InvalidFunctionParameter(
-                "message",
+                msg,
                 "max string length (encoded as utf8) is 511 for content type AUTH",
             )
 
@@ -445,8 +449,9 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             # enforce max url length as specified in protocol
 
             if len(utf8_callback_url) > 511:
+                msg = "callback_url"
                 raise InvalidFunctionParameter(
-                    "callback_url",
+                    msg,
                     "max string length (encoded as utf8) is 511",
                 )
 
@@ -458,8 +463,9 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             utf8_callback_sms_number = callback_sms_number.encode("utf8")
 
             if len(utf8_callback_sms_number) > 31:
+                msg = "callback_sms_number"
                 raise InvalidFunctionParameter(
-                    "callback_sms_number",
+                    msg,
                     "max string length (encoded as utf8) is 31",
                 )
 
@@ -551,7 +557,8 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             # make sure the call aborts, if request
             # type wasn't recognized
 
-            raise Exception("Unknown request type for token type qr")
+            msg = "Unknown request type for token type qr"
+            raise Exception(msg)
 
         # if param keys are in {'type', 'hashlib'} the token is
         # initialized for the first time. this is e.g. done on the
@@ -723,7 +730,8 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             # make sure the call aborts, if request
             # type wasn't recognized
 
-            raise Exception("Unknown request type for token type qr")
+            msg = "Unknown request type for token type qr"
+            raise Exception(msg)
 
         # ------------------------------------------------------------------- --
 
@@ -873,9 +881,8 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
                     # to unicode :(
                     content_type = int(content_type_as_str)
                 except BaseException as exx:
-                    raise ValueError(
-                        f"Unrecognized content type: {content_type_as_str}"
-                    ) from exx
+                    msg = f"Unrecognized content type: {content_type_as_str}"
+                    raise ValueError(msg) from exx
 
         # ------------------------------------------------------------------- --
 

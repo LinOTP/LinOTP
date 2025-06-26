@@ -77,16 +77,16 @@ class TokenImport(ManageDialog):
         """
 
         if not file_content and not file_path:
-            raise Exception(
-                """Wrong test implementation. TokenImport.do_import
+            msg = """Wrong test implementation. TokenImport.do_import
                             needs file_content or file_path!
                             """
-            )
+            raise Exception(msg)
 
         if not self.manage.realm_manager.get_realms_via_api():
-            raise Exception(
+            msg = (
                 "Test problem: TokenImport requires a realm, but norealms are available"
             )
+            raise Exception(msg)
 
         if file_content:
             # Create the temp xml file with the given file_content.
@@ -124,7 +124,8 @@ class TokenImport(ManageDialog):
         # Check the alert boxes on the top of the LinOTP UI
         info = self.manage.alert_box_handler.last_line
         if info.type != "info" or not info.text.startswith("Token import result:"):
-            raise TokenImportError(f"Import failure:{info}")
+            msg = f"Import failure:{info}"
+            raise TokenImportError(msg)
 
 
 class TokenImportAladdin(TokenImport):

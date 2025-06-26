@@ -58,7 +58,8 @@ def getEncMethod(elem):
         algo = m.group(1)
     if "aes128-cbc" != algo:
         log.error("The algorithm %s is not supported", algo)
-        raise ImportException(f"The algorithm {algo} is not supported")
+        msg = f"The algorithm {algo} is not supported"
+        raise ImportException(msg)
     return algo
 
 
@@ -69,7 +70,8 @@ def getMacMethod(elem):
         meth = m.group(1)
     if "hmac-sha1" != meth:
         log.error("The method %s is not supported", meth)
-        raise ImportException(f"The method {meth} is not supported")
+        msg = f"The method {meth} is not supported"
+        raise ImportException(msg)
     return meth
 
 
@@ -150,7 +152,8 @@ def parsePSKCdata(
     ENCRYPTION_KEY_hex = preshared_key_hex
 
     if getTagName(elem_keycontainer).lower() != "keycontainer":
-        raise ImportException("No toplevel element KeyContainer")
+        msg = "No toplevel element KeyContainer"
+        raise ImportException(msg)
 
     tag = elem_keycontainer.tag
     match = re.match("^({.*?})Key[Cc]ontainer$", tag)
@@ -214,9 +217,8 @@ def parsePSKCdata(
                             "We do not support key derivation method %r",
                             deriv_algo,
                         )
-                        raise ImportException(
-                            f"We do not support key derivation method {deriv_algo}"
-                        )
+                        msg = f"We do not support key derivation method {deriv_algo}"
+                        raise ImportException(msg)
                 log.debug("found the salt <<%r>>", PBE_SALT)
 
             if password and len(password) > 5 and len(password) <= 64:
@@ -240,9 +242,8 @@ def parsePSKCdata(
                 log.error(
                     "You must provide a password that is longer than 5 characters and up to 64 characters long."
                 )
-                raise ImportException(
-                    "You must provide a password that is longer than 5 characters and up to 64 characters long."
-                )
+                msg = "You must provide a password that is longer than 5 characters and up to 64 characters long."
+                raise ImportException(msg)
 
         # Do the MAC Key
         # This will hold the MAC key
@@ -268,9 +269,8 @@ def parsePSKCdata(
                             "Found unsupported child in CipherData: %r",
                             cipher_tag,
                         )
-                        raise ImportException(
-                            f"Found unsupported child in CipherData: {cipher_tag!r}"
-                        )
+                        msg = f"Found unsupported child in CipherData: {cipher_tag!r}"
+                        raise ImportException(msg)
             elif "EncryptionMethod" == tag:
                 ENC_ALGO = getEncMethod(e)
             else:
@@ -282,7 +282,8 @@ def parsePSKCdata(
 
     elem_KeyPackageList = elem_keycontainer.findall(namespace + TAG_NAME_KEYPACKAGE)
     if 0 == len(elem_KeyPackageList):
-        raise ImportException(f"No element {TAG_NAME_KEYPACKAGE} contained!")
+        msg = f"No element {TAG_NAME_KEYPACKAGE} contained!"
+        raise ImportException(msg)
 
     # Now parsing all the keys
     for elem_package in elem_KeyPackageList:
@@ -453,10 +454,11 @@ def parsePSKCdata(
                                 "secrets could be compromised!",
                                 serial,
                             )
-                            raise ImportException(
+                            msg = (
                                 f"The MAC value for {serial} does not fit. The HMAC "
                                 "secrets could be compromised!"
                             )
+                            raise ImportException(msg)
                             # TOKENS[serial] = { 'hmac_key' : binascii.hexlify(HMAC_KEY_bin),
                             #            'counter' : KD_counter, 'type' : TOKEN_TYPE,
                             #            'timeStep' : KD_TimeInterval, 'otplen' : KD_otplen,

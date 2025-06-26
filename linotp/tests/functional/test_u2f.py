@@ -257,7 +257,8 @@ class TestU2FController(TestController):
         elif typ == "authentication":
             typ_string = "navigator.id.getAssertion"
         else:
-            raise ValueError("Unknown typ")
+            msg = "Unknown typ"
+            raise ValueError(msg)
 
         client_data_object = {
             "typ": typ_string,
@@ -276,7 +277,8 @@ class TestU2FController(TestController):
         client_data = client_data.encode("utf-8")
 
         if not key_set:
-            raise ValueError("Unknown key number requested!")
+            msg = "Unknown key number requested!"
+            raise ValueError(msg)
         (key_handle_hex, ecc_key) = key_set
 
         #
@@ -354,7 +356,8 @@ class TestU2FController(TestController):
         """
         # get the correct token for creating the response message
         if not ecc_key:
-            raise ValueError("Unknown key handle received.")
+            msg = "Unknown key handle received."
+            raise ValueError(msg)
 
         client_data = client_data.encode("utf-8")
 

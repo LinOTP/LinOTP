@@ -174,16 +174,20 @@ def defineResolver(params):
     conf = params["name"]
 
     if not resolver_name_pattern.match(conf):
-        raise Exception(
+        msg = (
             "Resolver name is invalid. It may contain characters, "
-            "numbers, underscore (_), hyphen (-)! %r",
+            "numbers, underscore (_), hyphen (-)! %r"
+        )
+        raise Exception(
+            msg,
             conf,
         )
 
     resolver_cls = get_resolver_class(typ)
 
     if not resolver_cls:
-        raise Exception(f"no such resolver type '{typ!r}' defined!")
+        msg = f"no such resolver type '{typ!r}' defined!"
+        raise Exception(msg)
 
     # ---------------------------------------------------------------------- --
 
@@ -371,7 +375,8 @@ def getResolverInfo(resolvername, passwords=False):
     resolver_cls = get_resolver_class(resolver_type)
 
     if resolver_cls is None:
-        raise Exception(f"no such resolver type '{resolver_type!r}' defined!")
+        msg = f"no such resolver type '{resolver_type!r}' defined!"
+        raise Exception(msg)
 
     result["spec"] = resolver_cls.db_prefix + "." + resolvername
 
@@ -391,7 +396,8 @@ def getResolverInfo(resolvername, passwords=False):
             # we have to be sure that we only have encrypted data objects for
             # secret data
             if not isinstance(value, EncryptedData):
-                raise Exception("Encrypted Data Object expected")
+                msg = "Encrypted Data Object expected"
+                raise Exception(msg)
 
             # if parameter password is True, we need to unencrypt
             if passwords:
@@ -436,9 +442,8 @@ def deleteResolver(resolvername):
     """
 
     if resolvername == current_app.config["ADMIN_RESOLVER_NAME"]:
-        raise DeleteForbiddenError(
-            f"default admin resolver {resolvername} is not allowed to be removed!"
-        )
+        msg = f"default admin resolver {resolvername} is not allowed to be removed!"
+        raise DeleteForbiddenError(msg)
 
     resolvertypes = get_resolver_types()
     conf = context.get("Config")
@@ -921,7 +926,8 @@ def prepare_resolver_parameter(new_resolver_name, param, previous_name=None):
     resolver_cls = get_resolver_class(param["type"])
 
     if resolver_cls is None:
-        raise Exception("no such resolver type '{!r}' defined!".format(param["type"]))
+        msg = "no such resolver type '{!r}' defined!".format(param["type"])
+        raise Exception(msg)
 
     # for rename and update, we support the merge with previous parameters
     if previous_name:
@@ -958,7 +964,8 @@ def prepare_resolver_parameter(new_resolver_name, param, previous_name=None):
                 if key == "readonly":
                     param["readonly"] = boolean(p_value)
                 elif p_value != param.get(key, ""):
-                    raise Exception("Readonly Resolver Change not allowed!")
+                    msg = "Readonly Resolver Change not allowed!"
+                    raise Exception(msg)
 
         # check if the primary key changed - if so, we need
         # to migrate the resolver

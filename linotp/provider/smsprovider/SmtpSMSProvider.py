@@ -213,9 +213,8 @@ class SmtpSMSProvider(ISMSProvider):
                     serv.ehlo()
                 else:
                     log.error("Start_TLS not supported:")
-                    raise Exception(
-                        f"Start_TLS requested but not supported by server {server!r}"
-                    )
+                    msg = f"Start_TLS requested but not supported by server {server!r}"
+                    raise Exception(msg)
             if user:
                 if serv.has_extn("AUTH"):
                     log.debug(
@@ -237,9 +236,8 @@ class SmtpSMSProvider(ISMSProvider):
         except smtplib.socket.error as exx:
             log.error("Error: could not connect to server")
             if boolean(self.config.get("raise_exception", True)):
-                raise ProviderNotAvailable(
-                    f"Error: could not connect to server: {exx!r}"
-                ) from exx
+                msg = f"Error: could not connect to server: {exx!r}"
+                raise ProviderNotAvailable(msg) from exx
             ret = False
         except Exception as exx:
             log.error("[submitMessage] %s", exx)

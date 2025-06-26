@@ -147,7 +147,8 @@ class SelfserviceController(BaseController):
                     return redirect(url_for(".login"))
 
                 else:
-                    raise Unauthorized("No valid session")
+                    msg = "No valid session"
+                    raise Unauthorized(msg)
 
             # -------------------------------------------------------------- --
 
@@ -176,7 +177,8 @@ class SelfserviceController(BaseController):
             # futher processing with the authenticated user
 
             if auth_state != "authenticated":
-                raise Unauthorized("No valid session")
+                msg = "No valid session"
+                raise Unauthorized(msg)
 
             c.user = auth_user.login
             c.realm = auth_user.realm
@@ -196,7 +198,8 @@ class SelfserviceController(BaseController):
                         g.audit["info"] = "session expired"
                         current_app.audit_obj.log(g.audit)
 
-                        raise Unauthorized("No valid session")
+                        msg = "No valid session"
+                        raise Unauthorized(msg)
 
             # -------------------------------------------------------------- --
 
@@ -334,7 +337,8 @@ class SelfserviceController(BaseController):
             try:
                 act = self.request_params["type"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: 'type'", id=905) from exx
+                msg = "Missing parameter: 'type'"
+                raise ParameterError(msg, id=905) from exx
 
             try:
                 (tok, section, scope) = act.split(".")

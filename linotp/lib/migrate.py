@@ -311,7 +311,8 @@ class Crypter:
         v_mac = self.mac(iv, crypted_data, just_mac)
 
         if encrypted_data["mac"] != binascii.hexlify(v_mac):
-            raise DecryptionError("Data mismatch detected!")
+            msg = "Data mismatch detected!"
+            raise DecryptionError(msg)
 
         cipher = AES.new(self.enc_key, AES.MODE_CBC, iv)
 

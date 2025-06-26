@@ -285,9 +285,8 @@ class SQLJanitor:
         start_time = datetime.now(UTC)
 
         if delete_after_days is not None and (cleanup_threshold or max_entries_to_keep):
-            raise ValueError(
-                "param `delete_after_days` can not be used alongside `cleanup_threshold` and `max_entries_to_keep`"
-            )
+            msg = "param `delete_after_days` can not be used alongside `cleanup_threshold` and `max_entries_to_keep`"
+            raise ValueError(msg)
 
         total = int(db.session.query(count(AuditTable.id)).scalar())
         cleanup_infos["entries_in_audit"] = total

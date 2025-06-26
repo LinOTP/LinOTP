@@ -121,7 +121,8 @@ class CustomVoiceProvider(ConfigParsingMixin, TwillioMixin):
         # define the request calling endpoint and verify the url scheme
 
         if "server_url" not in configDict:
-            raise KeyError("missing the required server_url")
+            msg = "missing the required server_url"
+            raise KeyError(msg)
 
         self.voice_server_url = CustomVoiceProvider.load_server_url(configDict)
 
@@ -165,7 +166,8 @@ class CustomVoiceProvider(ConfigParsingMixin, TwillioMixin):
         delivery_service = configDict.get("twilioConfig")
 
         if not delivery_service:
-            raise KeyError("Missing delivery service configuration: twillioConfig")
+            msg = "Missing delivery service configuration: twillioConfig"
+            raise KeyError(msg)
 
         # prepare the twilio voice provider
         # . . . other voice services will follow here
@@ -202,16 +204,19 @@ class CustomVoiceProvider(ConfigParsingMixin, TwillioMixin):
         """
 
         if not calleeNumber:
-            raise Exception("Missing target number!")
+            msg = "Missing target number!"
+            raise Exception(msg)
 
         if not messageTemplate:
-            raise Exception("No message to submit!")
+            msg = "No message to submit!"
+            raise Exception(msg)
 
         if "{otp}" not in messageTemplate:
             log.warning("Missing '{otp}' in messageTemplate: %r", messageTemplate)
 
         if not otp:
-            raise Exception("Missing otp value!")
+            msg = "Missing otp value!"
+            raise Exception(msg)
 
         if not locale:
             locale = "en"

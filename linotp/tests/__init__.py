@@ -1063,7 +1063,8 @@ class TestController(TestCase):
         )
 
         if response.status_code != 200:
-            raise Exception(f"Server Error {response.status_code}")
+            msg = f"Server Error {response.status_code}"
+            raise Exception(msg)
 
         response.body = response.data.decode("utf-8")
         return response

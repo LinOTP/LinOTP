@@ -104,4 +104,5 @@ class AuthUi:
         elif alert_text == "User failed to authenticate!":
             return self.AUTH_FAIL
 
-        raise RuntimeError(f"Unknown auth result received: {alert_text}")
+        msg = f"Unknown auth result received: {alert_text}"
+        raise RuntimeError(msg)

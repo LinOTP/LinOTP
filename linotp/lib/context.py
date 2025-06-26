@@ -69,9 +69,8 @@ def context_stack_trace(manager_id, allow_nesting=True):
     """
 
     if not allow_nesting and manager_id in context_stack:
-        raise ProgrammingError(
-            f"Nesting of {manager_id} context managers is not allowed"
-        )
+        msg = f"Nesting of {manager_id} context managers is not allowed"
+        raise ProgrammingError(msg)
     context_stack.append(manager_id)
     try:
         yield
@@ -82,10 +81,11 @@ def context_stack_trace(manager_id, allow_nesting=True):
             # through context_stack_trace. however, just in case someone
             # tempers with context_stack directly, we check for stack
             # consistency
+            msg = "Misuse of context stack trace. Entered {} but exited {}".format(
+                *manager_id
+            )
             raise ProgrammingError(
-                "Misuse of context stack trace. Entered {} but exited {}".format(
-                    *manager_id
-                ),
+                msg,
                 popped_manager_id,
             )
 

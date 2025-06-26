@@ -363,7 +363,8 @@ def sendResultIterator(
 
     typ = f"{type(obj)}"
     if "generator" not in typ and "iterator" not in typ:
-        raise Exception(f"no iterator method for object {obj!r}")
+        msg = f"no iterator method for object {obj!r}"
+        raise Exception(msg)
 
     res = {
         "jsonrpc": api_version,
@@ -673,7 +674,8 @@ def sendCSVIterator(obj, headers=True):
 
     typ = f"{type(obj)}"
     if "generator" not in typ and "iterator" not in typ:
-        raise Exception(f"no iterator method for object {obj!r}")
+        msg = f"no iterator method for object {obj!r}"
+        raise Exception(msg)
 
     try:
         for row in obj:

@@ -293,7 +293,8 @@ class TimeHmacTokenClass(HmacTokenClass):
                 try:
                     otpKey = param["otpkey"]
                 except KeyError as exx:
-                    raise ParameterError("Missing parameter: 'serial'") from exx
+                    msg = "Missing parameter: 'serial'"
+                    raise ParameterError(msg) from exx
 
         # finally set the values for the update
 
@@ -392,9 +393,8 @@ class TimeHmacTokenClass(HmacTokenClass):
                 log.error("[time2float] Error during conversion of datetime: %r", ex)
                 raise
         else:
-            raise Exception(
-                f"[time2float] invalid curTime: {type(curTime)}. You need to specify a datetime.datetime"
-            )
+            msg = f"[time2float] invalid curTime: {type(curTime)}. You need to specify a datetime.datetime"
+            raise Exception(msg)
 
         td = dt - datetime.datetime(1970, 1, 1)
         # for python 2.6 compatibility, we have to implement 2.7 .total_seconds()::
@@ -494,7 +494,8 @@ class TimeHmacTokenClass(HmacTokenClass):
         :param value: the new timeStep value
         """
         if value not in [60, 30]:
-            raise ValueError("timeStep for totp token must be either 30 or 60!")
+            msg = "timeStep for totp token must be either 30 or 60!"
+            raise ValueError(msg)
 
         new_time_count = self.getOtpCount() * self.timeStepping // value
         self.setOtpCount(int(new_time_count))

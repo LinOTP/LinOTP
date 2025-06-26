@@ -173,16 +173,19 @@ class SetPasswordHandler(ToolsHandler):
 
             except NoResultFound as exx:
                 log.error("no user %r found!", username)
-                raise Exception(f"no user {username!r} found!") from exx
+                msg = f"no user {username!r} found!"
+                raise Exception(msg) from exx
 
             except MultipleResultsFound as exx:
                 log.error("multiple users %r found!", username)
-                raise Exception(f"multiple users {username!r} found!") from exx
+                msg = f"multiple users {username!r} found!"
+                raise Exception(msg) from exx
 
             crypted_password = admin_user.password
 
             if not utils.compare_password(old_password, crypted_password):
-                raise Exception("old password missmatch!")
+                msg = "old password missmatch!"
+                raise Exception(msg)
 
             admin_user.password = utils.crypt_password(new_password)
 

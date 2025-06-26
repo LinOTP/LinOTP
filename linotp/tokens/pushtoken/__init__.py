@@ -68,7 +68,8 @@ def parse_and_verify_pushtoken_pairing_data(plaintext):
 
     plaintext_min_length = 1 + 4 + 32 + 1 + 1 + 1 + 64
     if len(plaintext) < plaintext_min_length:
-        raise ParameterError("Malformed pairing response for type PushToken")
+        msg = "Malformed pairing response for type PushToken"
+        raise ParameterError(msg)
 
     # ----------------------------------------------------------------------- --
 
@@ -113,7 +114,8 @@ def parse_and_verify_pushtoken_pairing_data(plaintext):
     # enforce format
 
     if not len(str_parts) == 3 + 1:
-        raise ParameterError("Malformed pairing response for type PushToken")
+        msg = "Malformed pairing response for type PushToken"
+        raise ParameterError(msg)
 
     serial = str_parts[0].decode("utf8")
     user_login = str_parts[1].decode("utf8")
@@ -130,7 +132,8 @@ def parse_and_verify_pushtoken_pairing_data(plaintext):
         crypto_sign_verify_detached(signature, message, user_public_key)
     except ValueError as exx:
         # original value error is too generic
-        raise ValueError("Invalid signature for pairing response data") from exx
+        msg = "Invalid signature for pairing response data"
+        raise ValueError(msg) from exx
 
     # ----------------------------------------------------------------------- --
 

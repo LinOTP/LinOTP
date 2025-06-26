@@ -74,9 +74,8 @@ class IPushProvider:
         :param transactionId: The push notification transaction reference
         :return: A tuple of success and result message
         """
-        raise NotImplementedError(
-            "Every subclass of IPushProvider has to implement this method."
-        )
+        msg = "Every subclass of IPushProvider has to implement this method."
+        raise NotImplementedError(msg)
 
     def loadConfig(self, configDict):
         """

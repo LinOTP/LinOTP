@@ -279,7 +279,8 @@ def _get_restore_filename(
 
     if not filename and not date:
         app.echo("failed to restore - no date or file name parameter provided", v=1)
-        raise ValueError("no date or file name parameter provided!")
+        msg = "no date or file name parameter provided!"
+        raise ValueError(msg)
 
     # ---------------------------------------------------------------------- --
 
@@ -287,9 +288,8 @@ def _get_restore_filename(
 
     if not os.path.isfile(backup_filename):
         app.echo(f"Failed to restore {backup_filename} - not found or not accessible")
-        raise FileNotFoundError(
-            f"failed to restore {backup_filename} - not found or not accessible"
-        )
+        msg = f"failed to restore {backup_filename} - not found or not accessible"
+        raise FileNotFoundError(msg)
 
     return backup_filename
 
@@ -336,9 +336,8 @@ def restore_database_tables(
                 f"selected table {table} is not in the set of supported tables",
                 v=1,
             )
-            raise ValueError(
-                f"selected table {table} is not in the set of supported tables"
-            )
+            msg = f"selected table {table} is not in the set of supported tables"
+            raise ValueError(msg)
 
     # ---------------------------------------------------------------------- --
 

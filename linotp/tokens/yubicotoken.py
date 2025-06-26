@@ -180,12 +180,12 @@ class YubicoTokenClass(TokenClass):
         try:
             tokenid = param["yubico.tokenid"]
         except KeyError as exx:
-            raise ParameterError("Missing parameter: 'yubico.tokenid'") from exx
+            msg = "Missing parameter: 'yubico.tokenid'"
+            raise ParameterError(msg) from exx
 
         if len(tokenid) < YUBICO_LEN_ID:
-            raise Exception(
-                f"The YubiKey token ID needs to be {YUBICO_LEN_ID} characters long!"
-            )
+            msg = f"The YubiKey token ID needs to be {YUBICO_LEN_ID} characters long!"
+            raise Exception(msg)
 
         if len(tokenid) > YUBICO_LEN_ID:
             tokenid = tokenid[:YUBICO_LEN_ID]
@@ -203,7 +203,8 @@ class YubicoTokenClass(TokenClass):
         """
         resync of yubico tokens - not supported!!
         """
-        raise Exception("YUBICO token resync is not managed by LinOTP.")
+        msg = "YUBICO token resync is not managed by LinOTP."
+        raise Exception(msg)
 
     def checkOtp(self, anOtpVal, counter, window, options=None):
         """
@@ -225,16 +226,16 @@ class YubicoTokenClass(TokenClass):
             third_feb_2019 = datetime.datetime(year=2019, month=2, day=3)
 
             if datetime.datetime.now() >= third_feb_2019:
-                raise Exception(
-                    f"Usage of YUBICO_URL {DEPRECATED_YUBICO_URL!r} is deprecated!! "
-                )
+                msg = f"Usage of YUBICO_URL {DEPRECATED_YUBICO_URL!r} is deprecated!! "
+                raise Exception(msg)
 
         apiId = getFromConfig("yubico.id")
         apiKey = getFromConfig("yubico.secret")
 
         if not apiKey or not apiId:
             log.error(APIKEY_UNCONFIGURED_ERROR)
-            raise YubicoApikeyException("Yubico apiKey or apiId not configured!")
+            msg = "Yubico apiKey or apiId not configured!"
+            raise YubicoApikeyException(msg)
 
         tokenid = self.getFromTokenInfo("yubico.tokenid")
         if len(anOtpVal) < 12:
@@ -304,9 +305,8 @@ class YubicoTokenClass(TokenClass):
 
         log.error("non of the resources %r available!", yubico_urls)
 
-        raise AllResourcesUnavailable(
-            f"non of the resources {yubico_urls!r} available!"
-        )
+        msg = f"non of the resources {yubico_urls!r} available!"
+        raise AllResourcesUnavailable(msg)
 
     def _check_yubico_response(self, nonce, apiKey, rv):
         """

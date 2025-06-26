@@ -90,7 +90,8 @@ def get_max_token_count_in_period(realm, start=None, end=None, status="active"):
     :return: maximum: number of reported tokens with given status in realm
     """
     if status not in STATI:
-        raise Exception(f"unsupported status: {status!r}")
+        msg = f"unsupported status: {status!r}"
+        raise Exception(msg)
 
     token_max_count = (
         db.session.query(func.max(Reporting.count))
@@ -127,7 +128,8 @@ def get_last_token_count_before_date(realm, before_date=None, status="active"):
             realm or None
     """
     if status not in STATI:
-        raise Exception(f"unsupported status: {status!r}")
+        msg = f"unsupported status: {status!r}"
+        raise Exception(msg)
 
     last_token_count_event = (
         db.session.query(Reporting)

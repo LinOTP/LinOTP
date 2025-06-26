@@ -140,7 +140,8 @@ class PasswordTokenClass(HmacTokenClass):
         """
 
         if "otpkey" not in param:
-            raise ParameterError("Missing Parameter 'otpkey'!")
+            msg = "Missing Parameter 'otpkey'!"
+            raise ParameterError(msg)
 
         # mark this pw token as usable exactly once
         if "onetime" in param:

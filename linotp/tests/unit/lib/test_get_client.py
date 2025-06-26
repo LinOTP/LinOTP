@@ -66,14 +66,16 @@ def mock_IPNet(address):
         "www.my.test.domain",
         "my.local.test.domain",
     ]:
-        raise netaddr.core.AddrFormatError(f"invalid IPNetwork {address!r}")
+        msg = f"invalid IPNetwork {address!r}"
+        raise netaddr.core.AddrFormatError(msg)
 
     return netw_dict.get(address)
 
 
 def mock_IPAddr(address):
     if address in ["www.my.test.domain"]:
-        raise netaddr.core.AddrFormatError(f"invalid IPNetwork {address!r}")
+        msg = f"invalid IPNetwork {address!r}"
+        raise netaddr.core.AddrFormatError(msg)
 
     return addr_dict.get(address)
 

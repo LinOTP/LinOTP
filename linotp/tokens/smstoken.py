@@ -353,7 +353,8 @@ class SmsTokenClass(HmacTokenClass):
         try:
             phone = param["phone"]
         except KeyError as exx:
-            raise ParameterError("Missing parameter: 'phone'") from exx
+            msg = "Missing parameter: 'phone'"
+            raise ParameterError(msg) from exx
 
         # in scope selfservice - check if edit_sms is allowed
         # if not allowed to edit, check if the phone is the same
@@ -902,11 +903,12 @@ class SmsTokenClass(HmacTokenClass):
             message = "<otp>"
 
         if not SMSPROVIDER_IMPORTED:
-            raise Exception(
+            msg = (
                 "The SMSProvider could not be imported. Maybe you "
                 "didn't install the package (Debian "
                 "linotp-smsprovider or PyPI SMSProvider)"
             )
+            raise Exception(msg)
 
         # we require the token owner to get the phone number and the provider
         owner = get_token_owner(self)
@@ -957,7 +959,8 @@ class SmsTokenClass(HmacTokenClass):
             if not sms_provider:
                 log.error("Unable to load provider %r", provider_name)
                 log.error("Please verify your provider configuration!")
-                raise Exception("unable to load provider")
+                msg = "unable to load provider"
+                raise Exception(msg)
 
             try:
                 success = sms_provider.submitMessage(phone, message)
@@ -972,9 +975,8 @@ class SmsTokenClass(HmacTokenClass):
 
         if not available:
             log.error("all providers are not available %r", providers)
-            raise AllResourcesUnavailable(
-                f"unable to connect to any SMSProvider {providers!r}"
-            )
+            msg = f"unable to connect to any SMSProvider {providers!r}"
+            raise AllResourcesUnavailable(msg)
 
         log.info("[sendSMS] message submitted")
 

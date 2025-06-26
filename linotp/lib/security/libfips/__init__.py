@@ -102,7 +102,8 @@ class FipsModule:
         #
         if _libcrypto.FIPS_mode() != 1:
             if _libcrypto.FIPS_mode_set(1) == 0:
-                raise SSLError("can't enable OpenSSL FIPS mode")
+                msg = "can't enable OpenSSL FIPS mode"
+                raise SSLError(msg)
 
         self._libcrypto = _libcrypto
 
@@ -139,10 +140,12 @@ class FipsModule:
         what you are doing.
         """
         if not isinstance(key, bytes):
-            raise ParameterError("key must be a byte array")
+            msg = "key must be a byte array"
+            raise ParameterError(msg)
 
         if not isinstance(msg, bytes):
-            raise ParameterError("msg must be a byte array")
+            msg = "msg must be a byte array"
+            raise ParameterError(msg)
 
         # create memory to store digest in
         digest = ctypes.create_string_buffer(self._libcrypto.EVP_MD_size(md))
@@ -152,7 +155,8 @@ class FipsModule:
 
         # OpenSSL will return NULL (None for us) to indicate an error
         if res is None:
-            raise SSLError("HMAC failed")
+            msg = "HMAC failed"
+            raise SSLError(msg)
 
         return digest.raw
 

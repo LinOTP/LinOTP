@@ -161,7 +161,8 @@ class RemoteTokenClass(TokenClass):
         try:
             self.remoteServer = param["remote.server"]
         except KeyError as exx:
-            raise ParameterError("Missing parameter: 'remote.server'") from exx
+            msg = "Missing parameter: 'remote.server'"
+            raise ParameterError(msg) from exx
 
         # if another OTP length would be specified in /admin/init this would
         # be overwritten by the parent class, which is ok.

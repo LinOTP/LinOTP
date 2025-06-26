@@ -195,7 +195,8 @@ class HttpRequest(RemoteRequest):
                 request_url, method="POST", body=data, headers=headers
             )
             if resp.status not in [200]:
-                raise Exception("Http Status not ok (%s)", resp.status)
+                msg = "Http Status not ok (%s)"
+                raise Exception(msg, resp.status)
 
             result = json.loads(content)
             status = result.get("result", {}).get("status", False)

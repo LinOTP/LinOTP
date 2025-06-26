@@ -128,7 +128,8 @@ class ToolsController(BaseController):
             username = auth_user.login
 
             if not username:
-                raise Exception("Missing authenticated user!")
+                msg = "Missing authenticated user!"
+                raise Exception(msg)
 
             sql_url = db.engine.url
 
@@ -193,7 +194,8 @@ class ToolsController(BaseController):
             target_resolver = resolvers.get(target, None)
 
             if not target_resolver or not src_resolver:
-                raise Exception("Src or Target resolver is undefined!")
+                msg = "Src or Target resolver is undefined!"
+                raise Exception(msg)
 
             mg = MigrateResolverHandler()
             ret = mg.migrate_resolver(src=src_resolver, target=target_resolver)
@@ -239,13 +241,15 @@ class ToolsController(BaseController):
 
             except KeyError as exx:
                 log.error("Missing parameter: %r", exx)
-                raise ParameterError(f"Missing parameter: {exx!r}") from exx
+                msg = f"Missing parameter: {exx!r}"
+                raise ParameterError(msg) from exx
 
             if resolver_name == current_app.config["ADMIN_RESOLVER_NAME"]:
-                raise DeleteForbiddenError(
+                msg = (
                     f"default admin resolver {resolver_name} is not allowed "
                     "to be overwritten!"
                 )
+                raise DeleteForbiddenError(msg)
 
             groupid = resolver_name
 
@@ -316,7 +320,8 @@ class ToolsController(BaseController):
                 column_mapping = params.get("column_mapping", column_mapping)
 
             else:
-                raise Exception("unspecified file foramt")
+                msg = "unspecified file foramt"
+                raise Exception(msg)
 
             # we have to convert the column_mapping back into an dict
 
@@ -330,10 +335,11 @@ class ToolsController(BaseController):
             resolvers = getResolverList()
             if resolver_name in resolvers:
                 if not resolvers[resolver_name].get("readonly", False):
-                    raise Exception(
+                    msg = (
                         f"Unmanged resolver with same name: {resolver_name!r}"
                         " already exists!"
                     )
+                    raise Exception(msg)
             # -------------------------------------------------------------- --
 
             # feed the engine :)

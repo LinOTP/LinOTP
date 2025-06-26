@@ -586,7 +586,8 @@ class IdResolver(UserIdResolver):
 
         if missing:
             log.error("missing config entries: %r", missing)
-            raise ResolverLoadConfigError(f" missing config entries: {missing!r}")
+            msg = f" missing config entries: {missing!r}"
+            raise ResolverLoadConfigError(msg)
 
         fileName = l_config["fileName"]
 
@@ -595,9 +596,8 @@ class IdResolver(UserIdResolver):
         fileName = os.path.realpath(fileName)
 
         if not os.path.isfile(fileName) or not os.access(fileName, os.R_OK):
-            raise ResolverLoadConfigError(
-                f"File {fileName!r} does not exist or is not accessible"
-            )
+            msg = f"File {fileName!r} does not exist or is not accessible"
+            raise ResolverLoadConfigError(msg)
         self.fileName = fileName
         self.loadFile()
 

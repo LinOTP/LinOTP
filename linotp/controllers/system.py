@@ -243,7 +243,8 @@ class SystemController(BaseController):
                     "find any known parameter. %s",
                     description,
                 )
-                raise ParameterError(f"Usage: {description}", id=77)
+                msg = f"Usage: {description}"
+                raise ParameterError(msg, id=77)
 
             db.session.commit()
             return sendResult(res)
@@ -296,7 +297,8 @@ class SystemController(BaseController):
                 des = param.get("description")
 
                 if val is None or key is None:
-                    raise ParameterError("Required parameters: value and key")
+                    msg = "Required parameters: value and key"
+                    raise ParameterError(msg)
 
                 ret = storeConfig(key, val, typ, des)
                 string = f"setConfig {key}"
@@ -405,7 +407,8 @@ class SystemController(BaseController):
 
         try:
             if "key" not in self.request_params:
-                raise ParameterError("missing required parameter: key")
+                msg = "missing required parameter: key"
+                raise ParameterError(msg)
             key = self.request_params["key"]
             ret = removeFromConfig(key)
             string = "delConfig " + key
@@ -481,7 +484,8 @@ class SystemController(BaseController):
 
             else:
                 if "key" not in param:
-                    raise ParameterError("missing required parameter: key")
+                    msg = "missing required parameter: key"
+                    raise ParameterError(msg)
                 key = param["key"]
 
                 #
@@ -592,7 +596,8 @@ class SystemController(BaseController):
 
         try:
             if "name" not in param:
-                raise ParameterError('missing required parameter "name"')
+                msg = 'missing required parameter "name"'
+                raise ParameterError(msg)
 
             new_resolver_name = param["name"]
             previous_name = param.get("previous_name", "")
@@ -630,10 +635,11 @@ class SystemController(BaseController):
             # resolver with same name exists.
             #
             if mode in ["create", "rename"] and new_resolver_name in getResolverList():
-                raise Exception(
+                msg = (
                     f"Cound not {mode} resolver, resolver {new_resolver_name!r} already"
                     " exists!"
                 )
+                raise Exception(msg)
 
             #
             # we do not support changing the resolver type
@@ -643,7 +649,8 @@ class SystemController(BaseController):
                 previous_resolver = getResolverInfo(previous_name, passwords=True)
 
                 if param["type"] != previous_resolver["type"]:
-                    raise Exception("Modification of resolver type is not supported!")
+                    msg = "Modification of resolver type is not supported!"
+                    raise Exception(msg)
 
             (param, missing, primary_key_changed) = prepare_resolver_parameter(
                 new_resolver_name=new_resolver_name,
@@ -773,7 +780,8 @@ class SystemController(BaseController):
             log.info("[delResolver] deleting resolver: %r", param)
 
             if "resolver" not in param:
-                raise ParameterError("missing required parameter: resolver")
+                msg = "missing required parameter: resolver"
+                raise ParameterError(msg)
 
             resolver_name = param["resolver"]
 
@@ -793,7 +801,8 @@ class SystemController(BaseController):
                 g.audit["failed"] = res
                 err = f"Resolver {resolver_name!r} still in use by the realms: {fRealms!r}"
                 g.audit["info"] = err
-                raise Exception(f"{err!r} !")
+                msg = f"{err!r} !"
+                raise Exception(msg)
 
             is_manged_resolver = getResolverInfo(resolver_name).get("readonly", False)
 
@@ -834,12 +843,14 @@ class SystemController(BaseController):
             log.debug("[getResolver] with param: %r", param)
 
             if "resolver" not in param:
-                raise ParameterError("missing required parameter: resolver")
+                msg = "missing required parameter: resolver"
+                raise ParameterError(msg)
 
             resolver = param["resolver"]
 
             if len(resolver) == 0:
-                raise Exception("[getResolver] missing resolver name")
+                msg = "[getResolver] missing resolver name"
+                raise Exception(msg)
 
             res = getResolverInfo(resolver)
 
@@ -949,11 +960,13 @@ class SystemController(BaseController):
             log.info("[setRealm] setting a realm: %r", param)
 
             if "realm" not in param:
-                raise ParameterError("missing required parameter: realm")
+                msg = "missing required parameter: realm"
+                raise ParameterError(msg)
             realm = param["realm"]
 
             if "resolvers" not in param:
-                raise ParameterError("missing required parameter: resolvers")
+                msg = "missing required parameter: resolvers"
+                raise ParameterError(msg)
             resolver_specs = param["resolvers"].split(",")
 
             valid_resolver_specs = []
@@ -965,10 +978,11 @@ class SystemController(BaseController):
                 # check if resolver exists
                 resolver = getResolverObject(resolver_spec)
                 if resolver is None:
-                    raise Exception(
+                    msg = (
                         "unknown resolver or invalid resolver "
                         f"class specification: {resolver_spec!r}"
                     )
+                    raise Exception(msg)
                 valid_resolver_specs.append(resolver_spec)
                 valid_resolver_names.append(resolver_spec.rpartition(".")[-1])
 
@@ -982,11 +996,12 @@ class SystemController(BaseController):
 
             if realm == admin_realm_name:
                 if admin_resolver_name not in valid_resolver_names:
-                    raise RemoveForbiddenError(
+                    msg = (
                         f"Resolver {admin_resolver_name} can not be removed from {admin_realm_name}. "
                         "It is not allowed to remove the resolver to which you belong to prevent "
                         "locking yourself out."
                     )
+                    raise RemoveForbiddenError(msg)
 
             res = setRealm(realm, valid_resolver_specs_str)
             g.audit["success"] = res
@@ -1084,22 +1099,26 @@ class SystemController(BaseController):
                 del param["session"]
 
             if "name" not in param:
-                raise ParameterError("missing required parameter: name")
+                msg = "missing required parameter: name"
+                raise ParameterError(msg)
             name = param["name"]
 
             if not name:
                 raise Exception(_("The name of the policy must not be empty"))
 
             if "action" not in param:
-                raise ParameterError("missing required parameter: action")
+                msg = "missing required parameter: action"
+                raise ParameterError(msg)
             action = param["action"]
 
             if "scope" not in param:
-                raise ParameterError("missing required parameter: scope")
+                msg = "missing required parameter: scope"
+                raise ParameterError(msg)
             scope = param["scope"]
 
             if "realm" not in param:
-                raise ParameterError("missing required parameter: realm")
+                msg = "missing required parameter: realm"
+                raise ParameterError(msg)
             realm = param["realm"]
 
             user = param.get("user")
@@ -1145,7 +1164,8 @@ class SystemController(BaseController):
                 res[string] = False
 
                 g.audit["success"] = False
-                raise Exception("setPolicy failed: name and action required!")
+                msg = "setPolicy failed: name and action required!"
+                raise Exception(msg)
 
             return sendResult(res, 1)
 
@@ -1373,7 +1393,8 @@ class SystemController(BaseController):
                 policy_file,
             )
             if not policy_file:
-                raise ParameterError("missing input file")
+                msg = "missing input file"
+                raise ParameterError(msg)
 
             if isinstance(policy_file, FileStorage):
                 log.debug("[importPolicy] Field storage file: %s", policy_file)
@@ -1445,23 +1466,28 @@ class SystemController(BaseController):
             param = getLowerParams(self.request_params)
 
             if "user" not in param:
-                raise ParameterError("missing required parameter: user")
+                msg = "missing required parameter: user"
+                raise ParameterError(msg)
             user = param["user"]
 
             if "realm" not in param:
-                raise ParameterError("missing required parameter: realm")
+                msg = "missing required parameter: realm"
+                raise ParameterError(msg)
             realm = param["realm"]
 
             if "scope" not in param:
-                raise ParameterError("missing required parameter: scope")
+                msg = "missing required parameter: scope"
+                raise ParameterError(msg)
             scope = param["scope"]
 
             if "action" not in param:
-                raise ParameterError("missing required parameter: action")
+                msg = "missing required parameter: action"
+                raise ParameterError(msg)
             action = param["action"]
 
             if "client" not in param:
-                raise ParameterError("missing required parameter: client")
+                msg = "missing required parameter: client"
+                raise ParameterError(msg)
             client = param["client"]
 
             pol = {}
@@ -1689,12 +1715,13 @@ class SystemController(BaseController):
                 hsm = c.hsm.get("obj")
                 error = c.hsm.get("error")
                 if hsm is None or len(error) != 0:
-                    raise Exception(
+                    msg = (
                         f"current activeSecurityModule >{hsm_id!r}< is not"
                         f"initialized::{error}:: - Please check your "
                         "security module configuration and "
                         "connection!"
                     )
+                    raise Exception(msg)
 
                 ready = hsm.isReady()
                 res["setupSecurityModule"] = {
@@ -1704,11 +1731,12 @@ class SystemController(BaseController):
                 ret = ready
             else:
                 if hsm_id != sep.activeOne:
-                    raise Exception(
+                    msg = (
                         f"current activeSecurityModule >{sep.activeOne!r}< could"
                         " only be changed through the "
                         "configuration!"
                     )
+                    raise Exception(msg)
 
                 ret = sep.setupModule(hsm_id, config=params)
 
@@ -1934,7 +1962,8 @@ class SystemController(BaseController):
                 _provider_class = params["class"]
                 _timeout = params["timeout"]
             except KeyError as exx:
-                raise ParameterError(f"missing key {exx!r}") from exx
+                msg = f"missing key {exx!r}"
+                raise ParameterError(msg) from exx
 
             # -------------------------------------------------------------- --
 
@@ -1951,19 +1980,21 @@ class SystemController(BaseController):
 
             if provider_def and "Managed" in provider_def[name]:
                 if "managed" not in params:
-                    raise Exception(
+                    msg = (
                         "Not allowed to overwrite the "
                         "configuration of a managed provider"
                     )
+                    raise Exception(msg)
 
                 password = params["managed"]
                 crypt_password = provider_def[name]["Managed"]
 
                 if not utils.compare_password(password, crypt_password):
-                    raise Exception(
+                    msg = (
                         "Not allowed to overwrite the "
                         "configuration of a managed provider"
                     )
+                    raise Exception(msg)
 
                 params["managed"] = crypt_password
 
@@ -2004,7 +2035,8 @@ class SystemController(BaseController):
             try:
                 provider_type = param["type"]
             except KeyError as exx:
-                raise ParameterError(f"missing key {exx!r}") from exx
+                msg = f"missing key {exx!r}"
+                raise ParameterError(msg) from exx
 
             # optional parameters
             provider_name = param.get("name")
@@ -2047,7 +2079,8 @@ class SystemController(BaseController):
                 provider_name = self.request_params["name"]
                 provider_type = self.request_params["type"]
             except KeyError as exx:
-                raise ParameterError(f"missing key {exx!r}") from exx
+                msg = f"missing key {exx!r}"
+                raise ParameterError(msg) from exx
 
             provider = loadProvider(
                 provider_type=provider_type, provider_name=provider_name
@@ -2088,7 +2121,8 @@ class SystemController(BaseController):
                 provider_name = self.request_params["name"]
                 provider_type = self.request_params["type"]
             except KeyError as exx:
-                raise ParameterError(f"missing key {exx!r}") from exx
+                msg = f"missing key {exx!r}"
+                raise ParameterError(msg) from exx
 
             provider_def = getProvider(provider_type, provider_name)
 
@@ -2098,13 +2132,15 @@ class SystemController(BaseController):
                 and "Managed" in provider_def[provider_name]
             ):
                 if "managed" not in self.request_params:
-                    raise Exception("Not allowed to delete the managed provider")
+                    msg = "Not allowed to delete the managed provider"
+                    raise Exception(msg)
 
                 password = self.request_params["managed"]
                 crypt_password = provider_def[provider_name]["Managed"]
 
                 if not utils.compare_password(password, crypt_password):
-                    raise Exception("Not allowed to delete the managed provider")
+                    msg = "Not allowed to delete the managed provider"
+                    raise Exception(msg)
 
             res, reply = delProvider(provider_type, provider_name)
 
@@ -2141,7 +2177,8 @@ class SystemController(BaseController):
                 provider_name = self.request_params["name"]
                 provider_type = self.request_params["type"]
             except KeyError as exx:
-                raise ParameterError(f"missing key {exx!r}") from exx
+                msg = f"missing key {exx!r}"
+                raise ParameterError(msg) from exx
 
             res, reply = setDefaultProvider(provider_type, provider_name)
 
@@ -2179,7 +2216,8 @@ class SystemController(BaseController):
                 _provider_name = self.request_params["name"]
                 _provider_type = self.request_params["type"]
             except KeyError as exx:
-                raise ParameterError(f"missing key {exx!r}") from exx
+                msg = f"missing key {exx!r}"
+                raise ParameterError(msg) from exx
 
             # TODO:  to be implemented
             res = {}

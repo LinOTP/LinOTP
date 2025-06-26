@@ -147,4 +147,5 @@ class LicenseImport(ManageDialog):
         last_line = self.manage.alert_box_handler.last_line
 
         if last_line and last_line.type == "error":
-            raise FileUploadException(f"Import failure: {last_line.text!r}")
+            msg = f"Import failure: {last_line.text!r}"
+            raise FileUploadException(msg)

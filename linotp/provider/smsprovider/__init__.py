@@ -88,9 +88,8 @@ class ISMSProvider:
         return {}
 
     def _submitMessage(self, phone, message):
-        raise NotImplementedError(
-            "Every subclass of ISMSProvider has to implement this method."
-        )
+        msg = "Every subclass of ISMSProvider has to implement this method."
+        raise NotImplementedError(msg)
 
     def submitMessage(self, phone, message):
         """
@@ -170,10 +169,11 @@ def getSMSProviderClass(packageName, className):
     mod = __import__(packageName, globals(), locals(), [className], 1)
     klass = getattr(mod, className)
     if not hasattr(klass, "submitMessage"):
-        raise NameError(
+        msg = (
             f"SMSProvider AttributeError: {packageName!r}.{className!r} "
             "instance of SMSProvider has no method 'submitMessage'"
         )
+        raise NameError(msg)
     else:
         return klass
 

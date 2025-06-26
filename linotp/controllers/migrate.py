@@ -92,7 +92,8 @@ class MigrateController(BaseController):
                 backupid = self.request_params["backupid"]
                 passphrase = self.request_params["pass"]
             except KeyError as exx:
-                raise Exception(f"missing Parameter:{exx!r}") from exx
+                msg = f"missing Parameter:{exx!r}"
+                raise Exception(msg) from exx
 
             backup_data = {}
 
@@ -177,7 +178,8 @@ class MigrateController(BaseController):
                 )
             except KeyError as exx:
                 missing_param = True
-                raise Exception(f"missing Parameter:{exx!r}") from exx
+                msg = f"missing Parameter:{exx!r}"
+                raise Exception(msg) from exx
 
             mig = None
 
@@ -186,7 +188,8 @@ class MigrateController(BaseController):
             backup_file = f"{binascii.hexlify(backup_file)}.hbak"
 
             if not os.path.isfile(backup_file):
-                raise Exception(f"No restore file found for backupid={backupid}")
+                msg = f"No restore file found for backupid={backupid}"
+                raise Exception(msg)
 
             counters = {}
             counter_check_done = False
@@ -222,29 +225,34 @@ class MigrateController(BaseController):
 
                         mac = mig.calculate_mac(json.dumps(backup_data))
                         if binascii.hexlify(mac) != restore_data["mac"]:
-                            raise Exception("Restore Lines mismatch")
+                            msg = "Restore Lines mismatch"
+                            raise Exception(msg)
 
                         if restore_data["Counter"].get("Token") != counters.get(
                             "Token", 0
                         ):
-                            raise Exception("Restore Token mismatch")
+                            msg = "Restore Token mismatch"
+                            raise Exception(msg)
 
                         if restore_data["Counter"].get("Config") != counters.get(
                             "Config", 0
                         ):
-                            raise Exception("Restore Config mismatch")
+                            msg = "Restore Config mismatch"
+                            raise Exception(msg)
 
                         counter_check_done = True
 
                     else:
                         if not mig:
-                            raise Exception("MigrationHandler not initialized!")
+                            msg = "MigrationHandler not initialized!"
+                            raise Exception(msg)
                         else:
                             log.info("unknown entry")
 
             # if somebody removed the last line, we cry for it
             if not counter_check_done:
-                raise Exception("incomplete migration file!")
+                msg = "incomplete migration file!"
+                raise Exception(msg)
 
             db.session.commit()
             log.debug("[restore] success")

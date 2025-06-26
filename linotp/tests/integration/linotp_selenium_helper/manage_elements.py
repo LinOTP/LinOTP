@@ -310,7 +310,8 @@ class ManageDialog(ManageElement):
     def raise_if_closed(self):
         "Raise an exception if the dialog is not open"
         if not self.is_open():
-            raise RuntimeError(f"Dialog #{self.body_id} is not open")
+            msg = f"Dialog #{self.body_id} is not open"
+            raise RuntimeError(msg)
 
     def click_button(self, button_id=None):
         """
@@ -381,9 +382,8 @@ class ManageDialog(ManageElement):
     def _verify_text(self, description, expected_text, text_contents):
         "Check the text contents, raise an exception if not found"
         if text_contents != expected_text:
-            raise RuntimeError(
-                f'{description} [{self.body_id}] text does not match. Expected text:"{expected_text}" Found text:"{text_contents}"'
-            )
+            msg = f'{description} [{self.body_id}] text does not match. Expected text:"{expected_text}" Found text:"{text_contents}"'
+            raise RuntimeError(msg)
 
     def close_alert_and_get_its_text(self):
         "Close dialog and return the text contents"

@@ -297,9 +297,8 @@ class ResolversController(BaseController):
                     reverse=reverse,
                 )
             except KeyError as exx:
-                raise KeyError(
-                    f"users can't be sorted by parameter {sort_key}"
-                ) from exx
+                msg = f"users can't be sorted by parameter {sort_key}"
+                raise KeyError(msg) from exx
             total_pages = 1
             total_records = len(users)
 

@@ -392,7 +392,8 @@ class LinOTPApp(Flask):
             # This is called as `…(payload)` or `…(header, payload)` but we're only interested in `payload`
             jti = args[-1].get("jti")
             if jti is None:
-                raise KeyError("jti")
+                msg = "jti"
+                raise KeyError(msg)
             return self.jwt_blocklist.item_in_list(jti)
 
     def start_session(self):
@@ -689,7 +690,8 @@ class LinOTPApp(Flask):
         :param ctrl_class_name: Name of controller class to load. Defaults to CtrlNameController
         """
         if not ctrl_name:
-            raise ConfigurationError(f"no controller module specified: {ctrl_name}")
+            msg = f"no controller module specified: {ctrl_name}"
+            raise ConfigurationError(msg)
         if not ctrl_class_name:
             # "foobar" => "FoobarController"
             ctrl_class_name = ctrl_name.title() + "Controller"
@@ -697,9 +699,8 @@ class LinOTPApp(Flask):
         mod = importlib.import_module("." + ctrl_name, "linotp.controllers")
         cls = getattr(mod, ctrl_class_name, None)
         if cls is None:
-            raise ConfigurationError(
-                f"{ctrl_name} does not define the '{ctrl_class_name}' class"
-            )
+            msg = f"{ctrl_name} does not define the '{ctrl_class_name}' class"
+            raise ConfigurationError(msg)
 
         if not url_prefix:
             url_prefix = cls.default_url_prefix or "/" + ctrl_name

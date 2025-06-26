@@ -282,7 +282,8 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             current_gda = self.getFromTokenInfo("gda")
 
             if current_gda and gda != current_gda:
-                raise ValueError("spoofing detected - aborted!")
+                msg = "spoofing detected - aborted!"
+                raise ValueError(msg)
 
         # ------------------------------------------------------------------ --
 
@@ -322,7 +323,8 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             current_user_dsa_public_key = b64decode(current_b64_key)
 
             if user_dsa_public_key != current_user_dsa_public_key:
-                raise ValueError("re-pairing: public keys don't match")
+                msg = "re-pairing: public keys don't match"
+                raise ValueError(msg)
 
             self.addToTokenInfo("gda", gda)
 
@@ -417,9 +419,8 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
                 content_type = int(content_type_as_str)
 
             except BaseException as exx:
-                raise ValueError(
-                    f"Unrecognized content type: {content_type_as_str}"
-                ) from exx
+                msg = f"Unrecognized content type: {content_type_as_str}"
+                raise ValueError(msg) from exx
 
             # --------------------------------------------------------------- --
 
@@ -444,7 +445,8 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
                 )
 
             else:
-                raise ValueError(f"Unrecognized content type: {content_type}")
+                msg = f"Unrecognized content type: {content_type}"
+                raise ValueError(msg)
 
         # ------------------------------------------------------------------- --
 
@@ -460,7 +462,8 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         )
 
         if not success:
-            raise Exception(f"push mechanism failed. response was {response!r}")
+            msg = f"push mechanism failed. response was {response!r}"
+            raise Exception(msg)
 
         # ------------------------------------------------------------------- --
 
@@ -514,16 +517,18 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             signature_reject = passwd.get("reject", None)
 
         except AttributeError as exx:  # will be raised with a get() on a str object
-            raise Exception(
-                f'Pushtoken version {CHALLENGE_URL_VERSION!r} requires "accept" or'
-                ' "reject" as parameter'
-            ) from exx
-
-        if signature_accept is not None and signature_reject is not None:
-            raise Exception(
+            msg = (
                 f'Pushtoken version {CHALLENGE_URL_VERSION!r} requires "accept" or'
                 ' "reject" as parameter'
             )
+            raise Exception(msg) from exx
+
+        if signature_accept is not None and signature_reject is not None:
+            msg = (
+                f'Pushtoken version {CHALLENGE_URL_VERSION!r} requires "accept" or'
+                ' "reject" as parameter'
+            )
+            raise Exception(msg)
 
         # ------------------------------------------------------------------ --
 
@@ -707,7 +712,8 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             # make sure the call aborts, if request
             # type wasn't recognized
 
-            raise Exception("Unknown request type for token type pushtoken")
+            msg = "Unknown request type for token type pushtoken"
+            raise Exception(msg)
 
         # if param keys are in above set, the token is
         # initialized for the first time. this is e.g. done on the
@@ -888,8 +894,9 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             CONTENT_TYPE_PAIRING,
             CONTENT_TYPE_LOGIN,
         ]:
+            msg = "content_type"
             raise InvalidFunctionParameter(
-                "content_type",
+                msg,
                 "content_type must "
                 "be CONTENT_TYPE_SIGNREQ, "
                 "CONTENT_TYPE_PAIRING or "
@@ -958,8 +965,9 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         # enforce max url length as specified in protocol
 
         if len(utf8_callback_url) > 511:
+            msg = "callback_url"
             raise InvalidFunctionParameter(
-                "callback_url",
+                msg,
                 "max string length (encoded as utf8) is 511",
             )
 
@@ -979,9 +987,8 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             utf8_serial = serial.encode("utf8")
 
             if len(utf8_serial) > 63:
-                raise ValueError(
-                    "serial (encoded as utf8) can only be 63 characters long"
-                )
+                msg = "serial (encoded as utf8) can only be 63 characters long"
+                raise ValueError(msg)
 
             plaintext += utf8_serial + b"\00" + utf8_callback_url + b"\00"
 
@@ -989,8 +996,9 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         if content_type == CONTENT_TYPE_SIGNREQ:
             if message is None:
+                msg = "message"
                 raise InvalidFunctionParameter(
-                    "message",
+                    msg,
                     "message must be supplied for content type SIGNREQ",
                 )
 
@@ -1005,8 +1013,9 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             # enforce max sizes specified by protocol
 
             if len(utf8_message) > 511:
+                msg = "message"
                 raise InvalidFunctionParameter(
-                    "message",
+                    msg,
                     "max string length (encoded as utf8) is 511",
                 )
 
@@ -1016,13 +1025,15 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         if content_type == CONTENT_TYPE_LOGIN:
             if login is None:
+                msg = "login"
                 raise InvalidFunctionParameter(
-                    "login",
+                    msg,
                     "login must be supplied for content type LOGIN",
                 )
             if host is None:
+                msg = "host"
                 raise InvalidFunctionParameter(
-                    "host",
+                    msg,
                     "host must be supplied for content type LOGIN",
                 )
 
@@ -1038,12 +1049,14 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             # enforce max sizes specified by protocol
 
             if len(utf8_login) > 127:
+                msg = "login"
                 raise InvalidFunctionParameter(
-                    "login", "max string length (encoded as utf8) is 127"
+                    msg, "max string length (encoded as utf8) is 127"
                 )
             if len(utf8_host) > 255:
+                msg = "host"
                 raise InvalidFunctionParameter(
-                    "host", "max string length (encoded as utf8) is 255"
+                    msg, "max string length (encoded as utf8) is 255"
                 )
 
             plaintext += utf8_login + b"\00"

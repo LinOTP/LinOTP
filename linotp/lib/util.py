@@ -121,7 +121,8 @@ def getParam(param, which, optional=True):
         ret = param[which]
     else:
         if optional is False:
-            raise ParameterError(f"Missing parameter: {which!r}", id=905)
+            msg = f"Missing parameter: {which!r}"
+            raise ParameterError(msg, id=905)
 
     return ret
 
@@ -346,7 +347,8 @@ def get_client(request):
                 client = client_from_post
 
     if not is_ip_address_dotted_quad(client):
-        raise ValueError(f"client address is not a dotted quad: {client!r}")
+        msg = f"client address is not a dotted quad: {client!r}"
+        raise ValueError(msg)
 
     log.debug("get_client: client is %s", client)
     return client
@@ -458,7 +460,8 @@ def str2unicode(input_str):
             pass
 
     log.error("No Unicode conversion found for %r", input_str)
-    raise UnicodeDecodeError("Unable to convert binary string to Unicode.")
+    msg = "Unable to convert binary string to Unicode."
+    raise UnicodeDecodeError(msg)
 
 
 def unicode_compare(x, y):
@@ -510,9 +513,8 @@ def int_from_bytes(bytes_, byteorder="little"):
     """
 
     if byteorder not in ["little", "big"]:
-        raise InvalidFunctionParameter(
-            "byteorder", "byte order can only be 'little' or 'big'"
-        )
+        msg = "byteorder"
+        raise InvalidFunctionParameter(msg, "byte order can only be 'little' or 'big'")
 
     order = -1 if byteorder == "little" else 1
 

@@ -240,7 +240,8 @@ class IdResolver(UserIdResolver):
 
         if not uri.startswith(("ldaps://", "ldap://")):
             log.error("unsuported protocol %r", uri)
-            raise Exception(f"unsuported protocol {uri!r}")
+            msg = f"unsuported protocol {uri!r}"
+            raise Exception(msg)
 
         l_obj = init_ldap(uri, trace_level)
 
@@ -538,7 +539,8 @@ class IdResolver(UserIdResolver):
 
         log.error("Failed to bind to any resource %r", urilist)
 
-        raise ResolverNotAvailable(f"Unable to bind to servers {urilist!r}")
+        msg = f"Unable to bind to servers {urilist!r}"
+        raise ResolverNotAvailable(msg)
 
     def unbind(self, lobj):
         """
@@ -941,13 +943,13 @@ class IdResolver(UserIdResolver):
 
         except Exception as exx:
             log.error("failed to parse configuration: %r", exx)
-            raise ResolverLoadConfigError(
-                f"failed to parse configuration: {exx!r}"
-            ) from exx
+            msg = f"failed to parse configuration: {exx!r}"
+            raise ResolverLoadConfigError(msg) from exx
 
         if missing:
             log.error("missing config entries: %r", missing)
-            raise ResolverLoadConfigError(f" missing config entries: {missing!r}")
+            msg = f" missing config entries: {missing!r}"
+            raise ResolverLoadConfigError(msg)
 
         # ------------------------------------------------------------------ --
 
@@ -967,9 +969,10 @@ class IdResolver(UserIdResolver):
         try:
             self.userinfo = json.loads(l_config["USERINFO"])
         except ValueError as exx:
-            raise ResolverLoadConfigError(
+            msg = (
                 f"Invalid userinfo - no json document: {l_config['USERINFO']!r} {exx!r}"
-            ) from exx
+            )
+            raise ResolverLoadConfigError(msg) from exx
 
         # ------------------------------------------------------------------ --
 
@@ -1084,7 +1087,8 @@ class IdResolver(UserIdResolver):
         if last_error:
             log.error("[checkPass] access to resource failed: %r", last_error)
 
-        raise ResolverNotAvailable(f"unable to bind to servers {urilist!r}")
+        msg = f"unable to bind to servers {urilist!r}"
+        raise ResolverNotAvailable(msg)
 
     def _is_ad(self):
         """
@@ -1352,7 +1356,8 @@ class IdResolver(UserIdResolver):
                         lc.controlValue = (page_size, cookie)
 
             if not pctrls:
-                raise Exception("Warning: Server ignores RFC 2696 control.")
+                msg = "Warning: Server ignores RFC 2696 control."
+                raise Exception(msg)
 
             if not cookie:
                 return (None, None, None)
@@ -1489,7 +1494,8 @@ class IdResolver(UserIdResolver):
                 userid = result_data.get(entry_key)[0]
 
         if not userid:
-            raise Exception("No Userid found")
+            msg = "No Userid found"
+            raise Exception(msg)
 
         # objectguid is converted to hex
 

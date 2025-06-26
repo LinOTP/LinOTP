@@ -682,7 +682,8 @@ class IdResolver(UserIdResolver):
         l_config, missing = self.filter_config(config, conf)
         if missing:
             log.error("missing config entries: %r", missing)
-            raise ResolverLoadConfigError(f"missing config entries: {missing!r}")
+            msg = f"missing config entries: {missing!r}"
+            raise ResolverLoadConfigError(msg)
 
         self.managed = l_config.get("readonly", False)
         # example for connect:
@@ -721,12 +722,12 @@ class IdResolver(UserIdResolver):
             self.sqlUserInfo = json.loads(userInfo)
 
         except ValueError as exx:
-            raise ResolverLoadConfigError(
-                f"Invalid userinfo - no json document: {userInfo} {exx!r}"
-            ) from exx
+            msg = f"Invalid userinfo - no json document: {userInfo} {exx!r}"
+            raise ResolverLoadConfigError(msg) from exx
 
         except Exception as exx:
-            raise Exception(f"linotp.sqlresolver.Map: {exx!r}") from exx
+            msg = f"linotp.sqlresolver.Map: {exx!r}"
+            raise Exception(msg) from exx
 
         self.checkMapping()
 
@@ -760,10 +761,11 @@ class IdResolver(UserIdResolver):
 
             if invalid_columns:
                 dbObj.close()
-                raise Exception(
+                msg = (
                     f"Invalid map with invalid columns: {invalid_columns!r}. "
                     f"Possible columns: {[co.name for co in table.columns]}"
                 )
+                raise Exception(msg)
             else:
                 log.debug("Valid mapping: %r", self.sqlUserInfo)
 
@@ -939,7 +941,8 @@ class IdResolver(UserIdResolver):
 
         except KeyError as exx:
             log.error("[getUserList] Invalid Mapping Error: %r", exx)
-            raise KeyError(f"Invalid Mapping {exx!r} ") from exx
+            msg = f"Invalid Mapping {exx!r} "
+            raise KeyError(msg) from exx
 
         except Exception as exx:
             log.error("[getUserList] Exception: %r", exx)
@@ -1009,7 +1012,8 @@ class IdResolver(UserIdResolver):
         column_name = self.sqlUserInfo.get("username")
         if column_name is None:
             log.error("[_getUserIdFilter] username column definition required!")
-            raise Exception("username column definition required!")
+            msg = "username column definition required!"
+            raise Exception(msg)
         log.debug("[_getUserIdFilter] type loginName: %s", type(loginName))
         log.debug("[_getUserIdFilter] type filtr: %s", type(column_name))
 
@@ -1045,9 +1049,8 @@ class IdResolver(UserIdResolver):
                 if column_name.lower() == column_mapping_key.lower()
             ]
             if not possible_column_name_list:
-                raise KeyError(
-                    "[_createSearchString] no column found for %s", column_name
-                )
+                msg = "[_createSearchString] no column found for %s"
+                raise KeyError(msg, column_name)
 
             # more tolerant mapping of column names for some sql dialects
             # as you can define columnnames in mixed case but table mapping

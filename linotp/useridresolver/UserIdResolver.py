@@ -349,8 +349,7 @@ def getResolverClass(packageName, className):
             getattr(klass, att)
         ret = klass
     except BaseException as exx:
-        raise NameError(
-            f"IdResolver AttributeError: {packageName}.{className} instance has no attribute '{attribute}'"
-        ) from exx
+        msg = f"IdResolver AttributeError: {packageName}.{className} instance has no attribute '{attribute}'"
+        raise NameError(msg) from exx
 
     return ret

@@ -123,8 +123,7 @@ class TestProviderTestCase(unittest.TestCase):
 
         except AssertionError as exx:
             call_args_list = mock_storeConfig.call_args_list
-            raise Exception(
-                f"Error was: {exx.message!r}, calls were: {call_args_list!r}"
-            ) from exx
+            msg = f"Error was: {exx.message!r}, calls were: {call_args_list!r}"
+            raise Exception(msg) from exx
 
         assert res == (True, {})

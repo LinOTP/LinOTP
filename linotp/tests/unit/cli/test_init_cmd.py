@@ -242,7 +242,8 @@ def init_db_tables_ok(app, erase_all_data):
 
 
 def init_db_tables_exception(app, erase_all_data):
-    raise Exception("Generic exception")
+    msg = "Generic exception"
+    raise Exception(msg)
 
 
 @pytest.mark.parametrize(
@@ -569,7 +570,8 @@ def create_secret_key_ok(filename, data=""):
 
 
 def create_secret_key_exception(filename, data=""):
-    raise OSError("Generic OS-level exception")
+    msg = "Generic OS-level exception"
+    raise OSError(msg)
 
 
 # Replaces `test_enckey.test_file_not_exists()`,
@@ -680,12 +682,14 @@ def test_init_enc_key_cmd(
         assert secret_file_name.read_bytes() == SECRET_KEY
     else:
         if secret_file_name.exists() and secret_file_name.read_bytes() == SECRET_KEY:
-            raise AssertionError("secret file was created but shouldn't have been")
+            msg = "secret file was created but shouldn't have been"
+            raise AssertionError(msg)
         elif has_file and secret_file_name.exists():
             if secret_file_name.read_bytes() == ZERO_KEY:
                 pass  # still the old file, this is OK
             else:
-                raise AssertionError("shouldn't touch secret file but it was changed")
+                msg = "shouldn't touch secret file but it was changed"
+                raise AssertionError(msg)
 
 
 def test_init_enc_key_cmd_failed_backup(app, tmp_path, runner):
@@ -832,7 +836,8 @@ def test_init_audit_keys_cmd_failed_backup(
     app, audit_keys: AuditKeys, runner, monkeypatch
 ):
     def os_replace_exception(src, dst, **kwargs):
-        raise OSError("Generic OS-level exception")
+        msg = "Generic OS-level exception"
+        raise OSError(msg)
 
     monkeypatch.setattr(os, "replace", os_replace_exception)
 

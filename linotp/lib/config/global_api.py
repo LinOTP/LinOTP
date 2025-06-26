@@ -74,7 +74,8 @@ class LinotpAppConfig:
         self.configLock.acquire_write()
         try:
             if not isinstance(config, dict):
-                raise Exception(f"cannot set global config from object {config!r}")
+                msg = f"cannot set global config from object {config!r}"
+                raise Exception(msg)
 
             conf = copy.deepcopy(config)
             if replace is True:

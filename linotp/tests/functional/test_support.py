@@ -99,7 +99,8 @@ class TestSupport(TestController):
         response = self.make_system_request("isSupportValid")
 
         if "your product is unlicensed" in response:
-            raise InvalidLicenseException("your product is unlicensed")
+            msg = "your product is unlicensed"
+            raise InvalidLicenseException(msg)
 
         assert '"status": true' in response
         assert '"value": true' in response

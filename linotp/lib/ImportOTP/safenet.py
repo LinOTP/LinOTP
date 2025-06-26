@@ -48,7 +48,8 @@ def parseSafeNetXML(xml):
     elem_tokencontainer = etree.fromstring(xml)
 
     if getTagName(elem_tokencontainer) != "Tokens":
-        raise ImportException("No toplevel element Tokens")
+        msg = "No toplevel element Tokens"
+        raise ImportException(msg)
 
     for elem_token in list(elem_tokencontainer):
         SERIAL = None

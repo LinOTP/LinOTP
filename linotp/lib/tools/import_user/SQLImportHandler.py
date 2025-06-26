@@ -188,7 +188,8 @@ class SQLImportHandler(ImportHandler):
         _config, missing = sql_resolver.filter_config(resolver_parameters)
 
         if missing:
-            raise Exception("missing some resolver attributes: %r", missing)
+            msg = "missing some resolver attributes: %r"
+            raise Exception(msg, missing)
 
         return resolver_parameters
 
@@ -329,10 +330,11 @@ class SQLImportHandler(ImportHandler):
         )
 
         if len(del_user) > 1:
-            raise DuplicateUserError(
+            msg = (
                 f"There exist more than one user with userid {user_id} and "
                 f"groupid {self.groupid}. Database maybe corrupted."
             )
+            raise DuplicateUserError(msg)
 
         if del_user:
             session.delete(del_user[0])

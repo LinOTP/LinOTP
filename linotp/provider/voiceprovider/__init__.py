@@ -46,20 +46,22 @@ class TwillioMixin:
         ]
 
         if "accountSid" not in twilio_config:
-            raise KeyError("missing the required account identifier")
+            msg = "missing the required account identifier"
+            raise KeyError(msg)
 
         if "authToken" not in twilio_config:
-            raise KeyError("missing the required authentication token")
+            msg = "missing the required authentication token"
+            raise KeyError(msg)
 
         if "voice" not in twilio_config:
             twilio_config["voice"] = "alice"
 
         if "callerNumber" not in twilio_config:
-            raise KeyError("missing the required caller number")
+            msg = "missing the required caller number"
+            raise KeyError(msg)
 
         if set(twilio_config.keys()) != set(twilio_config_keys):
-            raise KeyError(
-                f"unsupported key provided [{twilio_config_keys!r}]: {list(twilio_config.keys())!r}!"
-            )
+            msg = f"unsupported key provided [{twilio_config_keys!r}]: {list(twilio_config.keys())!r}!"
+            raise KeyError(msg)
 
         return {"twilioConfig": twilio_config}

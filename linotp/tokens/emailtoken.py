@@ -481,7 +481,8 @@ class EmailTokenClass(HmacTokenClass):
 
         email_address = self._get_email_address(owner)
         if not email_address:
-            raise Exception("No e-mail address was defined for this token.")
+            msg = "No e-mail address was defined for this token."
+            raise Exception(msg)
 
         message = self._getEmailMessage(user=owner)
         subject = self._getEmailSubject(user=owner)
@@ -585,7 +586,8 @@ class EmailTokenClass(HmacTokenClass):
             # and we have to check all challenges
             split_status, pin, otp = split_pin_otp(self, passw, user, options)
             if split_status < 0:
-                raise Exception("Could not split passw")
+                msg = "Could not split passw"
+                raise Exception(msg)
             if not check_pin(self, pin, user, options):
                 return -1, []
 

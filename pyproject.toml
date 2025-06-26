@@ -132,6 +132,7 @@ plugins = "sqlmypy"
 lint.select = [
   "B",    # flake8-bugbear
   "C4",   # flake8-comprehensions
+  "EM",   # flake8-errmsg
   "E",    # pycodestyle errors
   "F",    # pyflakes
   "I",    # isort

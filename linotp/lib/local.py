@@ -115,11 +115,12 @@ class LocalContainer:
     def _wrapped(self):
         may_access = self.__access_check__()
         if not may_access:
-            raise ProgrammingError(
+            msg = (
                 "Access not possible in this context. Look "
                 "up the docs in linotp.lib.context for the "
                 "right context manager"
             )
+            raise ProgrammingError(msg)
         thread_identity = self.__ident_func__()
         return self.__storage__.setdefault(thread_identity, self._source)
 

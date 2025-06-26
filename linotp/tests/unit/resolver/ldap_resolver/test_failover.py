@@ -52,10 +52,12 @@ class MockedLdapObject:
         """emulate a simple_bind"""
 
         if "fail" in self.uri:
-            raise LDAPError("failed to connect")
+            msg = "failed to connect"
+            raise LDAPError(msg)
 
         if passw != "geheim1":
-            raise INVALID_CREDENTIALS("not geheim1!")
+            msg = "not geheim1!"
+            raise INVALID_CREDENTIALS(msg)
 
         return True
 

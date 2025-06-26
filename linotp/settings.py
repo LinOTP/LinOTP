@@ -60,11 +60,11 @@ def check_int_in_range(min=None, max=None):
     def f(key, value):
         result = int(value)  # Raises an exception if `value` is not an `int`
         if min is not None and result < min:
-            raise LinOTPConfigValueError(
-                f"{key} is {result} but must be at least {min}"
-            )
+            msg = f"{key} is {result} but must be at least {min}"
+            raise LinOTPConfigValueError(msg)
         if max is not None and result > max:
-            raise LinOTPConfigValueError(f"{key} is {result} but must be at most {max}")
+            msg = f"{key} is {result} but must be at most {max}"
+            raise LinOTPConfigValueError(msg)
 
     if min is None and max is not None:
         f.__doc__ = f"value <= {max}"
@@ -88,9 +88,8 @@ def check_json_schema(schema: dict | None = None):
         if Draft4Validator(schema).is_valid(value):
             print("value agrees with schema")
         else:
-            raise LinOTPConfigValueError(
-                f"{value} does not agree with schema {schema}."
-            )
+            msg = f"{value} does not agree with schema {schema}."
+            raise LinOTPConfigValueError(msg)
 
     f.__doc__ = f"value should apply {schema}"
     return f
@@ -106,9 +105,8 @@ def check_membership(allowed: dict | None = None):
 
     def f(key, value):
         if value not in allowed:
-            raise LinOTPConfigValueError(
-                f"{key} is {value} but must be one of {allowed_values}."
-            )
+            msg = f"{key} is {value} but must be one of {allowed_values}."
+            raise LinOTPConfigValueError(msg)
 
     f.__doc__ = f"value in {{{allowed_values}}}"
     return f
@@ -121,9 +119,8 @@ def check_absolute_pathname():
 
     def f(key, value):
         if not value or value[0] != "/":
-            raise LinOTPConfigValueError(
-                f"{key} must be an absolute path name but {value} is relative."
-            )
+            msg = f"{key} must be an absolute path name but {value} is relative."
+            raise LinOTPConfigValueError(msg)
 
     f.__doc__ = "value is an absolute path name"
     return f
@@ -176,7 +173,8 @@ class ConfigSchema:
         item = self.schema.get(key, None)
         if item is None:
             if self.refuse_unknown:
-                raise LinOTPConfigKeyError(f"Unknown configuration item '{key}'")
+                msg = f"Unknown configuration item '{key}'"
+                raise LinOTPConfigKeyError(msg)
             return value
         # Make sure path-like items are strings, not `pathlib` paths.
         if key.endswith(("_DIR", "_FILE")):

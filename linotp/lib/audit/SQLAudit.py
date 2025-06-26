@@ -129,10 +129,11 @@ class AuditTable(db.Model):
             if warn:
                 log.warning(f"truncating audit data: [audit.{key}] {value}")
             if error:
-                raise ValueError(
+                msg = (
                     f"Audit data too long, not truncating [audit.{key}] {value}"
                     " because AUDIT_ERROR_ON_TRUNCATION is active."
                 )
+                raise ValueError(msg)
 
             value = value[: max_len - 1] + "…"
         return value

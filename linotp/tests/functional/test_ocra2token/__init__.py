@@ -85,7 +85,8 @@ class OcraOtp:
         elif o[2]:  # path
             qs = o[2].lstrip("?")
         else:
-            raise Exception("no query parameter defined!")
+            msg = "no query parameter defined!"
+            raise Exception(msg)
 
         params = parse_qs(qs)
         if "si" not in params:

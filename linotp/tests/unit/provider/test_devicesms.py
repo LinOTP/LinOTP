@@ -142,7 +142,8 @@ class TestWithGnokii(BaseClass.BaseTestDeviceSMS):
         BaseClass.BaseTestDeviceSMS.setUp(self)
 
         if not self.gnokii_available:
-            raise unittest.SkipTest("Gnokii is not available")
+            msg = "Gnokii is not available"
+            raise unittest.SkipTest(msg)
 
 
 def main():

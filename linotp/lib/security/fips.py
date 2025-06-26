@@ -60,7 +60,8 @@ class FipsSecurityModule(DefaultSecurityModule):
         self.name = "fips"
 
         if "cryptolib" not in config:
-            raise FatalHSMException("Missing config entry: 'cryptolib'")
+            msg = "Missing config entry: 'cryptolib'"
+            raise FatalHSMException(msg)
 
         try:
             # load the fips module and overwrite the parent digest
@@ -78,7 +79,8 @@ class FipsSecurityModule(DefaultSecurityModule):
             }
 
         except SSLError as exx:
-            raise FatalHSMException(f"Failed to load library {exx!r}") from exx
+            msg = f"Failed to load library {exx!r}"
+            raise FatalHSMException(msg) from exx
 
         DefaultSecurityModule.__init__(self, add_conf)
 
@@ -98,7 +100,8 @@ class FipsSecurityModule(DefaultSecurityModule):
         if hash_algo in self.hmac_func_map:
             digest = self.hmac_func_map[hash_algo](bkey, str(data_input))
         else:
-            raise Exception(f"unsupported Hash Algorithm {hash_algo!r}")
+            msg = f"unsupported Hash Algorithm {hash_algo!r}"
+            raise Exception(msg)
 
         return digest
 
