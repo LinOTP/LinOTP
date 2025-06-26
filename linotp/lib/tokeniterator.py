@@ -29,8 +29,8 @@ import fnmatch
 import logging
 import re
 from difflib import get_close_matches
+from typing import TYPE_CHECKING
 
-from flask_sqlalchemy.pagination import Pagination
 from sqlalchemy import and_, or_, true
 
 from linotp.lib.config import getFromConfig
@@ -47,6 +47,9 @@ from linotp.model import db
 from linotp.model.realm import Realm
 from linotp.model.token import Token
 from linotp.model.tokenRealm import TokenRealm
+
+if TYPE_CHECKING:
+    from flask_sqlalchemy.pagination import Pagination
 
 ENCODING = "utf-8"
 

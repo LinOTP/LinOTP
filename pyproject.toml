@@ -138,6 +138,7 @@ lint.select = [
   "PIE",  # flake8-pie
   "RSE",  # flake8-raise
   "SIM",  # flake8-simplify
+  "TC",   # flake8-type-checking
   "E",    # pycodestyle errors
   "F",    # pyflakes
   "I",    # isort

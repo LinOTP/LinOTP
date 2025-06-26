@@ -24,14 +24,16 @@
 #    Support: www.linotp.de
 
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import orm
-from sqlalchemy.orm import Session
 
 from linotp.lib.crypto import utils as cryptutils
 from linotp.model import db
 from linotp.model.schema import ImportedUserSchema
+
+if TYPE_CHECKING:
+    from sqlalchemy.orm import Session
 
 
 class NoSuchUserError(Exception):

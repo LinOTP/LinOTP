@@ -24,8 +24,9 @@
 #    Support: www.linotp.de
 
 
+from typing import TYPE_CHECKING
+
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
 
 from linotp.app import LinOTPApp, create_app
 from linotp.lib.config import getFromConfig
@@ -33,6 +34,9 @@ from linotp.lib.crypto.utils import crypt_password
 from linotp.model import db
 from linotp.model.config import set_config
 from linotp.model.imported_user import ImportedUserSchema
+
+if TYPE_CHECKING:
+    from sqlalchemy.orm import Session
 
 
 class DuplicateUserError(Exception):
