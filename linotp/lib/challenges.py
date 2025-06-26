@@ -391,7 +391,7 @@ class Challenges:
         :param matching_challenges: all challenges that have
                                     been correctly answered
         """
-        from linotp.lib.token import get_token
+        from linotp.lib.token import get_token  # noqa: PLC0415
 
         to_be_closed_challenges = set()
 

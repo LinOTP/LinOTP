@@ -141,7 +141,7 @@ class UserDomainCompare:
             def_resolver = def_resolver.split(".")[-1]
 
         # check if the resolver is defined at all
-        from linotp.lib.resolver import getResolverList
+        from linotp.lib.resolver import getResolverList  # noqa: PLC0415
 
         resolvers = getResolverList()
         if def_resolver not in resolvers:

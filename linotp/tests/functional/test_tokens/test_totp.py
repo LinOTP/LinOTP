@@ -29,6 +29,7 @@
 
 import binascii
 import json
+import math
 from datetime import datetime, timedelta
 from hashlib import sha1
 
@@ -94,7 +95,6 @@ unix_start_time = datetime(year=1970, month=1, day=1)
 def time2counter(t_time, t_step=60):
     t_delta = (t_time - unix_start_time).total_seconds()
     counts = t_delta / t_step
-    import math
 
     return math.floor(counts)
 

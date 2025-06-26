@@ -1031,7 +1031,7 @@ def main():
 
     """
 
-    import os
+    import os  # noqa: PLC0415
 
     try:
         opts, _args = getopt(

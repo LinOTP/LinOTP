@@ -628,7 +628,7 @@ def _flush_user_resolver_cache(resolver_spec):
     :return: - nothing -
     """
 
-    from linotp.lib.user import (
+    from linotp.lib.user import (  # noqa: PLC0415
         delete_realm_resolver_cache,
         delete_resolver_user_cache,
     )

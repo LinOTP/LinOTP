@@ -31,7 +31,7 @@ from flask_babel import gettext as _
 
 from linotp.lib.auth.validate import check_pin, split_pin_otp
 from linotp.lib.policy import getPolicy
-from linotp.lib.token import get_token_owner, getTokenRealms
+from linotp.lib.token import get_token_owner, get_tokens, getTokenRealms
 from linotp.tokens import tokenclass_registry
 from linotp.tokens.base import TokenClass
 
@@ -364,7 +364,6 @@ class ForwardTokenClass(TokenClass):
         """
         helper - to get the target token
         """
-        from linotp.lib.token import get_tokens
 
         tokens = get_tokens(serial=forwardSerial)
 

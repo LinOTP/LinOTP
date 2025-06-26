@@ -35,6 +35,7 @@ The TestSpecialController gathers some of these common methods.
 
 import logging
 import os
+import subprocess
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -119,7 +120,6 @@ class TestingChallengeResponseController(TestController):
         simple, limited check for an service
         """
         result = False
-        import subprocess
 
         p = subprocess.Popen(["ps", "-a"], stdout=subprocess.PIPE)
         out, _err = p.communicate()
@@ -133,7 +133,6 @@ class TestingChallengeResponseController(TestController):
         check for a service behind a port
         """
         result = False
-        import subprocess
 
         p = subprocess.Popen(["lsof", "-t", f"-i:{port}"], stdout=subprocess.PIPE)
         out, _err = p.communicate()
@@ -150,7 +149,6 @@ class TestingChallengeResponseController(TestController):
         instantiates a new TestClass and thus the radius server process will
         not be accessable outside of a test anymore
         """
-        import subprocess
 
         try:
             radius_server_file = os.path.join(

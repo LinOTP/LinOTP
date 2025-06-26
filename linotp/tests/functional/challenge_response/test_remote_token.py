@@ -315,7 +315,7 @@ class TestRemoteToken(TestingChallengeResponseController):
         log.debug("current test against %r", sqlconnect)
 
         # verify that there is n index on the TokenSerial number
-        from linotp.model import token_table
+        from linotp.model import token_table  # noqa: PLC0415
 
         for column in token_table.columns:
             log.debug(

@@ -170,7 +170,7 @@ def _check_for_cache_flush(realm_name, realm_definition):
 
     if flush_resolvers:
         # refresh the user resolver lookup in the realm user cache
-        from linotp.lib.user import delete_realm_resolver_cache
+        from linotp.lib.user import delete_realm_resolver_cache  # noqa: PLC0415
 
         delete_realm_resolver_cache(realm_name)
 
@@ -515,7 +515,7 @@ def deleteRealm(realmname):
             _delete_realm_config(realmname=realmname)
             db.session.delete(r)
 
-            from linotp.lib.user import delete_realm_resolver_cache
+            from linotp.lib.user import delete_realm_resolver_cache  # noqa: PLC0415
 
             delete_realm_resolver_cache(realmname)
 
@@ -596,7 +596,7 @@ def match_realms(request_realms, allowed_realms):
             else:
                 invalid_realms.append(search_realm)
         if not realms and invalid_realms:
-            from linotp.lib.policy import PolicyException
+            from linotp.lib.policy import PolicyException  # noqa: PLC0415
 
             raise PolicyException(
                 _(

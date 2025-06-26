@@ -358,7 +358,7 @@ def main():
     main here - for the interactive test :-)
 
     """
-    import argparse
+    import argparse  # noqa: PLC0415
 
     usage = "Interactive test for the pushtoken provider"
 

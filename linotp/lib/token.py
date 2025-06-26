@@ -733,7 +733,7 @@ class TokenHandler:
 
         tokens = self.getTokensOfType(typ=None, realm=user.realm, assigned="0")
         for token in tokens:
-            from linotp.lib import policy
+            from linotp.lib import policy  # noqa: PLC0415
 
             (pin, otp) = token.splitPinPass(passw)
             if policy.autoassignment_forward(user) and token.type == "remote":
@@ -1157,7 +1157,7 @@ class TokenHandler:
         )
         token_from = get_token(serial_from)
         token_to = get_token(serial_to)
-        import linotp.tokens.base
+        import linotp.tokens.base  # noqa: PLC0415
 
         linotp.tokens.base.TokenClass.copy_pin(token_from, token_to)
         return 1
@@ -1299,7 +1299,7 @@ def createTokenClassObject(token: Token, token_type: str | None = None):
     token_type = token_type.lower()
 
     token_class = None
-    from linotp.tokens.base import TokenClass
+    from linotp.tokens.base import TokenClass  # noqa: PLC0415
 
     # search which tokenclass should be created and create it!
     if token_type.lower() in tokenclass_registry:

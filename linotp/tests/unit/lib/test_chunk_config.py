@@ -33,10 +33,12 @@ from unittest.mock import patch
 import pytest
 
 from linotp.lib.config.db_api import (
+    MAX_VALUE_LEN,
     _retrieveConfigDB,
     _store_continous_entry_db,
     _storeConfigDB,
 )
+from linotp.lib.text_utils import simple_slice
 from linotp.model import Config, db
 
 big_value = """-----BEGIN CERTIFICATE-----
@@ -184,9 +186,6 @@ class TestChunkConfigCase(unittest.TestCase):
         """
         test for storing long values
         """
-
-        from linotp.lib.config.db_api import MAX_VALUE_LEN
-        from linotp.lib.text_utils import simple_slice
 
         key_name = "linotp.chunk_test"
         key_type = "text"

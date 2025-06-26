@@ -207,6 +207,7 @@ import hmac
 import logging
 import re
 import secrets
+import struct
 from datetime import datetime
 
 from linotp.lib.crypto.utils import get_hashalgo_from_description
@@ -757,8 +758,6 @@ class OcraSuite:
 
 
 def test():
-    import struct
-
     # ocrasuite   = 'OcraSuite-1:HOTP-SHA256-8:C-QN08-S128-PSHA1'
     ocrasuite = "OCRA-1:HOTP-SHA256-8:QA08"
     key = "3132333435363738393031323334353637383930313233343536373839303132".decode(

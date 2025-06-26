@@ -42,6 +42,7 @@ import logging
 
 from flask_babel import gettext as _
 
+import linotp.lib.policy
 from linotp.lib.auth.validate import check_otp, check_pin, split_pin_otp
 from linotp.lib.config import getFromConfig
 from linotp.lib.context import request_context as context
@@ -125,8 +126,6 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         if len(self.mode) == 1 and "challenge" in self.mode:
             return False
 
-        import linotp.lib.policy
-
         support_challenge_response = linotp.lib.policy.get_auth_challenge_response(
             user, self.type
         )
@@ -144,8 +143,6 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         if not ("authenticate" in self.mode and "challenge" in self.mode):
             return False
-
-        import linotp.lib.policy
 
         support_challenge_response = linotp.lib.policy.get_auth_challenge_response(
             user, self.type
@@ -755,7 +752,6 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
                 )
                 log.error(msg)
                 raise Exception(msg)
-        import linotp.lib.policy
 
         support_challenge_response = linotp.lib.policy.get_auth_challenge_response(
             user, self.getType()

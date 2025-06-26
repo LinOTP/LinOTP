@@ -31,6 +31,8 @@ Pytest fixtures for linotp tests
 
 import contextlib
 import copy
+import io
+import json
 import os
 import tempfile
 from collections.abc import Callable, Iterator
@@ -41,7 +43,6 @@ import pytest
 from flask.globals import current_app
 from flask.testing import FlaskClient
 
-import linotp.app
 import linotp.controllers
 from linotp import app as app_py
 from linotp.app import LinOTPApp, create_app
@@ -49,6 +50,7 @@ from linotp.cli.init_cmd import create_audit_keys, create_secret_key
 from linotp.flap import setup_request_context
 from linotp.flap import tmpl_context as c
 from linotp.model import init_db_tables
+from linotp.model.local_admin_user import LocalAdminResolver
 
 from . import CompatibleTestResponse, TestController
 
@@ -445,9 +447,6 @@ def _create_resolver(
 def create_managed_resolvers(
     scoped_authclient: Callable[..., FlaskClient],
 ) -> Callable:
-    import io
-    import json
-
     def inner_fucntion(
         file_name: str = "def-passwd-plain.csv",
         resolver_name: str = "managed_resolver",
@@ -520,8 +519,6 @@ def create_common_resolvers(
     with scoped_authclient(verify_jwt=False, username="admin") as client:
         for resolver_param in resolver_params:
             _create_resolver(resolver_params=resolver_param, adminclient=client)
-
-        from linotp.model.local_admin_user import LocalAdminResolver
 
         local_admin_resoler = LocalAdminResolver(current_app)
 

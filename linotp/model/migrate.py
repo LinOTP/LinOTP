@@ -38,6 +38,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import OperationalError
 
 from linotp import model
+from linotp.lib.security.default import TOKEN_KEY, DefaultSecurityModule
 
 log = logging.getLogger(__name__)
 
@@ -645,7 +646,7 @@ class Migration:
         # with LinOTP 3.0.0 we changed the audit signing method
         # making signatures of older entries invalid.
         # We log a warning to suggest manual deletion of old entries.
-        from linotp.lib.audit.base import getAudit
+        from linotp.lib.audit.base import getAudit  # noqa PLC0415
 
         audit_obj = getAudit()
         total_audit_entries = audit_obj.getTotal({})
@@ -753,11 +754,6 @@ class Migration:
 
         This has to be done for the tokens and for the encrypted config values
         """
-
-        from linotp.lib.security.default import (
-            TOKEN_KEY,
-            DefaultSecurityModule,
-        )
 
         class MigrationSecurityModule(DefaultSecurityModule):
             """Migration helper class, which contains the old padding.
@@ -978,7 +974,7 @@ def _parse_action(action_value):
     # to avoid circular import import lazily parse_action
     # parse_action is used here in migrate script and internally in policy module
     # creating separate module only for it would be overkill at least for now
-    from linotp.lib.policy.util import parse_action
+    from linotp.lib.policy.util import parse_action  # noqa: PLC0415
 
     return parse_action(action_value)
 

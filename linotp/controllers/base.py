@@ -259,7 +259,9 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
 
         The result is placed into request_context['RequestUser']
         """
-        from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
+        from linotp.useridresolver.UserIdResolver import (  # noqa: PLC0415
+            ResolverNotAvailable,
+        )
 
         requestUser = None
         try:

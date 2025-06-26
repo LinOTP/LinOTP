@@ -27,6 +27,7 @@
 
 import logging
 
+import linotp.lib.token
 from linotp.lib.context import request_context
 from linotp.lib.policy.util import parse_action
 from linotp.lib.type_utils import boolean, parse_duration
@@ -527,8 +528,6 @@ def _get_policy_definitions():
     # now add generic policies, which every token should provide:
     # - init<TT>
     # - enroll<TT>, but only, if there is a rendering section
-
-    import linotp.lib.token
 
     token_type_list = linotp.lib.token.get_token_type_list()
 

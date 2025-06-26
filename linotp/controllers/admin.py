@@ -2346,7 +2346,7 @@ class AdminController(BaseController, JWTMixin):
         sendResultMethod = sendResult
         sendErrorMethod = sendError
 
-        from linotp.lib.ImportOTP import getKnownTypes
+        from linotp.lib.ImportOTP import getKnownTypes  # noqa: PLC0415
 
         known_types.extend(getKnownTypes())
         log.info(
@@ -2354,15 +2354,15 @@ class AdminController(BaseController, JWTMixin):
             known_types,
         )
 
-        from linotp.lib.ImportOTP.PSKC import parsePSKCdata
+        from linotp.lib.ImportOTP.PSKC import parsePSKCdata  # noqa: PLC0415
 
         log.info("[loadtokens] loaded parsePSKCdata")
 
-        from linotp.lib.ImportOTP.DPWplain import parseDPWdata
+        from linotp.lib.ImportOTP.DPWplain import parseDPWdata  # noqa: PLC0415
 
         log.info("[loadtokens] loaded parseDPWdata")
 
-        from linotp.lib.ImportOTP.eTokenDat import parse_dat_data
+        from linotp.lib.ImportOTP.eTokenDat import parse_dat_data  # noqa: PLC0415
 
         log.info("[loadtokens] loaded parseDATdata")
 

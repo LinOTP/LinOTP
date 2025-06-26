@@ -32,6 +32,7 @@ import logging
 import urllib.error
 import urllib.parse
 import urllib.request
+from urllib.parse import parse_qs
 
 import qrcode
 from flask import Response, current_app, g
@@ -106,7 +107,6 @@ def _get_httperror_code_from_params() -> str | None:
             "directly from query_string. Exception: %r",
             exx,
         )
-        from urllib.parse import parse_qs
 
         params = parse_qs(flask_request.query_string)
         if b"httperror" in params:

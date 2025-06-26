@@ -49,7 +49,7 @@ def getAudit():
         )
         audit = AuditBase()
     else:
-        from . import SQLAudit
+        from . import SQLAudit  # noqa: PLC0415
 
         audit = SQLAudit.Audit()
 

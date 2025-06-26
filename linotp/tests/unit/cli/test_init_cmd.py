@@ -40,6 +40,7 @@ import linotp.cli.init_cmd as c
 from linotp import __version__
 from linotp.app import LinOTPApp
 from linotp.cli import Echo, get_backup_filename, main
+from linotp.lib.security.default import DefaultSecurityModule
 from linotp.model import db, init_db_tables, setup_db
 from linotp.model.config import Config
 from linotp.model.token import Token
@@ -341,8 +342,6 @@ def test_padding_migration(app, base_app, engine):
     values should be the same
 
     """
-
-    from linotp.lib.security.default import DefaultSecurityModule
 
     class MockSecurityModule(DefaultSecurityModule):
         @staticmethod

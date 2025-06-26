@@ -194,8 +194,9 @@ def backup_database_tables() -> int:
             with click.progressbar(
                 data_query.all(), label=name, file=pb_file
             ) as all_data:
-                for data in all_data:
-                    backup_file.write(binascii.hexlify(dumps(data)).decode("utf-8"))
+                backup_file.writelines(
+                    binascii.hexlify(dumps(data)).decode("utf-8") for data in all_data
+                )
 
                 app.echo(".", v=2, nl=False)
 

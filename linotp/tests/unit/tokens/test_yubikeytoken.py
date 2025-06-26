@@ -32,6 +32,9 @@ from unittest.mock import MagicMock, patch
 
 from Cryptodome.Cipher import AES
 
+import linotp.lib.crypto
+from linotp.tokens.yubikeytoken import YubikeyTokenClass
+
 
 def _aes_decrypt_constructor(hex_key):
     """
@@ -61,9 +64,6 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
     """
 
     def setUp(self):
-        import linotp.lib.crypto
-        from linotp.tokens.yubikeytoken import YubikeyTokenClass
-
         # Without this logging in the tested class fails
         logging.basicConfig()
 
@@ -290,8 +290,6 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         """
         Verify the simple classmethods getClassType and getClassPrefix
         """
-        from linotp.tokens.yubikeytoken import YubikeyTokenClass
-
         assert YubikeyTokenClass.getClassType() == "yubikey"
         assert YubikeyTokenClass.getClassPrefix() == "UBAM"
 
@@ -299,7 +297,6 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         """
         Test the classmethod getClassInfo
         """
-        from linotp.tokens.yubikeytoken import YubikeyTokenClass
 
         full_class_info = {
             "selfservice": {},

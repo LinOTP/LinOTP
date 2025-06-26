@@ -32,7 +32,7 @@ import time
 from linotp.lib.config import getFromConfig
 from linotp.lib.error import ParameterError
 from linotp.lib.HMAC import HmacOtp
-from linotp.lib.type_utils import boolean
+from linotp.lib.type_utils import boolean, parse_duration
 from linotp.lib.util import generate_otpkey
 from linotp.tokens import tokenclass_registry
 from linotp.tokens.base import TokenClass
@@ -851,8 +851,6 @@ class TimeHmacTokenClass(HmacTokenClass):
         :param otp: the otp for which the timestamp is searched
         :param window: string, in human readable '2h' or iso8601 format 'PT2H'
         """
-
-        from linotp.lib.type_utils import parse_duration
 
         window = parse_duration(window).total_seconds()
 

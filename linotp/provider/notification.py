@@ -121,7 +121,7 @@ def notify_user_by_email(provider_name, user, action, info):
     # during a dynamic module which is detected as a recursive load and
     # therefore gives an error on server start
 
-    from . import loadProvider
+    from . import loadProvider  # noqa: PLC0415
 
     try:
         provider = loadProvider("email", provider_name=provider_name)

@@ -353,7 +353,7 @@ class User:
         return res
 
     def getPermissions(self):
-        from linotp.lib.policy.permissions import UserPermissions
+        from linotp.lib.policy.permissions import UserPermissions  # noqa: PLC0415
 
         return UserPermissions(self)
 

@@ -26,6 +26,7 @@ import secrets
 import stat
 import sys
 import time
+import traceback
 from datetime import datetime
 from logging.config import dictConfig as logging_dictConfig
 from pathlib import Path
@@ -340,7 +341,7 @@ class LinOTPApp(Flask):
             if not license_str:
                 log.error("empty license file: %s", filename)
             else:
-                import linotp.lib.support
+                import linotp.lib.support  # noqa: PLC0415
 
                 res, msg = linotp.lib.support.setSupportLicense(license_str)
                 if res is False:
@@ -545,7 +546,7 @@ class LinOTPApp(Flask):
         # ------------------------------------------------------------------ --
         # load the providers
 
-        from linotp.provider import Provider_types, getProvider
+        from linotp.provider import Provider_types, getProvider  # noqa: PLC0415
 
         provider = {
             provider_type: getProvider(provider_type)
@@ -591,8 +592,6 @@ class LinOTPApp(Flask):
         """
         cache_manager = request_context["CacheManager"]
         if not cache_manager:
-            import traceback
-
             log.warning(
                 "[%s] Could not initialise cache due to missing manager",
                 traceback.format_stack(None, 1),

@@ -110,7 +110,7 @@ def compare_password(password, crypted_password):
     # compatibilty case:
     # the rare case for the broken system crypto libs like on macos
 
-    from crypt import crypt as libcrypt
+    from crypt import crypt as libcrypt  # noqa: PLC0415
 
     new_crypted_passw = libcrypt(password, crypted_password)
     return compare(new_crypted_passw, crypted_password)
@@ -469,7 +469,7 @@ def init_key_partition(config, partition, key_type="ed25519"):
         msg = f"Unsupported keytype: {key_type}"
         raise ValueError(msg)
 
-    import linotp.lib.config
+    import linotp.lib.config  # noqa: PLC0415
 
     public_key, secret_key = gen_dsa_keypair()
     secret_key_entry = base64.b64encode(secret_key).decode("utf-8")
@@ -495,7 +495,7 @@ def get_secret_key(partition):
     extracts and decodes the secret key and returns it as a 32 bytes.
     """
 
-    import linotp.lib.config
+    import linotp.lib.config  # noqa: PLC0415
 
     key = f"linotp.SecretKey.Partition.{partition}"
 
@@ -523,7 +523,7 @@ def get_public_key(partition):
     extracts and decodes the public key and returns it as a 32 bytes.
     """
 
-    import linotp.lib.config
+    import linotp.lib.config  # noqa: PLC0415
 
     key = f"linotp.PublicKey.Partition.{partition}"
 

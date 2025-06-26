@@ -30,6 +30,8 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
+from linotp.tokens.u2ftoken.u2ftoken import U2FTokenClass
+
 
 class U2FTokenClassTestCase(unittest.TestCase):
     """
@@ -39,8 +41,6 @@ class U2FTokenClassTestCase(unittest.TestCase):
     """
 
     def setUp(self):
-        from linotp.tokens.u2ftoken.u2ftoken import U2FTokenClass
-
         # Without this logging in the tested class fails
         logging.basicConfig()
 

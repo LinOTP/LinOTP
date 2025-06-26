@@ -36,6 +36,8 @@ import logging
 import re
 import xml.etree.ElementTree as etree
 
+from Cryptodome.Cipher import AES
+
 from linotp.lib.crypto import pbkdf2
 from linotp.lib.ImportOTP import ImportException, getTagName
 
@@ -76,8 +78,6 @@ def getMacMethod(elem):
 
 
 def aes_decrypt(transport_b64, key_hex, serial=""):
-    from Cryptodome.Cipher import AES
-
     def hack(data, serial=""):
         bsize = 16
         a = data[-1]

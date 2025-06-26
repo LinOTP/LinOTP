@@ -266,7 +266,7 @@ class UserImport:
 
 
 def main():
-    from linotp.lib.tools.import_user.SQLImportHandler import (
+    from linotp.lib.tools.import_user.SQLImportHandler import (  # noqa: PLC0415
         Shell_DatabaseContext,
         SQLImportHandler,
     )

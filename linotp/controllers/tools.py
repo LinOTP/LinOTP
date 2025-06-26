@@ -178,7 +178,9 @@ class ToolsController(BaseController):
 
         """
 
-        from linotp.lib.tools.migrate_resolver import MigrateResolverHandler
+        from linotp.lib.tools.migrate_resolver import (  # noqa: PLC0415
+            MigrateResolverHandler,
+        )
 
         ret = {}
 
@@ -186,7 +188,7 @@ class ToolsController(BaseController):
             src = self.request_params["from"]
             target = self.request_params["to"]
 
-            from linotp.lib.resolver import getResolverList
+            from linotp.lib.resolver import getResolverList  # noqa: PLC0415
 
             resolvers = getResolverList()
 
