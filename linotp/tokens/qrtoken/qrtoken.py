@@ -41,7 +41,6 @@ from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
 from linotp.flap import config
 from linotp.lib.challenges import Challenges, transaction_id_to_u64
 from linotp.lib.config import getFromConfig
-from linotp.lib.context import request_context as context
 from linotp.lib.crypto.utils import (
     decode_base64_urlsafe,
     encode_base64_urlsafe,
@@ -666,7 +665,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             owner = get_token_owner(self)
             if owner and owner.login and owner.realm:
                 realms = [owner.realm]
-                user = owner
+                _user = owner
             else:
                 realms = self.getRealms()
 

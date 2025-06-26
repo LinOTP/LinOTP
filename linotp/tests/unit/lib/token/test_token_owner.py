@@ -150,7 +150,7 @@ class TestTokenOwner(unittest.TestCase):
         """
 
         serial = "fake_123_token"
-        user = User(login="hans")
+        _user = User(login="hans")
 
         mocked_getUserId.return_value = ("123", "res", "resC")
         mocked_get_token.return_value = FakeToken("123", "res", "resC")

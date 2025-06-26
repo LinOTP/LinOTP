@@ -882,7 +882,7 @@ class Migration:
             # ------------------------------------------------------------- --
 
             encrypted_value = binascii.unhexlify(token.LinOtpKeyEnc)
-            enc = binascii.hexlify(encrypted_value)
+            _enc = binascii.hexlify(encrypted_value)
 
             value = sec_module.decrypt(value=encrypted_value, iv=iv, id=TOKEN_KEY)
 

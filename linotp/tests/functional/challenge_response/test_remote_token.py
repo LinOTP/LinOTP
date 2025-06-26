@@ -34,16 +34,13 @@ used to do functional testing of the remote token
 
 """
 
-import binascii
 import json
 import logging
-import smtplib
 import urllib.parse
 
 import httplib2
 from mock import patch
 
-from linotp.lib.util import str2unicode
 from linotp.tests.functional.challenge_response.testing_controller import (
     TestingChallengeResponseController,
 )

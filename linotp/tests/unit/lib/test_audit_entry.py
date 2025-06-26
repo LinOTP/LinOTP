@@ -31,7 +31,6 @@ import unittest
 
 import pytest
 from flask import g
-from mock import patch
 
 from linotp.lib.auth.finishtokens import FinishTokens
 

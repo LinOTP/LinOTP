@@ -130,6 +130,7 @@ plugins = "sqlmypy"
 
 [tool.ruff]
 lint.select = [
+  "F",    # pyflakes
   "I",    # isort
   "PERF", # perflint
 ]

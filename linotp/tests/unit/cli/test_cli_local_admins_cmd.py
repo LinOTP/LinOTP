@@ -35,9 +35,7 @@ from linotp.cli import main as cli_main
 from linotp.lib.config import getFromConfig
 from linotp.model.config import set_config
 from linotp.model.local_admin_user import (
-    DuplicateUserError,
     LocalAdminResolver,
-    NoSuchUserError,
 )
 
 
@@ -215,7 +213,7 @@ def test_local_admins_modify_missing_user(app, runner, resolver):
     [
         ("foo", [], "{PWD}\n{PWD}\n"),
         ("bar", ["--password={PWD}"], ""),
-        ("baz", [f"--password=-"], "{PWD}\n"),
+        ("baz", ["--password=-"], "{PWD}\n"),
     ],
 )
 def test_local_admins_password(app, runner, resolver, pwd, args, stdin_data):

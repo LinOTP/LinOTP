@@ -45,15 +45,14 @@ import socket
 import sys
 from getopt import GetoptError, getopt
 
-import pyrad.packet as packet
 from pyrad.dictionary import Dictionary
 from pyrad.packet import AccessAccept, AccessChallenge, AccessReject
-from pyrad.server import RemoteHost, ServerPacketError
+from pyrad.server import RemoteHost
 from pyrad.server import Server as RadiusServer
 
 try:
     myIP = socket.gethostbyname(socket.gethostname())
-except socket.gaierror as exx:
+except socket.gaierror:
     myIP = "127.0.0.1"
 
 state_id = "11321312313213132"
@@ -108,7 +107,7 @@ class myRadiusServer(RadiusServer):
         state = None
         try:
             state = pkt["State"][0]
-        except Exception as exx:
+        except Exception:
             state = None
 
         # print password
@@ -162,9 +161,9 @@ def main():
     main worker:
     * gather the input
     """
-    param = {}
-    user = "tester"
-    password = "password"
+    _param = {}
+    _user = "tester"
+    _password = "password"
 
     client1 = RemoteHost(myIP, "testing123", "lselap")
     client2 = RemoteHost("127.0.0.1", "testing123", "localhost")

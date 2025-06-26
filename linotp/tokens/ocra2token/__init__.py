@@ -208,7 +208,6 @@ import hmac
 import logging
 import re
 import secrets
-import sys
 from datetime import datetime
 
 from linotp.lib.crypto.utils import get_hashalgo_from_description

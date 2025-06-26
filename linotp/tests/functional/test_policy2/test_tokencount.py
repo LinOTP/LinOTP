@@ -30,8 +30,6 @@
 Test the tokencount Policy.
 """
 
-from copy import deepcopy
-
 from linotp.tests import TestController
 
 

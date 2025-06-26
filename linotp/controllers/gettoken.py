@@ -33,7 +33,6 @@ import logging
 from flask import current_app, g, request
 
 from linotp.controllers.base import BaseController
-from linotp.flap import config
 from linotp.flap import render_mako as render
 from linotp.flap import tmpl_context as c
 from linotp.lib import deprecated_methods
@@ -44,8 +43,6 @@ from linotp.lib.reply import sendError, sendResult
 from linotp.lib.token import get_multi_otp, get_tokens, getOtp, getTokenType
 from linotp.lib.type_utils import boolean
 from linotp.lib.user import (
-    getDefaultRealm,
-    getUserFromParam,
     getUserFromRequest,
 )
 from linotp.lib.util import getParam

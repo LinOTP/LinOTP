@@ -1420,7 +1420,7 @@ def getUserList(param, search_user):
                     log.debug("[getUserList] Found this userlist: %r", ulist)
                     users.extend(ulist)
 
-            except StopIteration as exx:
+            except StopIteration:
                 # we are done: all users are fetched or
                 # page size limit reached
                 pass

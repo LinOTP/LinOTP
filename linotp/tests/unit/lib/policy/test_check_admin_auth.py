@@ -25,7 +25,6 @@
 #    Support: www.lsexperts.de
 #
 
-import pytest
 
 from linotp.lib.policy import checkAdminAuthorization
 from linotp.lib.user import User

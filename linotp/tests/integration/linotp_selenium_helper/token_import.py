@@ -32,7 +32,7 @@ import tempfile
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.file_detector import LocalFileDetector
 
-from linotp_selenium_helper.manage_ui import ManageUi, MsgType
+from linotp_selenium_helper.manage_ui import ManageUi
 
 from .manage_ui import ManageDialog
 

@@ -35,7 +35,6 @@ import ldap
 import mock
 
 from linotp.useridresolver.LDAPIdResolver import IdResolver as LDAPResolver
-from linotp.useridresolver.UserIdResolver import getResolverClass
 
 
 @unittest.skip("Broken 'no hsm defined in execution context'")

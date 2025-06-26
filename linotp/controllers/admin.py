@@ -80,7 +80,6 @@ from linotp.lib.type_utils import boolean
 from linotp.lib.user import (
     User,
     getSearchFields,
-    getUserFromParam,
     getUserFromRequest,
     getUserListIterators,
 )
@@ -1323,7 +1322,7 @@ class AdminController(BaseController, JWTMixin):
             users = set()
             realms = set()
             token_types = set()
-            th = TokenHandler()
+
             for token in tokens:
                 # ---------------------------------------------------------- --
 
@@ -2637,7 +2636,6 @@ class AdminController(BaseController, JWTMixin):
         """
 
         try:
-            request_params = self.request_params
             try:
                 resolvername = self.request_params["name"]
 

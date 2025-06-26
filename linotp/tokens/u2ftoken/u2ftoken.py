@@ -372,7 +372,7 @@ class U2FTokenClass(TokenClass):
         """
         try:
             clientData = json.loads(clientData)
-        except ValueError as ex:
+        except ValueError:
             raise Exception("Invalid client data JSON format")
 
         try:
@@ -380,7 +380,7 @@ class U2FTokenClass(TokenClass):
             cdChallenge = clientData["challenge"]
             cdOrigin = clientData["origin"]
             # TODO: Check for optional cid_pubkey
-        except KeyError as err:
+        except KeyError:
             raise Exception("Wrong client data format!")
 
         # validate typ
@@ -651,7 +651,7 @@ class U2FTokenClass(TokenClass):
         # decode the retrieved passw object
         try:
             authResponse = json.loads(passw)
-        except ValueError as ex:
+        except ValueError:
             raise Exception("Invalid JSON format")
 
         self._handle_client_errors(authResponse)
@@ -660,7 +660,7 @@ class U2FTokenClass(TokenClass):
             signatureData = authResponse.get("signatureData", None)
             clientData = authResponse["clientData"]
             keyHandle = authResponse["keyHandle"]
-        except AttributeError as ex:
+        except AttributeError:
             raise Exception("Couldn't find keyword in JSON object")
 
         # Does the keyHandle match the saved keyHandle created on registration?
@@ -958,7 +958,7 @@ class U2FTokenClass(TokenClass):
                 # the FIDO Alliance
                 try:
                     registerResponse = json.loads(otpkey)
-                except ValueError as ex:
+                except ValueError:
                     raise Exception("Invalid JSON format")
 
                 self._handle_client_errors(registerResponse)
@@ -966,7 +966,7 @@ class U2FTokenClass(TokenClass):
                 try:
                     registrationData = registerResponse["registrationData"]
                     clientData = registerResponse["clientData"]
-                except AttributeError as ex:
+                except AttributeError:
                     raise Exception("Couldn't find keyword in JSON object")
 
                 # registrationData and clientData are urlsafe base64 encoded

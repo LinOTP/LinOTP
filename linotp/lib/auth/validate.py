@@ -30,7 +30,6 @@ import binascii
 import copy
 import json
 import logging
-from datetime import datetime
 from hashlib import sha256
 
 from flask import g

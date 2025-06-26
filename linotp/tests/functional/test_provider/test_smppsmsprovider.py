@@ -29,7 +29,6 @@
 Test SMS sending via SMPP.
 """
 
-import socket
 import threading
 import time
 

@@ -28,11 +28,9 @@
 import unittest
 
 import pytest
-from flask import appcontext_pushed
 from mock import patch
 
 from linotp.controllers.system import SystemController
-from linotp.flap import tmpl_context as context
 from linotp.lib.security.provider import SecurityProvider
 from linotp.model import db
 

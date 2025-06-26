@@ -202,8 +202,6 @@ class UserIdResolverManager(ManageDialog):
                 "EnforceTLS": "False",
                 "only_trusted_certs": "False",
                 "TIMEOUT": "5",
-                "EnforceTLS": "False",
-                "TIMEOUT": "5",
                 "SIZELIMIT": "500",
                 "NOREFERRALS": "True",
             }

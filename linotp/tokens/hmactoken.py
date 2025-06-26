@@ -444,9 +444,9 @@ class HmacTokenClass(TokenClass):
             # need to do this manually here:
             self.incOtpCounter(res)
         if res == -1:
-            msg = "otp counter %r was not found" % otp
+            _msg = "otp counter %r was not found" % otp
         else:
-            msg = "otp counter %r was found" % otp
+            _msg = "otp counter %r was found" % otp
         return res
 
     def autosync(self, hmac2Otp, anOtpVal):
@@ -527,9 +527,9 @@ class HmacTokenClass(TokenClass):
                 res = -1
 
         if res == -1:
-            msg = "call was not successful"
+            _msg = "call was not successful"
         else:
-            msg = "call was successful"
+            _msg = "call was successful"
 
         return res
 

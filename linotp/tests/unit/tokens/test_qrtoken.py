@@ -26,7 +26,6 @@
 #
 
 import json
-import unittest
 
 from mock import patch
 

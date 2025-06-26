@@ -25,7 +25,6 @@
 #    Support: www.linotp.de
 #
 
-from flask import g
 from mock import patch
 
 from linotp.lib.user import User, getUserFromRequest

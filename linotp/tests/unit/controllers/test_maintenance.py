@@ -24,8 +24,6 @@
 #    Support: www.linotp.de
 #
 
-import json
-import os
 
 import flask
 import pytest
@@ -34,7 +32,7 @@ from sqlalchemy.exc import OperationalError
 from werkzeug.exceptions import Unauthorized
 
 from linotp.flap import config
-from linotp.model import Config, LoggingConfig, db
+from linotp.model import LoggingConfig, db
 
 
 @pytest.mark.usefixtures("app")

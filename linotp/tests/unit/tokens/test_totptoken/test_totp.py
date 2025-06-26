@@ -29,13 +29,8 @@
 totp token - timeshift unit tests
 """
 
-import binascii
-import json
-import logging
 import unittest
 from datetime import datetime, timedelta
-
-from mock import MagicMock, patch
 
 from linotp.tokens.totptoken import counter2time, time2counter
 
@@ -139,10 +134,10 @@ class TotpTestCase(unittest.TestCase):
 
     def test_counter_time(self):
         for vector in range_tvector():
-            (seconds, token_time, counter, totp, hash_algo) = vector
+            (_seconds, _token_time, counter, _totp, _hash_algo) = vector
 
             t_seconds = counter2time(counter, timeStepping=30)
-            t_time = unix_start_time + timedelta(seconds=t_seconds)
+            _t_time = unix_start_time + timedelta(seconds=t_seconds)
             ccounter = time2counter(t_seconds, timeStepping=30)
 
             assert ccounter == counter

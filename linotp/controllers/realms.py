@@ -105,7 +105,7 @@ class RealmsController(BaseController):
         """
 
         try:
-            res = checkPolicyPre("system", "getRealms")
+            _res = checkPolicyPre("system", "getRealms")
 
         except PolicyException as pe:
             log.error("[get_realms] policy failed: {}".format(pe))
@@ -115,7 +115,7 @@ class RealmsController(BaseController):
             return error
 
         try:
-            log.debug("[get_realms] with params".format(self.request_params))
+            log.debug("[get_realms] with params")
 
             g.audit["success"] = True
 
@@ -192,10 +192,10 @@ class RealmsController(BaseController):
         realm_user = RealmUser(realm=realm_name)
         try:
             policy_params = {"realm": realm_name}
-            res = checkPolicyPre(
+            _res = checkPolicyPre(
                 "admin", "userlist", param=policy_params, user=realm_user
             )
-        except PolicyException as exception:
+        except PolicyException:
             log.error(
                 "[realms.get_users] admin_user is not allowed to list users in realm %s",
                 realm_name,

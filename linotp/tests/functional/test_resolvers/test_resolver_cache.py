@@ -34,7 +34,6 @@ import logging
 
 from mock import patch
 
-from linotp.lib.user import lookup_user_in_resolver
 from linotp.tests import TestController
 from linotp.useridresolver.LDAPIdResolver import IdResolver as ldap_resolver
 from linotp.useridresolver.UserIdResolver import ResolverNotAvailable

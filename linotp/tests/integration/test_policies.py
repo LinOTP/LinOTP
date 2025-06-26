@@ -33,9 +33,8 @@ import binascii
 
 import integration_data as data
 import pytest
-from linotp_selenium_helper import Policy, TestCase
+from linotp_selenium_helper import Policy
 from linotp_selenium_helper.token_import import TokenImportAladdin
-from linotp_selenium_helper.validate import Validate
 
 from linotp.lib.HMAC import HmacOtp
 

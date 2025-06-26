@@ -285,7 +285,7 @@ class YubicoTokenClass(TokenClass):
                 ReadTimeout,
                 ConnectionError,
                 TooManyRedirects,
-            ) as exx:
+            ):
                 log.error("resource %r not available!", uri)
 
                 # mark the url as blocked

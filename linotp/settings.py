@@ -119,7 +119,7 @@ def check_absolute_pathname():
                 f"{key} must be an absolute path name but {value} is relative."
             )
 
-    f.__doc__ = f"value is an absolute path name"
+    f.__doc__ = "value is an absolute path name"
     return f
 
 

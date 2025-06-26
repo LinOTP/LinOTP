@@ -96,12 +96,12 @@ class TestSystemController(TestController):
         self.delete_all_realms()
 
         params = {"username": "root"}
-        response = self.make_admin_request(action="userlist", params=params)
+        _response = self.make_admin_request(action="userlist", params=params)
 
         pass
         params = {"username": "root", "realm": "myMixRealm"}
 
-        response = self.make_admin_request(action="userlist", params=params)
+        _response = self.make_admin_request(action="userlist", params=params)
 
         pass
 

@@ -116,7 +116,7 @@ from linotp.lib.userservice import (
     getTokenForUser,
     remove_auth_cookie,
 )
-from linotp.lib.util import generate_otpkey, get_client
+from linotp.lib.util import get_client
 from linotp.model import db
 from linotp.tokens.forwardtoken import ForwardTokenClass
 
@@ -529,7 +529,7 @@ class UserserviceController(BaseController):
 
             try:
                 password = param["password"]
-            except KeyError as exx:
+            except KeyError:
                 log.info("Missing password for user %r", uid)
                 g.audit["action_detail"] = "Missing password for user %r" % uid
                 g.audit["success"] = False
@@ -1787,8 +1787,6 @@ class UserserviceController(BaseController):
             # -------------------------------------------------------------- --
 
             # identify the affected tokens
-            challenge = None
-
             if transaction_id:
                 reply = Challenges.get_challenges(transid=transaction_id)
                 _expired_challenges, valid_challenges = reply
@@ -1805,7 +1803,7 @@ class UserserviceController(BaseController):
                         "transaction id {} ".format(transaction_id)
                     )
 
-                challenge = valid_challenges[0]
+                _challenge = valid_challenges[0]
 
                 serials = {c.tokenserial for c in valid_challenges}
 

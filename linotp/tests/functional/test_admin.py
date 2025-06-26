@@ -1365,7 +1365,7 @@ class TestAdminController(TestController):
                 self.init_token({**params, "serial": new_serial})
 
             content_type = "application/json" if action in ["setValidity"] else None
-            response = self.make_admin_request(
+            _response = self.make_admin_request(
                 action=action, params=request_params, content_type=content_type
             )
 
@@ -1404,7 +1404,7 @@ class TestAdminController(TestController):
         local_admin_resoler.add_user(username, password)
 
         client = FlaskClient(self.app)
-        res = client.post(
+        _res = client.post(
             "/admin/login", data=dict(username=username, password=password)
         )
 
@@ -1425,7 +1425,7 @@ class TestAdminController(TestController):
         local_admin_resoler.add_user(username, password)
 
         client = FlaskClient(self.app)
-        res = client.post(
+        _res = client.post(
             "/admin/login",
             data=dict(username=username, password=password + "WRONG"),
         )
@@ -1443,7 +1443,7 @@ class TestAdminController(TestController):
 
         username = "admin"
 
-        res = self._make_authenticated_request(controller="admin", action="logout")
+        _res = self._make_authenticated_request(controller="admin", action="logout")
 
         audit_entry = self.get_last_audit_entry()
         assert "admin/logout" == audit_entry[4]
@@ -1687,7 +1687,7 @@ class TestAdminController(TestController):
             self.create_reporting_policy()
 
             # trigger action
-            response = self.make_admin_request(
+            _response = self.make_admin_request(
                 action, params=test_dict.get("request_params")
             )
 
@@ -1738,7 +1738,7 @@ class TestAdminController(TestController):
             "remove",
             "tokenrealm",
         ]:
-            response = self.make_request("admin", action, params={"serial": serial})
+            _response = self.make_request("admin", action, params={"serial": serial})
 
             # verify no reporting was triggered
             with DBSession() as session:

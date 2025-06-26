@@ -33,8 +33,6 @@ Test the support for userservice controller including authentication
 import logging
 import os
 
-import pytest
-
 from linotp.tests import TestController
 
 log = logging.getLogger(__name__)

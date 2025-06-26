@@ -31,7 +31,7 @@ import sys
 import unittest
 from unittest import TestCase
 
-from mock import MagicMock, Mock, patch
+from mock import patch
 
 from linotp.provider.smsprovider.DeviceSMSProvider import DeviceSMSProvider
 
@@ -50,7 +50,7 @@ class BaseClass:
             cls.gnokii_available = False
             FNULL = open(os.devnull, "w")
             try:
-                ret = subprocess.call(
+                _ret = subprocess.call(
                     ["gnokii", "--version"], stdout=FNULL, stderr=FNULL
                 )
                 cls.gnokii_available = True

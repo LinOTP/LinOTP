@@ -25,7 +25,6 @@
 #    Support: www.lsexperts.de
 #
 
-import pytest
 from mock import patch
 
 from linotp.lib.policy import is_authorized

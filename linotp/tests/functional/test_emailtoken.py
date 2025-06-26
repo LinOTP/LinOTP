@@ -222,7 +222,7 @@ class TestEmailtokenController(TestController):
         """
         Test that challenges email Header validity'
         """
-        response = self.make_validate_request(
+        _response = self.make_validate_request(
             "check", params={"user": "root", "pass": self.pin}
         )
         assert self.mock_smtp_instance.sendmail.call_count >= 1, (

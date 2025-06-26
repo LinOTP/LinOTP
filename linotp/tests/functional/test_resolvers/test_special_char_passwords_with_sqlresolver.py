@@ -32,9 +32,7 @@ sql resolver tests
 import json
 import logging
 
-from passlib.hash import atlassian_pbkdf2_sha1
 from passlib.hash import bcrypt as passlib_bcrypt
-from passlib.hash import phpass as passlib_phpass
 
 from .sql_test_controller import SQLTestController
 
@@ -212,7 +210,7 @@ class SQLResolverSpecialPasswordTest(SQLTestController):
             password = users[name]["mobile"]
             try:
                 self.run_password_check(user, password, realm=realm)
-            except Exception as exx:
+            except Exception:
                 pass
         return
 

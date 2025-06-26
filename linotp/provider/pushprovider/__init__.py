@@ -30,8 +30,6 @@
 
 import logging
 
-from linotp.provider import provider_registry
-
 log = logging.getLogger(__name__)
 
 

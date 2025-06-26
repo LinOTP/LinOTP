@@ -36,9 +36,11 @@ from warnings import warn
 from flask import Blueprint, current_app, g, request
 from flask_jwt_extended import (
     create_access_token,
+    get_jwt,
     get_jwt_identity,
     set_access_cookies,
     unset_jwt_cookies,
+    verify_jwt_in_request,
 )
 from flask_jwt_extended.exceptions import (
     CSRFError,
@@ -52,16 +54,7 @@ from linotp.lib.context import request_context
 from linotp.lib.realm import getRealms
 from linotp.lib.reply import sendError, sendResult
 from linotp.lib.resolver import getResolverObject
-from linotp.lib.tools.flask_jwt_extended_migration import (
-    get_jwt,
-    verify_jwt_in_request,
-)
-from linotp.lib.user import (
-    NoResolverFound,
-    User,
-    getUserFromParam,
-    getUserFromRequest,
-)
+from linotp.lib.user import NoResolverFound, User, getUserFromParam, getUserFromRequest
 
 log = logging.getLogger(__name__)
 
@@ -250,7 +243,7 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
                 "This can be a user who saved and reused a token, or an attacker using a stolen token:\n%r",
                 e,
             )
-        except DecodeError as e:
+        except DecodeError:
             cookie_name = current_app.config["JWT_ACCESS_COOKIE_NAME"]
             cookie = request.cookies[cookie_name]
             log.error("jwt_check: could not decode JWT: %r", cookie)

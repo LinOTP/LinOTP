@@ -28,7 +28,6 @@
 This model contains the linotp processing logic
 """
 
-import warnings
 from functools import wraps
 
 

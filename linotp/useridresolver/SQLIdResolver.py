@@ -974,7 +974,7 @@ class IdResolver(UserIdResolver):
                 value = row[colName]
                 log.debug("[_getUserInfo] %r:%r", value, type(value))
 
-            except NoSuchColumnError as e:
+            except NoSuchColumnError:
                 log.error("[_getUserInfo]")
                 value = "-ERR: column mapping-"
 

@@ -130,7 +130,7 @@ class TestPasswdController(TestController):
 
     def test_user_of_passwdId_resolver_with_username(self):
         response = self.make_api_v2_request(
-            f"/resolvers/myDefRes/users",
+            "/resolvers/myDefRes/users",
             params={"username": "passt*"},
             auth_user="admin",
         )
@@ -142,7 +142,7 @@ class TestPasswdController(TestController):
 
     def test_user_of_passwdiId_resolver_with_searchTerm(self):
         response = self.make_api_v2_request(
-            f"/resolvers/myDefRes/users",
+            "/resolvers/myDefRes/users",
             params={"searchTerm": "passt*"},
             auth_user="admin",
         )

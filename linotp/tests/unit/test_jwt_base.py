@@ -31,8 +31,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest  # noqa: F401
 
-from linotp import __version__ as linotp_version
-
 # ----------------------------------------------------------------------
 # Tests for cookie settings.
 # ----------------------------------------------------------------------

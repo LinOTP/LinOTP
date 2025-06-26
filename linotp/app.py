@@ -38,6 +38,7 @@ from flask import Config as FlaskConfig
 from flask import Flask, abort, current_app, jsonify, redirect, request, url_for
 from flask import g as flask_g
 from flask_babel import Babel
+from flask_jwt_extended import JWTManager
 from werkzeug.exceptions import HTTPException
 from werkzeug.middleware.profiler import ProfilerMiddleware
 
@@ -63,7 +64,6 @@ from .lib.resolver import (
 )
 from .lib.security.provider import SecurityProvider
 from .lib.tools.expiring_list import CustomExpiringList
-from .lib.tools.flask_jwt_extended_migration import JWTManager
 from .lib.util import get_client, get_log_level
 from .middlewares.trusted_proxy_handler import TrustedProxyHandler
 from .model import SYS_EXIT_CODE, setup_db
@@ -746,7 +746,7 @@ class LinOTPApp(Flask):
         private_key = self.config["AUDIT_PRIVATE_KEY_FILE"]
         if not os.path.isfile(public_key) or not os.path.isfile(private_key):
             print(
-                f"CRITICAL: Audit log keypair does not exist; use `linotp init audit-keys` to generate one.",
+                "CRITICAL: Audit log keypair does not exist; use `linotp init audit-keys` to generate one.",
                 file=sys.stderr,
             )
             sys.exit(SYS_EXIT_CODE)

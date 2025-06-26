@@ -32,9 +32,7 @@ import logging
 import pytest
 from mock import mock
 
-from linotp.controllers.validate import ValidateController
 from linotp.lib.policy import AuthorizeException
-from linotp.lib.user import User
 
 
 class NotAuthorizeException(Exception):

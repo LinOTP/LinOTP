@@ -133,7 +133,7 @@ from linotp.tokens.hmactoken import HmacTokenClass
 log = logging.getLogger(__name__)
 
 try:
-    from linotp.provider.smsprovider import getSMSProviderClass
+    from linotp.provider.smsprovider import getSMSProviderClass  # noqa: F401
 
     SMSPROVIDER_IMPORTED = True
 except ImportError as exx:
@@ -205,7 +205,7 @@ def is_phone_editable(user=""):
     This is a int policy, while the '0' is a deny
     """
     # the default string is the OTP value
-    ret = True
+    _ret = True
     realm = user.realm
     login = user.login
 
@@ -630,12 +630,12 @@ class SmsTokenClass(HmacTokenClass):
         change the tokeninfo data of the last challenge
         """
 
-        tok = super(SmsTokenClass, self)
+        _tok = super(SmsTokenClass, self)
         counter = self.getOtpCount()
         window = self.getOtpCountWindow()
 
-        now = datetime.datetime.now()
-        timeScope = self.loadLinOtpSMSValidTime()
+        _now = datetime.datetime.now()
+        _timeScope = self.loadLinOtpSMSValidTime()
 
         otp_val = passw
 
@@ -879,9 +879,9 @@ class SmsTokenClass(HmacTokenClass):
         if dueDate >= now:
             ret = True
         if ret is True:
-            msg = "the sms challenge is still valid"
+            _msg = "the sms challenge is still valid"
         else:
-            msg = "the sms challenge is no more valid"
+            _msg = "the sms challenge is no more valid"
         return ret
 
     def sendSMS(self, message=None, transactionid=None):
@@ -967,7 +967,7 @@ class SmsTokenClass(HmacTokenClass):
                 log.info("SMS successfully submitted by provider: %r", provider_name)
                 break
 
-            except ProviderNotAvailable as exx:
+            except ProviderNotAvailable:
                 log.warning("Provider not available %r", provider_name)
                 res_scheduler.block(provider_name, delay=30)
 

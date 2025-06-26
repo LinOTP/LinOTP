@@ -110,9 +110,9 @@ class mTimeOtp(object):
             )
             res = -1
         if res == -1:
-            msg = "checking motp failed"
+            _msg = "checking motp failed"
         else:
-            msg = "checking motp sucess"
+            _msg = "checking motp sucess"
 
         return res
 

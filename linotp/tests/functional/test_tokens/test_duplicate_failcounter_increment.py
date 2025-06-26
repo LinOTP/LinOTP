@@ -29,7 +29,6 @@
 """verify that the failcounter is not incremented twice"""
 
 import json
-from datetime import datetime
 
 from linotp.tests import TestController
 

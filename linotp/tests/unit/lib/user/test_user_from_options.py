@@ -25,7 +25,6 @@
 #    Support: www.linotp.de
 #
 
-import json
 import unittest
 
 from mock import patch

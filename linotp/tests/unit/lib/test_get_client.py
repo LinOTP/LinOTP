@@ -33,7 +33,6 @@ import pytest
 from flask import current_app
 from mock import patch
 
-import linotp.lib.config
 from linotp.lib.type_utils import get_ip_address, get_ip_network
 from linotp.lib.util import (
     _get_client_from_request,

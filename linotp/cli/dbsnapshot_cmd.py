@@ -48,7 +48,6 @@ import sys
 import click
 from flask import current_app
 from flask.cli import AppGroup
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.serializer import dumps, loads
 
 from linotp.lib.audit.SQLAudit import AuditTable
@@ -132,7 +131,7 @@ def list_command():
         for backup_date, backup_file in list_database_backups():
             current_app.echo(f"{backup_date} {backup_file}", err=False)
         current_app.echo("Finished", v=1)
-    except Exception as exx:
+    except Exception:
         current_app.echo("Failed to list snapshot files: {exx!r}")
         sys.exit(1)
 

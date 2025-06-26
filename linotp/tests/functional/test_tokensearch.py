@@ -89,7 +89,7 @@ class TestTokensearch(TestController):
             if splitAtSig:
                 self.set_splitAtSign(splitAtSig)
             else:
-                response = self.make_system_request(
+                _response = self.make_system_request(
                     "delConfig", params={"key": "splitAtSign"}
                 )
 

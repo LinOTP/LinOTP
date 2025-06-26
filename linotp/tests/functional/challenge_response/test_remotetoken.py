@@ -30,20 +30,12 @@
 Test challenge response functionality for the remote token
 """
 
-import binascii
 import json
 import logging
-import re
-import smtplib
-import time
 import urllib.parse
 
 import httplib2
 from mock import patch
-
-import linotp.provider.smsprovider.HttpSMSProvider
-from linotp.lib.HMAC import HmacOtp
-from linotp.tests import url
 
 from . import TestChallengeResponseController, calcOTP
 

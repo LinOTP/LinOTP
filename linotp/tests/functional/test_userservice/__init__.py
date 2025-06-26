@@ -27,7 +27,7 @@
 
 import json
 
-from linotp.tests import TestController, url
+from linotp.tests import TestController
 
 
 class TestUserserviceController(TestController):

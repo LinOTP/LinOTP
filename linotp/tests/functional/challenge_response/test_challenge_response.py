@@ -42,7 +42,6 @@ import binascii
 import json
 import logging
 import re
-import smtplib
 import time
 from datetime import datetime, timedelta
 
@@ -1870,7 +1869,7 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         for t, s1, s2, _o1, _o2 in transactions:
             params = {"transactionid": t, "session": self.session}
             response = self.make_admin_request(action="checkstatus", params=params)
-            jresp = json.loads(response.body)
+            _jresp = json.loads(response.body)
             assert s1 in response, response
             assert s2 in response, response
             assert t in response, response

@@ -27,8 +27,6 @@
 
 """unit test for autosms policy"""
 
-import pytest
-
 from linotp.lib.context import request_context as context
 from linotp.lib.policy import get_auth_AutoSMSPolicy
 from linotp.lib.user import getUserFromParam

@@ -24,7 +24,6 @@
 #   Contact: www.linotp.org
 #   Support: www.linotp.de
 
-from flask import g
 
 from linotp.lib.config import getFromConfig, refreshConfig
 from linotp.model import db

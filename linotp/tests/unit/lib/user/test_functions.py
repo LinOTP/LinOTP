@@ -29,9 +29,6 @@ module.
 
 """
 
-import json
-from pathlib import Path
-
 import pytest
 from flask import g
 

@@ -30,8 +30,6 @@ This file contains some tests, which should become
 part of the functional tests
 """
 
-import binascii
-import tempfile
 from unittest import TestCase
 
 from linotp.lib.crypto.pbkdf2 import pbkdf2

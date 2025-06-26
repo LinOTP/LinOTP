@@ -24,7 +24,6 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-from selenium.webdriver.common.by import By
 
 """LinOTP Selenium Test for Scenario 01 - General functionality tests"""
 

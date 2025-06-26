@@ -1833,7 +1833,7 @@ def tokenExist(serial):
     returns true if the token exists
     """
     try:
-        token = get_token(serial)
+        _token = get_token(serial)
         return True
     except:
         return False

@@ -623,7 +623,7 @@ class TestController(TestCase):
     def delete_all_realms(self, auth_user="admin"):
         """get all realms and delete them"""
 
-        admin_realm = current_app.config["ADMIN_REALM_NAME"].lower()
+        _admin_realm = current_app.config["ADMIN_REALM_NAME"].lower()
 
         response = self.make_system_request("getRealms", params={}, auth_user=auth_user)
 

@@ -26,34 +26,24 @@
 #
 """paralell test"""
 
-import base64
 import binascii
 import json
 import logging
-import os
 import random
 import sys
 import threading
 import time
-import unittest
-from datetime import datetime, timedelta
+from datetime import datetime
 from urllib.parse import parse_qs, urlparse
 
-from Cryptodome.Hash import HMAC
-from Cryptodome.Hash import SHA as SHA1
 from Cryptodome.Hash import SHA256 as SHA256
 
-# FIXME:  from linotp.tokens.ocra import OcraSuite
 from linotp.lib.crypto.utils import (
-    check,
     createActivationCode,
-    decrypt,
-    encrypt,
-    geturandom,
     kdf2,
 )
-from linotp.lib.ext.pbkdf2 import PBKDF2
-from linotp.tests import *
+from linotp.tests import TestController, environ, url
+from linotp.tokens.ocra2token import OcraSuite
 
 log = logging.getLogger(__name__)
 
@@ -837,7 +827,7 @@ class OcraTest(TestController):
             jresp = json.loads(response.body)
             challenge = str(jresp.get("detail").get("challenge"))
             transid = str(jresp.get("detail").get("transactionid"))
-        except Exception as e:
+        except Exception:
             challenge = None
             transid = None
 
@@ -888,7 +878,7 @@ class OcraTest(TestController):
             p_test = doRequest(self, rid=_i, test="ptest_OCRA_token_failcounterInc")
             p_tests.append(p_test)
             if "paste.registry" in environ:
-                environ["paste.registry"].register(myglobal, p_test)
+                environ["paste.registry"].register(myglobal, p_test)  # noqa: F821
 
             # prevent that all threads start at same time:
             # this will cause an p_thread error within the odbc layer

@@ -30,7 +30,6 @@ import json
 import logging
 import unittest
 
-import pytest
 from Cryptodome.Cipher import AES
 from mock import MagicMock, patch
 

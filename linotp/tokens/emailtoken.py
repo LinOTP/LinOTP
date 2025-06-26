@@ -35,7 +35,6 @@ import logging
 from flask_babel import gettext as _
 
 from linotp.lib.auth.validate import check_pin, split_pin_otp
-from linotp.lib.challenges import Challenges
 from linotp.lib.config import getFromConfig
 from linotp.lib.context import request_context as context
 from linotp.lib.HMAC import HmacOtp
@@ -629,7 +628,7 @@ class EmailTokenClass(HmacTokenClass):
         """
         response_detail = {}
 
-        info = self.getInfo()
+        _info = self.getInfo()
         response_detail["serial"] = self.getSerial()
 
         return response_detail

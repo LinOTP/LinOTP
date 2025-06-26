@@ -33,9 +33,7 @@ import logging
 import os
 
 import pytest
-import sqlalchemy
 from mock import patch
-from sqlalchemy import engine_from_config
 from sqlalchemy.engine import create_engine
 
 from linotp.flap import config

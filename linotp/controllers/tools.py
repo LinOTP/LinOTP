@@ -375,7 +375,7 @@ class ToolsController(BaseController):
 
             # create / extend target realm for the resolver
 
-            resolver_spec = import_handler.get_resolver_spec()
+            _resolver_spec = import_handler.get_resolver_spec()
 
             db.session.commit()
 

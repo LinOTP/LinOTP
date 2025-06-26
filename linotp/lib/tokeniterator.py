@@ -32,7 +32,7 @@ import re
 from difflib import get_close_matches
 
 from flask_sqlalchemy.pagination import Pagination
-from sqlalchemy import and_, not_, or_, true
+from sqlalchemy import and_, or_, true
 
 from linotp.lib.config import getFromConfig
 from linotp.lib.error import UserError
@@ -360,7 +360,7 @@ class TokenIterator(object):
                             usr.realm = realm
                             try:
                                 (_uid, _resolver, _resolverClass) = getUserId(usr)
-                            except UserError as exx:
+                            except UserError:
                                 log.info("User %r not found in realm %r", usr, realm)
                                 continue
                             userlist.extend(usr.getUserPerConf())
@@ -403,7 +403,7 @@ class TokenIterator(object):
         return ucondition
 
     def _get_filter_condition(self, filter):
-        conditon = None
+        _conditon = None
 
         if filter is None:
             condition = None

@@ -705,7 +705,7 @@ def get_provider_from_policy(
     """
 
     # check if the provider is defined in a policy
-    provider_name = None
+    _provider_name = None
 
     # lookup the policy action name
     provider_action_name = Policy_action_name.get(provider_type)

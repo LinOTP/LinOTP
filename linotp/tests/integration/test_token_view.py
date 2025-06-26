@@ -27,7 +27,6 @@
 """LinOTP Selenium Test for token view automation"""
 
 import pytest
-from linotp_selenium_helper import TestCase
 
 
 class TestTokenView:

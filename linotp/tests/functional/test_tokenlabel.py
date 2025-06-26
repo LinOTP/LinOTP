@@ -27,7 +27,6 @@
 
 """ """
 
-import json
 from urllib.parse import urlparse
 
 from linotp.tests import TestController

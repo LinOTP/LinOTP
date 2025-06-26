@@ -1,7 +1,6 @@
 import json
 import os
 import struct
-from base64 import b64encode
 
 from Cryptodome.Cipher import AES
 from Cryptodome.Hash import HMAC, SHA256

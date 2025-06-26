@@ -27,7 +27,6 @@
 """establish a global context object"""
 
 from contextlib import contextmanager
-from functools import partial
 
 from linotp.flap import tmpl_context as request_context
 from linotp.lib.error import ProgrammingError

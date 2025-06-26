@@ -34,6 +34,7 @@ import json
 import logging
 import os
 
+import flask
 from flask import current_app, g, request
 from flask_babel import gettext as _
 from mako.exceptions import CompileException
@@ -60,7 +61,6 @@ from linotp.lib.type_utils import boolean
 from linotp.lib.user import (
     User,
     get_userinfo,
-    getUserFromParam,
     getUserFromRequest,
     getUserList,
 )
@@ -658,7 +658,6 @@ class ManageController(BaseController):
             directory = config.get("linotpManual.Directory", "/usr/share/doc/linotp")
             default_filename = config.get("linotpManual.File", "LinOTP_Manual-en.pdf")
             mimetype = "application/pdf"
-            headers = []
 
             # FIXME: Compression is better done using
             # `Content-Encoding` (ideally farther up the WSGI stack).

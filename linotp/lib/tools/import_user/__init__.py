@@ -38,11 +38,8 @@ Engine = meta.engine
 """
 
 import csv
-import json
 import logging
 
-from linotp.lib.crypto.utils import compare_password
-from linotp.lib.tools.import_user.ImportHandler import ImportHandler
 from linotp.model.imported_user import ImportedUser
 
 log = logging.getLogger(__name__)

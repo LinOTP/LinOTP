@@ -400,7 +400,7 @@ class TestRemoteToken2(TestingChallengeResponseController):
 
         try:
             (y_serial, r_serial) = self.create_tokens()
-        except Exception as exx:
+        except Exception:
             pass
 
         params = {}

@@ -30,8 +30,6 @@
 Test the autoassignment Policy.
 """
 
-from copy import deepcopy
-
 from linotp.tests import TestController
 
 

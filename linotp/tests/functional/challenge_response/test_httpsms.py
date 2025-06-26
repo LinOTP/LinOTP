@@ -39,15 +39,11 @@ specify it with nose-testconfig (e.g. --tc=paster.port:5005).
 """
 
 import json
-import logging
 import tempfile
-import urllib.parse
 
 import requests
 from mock import patch
 
-import linotp.provider.smsprovider.FileSMSProvider
-import linotp.provider.smsprovider.HttpSMSProvider
 from linotp.lib.util import str2unicode
 from linotp.tests.functional.challenge_response.testing_controller import (
     TestingChallengeResponseController,

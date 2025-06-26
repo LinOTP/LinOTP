@@ -57,7 +57,7 @@ class LinotpError(Exception):
         # if we have here unicode, we might fail with conversion error
         try:
             res = pstr % (self.id, self.message)
-        except Exception as exx:
+        except Exception:
             res = "ERR%d: %r" % (self.id, self.message)
         return res
 

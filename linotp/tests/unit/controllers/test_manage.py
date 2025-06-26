@@ -27,7 +27,6 @@
 # pylint: disable=redefined-outer-name
 # pylint: disable=unused-argument
 
-from unittest.mock import patch
 
 import flask
 import pytest

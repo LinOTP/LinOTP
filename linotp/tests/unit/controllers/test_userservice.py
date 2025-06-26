@@ -28,8 +28,6 @@
 Tests the chunked data handling in the config
 """
 
-import unittest
-
 import flask
 from mock import patch
 

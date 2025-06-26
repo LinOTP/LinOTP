@@ -33,8 +33,6 @@ on the 'realm context' during the request.
 
 from collections import deque
 
-from flask import current_app
-
 from linotp.tests import TestController
 
 

@@ -87,7 +87,7 @@ def getLinotpConfig():
                     ret = LinOtpConfig()
                     c.linotpConfig = ret
 
-    except Exception as exx:
+    except Exception:
         # FIXME: this happens once every server start and seems quite unnecessary.
         # Please, please, please refactor this method in the future to get rid
         # of the FOUR instantiations of LinOtpConfig() in this method alone.

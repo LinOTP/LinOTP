@@ -43,7 +43,6 @@ from pysodium import crypto_sign_verify_detached as verify_sig
 from linotp.flap import config
 from linotp.lib.challenges import Challenges, transaction_id_to_u64
 from linotp.lib.config import getFromConfig
-from linotp.lib.context import request_context as context
 from linotp.lib.crypto.utils import (
     decode_base64_urlsafe,
     dsa_to_dh_public,

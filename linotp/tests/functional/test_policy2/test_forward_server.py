@@ -31,7 +31,6 @@
 import logging
 
 import pytest
-from flask import g
 from mock import patch
 
 from linotp.tests import TestController

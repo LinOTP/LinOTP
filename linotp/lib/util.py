@@ -455,7 +455,7 @@ def str2unicode(input_str):
     for param in conversions:
         try:
             return str(input_str, **param)
-        except UnicodeDecodeError as exx:
+        except UnicodeDecodeError:
             pass
 
     log.error("No Unicode conversion found for %r", input_str)

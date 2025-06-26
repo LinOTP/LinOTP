@@ -242,7 +242,7 @@ class SelfserviceActionTest(unittest.TestCase):
 
         # verify call raises PolicyConversionError
         with pytest.raises(PolicyConversionError) as excinfo:
-            res = get_selfservice_actions(
+            _res = get_selfservice_actions(
                 LinotpUser(login="simple_user", realm="defaultrealm"),
                 policy_action,
             )

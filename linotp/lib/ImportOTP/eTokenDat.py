@@ -433,7 +433,7 @@ def submit_tokens(lino_url, tokens, user=None, pwd=None):
             http.add_credentials(user, pwd)
             resp, content = http.request(url, headers=headers)
 
-        except urllib.error.HTTPError as http_error:
+        except urllib.error.HTTPError:
             break
 
         LOG.debug(content)

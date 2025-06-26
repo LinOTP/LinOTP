@@ -773,7 +773,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         :rtype: string
         """
 
-        res = (-1, 0, 0, 0)
+        _res = (-1, 0, 0, 0)
 
         otplen = int(self.token.LinOtpOtpLen)
         secObj = self._get_secret_object()

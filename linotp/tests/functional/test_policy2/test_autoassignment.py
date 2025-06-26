@@ -33,9 +33,7 @@ Test the autoassignment Policy.
 import json
 from copy import deepcopy
 
-import pytest
 from flask import g
-from mock import patch
 
 from linotp.tests import TestController
 

@@ -1042,7 +1042,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
                 policies["admin"],
                 realm,
             )
-            admin_user = policies["admin"]
+            _admin_user = policies["admin"]
 
             raise PolicyException(
                 _("You do not have the administrative right to list users in realm %r.")

@@ -39,7 +39,6 @@ starting with new_ could be moved in place
 """
 
 import logging
-from typing import Any, Tuple
 
 from linotp.lib.policy.evaluate import PolicyEvaluator
 from linotp.lib.policy.util import get_policies

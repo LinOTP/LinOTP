@@ -526,7 +526,7 @@ class VoiceTokenClass(HmacTokenClass):
         """
         :raises NotImplementedError
         """
-        raise NotImplemented("method getOtp is not implemented for VoiceToken")
+        raise NotImplementedError("method getOtp is not implemented for VoiceToken")
 
     def _calc_otp(self, input_data):
         """

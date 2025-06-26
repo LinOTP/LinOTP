@@ -198,7 +198,7 @@ class RadiusTokenClass(RemoteTokenClass):
         pin = ""
         otpval = ""
 
-        local_check = self.check_pin_local()
+        _local_check = self.check_pin_local()
 
         if self.check_pin_local():
             log.debug("[splitPinPass] [radiustoken] locally checked")

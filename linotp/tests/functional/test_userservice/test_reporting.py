@@ -30,7 +30,6 @@
 Test reporting in userservice controller
 """
 
-from linotp.lib.user import User
 from linotp.model.reporting import Reporting
 from linotp.tests import TestController
 from linotp.tests.functional.test_reporting import DBSession
@@ -101,7 +100,7 @@ class TestUserserviceReporting(TestController):
             "delete",
             "finishocra2token",
         ]:
-            response = self.client.post(
+            _response = self.client.post(
                 f"/userservice/{action}", data={"serial": serial}
             )
 
@@ -138,11 +137,11 @@ class TestUserserviceReporting(TestController):
             "realm": "*",
             "active": True,
         }
-        response = self.make_system_request("setPolicy", params)
+        _response = self.make_system_request("setPolicy", params)
 
         # trigger action
         for action in actions_to_test:
-            response = self.make_userselfservice_request(
+            _response = self.make_userselfservice_request(
                 action, params={"serial": serial}, auth_user=auth_user
             )
 
@@ -177,7 +176,7 @@ class TestUserserviceReporting(TestController):
 
         # trigger action that would trigger reporting pre LINOTP-2084
         for action in actions_to_test:
-            response = self.make_userselfservice_request(
+            _response = self.make_userselfservice_request(
                 action, params={"serial": serial}, auth_user=auth_user
             )
 

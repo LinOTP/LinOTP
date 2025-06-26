@@ -27,8 +27,6 @@
 """Contains Realm class"""
 
 import logging
-import re
-import time
 from typing import List, Union
 
 from selenium.webdriver.common.action_chains import ActionChains
@@ -344,7 +342,7 @@ class RealmManager(ManageDialog):
     def set_default(self, name):
         self.open()
         self.reparse()
-        realms = self.get_realms_list()
+        _realms = self.get_realms_list()
 
         self.select_realm(name)
         self.find_by_id(self.set_default_button_id).click()

@@ -77,7 +77,7 @@ class FileSMSProvider(ISMSProvider):
                 f.write(msg)
             ret = True
 
-        except Exception as exx:
+        except Exception:
             log.error("Failed to open file %r", filename)
             raise ProviderNotAvailable("Failed to open file %r" % filename)
 

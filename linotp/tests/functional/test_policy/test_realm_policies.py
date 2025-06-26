@@ -34,11 +34,7 @@
 - enrollment
 """
 
-import copy
 import logging
-import re
-
-import pytest
 
 from . import TestPoliciesBase
 

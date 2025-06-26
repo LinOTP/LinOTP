@@ -28,9 +28,6 @@
 
 """ """
 
-import json
-from wsgiref import headers
-
 from linotp.tests import TestController
 
 

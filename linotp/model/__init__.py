@@ -232,7 +232,7 @@ def init_db_tables(app, drop_data=False, add_defaults=True):
             # The audit table is created in the configured audit database
             # connection if audit is not turned off. The database model is
             # added to SQLAlchemy if the file is imported.
-            import linotp.lib.audit.SQLAudit
+            import linotp.lib.audit.SQLAudit  # noqa: F401
 
         if drop_data:
             echo("Dropping tables to erase all data...", v=1)
@@ -243,7 +243,7 @@ def init_db_tables(app, drop_data=False, add_defaults=True):
             else:
                 db.drop_all()
 
-        echo(f"Creating tables...", v=1)
+        echo("Creating tables...", v=1)
         if app.config["AUDIT_DATABASE_URI"] == "OFF":
             db.metadata.create_all(bind=db.engine)
         else:

@@ -27,10 +27,6 @@
 
 """test for json body as request parameters"""
 
-import copy
-import unittest
-
-import flask
 import pytest
 from mock import mock
 from werkzeug.datastructures import CombinedMultiDict, MultiDict

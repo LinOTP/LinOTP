@@ -42,16 +42,10 @@ import binascii
 import json
 import logging
 import re
-import smtplib
 import time
 import urllib.parse
 
-import httplib2
-from mock import patch
-
-import linotp.provider.smsprovider.HttpSMSProvider
 from linotp.lib.HMAC import HmacOtp
-from linotp.tests import url
 from linotp.tests.functional.challenge_response.testing_controller import (
     TestingChallengeResponseController,
 )

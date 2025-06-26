@@ -109,7 +109,7 @@ class PolicyActionTest(unittest.TestCase):
     """
 
     @patch("linotp.lib.policy.util.context", new=fake_context)
-    @patch("linotp.lib.policy.maxtoken.context", new=fake_context)
+    @patch("linotp.lib.context.request_context", new=fake_context)
     @patch("linotp.lib.policy.action.get_policy_definitions")
     @patch("linotp.lib.policy.processing.get_policies")
     @patch("linotp.lib.policy.maxtoken._getUserRealms")
@@ -168,7 +168,7 @@ class PolicyActionTest(unittest.TestCase):
             )
 
     @patch("linotp.lib.policy.util.context", new=fake_context)
-    @patch("linotp.lib.policy.maxtoken.context", new=fake_context)
+    @patch("linotp.lib.context.request_context", new=fake_context)
     @patch("linotp.lib.policy.action.get_policy_definitions")
     @patch("linotp.lib.policy.processing.get_policies")
     @patch("linotp.lib.policy.maxtoken._getUserRealms")

@@ -252,7 +252,7 @@ class ResolversController(BaseController):
                 "userlist",
                 user=RealmUser(resolver_config_identifier=resolver.spec),
             )
-        except PolicyException as exception:
+        except PolicyException:
             log.error(
                 "[get_users] user is not allowed to list users in resolver %s",
                 resolver_name,
@@ -400,7 +400,7 @@ class ResolversController(BaseController):
                 "userlist",
                 user=RealmUser(resolver_config_identifier=resolver.spec),
             )
-        except PolicyException as exception:
+        except PolicyException:
             log.error(
                 f"[get_user] user is not allowed to list users in resolver {resolver_name}"
             )

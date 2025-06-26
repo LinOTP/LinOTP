@@ -40,14 +40,11 @@ specify it with nose-testconfig (e.g. --tc=paster.port:5005).
 
 import json
 import logging
-import urllib.parse
 from datetime import datetime, timedelta
 
-import requests
 from freezegun import freeze_time
 from mock import patch
 
-import linotp.provider.smsprovider.RestSMSProvider
 from linotp.tests.functional.challenge_response.testing_controller import (
     TestingChallengeResponseController,
 )

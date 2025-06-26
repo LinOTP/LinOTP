@@ -27,7 +27,7 @@
 """Contains TokenView class"""
 
 import logging
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC

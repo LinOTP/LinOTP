@@ -32,7 +32,6 @@ from typing import Any, Dict, List, Union
 from flask_babel import gettext as _
 
 import linotp
-from linotp.lib.context import request_context as context
 from linotp.lib.policy.action import get_action_value
 from linotp.lib.policy.processing import get_client_policy
 from linotp.lib.policy.util import _get_client, _getUserRealms

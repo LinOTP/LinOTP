@@ -30,11 +30,9 @@
 Test the support for resolver definitions in system or admin policy user entry
 """
 
-import base64
 import logging
 import os
 
-import pytest
 from flask import current_app
 
 from linotp.lib.user import User

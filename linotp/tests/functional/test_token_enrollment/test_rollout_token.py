@@ -33,8 +33,6 @@ Test the onetime token for the selfservice login
 import json
 from typing import List
 
-import pytest
-
 from linotp.tests import TestController
 
 

@@ -28,7 +28,6 @@
 import time
 
 import pytest
-from linotp_selenium_helper import TestCase
 from linotp_selenium_helper.manage_ui import ManageUi
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC

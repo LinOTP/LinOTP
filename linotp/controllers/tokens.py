@@ -12,7 +12,7 @@ from linotp.lib.reply import sendError, sendResult
 from linotp.lib.tokeniterator import TokenIterator
 from linotp.lib.type_utils import DEFAULT_TIMEFORMAT
 from linotp.lib.user import User as RealmUser
-from linotp.lib.user import getUserFromParam, getUserFromRequest
+from linotp.lib.user import getUserFromRequest
 from linotp.model import db
 
 log = logging.getLogger(__name__)

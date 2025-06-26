@@ -32,7 +32,7 @@ from sqlalchemy.orm import Session
 from linotp.app import LinOTPApp, create_app
 from linotp.lib.config import getFromConfig
 from linotp.lib.crypto.utils import crypt_password
-from linotp.model import db, setup_db
+from linotp.model import db
 from linotp.model.config import set_config
 from linotp.model.imported_user import ImportedUserSchema
 

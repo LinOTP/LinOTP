@@ -33,7 +33,6 @@ import unittest
 import pytest
 from freezegun import freeze_time
 from ldap import INVALID_CREDENTIALS, LDAPError
-from mock import patch
 
 from linotp.lib.resources import DictResourceRegistry, ResourceScheduler
 from linotp.useridresolver import LDAPIdResolver as ldap_resolver_module

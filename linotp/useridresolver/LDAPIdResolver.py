@@ -299,7 +299,7 @@ class IdResolver(UserIdResolver):
                 # set that to “no”, and we do hope that you have thought
                 # of the consequences.
 
-                log.warning(f"Plain LDAP connection (THIS IS INSECURE!!!)")
+                log.warning("Plain LDAP connection (THIS IS INSECURE!!!)")
 
         # At this point we should have either an LDAPS connection, or an
         # LDAP connection that has been upgraded to TLS, or a plain LDAP

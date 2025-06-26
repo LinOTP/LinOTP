@@ -29,8 +29,6 @@
 import logging
 import re
 
-from linotp.lib.ImportOTP import ImportException
-
 log = logging.getLogger(__name__)
 
 

@@ -56,7 +56,7 @@ def iterate_users(user_iterators):
                     )
                 else:
                     yield json.dumps({**user_data, "resolver": resolver})
-        except StopIteration as exx:
+        except StopIteration:
             # pass on to next iterator
             pass
         except Exception as exx:
@@ -93,7 +93,7 @@ def iterate_resolverusers(user_iterators):
                         resolver.name, resolver.type, user_data
                     ).as_dict()
                     yield json.dumps(user)
-        except StopIteration as exx:
+        except StopIteration:
             # pass on to next iterator
             pass
         except Exception as exx:

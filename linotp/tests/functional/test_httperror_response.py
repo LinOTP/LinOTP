@@ -37,7 +37,7 @@ in case of an error.
 
 import logging
 
-from linotp.tests import TestController, url
+from linotp.tests import TestController
 
 log = logging.getLogger(__name__)
 

@@ -286,11 +286,11 @@ class YubikeyTokenClass(TokenClass):
 
         # TODO: We also could check the timestamp
         # - the timestamp. see http://www.yubico.com/wp-content/uploads/2013/04/YubiKey-Manual-v3_1.pdf
-        timestamp = msg_hex[16:22]
+        _timestamp = msg_hex[16:22]
 
         # session counter can go from 00 to 0xff
         session_counter = msg_hex[22:24]
-        random = msg_hex[24:28]
+        _random = msg_hex[24:28]
 
         log.debug(
             "[checkOtp] decrypted: usage_count: %r, session_count: %r",
@@ -302,7 +302,7 @@ class YubikeyTokenClass(TokenClass):
         # occupies the last 2 bytes of the decrypted OTP value. Calculating the
         # CRC-16 checksum of the whole decrypted OTP should give a fixed residual
         # of 0xf0b8 (see Yubikey-Manual - Chapter 6: Implementation details).
-        crc = msg_hex[28:]
+        _crc = msg_hex[28:]
         log.debug("[checkOtp] calculated checksum (61624): %r", checksum(msg_bin))
         if checksum(msg_bin) != 0xF0B8:
             log.warning("[checkOtp] CRC checksum for token %r failed", serial)

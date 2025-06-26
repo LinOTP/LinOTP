@@ -153,7 +153,6 @@ class SmtpSMSProvider(ISMSProvider):
         # prepare the smtp server connection parameters
         default_port = 25
 
-        start_tls_params = {}
         start_tls = str(self.config.get("start_tls", False)).lower() == "true"
         if start_tls:
             default_port = 587

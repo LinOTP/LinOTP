@@ -29,23 +29,13 @@
 Test challenge response functionality for the radius token
 """
 
-import binascii
-import json
 import logging
-import re
-import smtplib
-import time
-import urllib.parse
 
-import httplib2
-import pyrad.packet as packet
 from mock import patch
 
 # we need this for the radius token
 from pyrad.client import Client
 from pyrad.packet import AccessAccept, AccessChallenge, AccessReject
-
-from linotp.lib.HMAC import HmacOtp
 
 from . import TestChallengeResponseController
 
@@ -94,7 +84,7 @@ def mocked_radius_SendPacket(Client, *argparams, **kwparams):
 
         try:
             params["state"] = pkt["State"][0]
-        except Exception as exx:
+        except Exception:
             pass
 
         if test_func:
@@ -153,7 +143,7 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
             "active": active,
             "session": self.session,
         }
-        cookies = {"admin_session": self.session}
+        _cookies = {"admin_session": self.session}
 
         response = self.make_system_request("setPolicy", params=params)
         assert response.json["result"]["status"], response

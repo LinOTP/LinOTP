@@ -107,7 +107,7 @@ class MaintenanceController(BaseController):
             try:
                 level = self.request_params.get("level", 0)
                 level = int(level)
-            except ValueError as e:
+            except ValueError:
                 raise Exception("debug level {} contains nondigits!".format(level))
 
             # ----------------------------------------------------------------------

@@ -129,7 +129,7 @@ class TestUserserviceLogin(TestUserserviceController):
 
         with pytest.raises(IndexError):
             # no entry for pre_context
-            audit_entry = self.get_last_audit_entry_for_action(
+            _audit_entry = self.get_last_audit_entry_for_action(
                 "userservice/pre_context"
             )
 

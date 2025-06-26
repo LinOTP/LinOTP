@@ -31,7 +31,6 @@
 import copy
 import json
 import logging
-import unittest
 
 import pytest
 import sqlalchemy

@@ -30,13 +30,7 @@ from . import helper
 from .policy import Policy
 from .test_case import TestCase
 from .token_enroll import EnrollTokenDialog
-from .user_id_resolver import (
-    LdapUserIdResolver,
-    PasswdUserIdResolver,
-    SqlUserIdResolver,
-    UserIdResolver,
-    UserIdResolverManager,
-)
+from .user_id_resolver import UserIdResolver, UserIdResolverManager
 
 __all__ = [
     "helper",

@@ -28,11 +28,9 @@
 import unittest
 
 import pytest
-from flask import g
 from mock import ANY, patch
 
 from linotp.lib import resolver
-from linotp.lib.config import getFromConfig, getLinotpConfig
 
 
 @pytest.mark.usefixtures("app")

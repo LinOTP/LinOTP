@@ -608,7 +608,7 @@ class SystemController(BaseController):
                 else:
                     try:
                         boolean(param["readonly"])
-                    except Exception as exx:
+                    except Exception:
                         msg = (
                             "Failed to convert attribute 'readonly' to"
                             " a boolean value! %r"
@@ -1182,9 +1182,6 @@ class SystemController(BaseController):
             if an error occurs an exception is serialized and returned
 
         """
-
-        pol = {}
-
         try:
             param = getLowerParams(self.request_params)
             log.debug("[policies_flexi] viewing policies with params: %r", param)

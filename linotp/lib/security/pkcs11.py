@@ -45,14 +45,11 @@ linotpActiveSecurityModule = lunasa
 """
 
 import binascii
+import ctypes
 import getpass
 import logging
-import string
 import sys
-from ctypes import *
 from getopt import GetoptError, getopt
-
-from Cryptodome.Cipher import AES as AESCipher
 
 from linotp.lib.security.default import DefaultSecurityModule
 from linotp.lib.security.provider import (
@@ -78,11 +75,11 @@ CKA_PRIVATE = int(0x00000002)
 
 CKA_SENSITIVE = int(0x00000103)
 CKA_VALUE_LEN = int(0x00000161)
-CK_BBOOL = c_byte
+CK_BBOOL = ctypes.c_byte
 CKK_AES = int(0x0000001F)
-CK_OBJECT_HANDLE = c_ulong
-CK_BYTE = c_char
-CK_ULONG = c_ulong
+CK_OBJECT_HANDLE = ctypes.c_ulong
+CK_BYTE = ctypes.c_char
+CK_ULONG = ctypes.c_ulong
 CK_SLOT_ID = CK_ULONG
 # AES
 
@@ -100,49 +97,49 @@ NULL = None
 running_as_main = False
 
 
-class CK_VERSION(Structure):
+class CK_VERSION(ctypes.Structure):
     _fields_ = [
-        ("major", c_byte),
-        ("minor", c_byte),
+        ("major", ctypes.c_byte),
+        ("minor", ctypes.c_byte),
     ]
 
 
-class CK_TOKEN_INFO(Structure):
+class CK_TOKEN_INFO(ctypes.Structure):
     _fields_ = [
-        ("label", c_wchar * 32),  # 0:31   Zeichen = 2byte
-        ("manufacturerID", c_wchar * 32),  # 32:63
-        ("model", c_wchar * 16),  # 64:79
-        ("serialNumber", c_char * 16),  # 80:95
-        ("flags", c_ulong),  # 96:97     4 byte
-        ("ulMaxSessionCount", c_ulong),  # 98:99
-        ("ulSessionCount", c_ulong),  # 100:101
-        ("ulMaxRwSessionCount", c_ulong),  # 102:103
-        ("ulRwSessionCount", c_ulong),  # 104:105
-        ("ulMaxPinLen", c_ulong),  # 106:107
-        ("ulMinPinLen", c_ulong),  # 108:109
-        ("ulTotalPublicMemory", c_ulong),  # 110:111
-        ("ulFreePublicMemory", c_ulong),  # 112:113
-        ("ulTotalPrivateMemory", c_ulong),  # 114:115
-        ("ulFreePrivateMemory", c_ulong),  # 116:117
+        ("label", ctypes.c_wchar * 32),  # 0:31   Zeichen = 2byte
+        ("manufacturerID", ctypes.c_wchar * 32),  # 32:63
+        ("model", ctypes.c_wchar * 16),  # 64:79
+        ("serialNumber", ctypes.c_char * 16),  # 80:95
+        ("flags", ctypes.c_ulong),  # 96:97     4 byte
+        ("ulMaxSessionCount", ctypes.c_ulong),  # 98:99
+        ("ulSessionCount", ctypes.c_ulong),  # 100:101
+        ("ulMaxRwSessionCount", ctypes.c_ulong),  # 102:103
+        ("ulRwSessionCount", ctypes.c_ulong),  # 104:105
+        ("ulMaxPinLen", ctypes.c_ulong),  # 106:107
+        ("ulMinPinLen", ctypes.c_ulong),  # 108:109
+        ("ulTotalPublicMemory", ctypes.c_ulong),  # 110:111
+        ("ulFreePublicMemory", ctypes.c_ulong),  # 112:113
+        ("ulTotalPrivateMemory", ctypes.c_ulong),  # 114:115
+        ("ulFreePrivateMemory", ctypes.c_ulong),  # 116:117
         ("hardwareVersion", CK_VERSION),  # 118
         ("firmwareVersion", CK_VERSION),  # 119
-        ("utcTime", c_char * 16),  # 120:135
+        ("utcTime", ctypes.c_char * 16),  # 120:135
     ]
 
 
-class CK_ATTRIBUTE(Structure):
+class CK_ATTRIBUTE(ctypes.Structure):
     _fields_ = [
-        ("type", c_ulong),
-        ("pValue", c_void_p),
-        ("ulValueLen", c_ulong),
+        ("type", ctypes.c_ulong),
+        ("pValue", ctypes.c_void_p),
+        ("ulValueLen", ctypes.c_ulong),
     ]
 
 
-class CK_MECHANISM(Structure):
+class CK_MECHANISM(ctypes.Structure):
     _fields_ = [
-        ("mechanism", c_ulong),
-        ("pParameter", c_void_p),
-        ("usParameterLen", c_ulong),
+        ("mechanism", ctypes.c_ulong),
+        ("pParameter", ctypes.c_void_p),
+        ("usParameterLen", ctypes.c_ulong),
     ]
 
 
@@ -150,16 +147,14 @@ errormap = {
     182: "Session exists",
     7: "Bad argument",
     19: "Attribute value invalid",
-    162: "invalid PIN length",
+    162: "CKR_PIN_LEN_RANGE",
     112: "Mechanism invalid",
     224: "Token not present",
     209: "Template inconsistent",
-    208: "Template incomplete",
+    208: "TEMPLATE_INCOMPLETE",
     163: "PIN expired",
     160: "CKR_PIN_INCORRECT",
-    0x000000D0: "TEMPLATE_INCOMPLETE",
     0x00000020: "Data invalid",
-    0x00000070: "Mechanism invalid",
     0x00000071: "mechanism param invalid",
     0x00000150: "CKR_BUFFER_TOO_SMALL",
     0x00000160: "CKR_SAVED_STATE_INVALID",
@@ -168,9 +163,7 @@ errormap = {
     0x00000082: "CKR_OBJECT_HANDLE_INVALID",
     0x00000090: "CKR_OPERATION_ACTIVE",
     0x00000091: "CKR_OPERATION_NOT_INITIALIZED",
-    0x000000A0: "CKR_PIN_INCORRECT",
     0x000000A1: "CKR_PIN_INVALID",
-    0x000000A2: "CKR_PIN_LEN_RANGE",
 }
 
 
@@ -277,7 +270,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
 
         if not library:
             raise Exception("No .library specified")
-        self.pkcs11 = CDLL(library)
+        self.pkcs11 = ctypes.CDLL(library)
 
         self.initpkcs11()
         if self.password:
@@ -435,9 +428,9 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         )
 
         self.pkcs11.C_Initialize(0)
-        SlotID = c_ulong()
-        nSlots = c_ulong()
-        rv = self.pkcs11.C_GetSlotList(c_ulong(1), NULL, byref(nSlots))
+        SlotID = ctypes.c_ulong()
+        nSlots = ctypes.c_ulong()
+        rv = self.pkcs11.C_GetSlotList(ctypes.c_ulong(1), NULL, ctypes.byref(nSlots))
         if rv:
             # TODO: a second call of C_GetSlotList could
             # fetch the list of the slots
@@ -484,13 +477,13 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
                 " wait for it beeing set.",
             )
 
-        prototype = CFUNCTYPE(
-            c_int,
+        prototype = ctypes.CFUNCTYPE(
+            ctypes.c_int,
             CK_SLOT_ID,
-            c_int,
-            POINTER(c_ulong),
-            POINTER(c_ulong),
-            POINTER(c_ulong),
+            ctypes.c_int,
+            ctypes.POINTER(ctypes.c_ulong),
+            ctypes.POINTER(ctypes.c_ulong),
+            ctypes.POINTER(ctypes.c_ulong),
         )
         paramflags = (
             (1, "SlotID", 0),
@@ -557,36 +550,40 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
                  else return list of aes keys
         """
 
-        klass = c_ulong(CKO_SECRET_KEY)
-        keytype = c_ulong(CKK_AES)
-        ck_true = c_ubyte(1)
-        ck_false = c_ubyte(0)
+        klass = ctypes.c_ulong(CKO_SECRET_KEY)
+        keytype = ctypes.c_ulong(CKK_AES)
+        ck_true = ctypes.c_ubyte(1)
+        ck_false = ctypes.c_ubyte(0)
 
         search_attributes = [
-            CK_ATTRIBUTE(CKA_CLASS, addressof(klass), sizeof(klass)),
-            CK_ATTRIBUTE(CKA_KEY_TYPE, addressof(keytype), sizeof(keytype)),
+            CK_ATTRIBUTE(CKA_CLASS, ctypes.addressof(klass), ctypes.sizeof(klass)),
             CK_ATTRIBUTE(
-                CKA_PRIVATE,
-                cast(addressof(ck_false), c_void_p),
-                sizeof(ck_false),
+                CKA_KEY_TYPE, ctypes.addressof(keytype), ctypes.sizeof(keytype)
             ),
             CK_ATTRIBUTE(
-                CKA_TOKEN, cast(addressof(ck_true), c_void_p), sizeof(ck_true)
+                CKA_PRIVATE,
+                ctypes.cast(ctypes.addressof(ck_false), ctypes.c_void_p),
+                ctypes.sizeof(ck_false),
+            ),
+            CK_ATTRIBUTE(
+                CKA_TOKEN,
+                ctypes.cast(ctypes.addressof(ck_true), ctypes.c_void_p),
+                ctypes.sizeof(ck_true),
             ),
             CK_ATTRIBUTE(
                 CKA_SENSITIVE,
-                cast(addressof(ck_true), c_void_p),
-                sizeof(ck_true),
+                ctypes.cast(ctypes.addressof(ck_true), ctypes.c_void_p),
+                ctypes.sizeof(ck_true),
             ),
             CK_ATTRIBUTE(
                 CKA_ENCRYPT,
-                cast(addressof(ck_true), c_void_p),
-                sizeof(ck_true),
+                ctypes.cast(ctypes.addressof(ck_true), ctypes.c_void_p),
+                ctypes.sizeof(ck_true),
             ),
             CK_ATTRIBUTE(
                 CKA_DECRYPT,
-                cast(addressof(ck_true), c_void_p),
-                sizeof(ck_true),
+                ctypes.cast(ctypes.addressof(ck_true), ctypes.c_void_p),
+                ctypes.sizeof(ck_true),
             ),
         ]
 
@@ -596,7 +593,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
 
         if label:
             search_attributes.append(
-                CK_ATTRIBUTE(CKA_LABEL, cast(label, c_void_p), len(label))
+                CK_ATTRIBUTE(CKA_LABEL, ctypes.cast(label, ctypes.c_void_p), len(label))
             )
 
         # ---------------------------------------------------------------------
@@ -607,7 +604,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         CK_TEMPLATE = CK_ATTRIBUTE * size
 
         template = CK_TEMPLATE(*search_attributes)
-        template_len = c_ulong(size)
+        template_len = ctypes.c_ulong(size)
 
         rv = self.pkcs11.C_FindObjectsInit(self.hSession, template, template_len)
         if rv:
@@ -617,11 +614,11 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
 
         keys = []
         hKey = CK_OBJECT_HANDLE()
-        ulKeyCount = c_ulong(1)
+        ulKeyCount = ctypes.c_ulong(1)
 
         while ulKeyCount.value > 0:
             rv = self.pkcs11.C_FindObjects(
-                self.hSession, byref(hKey), wanted, byref(ulKeyCount)
+                self.hSession, ctypes.byref(hKey), wanted, ctypes.byref(ulKeyCount)
             )
             if rv:
                 output(
@@ -668,7 +665,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         """
         output("debug", "[gettokeninfo] for slot %s" % slotid)
         ti = CK_TOKEN_INFO()
-        rv = self.pkcs11.C_GetTokenInfo(c_ulong(slotid), byref(ti))
+        rv = self.pkcs11.C_GetTokenInfo(ctypes.c_ulong(slotid), ctypes.byref(ti))
 
         if rv:
             output(
@@ -690,54 +687,60 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
 
         mechanism = CK_MECHANISM(CKM_AES_KEY_GEN, NULL, 0)
 
-        keysize = c_ulong(ks)
-        klass = c_ulong(CKO_SECRET_KEY)
-        keytype = c_ulong(CKK_AES)
-        ck_true = c_ubyte(1)
-        ck_false = c_ubyte(0)
+        keysize = ctypes.c_ulong(ks)
+        klass = ctypes.c_ulong(CKO_SECRET_KEY)
+        keytype = ctypes.c_ulong(CKK_AES)
+        ck_true = ctypes.c_ubyte(1)
+        ck_false = ctypes.c_ubyte(0)
         objHandle = CK_OBJECT_HANDLE()
 
         size = 9
         CK_TEMPLATE = CK_ATTRIBUTE * size
 
         template = CK_TEMPLATE(
-            CK_ATTRIBUTE(CKA_CLASS, addressof(klass), sizeof(klass)),
-            CK_ATTRIBUTE(CKA_KEY_TYPE, addressof(keytype), sizeof(keytype)),
-            CK_ATTRIBUTE(CKA_LABEL, cast(label, c_void_p), len(label)),
-            CK_ATTRIBUTE(CKA_VALUE_LEN, addressof(keysize), sizeof(keysize)),
+            CK_ATTRIBUTE(CKA_CLASS, ctypes.addressof(klass), ctypes.sizeof(klass)),
             CK_ATTRIBUTE(
-                CKA_PRIVATE,
-                cast(addressof(ck_false), c_void_p),
-                sizeof(ck_false),
+                CKA_KEY_TYPE, ctypes.addressof(keytype), ctypes.sizeof(keytype)
+            ),
+            CK_ATTRIBUTE(CKA_LABEL, ctypes.cast(label, ctypes.c_void_p), len(label)),
+            CK_ATTRIBUTE(
+                CKA_VALUE_LEN, ctypes.addressof(keysize), ctypes.sizeof(keysize)
             ),
             CK_ATTRIBUTE(
-                CKA_TOKEN, cast(addressof(ck_true), c_void_p), sizeof(ck_true)
+                CKA_PRIVATE,
+                ctypes.cast(ctypes.addressof(ck_false), ctypes.c_void_p),
+                ctypes.sizeof(ck_false),
+            ),
+            CK_ATTRIBUTE(
+                CKA_TOKEN,
+                ctypes.cast(ctypes.addressof(ck_true), ctypes.c_void_p),
+                ctypes.sizeof(ck_true),
             ),
             CK_ATTRIBUTE(
                 CKA_SENSITIVE,
-                cast(addressof(ck_true), c_void_p),
-                sizeof(ck_true),
+                ctypes.cast(ctypes.addressof(ck_true), ctypes.c_void_p),
+                ctypes.sizeof(ck_true),
             ),
             CK_ATTRIBUTE(
                 CKA_ENCRYPT,
-                cast(addressof(ck_true), c_void_p),
-                sizeof(ck_true),
+                ctypes.cast(ctypes.addressof(ck_true), ctypes.c_void_p),
+                ctypes.sizeof(ck_true),
             ),
             CK_ATTRIBUTE(
                 CKA_DECRYPT,
-                cast(addressof(ck_true), c_void_p),
-                sizeof(ck_true),
+                ctypes.cast(ctypes.addressof(ck_true), ctypes.c_void_p),
+                ctypes.sizeof(ck_true),
             ),
         )
 
-        template_len = c_ulong(size)
+        template_len = ctypes.c_ulong(size)
 
         rv = self.pkcs11.C_GenerateKey(
             self.hSession,
-            byref(mechanism),
+            ctypes.byref(mechanism),
             template,
             template_len,
-            byref(objHandle),
+            ctypes.byref(objHandle),
         )
 
         if rv:
@@ -786,8 +789,8 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         handle = int(self.handles.get(id))
         output("debug", "[decrypt] decrypting with handle %r" % handle)
 
-        plaintext = create_string_buffer(len(value))
-        plaintext_len = c_ulong(len(plaintext))
+        plaintext = ctypes.create_string_buffer(len(value))
+        plaintext_len = ctypes.c_ulong(len(plaintext))
 
         if len(iv) != 16:
             output(
@@ -800,10 +803,12 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
                 "size) of 16 bytes. %i given" % len(iv)
             )
 
-        mechanism = CK_MECHANISM(CKM_AES_CBC, cast(c_char_p(iv), c_void_p), len(iv))
+        mechanism = CK_MECHANISM(
+            CKM_AES_CBC, ctypes.cast(ctypes.c_char_p(iv), ctypes.c_void_p), len(iv)
+        )
 
         rv = self.pkcs11.C_DecryptInit(
-            self.hSession, byref(mechanism), CK_OBJECT_HANDLE(handle)
+            self.hSession, ctypes.byref(mechanism), CK_OBJECT_HANDLE(handle)
         )
         if rv:
             output(
@@ -815,9 +820,9 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         rv = self.pkcs11.C_Decrypt(
             self.hSession,
             value,
-            c_ulong(len(value)),
-            byref(plaintext),
-            byref(plaintext_len),
+            ctypes.c_ulong(len(value)),
+            ctypes.byref(plaintext),
+            ctypes.byref(plaintext_len),
         )
         if rv:
             output(
@@ -846,8 +851,8 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
         output("debug", "[encrypt] encrypting with handle %r" % handle)
         data = self.pad(data)
 
-        encrypted_data = create_string_buffer(len(data))
-        len_encrypted_data = c_ulong(len(encrypted_data))
+        encrypted_data = ctypes.create_string_buffer(len(data))
+        len_encrypted_data = ctypes.c_ulong(len(encrypted_data))
 
         if len(iv) != 16:
             output(
@@ -860,9 +865,11 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
                 "size) of 16 bytes. %i given" % len(iv)
             )
 
-        mechanism = CK_MECHANISM(CKM_AES_CBC, cast(c_char_p(iv), c_void_p), len(iv))
+        mechanism = CK_MECHANISM(
+            CKM_AES_CBC, ctypes.cast(ctypes.c_char_p(iv), ctypes.c_void_p), len(iv)
+        )
 
-        rv = self.pkcs11.C_EncryptInit(self.hSession, byref(mechanism), handle)
+        rv = self.pkcs11.C_EncryptInit(self.hSession, ctypes.byref(mechanism), handle)
 
         if rv:
             output(
@@ -873,14 +880,14 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
 
             raise Exception("C_EncryptInit failed (%s): %s" % (rv, pkcs11error(rv)))
 
-        data_buffer = create_string_buffer(data)
+        data_buffer = ctypes.create_string_buffer(data)
 
         rv = self.pkcs11.C_Encrypt(
             self.hSession,
             data_buffer,
-            c_ulong(len(data)),
-            byref(encrypted_data),
-            byref(len_encrypted_data),
+            ctypes.c_ulong(len(data)),
+            ctypes.byref(encrypted_data),
+            ctypes.byref(len_encrypted_data),
         )
         if rv:
             output(
@@ -1029,7 +1036,7 @@ def main():
     import os
 
     try:
-        opts, args = getopt(
+        opts, _args = getopt(
             sys.argv[1:],
             "hp:s:n:f:e:l:",
             [

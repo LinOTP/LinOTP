@@ -74,7 +74,7 @@ class TestLDAPResolverMultipleSearchIds(unittest.TestCase):
 
         # 2. finally trigger the call getUserId
 
-        userid = resolver.getUserId(loginname=login_name)
+        _userid = resolver.getUserId(loginname=login_name)
 
         # 3. verify that the login name occurs multiple times in the filter
 

@@ -113,7 +113,7 @@ class TestAdminUserPrivilege(TestController):
 
         # first we need to get the admin realm with its resolvers
 
-        param = {"realm": admin_realm}
+        _param = {"realm": admin_realm}
         response = self.make_system_request(action="getRealms", params=params)
         assert response.json["result"]["status"]
 

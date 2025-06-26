@@ -125,7 +125,7 @@ class EnrollTokenDialog(ManageDialog):
 
         wel_hmac_otplen = self.driver.find_element(By.ID, "hmac_otplen")
         wel_hmac_algorithm = self.driver.find_element(By.ID, "hmac_algorithm")
-        wel_enroll_hmac_desc = self.driver.find_element(By.ID, "enroll_hmac_desc")
+        _wel_enroll_hmac_desc = self.driver.find_element(By.ID, "enroll_hmac_desc")
 
         if hmac_key:
             # select: seed input - no random seed

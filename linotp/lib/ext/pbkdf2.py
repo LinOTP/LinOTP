@@ -52,7 +52,6 @@
 
 import hmac
 import secrets
-import sys
 from base64 import b64encode as _b64encode
 from binascii import b2a_hex as _b2a_hex
 from hashlib import sha1

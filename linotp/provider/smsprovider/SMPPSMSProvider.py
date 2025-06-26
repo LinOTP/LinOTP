@@ -35,7 +35,7 @@ try:
     import smpplib
 
     SMPP_SUPPORT = True
-except ImportError as exx:
+except ImportError:
     SMPP_SUPPORT = False
 
 import logging

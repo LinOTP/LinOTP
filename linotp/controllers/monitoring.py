@@ -289,8 +289,6 @@ class MonitoringController(BaseController):
                 res = {"valid": license_ok, "message": license_msg}
                 return sendResult(res, 1)
 
-            details = {"valid": license_ok}
-
             if "user-num" in license_info:
                 res["user-num"] = int(license_info.get("user-num", 0))
                 active_usercount = getNumTokenUsers()

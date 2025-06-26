@@ -44,7 +44,7 @@ def fake_get_client_policy(client, scope, action, realm, user, userObj):
 @pytest.mark.usefixtures("app")
 class MaxTokenPolicyTest(unittest.TestCase):
     @patch("linotp.lib.policy.util.context", new=fake_context)
-    @patch("linotp.lib.policy.maxtoken.context", new=fake_context)
+    @patch("linotp.lib.context.request_context", new=fake_context)
     def test_no_or_empty_user(self):
         """
         checking if _checkTokenAssigned passes with empty user
@@ -69,7 +69,7 @@ class MaxTokenPolicyTest(unittest.TestCase):
             )
 
     @patch("linotp.lib.policy.util.context", new=fake_context)
-    @patch("linotp.lib.policy.maxtoken.context", new=fake_context)
+    @patch("linotp.lib.context.request_context", new=fake_context)
     @patch(
         "linotp.lib.policy.maxtoken.get_client_policy",
         new=fake_get_client_policy,
@@ -104,7 +104,7 @@ class MaxTokenPolicyTest(unittest.TestCase):
             )
 
     @patch("linotp.lib.policy.util.context", new=fake_context)
-    @patch("linotp.lib.policy.maxtoken.context", new=fake_context)
+    @patch("linotp.lib.context.request_context", new=fake_context)
     @patch(
         "linotp.lib.policy.maxtoken.get_client_policy",
         new=fake_get_client_policy,

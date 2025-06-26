@@ -29,9 +29,6 @@
 Test caching utils
 """
 
-import unittest
-from unittest.mock import DEFAULT, patch
-
 import pytest
 
 from linotp.lib.cache_utils import cache_in_request

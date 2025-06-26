@@ -359,7 +359,7 @@ class TestChallengePrompt(TestController):
         params = {"name": "imported_default", "type": "sms"}
         response = self.make_system_request("setDefaultProvider", params=params)
 
-        counter = 0
+        _counter = 0
         serial = "SMS_TOKEN_01"
         otpkey = "AD8EABE235FC57C815B26CEF3709075580B44738"
         params = {
@@ -441,11 +441,10 @@ class TestChallengePrompt(TestController):
         # create the password token
         params = {
             "serial": "TPW",
-            "user": "root",
+            "user": "passthru_user1",
             "pin": "pin",
             "otpkey": "123456",
             "type": "pw",
-            "user": "passthru_user1",
         }
 
         response = self.make_admin_request("init", params=params)

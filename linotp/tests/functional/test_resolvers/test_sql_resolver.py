@@ -274,7 +274,7 @@ class SQLResolverTest(SQLTestController):
         assert username_list == [username]
 
     def test_user_of_SQL_resolver_with_searchTerm_and_wildcard(self):
-        username = "hey1"
+        _username = "hey1"
         realm = "mySQLrealm"
         resolver = "mySQLresolver"
 

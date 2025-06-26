@@ -31,10 +31,8 @@ import logging
 import os
 from datetime import datetime
 
-import pytest
 from freezegun import freeze_time
 
-from linotp.flap import config
 from linotp.lib.support import (
     InvalidLicenseException,
     getSupportLicenseInfo,

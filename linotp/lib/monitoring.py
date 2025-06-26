@@ -35,8 +35,7 @@ from sqlalchemy import and_, not_, or_
 from linotp.lib.config import LinOtpConfig, getFromConfig, storeConfig
 from linotp.lib.context import request_context as context
 from linotp.lib.resolver import parse_resolver_spec
-from linotp.lib.user import getUserFromParam, getUserList, getUserListIterators
-from linotp.lib.useriterator import iterate_users
+from linotp.lib.user import getUserFromParam, getUserList
 from linotp.model import db
 from linotp.model.config import Config as config_model
 from linotp.model.realm import Realm
