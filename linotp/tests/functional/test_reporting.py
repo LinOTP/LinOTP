@@ -805,7 +805,7 @@ class TestReportingController(TestController):
         }
         self.create_policy(policy_params)
 
-        for i in range(0, 25):
+        for i in range(25):
             self.create_token(
                 serial="005" + str(2 * i), realm="mydefrealm", user="lorca"
             )

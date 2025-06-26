@@ -57,8 +57,6 @@ class DatabaseContext:
     from the shell and from within LinOTP
     """
 
-    pass
-
 
 class LinOTP_DatabaseContext(DatabaseContext):
     """

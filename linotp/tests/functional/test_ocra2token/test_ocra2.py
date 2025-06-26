@@ -1384,7 +1384,7 @@ class OcraTest(TestController):
             response = self.make_admin_request("init", params=parameters)
             assert '"value": true' in response, response
 
-            for count in range(0, CHALLLENGE_RUNS):
+            for count in range(CHALLLENGE_RUNS):
                 # -2- fetch the challenge
                 p = {
                     "serial": serial,
@@ -1487,7 +1487,7 @@ class OcraTest(TestController):
             response = self.make_admin_request("init", params=parameters)
             assert '"value": true' in response, response
 
-            for count in range(0, 3):
+            for count in range(3):
                 log.error("fetching challenge %d for %s ", count, ocrasuite)
                 # -2- fetch the challenge
                 p = {
@@ -1623,7 +1623,7 @@ class OcraTest(TestController):
             response = self.make_admin_request("init", params=parameters)
             assert '"value": true' in response, response
 
-            for count in range(0, 3):
+            for count in range(3):
                 # -2- fetch the challenge
                 p = {
                     "serial": serial,
@@ -1749,7 +1749,7 @@ class OcraTest(TestController):
             assert '"value": true' in response, response
 
             fcount = 0
-            for _count in range(0, CHALLLENGE_RUNS):
+            for _count in range(CHALLLENGE_RUNS):
                 # -2- fetch the challenge
                 p = {
                     "serial": serial,
@@ -1839,7 +1839,7 @@ class OcraTest(TestController):
             response = self.make_admin_request("init", params=parameters)
             assert '"value": true' in response, response
 
-            for count in range(0, CHALLLENGE_RUNS):
+            for count in range(CHALLLENGE_RUNS):
                 # -2a- fetch the challenge
                 p = {
                     "serial": serial,
@@ -1971,7 +1971,7 @@ class OcraTest(TestController):
             response = self.make_admin_request("init", params=parameters)
             assert '"value": true' in response, response
 
-            for count in range(0, CHALLLENGE_RUNS):
+            for count in range(CHALLLENGE_RUNS):
                 # -2a- fetch the challenge
                 p = {
                     "serial": serial,

@@ -3477,13 +3477,13 @@ class TestPolicies(TestPoliciesBase):
         # generate dummy tokens from template token1
         token_template = tokens["token1"]
 
-        for i in range(0, 5):
+        for i in range(5):
             serial = f"token0{i}"
             descr = copy.deepcopy(token_template)
             descr["otpkey"] = f"{token_template['otpkey'][:-1]}{i}"
             tokens[serial] = descr
 
-        for i in range(0, 5):
+        for i in range(5):
             serial = f"token1{i}"
             descr = copy.deepcopy(token_template)
             descr["otpkey"] = f"{token_template['otpkey'][:-1]}{i}"
@@ -3644,13 +3644,13 @@ class TestPolicies(TestPoliciesBase):
         # generate dummy tokens from template token1
         token_template = tokens["token1"]
 
-        for i in range(0, 5):
+        for i in range(5):
             serial = f"token0{i}"
             descr = copy.deepcopy(token_template)
             descr["otpkey"] = f"{token_template['otpkey'][:-1]}{i}"
             tokens[serial] = descr
 
-        for i in range(0, 5):
+        for i in range(5):
             serial = f"token1{i}"
             descr = copy.deepcopy(token_template)
             descr["otpkey"] = f"{token_template['otpkey'][:-1]}{i}"

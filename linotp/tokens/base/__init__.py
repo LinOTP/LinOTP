@@ -953,7 +953,6 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         :param seed: a string that should be checked for
         validity as a seed (aka otpkey)
         """
-        pass
 
     def setDescription(self, description):
         """

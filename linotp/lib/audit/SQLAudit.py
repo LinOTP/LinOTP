@@ -281,14 +281,12 @@ class Audit(AuditBase):
         The fact, that the log state was initialized, also needs to be logged.
         Therefor the same params are passed as i the log method.
         """
-        pass
 
     def set(self):
         """
         This function could be used to set certain things like the signing key.
         But maybe it should only be read from linotp.cfg?
         """
-        pass
 
     def _buildCondition(self, param, AND):
         """

@@ -1642,7 +1642,7 @@ class TestValidateController(TestController):
 
         # Test if FailCount increments and in case of a valid OTP is resetted
 
-        for _i in range(0, 14):
+        for _i in range(14):
             parameters = {"user": "root", "pass": "pin123456"}
             response = self.make_validate_request("check", params=parameters)
             assert '"value": false' in response, response
@@ -1668,7 +1668,7 @@ class TestValidateController(TestController):
         # Test if FailCount increments and in case of a maxFailCount
         # could not be reseted by a valid OTP
 
-        for _i in range(0, 15):
+        for _i in range(15):
             parameters = {"user": "root", "pass": "pin123456"}
             response = self.make_validate_request("check", params=parameters)
             assert '"value": false' in response, response

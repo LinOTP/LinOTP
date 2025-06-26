@@ -123,8 +123,6 @@ class ExtFlaskConfig(FlaskConfig):
     class RelativePathName(str):
         """“Marker” that a string is really a relative path name."""
 
-        pass
-
     def __init__(self, *args, **kwargs):
         """Initialise the LinOTP config mechanism. The `config_schema`
         parameter, which isn't part of Flask's `Config` mechanism, lets us

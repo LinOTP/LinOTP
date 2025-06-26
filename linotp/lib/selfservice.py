@@ -43,7 +43,6 @@ def get_imprint(realm):
     directory = config.get("linotp.imprint_directory", "/etc/linotp/imprint")
     filename = f"{directory}/{realm}.imprint"
     try:
-        pass
         f = open(filename)
         res = f.read()
         f.close()

@@ -334,7 +334,7 @@ class TestSupport(TestController):
             # - tokens per user are not limited
 
             for user in ["hans", "rollo", "susi", "horst", "user1", "user2"]:
-                for i in range(0, 2):
+                for i in range(2):
                     params = {
                         "type": "pw",
                         "user": user + "@myDefRealm",
@@ -366,14 +366,14 @@ class TestSupport(TestController):
 
             # disable one of the users tokens and now we can enroll more users
 
-            for i in range(0, 2):
+            for i in range(2):
                 params = {
                     "serial": f"hans.{i}",
                 }
                 response = self.make_admin_request("disable", params)
                 assert '"value": 1' in response
 
-            for i in range(0, 2):
+            for i in range(2):
                 params = {
                     "type": "pw",
                     "user": "root@myDefRealm",
@@ -656,7 +656,7 @@ class TestSupport(TestController):
             assert '"status": true' in response
             assert '"value": true' in response
 
-            for i in range(0, licensed_tokens + grace_limit):
+            for i in range(licensed_tokens + grace_limit):
                 params = {
                     "type": "hmac",
                     "genkey": 1,

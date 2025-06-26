@@ -55,8 +55,6 @@ class ProviderNotAvailable(Exception):
     or response timeout error
     """
 
-    pass
-
 
 # -------------------------------------------------------------------------- --
 # establish the global provider module registry

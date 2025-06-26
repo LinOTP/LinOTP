@@ -214,7 +214,7 @@ class TestScenario01:
 
         # Validate HOTP Token - bach
         hotp = HmacOtp()
-        for counter in range(0, 4):
+        for counter in range(4):
             otp = "bachnewpin" + hotp.generate(counter=counter, key=seed_oath137332_bin)
             access_granted, _ = validate.validate(
                 user="bach@" + test1_realm, password=otp

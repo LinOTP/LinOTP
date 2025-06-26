@@ -147,7 +147,7 @@ class TestRemoteServiceList(TestCase):
 
         # after calling for `failure_threshold` times the failing service
         # should be marked as UNAVAILABLE
-        for _ in range(0, services.failure_threshold):
+        for _ in range(services.failure_threshold):
             assert services.call_first_available() == 42
 
         assert func.call_count > 0
@@ -189,7 +189,7 @@ class TestRemoteServiceList(TestCase):
         dt_now.return_value += timedelta(seconds=1)
 
         # call n times until the function is marked as failed
-        for _ in range(0, services.failure_threshold):
+        for _ in range(services.failure_threshold):
             assert services.call_first_available() == "failover"
 
         assert services[0].state == State.UNAVAILABLE

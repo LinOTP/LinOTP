@@ -52,8 +52,6 @@ class AllResourcesUnavailable(Exception):
     to be thrown when all services are unavailable.
     """
 
-    pass
-
 
 def string_to_list(string_list, sep=","):
     """
@@ -355,7 +353,7 @@ class ResourceScheduler:
 
         self._retry_complete = False
 
-        for i in range(0, self.tries):
+        for i in range(self.tries):
             # the last of the list is the last try, after which a blocking is
             # possible
 

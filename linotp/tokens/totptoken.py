@@ -842,7 +842,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         otp_dict["timeStepping"] = timeStepping
 
         if count > 0:
-            for i in range(0, count):
+            for i in range(count):
                 otpval = hmac2Otp.generate(counter=counter + i, inc_counter=False)
                 timeCounter = ((counter + i) * timeStepping) + shift
                 otp_dict["otp"][counter + i] = {

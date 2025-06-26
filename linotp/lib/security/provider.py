@@ -249,7 +249,7 @@ class SecurityProvider:
             log.debug("[createHSMPool] creating pool %r with size=%r", id, size)
 
             pool = []
-            for _i in range(0, size):
+            for _i in range(size):
                 error = ""
                 hsm = None
                 try:

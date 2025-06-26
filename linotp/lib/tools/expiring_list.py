@@ -42,7 +42,6 @@ class ExpiringList:
         """
         :returns: True if item is in the list and not expired
         """
-        pass
 
     def add_item(self, item, expiry):
         """
@@ -51,7 +50,6 @@ class ExpiringList:
         :param item: the item to be kept
         :param ex: expiry in seconds
         """
-        pass
 
 
 class CustomExpiringList(ExpiringList):

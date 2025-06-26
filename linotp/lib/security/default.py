@@ -141,7 +141,7 @@ class DefaultSecurityModule(SecurityModule):
         secret = ""
         try:
             with open(self.secFile, "rb") as f:
-                for _i in range(0, id + 1):
+                for _i in range(id + 1):
                     secret = f.read(32)
             if not secret:
                 # secret = setupKeyFile(secFile, id+1)

@@ -53,7 +53,6 @@ class TestSelfserviceAuthController(TestController):
 
     def tearDown(self):
         TestController.tearDown(self)
-        pass
 
     def create_extra_resolver(self):
         resolver_params = {

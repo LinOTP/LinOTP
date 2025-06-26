@@ -175,7 +175,6 @@ class PasswordTokenClass(HmacTokenClass):
         :param seed: a string that should be checked for
         validity as a seed (aka otpkey)
         """
-        pass
 
     def checkOtp(self, anOtpVal, counter, window, options=None):
         """

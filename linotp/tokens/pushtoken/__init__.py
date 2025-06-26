@@ -44,8 +44,6 @@ class PushTokenPairingData(_PushTokenPairingData):
     gda (generic device address)
     """
 
-    pass
-
 
 def parse_and_verify_pushtoken_pairing_data(plaintext):
     """

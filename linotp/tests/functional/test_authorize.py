@@ -478,7 +478,6 @@ class TestAuthorizeController(TestController):
         """
         TODO: Testing policy for smstext
         """
-        pass
 
     ###################################################################
     #

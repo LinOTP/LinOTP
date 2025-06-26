@@ -146,7 +146,7 @@ def updateConfig(confi):
     update_entries = {}
 
     for entry in confi.keys():
-        if entry.endswith(".type") or entry.endswith(".desc"):
+        if entry.endswith((".type", ".desc")):
             key = entry[: -len(".type")]
         else:
             key = entry

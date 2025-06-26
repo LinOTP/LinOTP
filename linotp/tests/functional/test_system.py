@@ -97,12 +97,9 @@ class TestSystemController(TestController):
         params = {"username": "root"}
         _response = self.make_admin_request(action="userlist", params=params)
 
-        pass
         params = {"username": "root", "realm": "myMixRealm"}
 
         _response = self.make_admin_request(action="userlist", params=params)
-
-        pass
 
     def test_001_realms(self):
         """"""

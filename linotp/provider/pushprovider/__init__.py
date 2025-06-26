@@ -84,4 +84,3 @@ class IPushProvider:
         :param configDict: A dictionary that contains all configuration entries
                           you defined (e.g. in a linotp.cfg file)
         """
-        pass

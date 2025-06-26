@@ -152,7 +152,6 @@ class AuditBase:
         This method is used to log the data.
         It should hash the data and do a hash chain and sign the data
         """
-        pass
 
     def initialize_log(self, param):
         """
@@ -160,14 +159,12 @@ class AuditBase:
         The fact, that the log state was initialized, also needs to be logged.
         Therefor the same params are passed as i the log method.
         """
-        pass
 
     def set(self):
         """
         This function could be used to set certain things like the signing key.
         But maybe it should only be read from linotp.cfg?
         """
-        pass
 
     def search(self, param, AND=True, display_error=True, rp_dict=None):
         """

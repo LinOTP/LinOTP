@@ -41,8 +41,6 @@ class QRTokenPairingData(_QRTokenPairingData):
     namely user_public_key, user_token_id, serial and user_login
     """
 
-    pass
-
 
 # --------------------------------------------------------------------------- --
 

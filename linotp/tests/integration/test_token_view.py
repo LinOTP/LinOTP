@@ -50,7 +50,7 @@ class TestTokenView:
         v = self.token_view
         v.delete_all_tokens()
         # Create 10 tokens so UI delays are introduced while fetching tokens
-        for _ in range(0, 10):
+        for _ in range(10):
             self.token_enroll.create_static_password_token("testPassword")
         v.delete_all_tokens()
 

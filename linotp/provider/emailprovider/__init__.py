@@ -109,7 +109,6 @@ class IEmailProvider:
                            entries you defined (e.g. in a linotp.cfg file)
         :type configDict: dict
         """
-        pass
 
 
 @provider_registry.class_entry("SMTPEmailProvider")

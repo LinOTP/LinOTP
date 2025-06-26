@@ -600,7 +600,7 @@ class OcraSuite:
                 if c.isdigit() or c.lower() in ["a", "b", "c", "d", "e", "f"]:
                     challenge += c
 
-        for _i in range(0, 4):
+        for _i in range(4):
             if len(challenge) < c_len:
                 challenge += "0"
 
@@ -626,15 +626,15 @@ class OcraSuite:
         c_len = self.Q[1]
 
         if c_type == "A":
-            for _c in range(0, c_len):
+            for _c in range(c_len):
                 challenge += secrets.choice(alphnum)
 
         elif c_type == "N":
-            for _c in range(0, c_len):
+            for _c in range(c_len):
                 challenge += secrets.choice(digits)
 
         elif c_type == "H":
-            for _c in range(0, c_len):
+            for _c in range(c_len):
                 challenge += secrets.choice(hexs)
 
         challenge = challenge[:c_len]

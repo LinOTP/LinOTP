@@ -619,7 +619,7 @@ class OcraTest(TestController):
         lenotp = len(str(otp))
         if lenotp > 1:
             while rotp == otp:
-                for _i in range(0, 3):
+                for _i in range(3):
                     idx1 = random.randint(0, lenotp - 1)
                     idx2 = random.randint(0, lenotp - 1)
                     if idx1 != idx2:
@@ -862,7 +862,7 @@ class OcraTest(TestController):
                 i = i + 1
                 self._prun_(i, self.threads)
         else:
-            for i in range(0, self.runs):
+            for i in range(self.runs):
                 self._prun_(i, self.threads)
 
         return
@@ -873,7 +873,7 @@ class OcraTest(TestController):
         """
         p_tests = []
 
-        for _i in range(0, numthreads):
+        for _i in range(numthreads):
             p_test = doRequest(self, rid=_i, test="ptest_OCRA_token_failcounterInc")
             p_tests.append(p_test)
             if "paste.registry" in environ:
@@ -1095,7 +1095,7 @@ class OcraTest(TestController):
             log.info("response %s\n", response)
             assert '"value": 1' in response
 
-            for _iii in range(0, 3):
+            for _iii in range(3):
                 parameters = {
                     "serial": serial,
                 }

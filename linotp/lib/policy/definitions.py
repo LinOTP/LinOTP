@@ -118,8 +118,8 @@ POLICY_DEFINTIONS = {
         "setDescription": {"type": "bool"},
         "setMOTPPIN": {"type": "bool"},
         "getotp": {"type": "bool"},
-        "otp_pin_maxlength": {"type": "int", "value": list(range(0, 100))},
-        "otp_pin_minlength": {"type": "int", "value": list(range(0, 100))},
+        "otp_pin_maxlength": {"type": "int", "value": list(range(100))},
+        "otp_pin_minlength": {"type": "int", "value": list(range(100))},
         "otp_pin_contents": {"type": "str"},
         "max_count_dpw": {"type": "int"},
         "max_count_hotp": {"type": "int"},
@@ -175,7 +175,7 @@ POLICY_DEFINTIONS = {
             "type": "int",
             "desc": "Limit the number of tokens a user in the realm may have assigned.",
         },
-        "otp_pin_random": {"type": "int", "value": list(range(0, 100))},
+        "otp_pin_random": {"type": "int", "value": list(range(100))},
         "otp_pin_random_content": {
             "type": "string",
             "desc": "The contents of the temporary password, "

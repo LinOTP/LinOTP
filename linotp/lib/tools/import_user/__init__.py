@@ -49,8 +49,6 @@ class FormatReader:
     support for special csv formats
     """
 
-    pass
-
 
 class DefaultFormatReader(FormatReader):
     delimiter = ","

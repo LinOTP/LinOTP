@@ -53,8 +53,6 @@ class ServiceUnavailable(Exception):
     users.
     """
 
-    pass
-
 
 class AllServicesUnavailable(Exception):
     """
@@ -64,8 +62,6 @@ class AllServicesUnavailable(Exception):
     `RemoteService.call_first_available` when there are no functional services
     left.
     """
-
-    pass
 
 
 class RemoteService:

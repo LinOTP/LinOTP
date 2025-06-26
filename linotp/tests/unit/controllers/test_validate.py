@@ -40,8 +40,6 @@ class NotAuthorizeException(Exception):
     `AuthorizeException` and other exceptions.
     """
 
-    pass
-
 
 @pytest.mark.usefixtures("app")
 class TestValidateController:

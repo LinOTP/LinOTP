@@ -648,7 +648,5 @@ class TestProviderController(TestController):
 class ProviderCreationError(Exception):
     """Exception raised when provider creation fails."""
 
-    pass
-
 
 # eof #####################################################################

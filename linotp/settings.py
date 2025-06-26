@@ -41,13 +41,9 @@ VALID_LOG_LEVELS = {"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"}
 class LinOTPConfigKeyError(KeyError):
     """Used for LinOTP configuration items with invalid names."""
 
-    pass
-
 
 class LinOTPConfigValueError(ValueError):
     """Used for out-of-range errors etc. with LinOTP configuration items."""
-
-    pass
 
 
 def check_int_in_range(min=None, max=None):

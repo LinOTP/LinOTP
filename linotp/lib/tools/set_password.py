@@ -54,7 +54,6 @@ class DataBaseContext:
         :param sql_url: the database url
         :return: - nothing -
         """
-        pass
 
     def get_session(self):
         """
