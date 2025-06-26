@@ -186,8 +186,8 @@ class DummySMPPServer:
             sock, address = self._sock.accept()
             done = False
             while not done:
-                # Note how we're leveraging `smpplib` to avoid the –
-                # considerable – inconvenience of parsing (and
+                # Note how we're leveraging `smpplib` to avoid the -
+                # considerable - inconvenience of parsing (and
                 # generating) SMPP PDUs ourselves.
 
                 try:

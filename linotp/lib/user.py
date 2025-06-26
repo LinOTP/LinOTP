@@ -489,7 +489,7 @@ def get_user_from_options(options_dict, fallback_user=None, fallback_realm=None)
     options = options_dict or {}
     user = fallback_user or User()
 
-    if "user" in options and options["user"]:
+    if options.get("user"):
         if isinstance(options["user"], str):
             user = getUserFromParam(options)
 
@@ -1350,7 +1350,7 @@ def getUserId(user, check_existance=False):
             id=1205,
         )
 
-    return list(uids)[0], resId, resolver_spec
+    return next(iter(uids)), resId, resolver_spec
 
 
 def getSearchFields(user):

@@ -513,8 +513,8 @@ class TestMonitoringController(TestController):
 
     def test_active_users(self):
         # mydefrealm = mydefresolver
-        self.create_token(serial="0051", user="aἰσχύλος")
-        self.create_token(serial="0052", user="aἰσχύλος")
+        self.create_token(serial="0051", user="aἰσχύλος")  # noqa: RUF001
+        self.create_token(serial="0052", user="aἰσχύλος")  # noqa: RUF001
         self.create_token(serial="0053", user="passthru_user1")
         self.create_token(serial="0054", user="root")
         self.create_token(serial="0055", user="susi")

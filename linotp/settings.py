@@ -884,7 +884,7 @@ def _init_app(app):
 # schema-based setup outlined above. This helps us because (a) we know
 # what types our `ConfigItem` instances are supposed to have, so we can
 # specify everything as strings (e.g., in environment variables) and still
-# end up with `int`s in the actual settings (for an extreme – but cool –
+# end up with `int`s in the actual settings (for an extreme - but cool -
 # example, check out `LOG_CONFIG` above), and (b) it's a lot easier to
 # auto-generate commented sample configuration files from the schema than
 # it would be from Python code, so we save ourselves from getting into a

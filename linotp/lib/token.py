@@ -1280,7 +1280,7 @@ class TokenHandler(object):
 # local
 
 
-def createTokenClassObject(token: Token, token_type: string = None):
+def createTokenClassObject(token: Token, token_type: str | None = None):
     """
     createTokenClassObject - create a token class object from a given type
 
@@ -1652,11 +1652,11 @@ def token_owner_iterator():
 
 
 def get_tokens(
-    user: User = None,
-    serial: string = None,
-    token_type: string = None,
+    user: User | None = None,
+    serial: str | None = None,
+    token_type: str | None = None,
     read_for_update: bool = False,
-    active: bool = None,
+    active: bool | None = None,
 ):
     """
     Get a list of tokens of type TokenClass or any of its subclasses.
@@ -1671,17 +1671,17 @@ def get_tokens(
     return [createTokenClassObject(token) for token in tokens]
 
 
-def get_token(serial: string):
+def get_token(serial: str):
     token = get_raw_token(serial)
     return createTokenClassObject(token)
 
 
 def get_raw_tokens(
-    user: User = None,
-    serial: string = None,
-    token_type: string = None,
+    user: User | None = None,
+    serial: str | None = None,
+    token_type: str | None = None,
     read_for_update: bool = False,
-    active: bool = None,
+    active: bool | None = None,
 ) -> List[Token]:
     """
     Get a list of tokens of type Token, an object containing the database fields for the token and little more.

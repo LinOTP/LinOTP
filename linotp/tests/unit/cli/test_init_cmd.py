@@ -170,14 +170,13 @@ def test_make_backup(
         assert (tmp_path / expected_name).exists()
         assert (tmp_path / expected_name).read_text() == data
         assert (
-            f"Moved existing test file to {str(tmp_path / expected_name)}"
+            f"Moved existing test file to {tmp_path / expected_name!s}"
         ) in captured.err
     else:  # expecting failure
         assert (tmp_path / filename).exists()
         assert not (tmp_path / expected_name).exists()
         assert (
-            f"Error moving test file to {str(tmp_path / expected_name)}: "
-            in captured.err
+            f"Error moving test file to {tmp_path / expected_name!s}: " in captured.err
         )
 
 
@@ -682,7 +681,7 @@ def test_init_enc_key_cmd(
         assert secret_file_name.exists()
         assert secret_file_name.read_bytes() == SECRET_KEY
     else:
-        if secret_file_name.exists() and secret_file_name.read_bytes() == SECRET_KEY:  # noqa: E129
+        if secret_file_name.exists() and secret_file_name.read_bytes() == SECRET_KEY:
             raise AssertionError("secret file was created but shouldn't have been")
         elif has_file and secret_file_name.exists():
             if secret_file_name.read_bytes() == ZERO_KEY:

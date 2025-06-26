@@ -101,7 +101,7 @@ def resolver(app):
     ],
 )
 def test_local_admins_list(app, runner, resolver, options, expected):
-    result = runner.invoke(cli_main, ["local-admins", "list"] + options)
+    result = runner.invoke(cli_main, ["local-admins", "list", *options])
     assert result.exit_code == 0
     assert result.output == expected
 
@@ -128,7 +128,7 @@ def test_local_admins_list_invalid_key(app, runner, resolver):
             "user5",
             {
                 "givenname": "Никола́й Андре́евич",
-                "surname": "Ри́мский-Ко́рсаков",
+                "surname": "Ри́мский-Ко́рсаков",  # noqa: RUF001
                 "email": "bumblebee@example.com",
                 "phone": "+7812456789",
                 "mobile": "+7111111111",
@@ -223,7 +223,7 @@ def test_local_admins_password(app, runner, resolver, pwd, args, stdin_data):
 
     result = runner.invoke(
         cli_main,
-        ["local-admins", "password"] + args + [username],
+        ["local-admins", "password", *args, username],
         input=stdin_data,
     )
 
@@ -258,7 +258,7 @@ def test_local_admins_remove(app, runner, resolver, args, stdin_data, gone):
     username = "hugo"
     result = runner.invoke(
         cli_main,
-        ["local-admins", "remove"] + args + [username],
+        ["local-admins", "remove", *args, username],
         input=stdin_data,
     )
     assert result.exit_code == (0 if gone else 1)

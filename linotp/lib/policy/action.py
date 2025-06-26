@@ -116,7 +116,7 @@ def get_action_value(
     policies: Dict,
     scope: str,
     action: str,
-    subkey: str = None,
+    subkey: str | None = None,
     default: Any = None,
 ) -> Any:
     """Get the value of an action from a set of policies

@@ -33,10 +33,10 @@ from .token_enroll import EnrollTokenDialog
 from .user_id_resolver import UserIdResolver, UserIdResolverManager
 
 __all__ = [
-    "helper",
     "EnrollTokenDialog",
     "Policy",
     "TestCase",
-    "UserIdResolverManager",
     "UserIdResolver",
+    "UserIdResolverManager",
+    "helper",
 ]

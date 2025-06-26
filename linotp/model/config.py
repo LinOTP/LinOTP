@@ -56,7 +56,7 @@ def set_config(
     key: str,
     value: str,
     typ: str,
-    description: str = None,
+    description: str | None = None,
     update: bool = False,
 ) -> None:
     """

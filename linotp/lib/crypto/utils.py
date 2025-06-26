@@ -185,7 +185,7 @@ def check(st):
     return res.upper()
 
 
-def createActivationCode(acode: str = None, checksum=True):
+def createActivationCode(acode: str | None = None, checksum=True):
     """
     create the activation code
 

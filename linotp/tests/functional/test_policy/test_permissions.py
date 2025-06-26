@@ -165,9 +165,9 @@ class TestPermissions(TestPoliciesBase):
         ]
         for realm, realm_permissions in permissions["inRealm"].items():
             if realm in ["mydefrealm"]:
-                assert set(
-                    expected_permissions + ["admin/show", "admin/userlist"]
-                ) == set(realm_permissions)
+                assert {*expected_permissions, "admin/show", "admin/userlist"} == set(
+                    realm_permissions
+                )
             else:
                 assert set(expected_permissions) == set(realm_permissions)
         assert set(expected_permissions) == set(permissions["anyRealm"])
@@ -204,9 +204,7 @@ class TestPermissions(TestPoliciesBase):
         assert 4 == len(permissions["inRealm"])
         for realm, realm_permissions in permissions["inRealm"].items():
             if realm in ["mydefrealm"]:
-                assert set(expected_permissions + ["admin/show"]) == set(
-                    realm_permissions
-                )
+                assert {*expected_permissions, "admin/show"} == set(realm_permissions)
             else:
                 assert set(expected_permissions) == set(realm_permissions)
         assert set(expected_permissions) == set(permissions["anyRealm"])
@@ -261,9 +259,7 @@ class TestPermissions(TestPoliciesBase):
 
         for realm, realm_permissions in permissions["inRealm"].items():
             if realm in ["linotp_admins"]:
-                assert set(expected_permissions + ["admin/show"]) == set(
-                    realm_permissions
-                )
+                assert {*expected_permissions, "admin/show"} == set(realm_permissions)
             else:
                 assert set(expected_permissions) == set(realm_permissions)
         assert set(expected_permissions) == set(permissions["anyRealm"])
@@ -280,9 +276,7 @@ class TestPermissions(TestPoliciesBase):
         ]
         for realm, realm_permissions in permissions["inRealm"].items():
             if realm in ["linotp_admins", "mymixrealm"]:
-                assert set(expected_permissions + ["admin/show"]) == set(
-                    realm_permissions
-                )
+                assert {*expected_permissions, "admin/show"} == set(realm_permissions)
             else:
                 assert set(expected_permissions) == set(realm_permissions)
         assert set(expected_permissions) == set(permissions["anyRealm"])

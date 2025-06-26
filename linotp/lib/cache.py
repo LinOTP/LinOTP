@@ -10,7 +10,7 @@ from linotp.lib.type_utils import boolean, get_duration
 log = logging.getLogger(__name__)
 
 
-def get_cache(cache_name: str, scope: str = None) -> Optional[Cache]:
+def get_cache(cache_name: str, scope: str | None = None) -> Optional[Cache]:
     """
     load the cache with cache_name and scope
 

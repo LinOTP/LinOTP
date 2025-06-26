@@ -47,12 +47,12 @@ from linotp.lib.token import getNumTokenUsers, getTokenNumResolver
 log = logging.getLogger(__name__)
 
 __all__ = [
-    "parseSupportLicense",
     "getSupportLicenseInfo",
-    "readLicenseInfo",
-    "setSupportLicense",
     "isSupportLicenseValid",
+    "parseSupportLicense",
+    "readLicenseInfo",
     "removeSupportLicenseInfo",
+    "setSupportLicense",
 ]
 
 PUB_KEY_DIRS = ["/etc/lseappliance/pubkeys"]

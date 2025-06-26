@@ -101,7 +101,7 @@ class TestRandompinController(TestController):
         case (because PIN has been set to an unknown value).
         """
         # Enroll token
-        user = "aἰσχύλος"  # realm myDefRealm
+        user = "aἰσχύλος"  # realm myDefRealm  # noqa: RUF001
         token = deepcopy(self.tokens[0])
         self._enroll_token(token, user=user)
 
@@ -129,7 +129,7 @@ class TestRandompinController(TestController):
         as in test_simple_enroll.
         """
         # Enroll token
-        user = "aἰσχύλος"  # realm myDefRealm
+        user = "aἰσχύλος"  # realm myDefRealm  # noqa: RUF001
         token = deepcopy(self.tokens[0])
         self._enroll_token(token)
 
@@ -150,7 +150,7 @@ class TestRandompinController(TestController):
         self._create_randompin_policy("myDefRealm")
 
         # Enroll token
-        user = "aἰσχύλος"  # realm myDefRealm
+        user = "aἰσχύλος"  # realm myDefRealm  # noqa: RUF001
         token2 = deepcopy(self.tokens[0])
         self._enroll_token(token2)
 
@@ -169,7 +169,7 @@ class TestRandompinController(TestController):
         Same as 'test_simple_assign' but with multiple tokens at once
         """
         # Enroll token
-        user = "aἰσχύλος"  # realm myDefRealm
+        user = "aἰσχύλος"  # realm myDefRealm  # noqa: RUF001
         token1 = deepcopy(self.tokens[0])
         token2 = deepcopy(self.tokens[0])
 
@@ -201,7 +201,7 @@ class TestRandompinController(TestController):
         self._create_selfservice_policy("myDefRealm")
 
         # Enroll token
-        user = "aἰσχύλος"  # realm myDefRealm
+        user = "aἰσχύλος"  # realm myDefRealm  # noqa: RUF001
         pwd = "Πέρσαι"
         token = deepcopy(self.tokens[0])
         self._enroll_token(token, user=user)
@@ -226,7 +226,7 @@ class TestRandompinController(TestController):
 
         self._create_selfservice_policy("myDefRealm")
 
-        user = "aἰσχύλος"  # realm myDefRealm
+        user = "aἰσχύλος"  # realm myDefRealm  # noqa: RUF001
         pwd = "Πέρσαι"
         token1 = deepcopy(self.tokens[0])
         token2 = deepcopy(self.tokens[0])
@@ -252,7 +252,7 @@ class TestRandompinController(TestController):
         userservice/assign is not affected by otp_pin_random
         """
 
-        user = "aἰσχύλος"  # realm myDefRealm
+        user = "aἰσχύλος"  # realm myDefRealm  # noqa: RUF001
         pwd = "Πέρσαι"
         token = deepcopy(self.tokens[0])
 
@@ -284,7 +284,7 @@ class TestRandompinController(TestController):
         self._create_selfservice_policy("myDefRealm")
 
         # Enroll token
-        user = "aἰσχύλος"  # realm myDefRealm
+        user = "aἰσχύλος"  # realm myDefRealm  # noqa: RUF001
         token = deepcopy(self.tokens[0])
         self._enroll_token(token, user=user)
 
@@ -333,7 +333,7 @@ class TestRandompinController(TestController):
         self._create_selfservice_policy("myDefRealm")
 
         # Enroll token
-        user = "aἰσχύλος"  # realm myDefRealm
+        user = "aἰσχύλος"  # realm myDefRealm  # noqa: RUF001
         token = deepcopy(self.tokens[0])
         self._enroll_token(token, user=user)
 
@@ -398,7 +398,7 @@ class TestRandompinController(TestController):
         self._set_token_realm(token["serial"], "myDefRealm")
 
         # autoassign the token
-        user = "aἰσχύλος"
+        user = "aἰσχύλος"  # noqa: RUF001
         pwd = "Πέρσαι"
         self._validate(
             user,

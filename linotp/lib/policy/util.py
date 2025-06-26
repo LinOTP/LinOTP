@@ -239,11 +239,8 @@ def _strip_quotes(value):
     """
     # make sure that if it starts with a quote and
     for quote in ["'", '"']:
-        if (
-            value.startswith(quote)
-            and not value.endswith(quote)
-            or not value.startswith(quote)
-            and value.endswith(quote)
+        if (value.startswith(quote) and not value.endswith(quote)) or (
+            not value.startswith(quote) and value.endswith(quote)
         ):
             if quote not in value[1:-1]:
                 raise Exception("non terminated string value entry %r" % value)
@@ -362,10 +359,8 @@ def parse_policies(lConfig):
 
                 # prepare the value to be at least an empty string
                 if (
-                    key in ("user", "client", "realm", "time")
-                    and value is None
-                    or value.strip() == "None"
-                ):
+                    key in ("user", "client", "realm", "time") and value is None
+                ) or value.strip() == "None":
                     value = ""
 
                 if key == "realm":

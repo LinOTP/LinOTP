@@ -68,7 +68,7 @@ class TestUserserviceReporting(TestController):
         parameters = {"serial": serial, "type": "spass", "pin": pin}
         return self.init_token(parameters)
 
-    def create_reporting_policy(self, policy_params: dict = None):
+    def create_reporting_policy(self, policy_params: dict | None = None):
         policy_params = policy_params or {}
         params = {
             "name": policy_params.get("name", "reporting_policy"),

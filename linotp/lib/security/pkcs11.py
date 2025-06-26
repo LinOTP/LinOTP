@@ -61,34 +61,34 @@ from linotp.lib.security.provider import (
 
 log = logging.getLogger(__name__)
 
-CKK_AES = int(0x0000001F)
-CKA_CLASS = int(0x00000000)
-CKO_DATA = int(0x00000000)
-CKO_SECRET_KEY = int(0x00000004)
-CKA_KEY_TYPE = int(0x00000100)
-CKA_TOKEN = int(0x00000001)
-CKA_LABEL = int(0x00000003)
-CKA_ENCRYPT = int(0x00000104)
-CKA_DECRYPT = int(0x00000105)
-CKA_VALUE = int(0x00000011)
-CKA_PRIVATE = int(0x00000002)
+CKK_AES = 0x0000001F
+CKA_CLASS = 0x00000000
+CKO_DATA = 0x00000000
+CKO_SECRET_KEY = 0x00000004
+CKA_KEY_TYPE = 0x00000100
+CKA_TOKEN = 0x00000001
+CKA_LABEL = 0x00000003
+CKA_ENCRYPT = 0x00000104
+CKA_DECRYPT = 0x00000105
+CKA_VALUE = 0x00000011
+CKA_PRIVATE = 0x00000002
 
-CKA_SENSITIVE = int(0x00000103)
-CKA_VALUE_LEN = int(0x00000161)
+CKA_SENSITIVE = 0x00000103
+CKA_VALUE_LEN = 0x00000161
 CK_BBOOL = ctypes.c_byte
-CKK_AES = int(0x0000001F)
+CKK_AES = 0x0000001F
 CK_OBJECT_HANDLE = ctypes.c_ulong
 CK_BYTE = ctypes.c_char
 CK_ULONG = ctypes.c_ulong
 CK_SLOT_ID = CK_ULONG
 # AES
 
-CKM_AES_KEY_GEN = int(0x00001080)
-CKM_AES_ECB = int(0x00001081)
-CKM_AES_CBC = int(0x00001082)
-CKM_AES_MAC = int(0x00001083)
-CKM_AES_MAC_GENERAL = int(0x00001084)
-CKM_AES_CBC_PAD = int(0x00001085)
+CKM_AES_KEY_GEN = 0x00001080
+CKM_AES_ECB = 0x00001081
+CKM_AES_CBC = 0x00001082
+CKM_AES_MAC = 0x00001083
+CKM_AES_MAC_GENERAL = 0x00001084
+CKM_AES_CBC_PAD = 0x00001085
 CKU_USER = 1
 CKU_SO = 0
 
@@ -898,7 +898,9 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
 
         return encrypted_data.value
 
-    def _encryptValue(self, value: bytes, keyNum: int = 2, iv: bytes = None) -> bytes:
+    def _encryptValue(
+        self, value: bytes, keyNum: int = 2, iv: bytes | None = None
+    ) -> bytes:
         """
         _encryptValue - base method to encrypt a value
         - uses one slot id to encrypt a string
@@ -991,7 +993,7 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
 
         return self._encryptValue(password, 0).decode("utf-8")
 
-    def encryptPin(self, pin: bytes, iv: bytes = None) -> str:
+    def encryptPin(self, pin: bytes, iv: bytes | None = None) -> str:
         """
         dedicated security module methods: encryptPin
         which used one slot id to encrypt a string

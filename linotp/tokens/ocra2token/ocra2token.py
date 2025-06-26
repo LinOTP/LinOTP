@@ -1119,8 +1119,7 @@ class Ocra2TokenClass(TokenClass):
 
         if options is not None:
             loptions.update(options)
-        if "session" in loptions:
-            del loptions["session"]
+        loptions.pop("session", None)
 
         (pin, otpval) = self.splitPinPass(passw)
         res = self.checkPin(pin)

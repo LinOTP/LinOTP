@@ -489,7 +489,7 @@ POLICY_DEFINTIONS = {
 }
 
 
-def get_policy_definitions(scope: str = None) -> Dict:
+def get_policy_definitions(scope: str | None = None) -> Dict:
     """cache the policy definitions access in the local request context.
 
     as the evaluation of the policy definition is resource intensive we cache
@@ -742,7 +742,7 @@ def convert_policy_value(value, value_type):
             value_set.add(val)
 
         if len(value_set) == 1:
-            return list(value_set)[0]
+            return next(iter(value_set))
 
         return value_set
 

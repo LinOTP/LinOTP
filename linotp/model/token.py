@@ -196,7 +196,7 @@ class Token(TokenSchema):
 
     def get(
         self,
-        key: str = None,
+        key: str | None = None,
         fallback: Any = None,
         save: bool = False,
     ) -> Any:

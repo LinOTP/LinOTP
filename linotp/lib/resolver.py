@@ -101,14 +101,14 @@ ConfigTree.add_parser("resolvers", parse_resolver)
 # -------------------------------------------------------------------------- --
 
 __all__ = [
+    "closeResolvers",
     "defineResolver",
-    "parse_resolver_spec",
-    "getResolverList",
-    "getResolverInfo",
     "deleteResolver",
+    "getResolverInfo",
+    "getResolverList",
     "getResolverObject",
     "initResolvers",
-    "closeResolvers",
+    "parse_resolver_spec",
     "setupResolvers",
 ]
 

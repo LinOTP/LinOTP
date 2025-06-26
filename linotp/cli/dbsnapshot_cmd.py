@@ -247,8 +247,10 @@ def list_database_backups() -> list:
 
 
 def _get_restore_filename(
-    template: str, filename: str = None, date: str = None
-) -> str or None:
+    template: str,
+    filename: str | None = None,
+    date: str | None = None,
+) -> str:
     """
     helper for restore, to determin a filename from a given date or file name
 
@@ -295,8 +297,10 @@ def _get_restore_filename(
 
 
 def restore_database_tables(
-    filename: str = None, date: str = None, table: str = None
-) -> int:
+    filename: str | None = None,
+    date: str | None = None,
+    table: str | None = None,
+) -> None:
     """
     restore the database tables from a file or for a given date
        optionally restore only one table

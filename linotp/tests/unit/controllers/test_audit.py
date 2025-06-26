@@ -75,7 +75,7 @@ def search(adminclient):
     # to the app and client fixtures within the function
 
     def _search(expected_status_code=200, json=True, **params):
-        outform = json and "json" or "csv"
+        outform = (json and "json") or "csv"
         queryparams = dict(params, outform=outform)
         response = adminclient.get("audit/search", query_string=queryparams)
         assert response.status_code == 200

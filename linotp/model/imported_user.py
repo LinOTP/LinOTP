@@ -45,7 +45,7 @@ class ImportedUser(ImportedUserSchema):
     user_entries = [name.name for name in ImportedUserSchema.__table__.c]
 
     @orm.reconstructor
-    def __init__(self, resolver_name: str = None):
+    def __init__(self, resolver_name: str | None = None):
         self._pw_gen = False
         self.user_class = ImportedUserSchema
         self.session: Session = db.session()

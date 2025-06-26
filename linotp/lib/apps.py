@@ -63,8 +63,8 @@ def create_google_authenticator(param: dict, user=None) -> str:
     """
 
     serial = param["serial"]
-    login = user and user.login or param.get("user.login", "")
-    realm = user and user.realm or param.get("user.realm", "")
+    login = (user and user.login) or param.get("user.login", "")
+    realm = (user and user.realm) or param.get("user.realm", "")
     description = param.get("description", "")
 
     token_label = get_tokenlabel(

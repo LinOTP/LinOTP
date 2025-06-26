@@ -61,7 +61,7 @@ def runner(app):
 def test_config_show_single(app, runner, name, options, value, expected):
     if value is not None:
         app.config[name] = value
-    result = runner.invoke(cli_main, ["config", "show", name] + options)
+    result = runner.invoke(cli_main, ["config", "show", name, *options])
     assert result.exit_code == 0
     assert result.output == expected.replace("<>", str(app.config[name]))
 
@@ -105,7 +105,7 @@ def test_config_show_single(app, runner, name, options, value, expected):
 def test_config_show_multi(app, runner, names, options, values, expected):
     for key, value in values.items():
         app.config[key] = value
-    result = runner.invoke(cli_main, ["config", "show"] + names + options)
+    result = runner.invoke(cli_main, ["config", "show", *names, *options])
     assert result.exit_code == 0
     print(f"output:\n{result.output}")
     assert result.output == re.sub(
@@ -236,7 +236,7 @@ def test_config_show_all(app, runner):
 def test_config_explain_single(app, runner, name, options, value, expected):
     if value is not None:
         app.config[name] = value
-    result = runner.invoke(cli_main, ["config", "explain", name] + options)
+    result = runner.invoke(cli_main, ["config", "explain", name, *options])
     assert result.exit_code == 0
     assert result.output == expected
 

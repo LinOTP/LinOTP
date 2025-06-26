@@ -41,7 +41,7 @@ class Reporting(ReportingSchema):
         detail: str = "",
         session: str = "",
         description: str = "",
-        timestamp: str = None,
+        timestamp: str | None = None,
     ):
         super().__init__(
             event=str(event),

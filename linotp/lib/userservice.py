@@ -191,8 +191,7 @@ def remove_auth_cookie(cookie):
     :return: boolean
     """
 
-    if cookie in Cookie_Cache:
-        del Cookie_Cache[cookie]
+    Cookie_Cache.pop(cookie, None)
 
 
 def check_auth_cookie(cookie, user, client):

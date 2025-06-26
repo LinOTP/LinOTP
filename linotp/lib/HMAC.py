@@ -43,7 +43,7 @@ class HmacOtp:
         self.digits = digits
         self.hashfunc = hashfunc
 
-    def hmac(self, counter: int = None, key=None):
+    def hmac(self, counter: int | None = None, key=None):
         counter = counter or self.counter
 
         data_input = struct.pack(">Q", counter)
@@ -65,7 +65,7 @@ class HmacOtp:
 
         return binary % (10**self.digits)
 
-    def generate(self, counter: int = None, inc_counter=True, key=None):
+    def generate(self, counter: int | None = None, inc_counter=True, key=None):
         counter = counter or self.counter
 
         otp = str(self.truncate(self.hmac(counter=counter, key=key)))

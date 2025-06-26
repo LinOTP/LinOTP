@@ -134,7 +134,7 @@ class TestAutoassignmentController(TestController):
             ("molière", "molière"),
             ("shakespeare", "shakespeare1"),
             ("lorca", "lorca1"),
-            ("aἰσχύλος", "Πέρσαι"),
+            ("aἰσχύλος", "Πέρσαι"),  # noqa: RUF001
             ("beckett", "beckett1"),
         ]
 
@@ -526,7 +526,13 @@ class TestAutoassignmentController(TestController):
         """
 
         # 5 users from myDefRealm
-        users = ["molière", "shakespeare", "lorca", "aἰσχύλος", "beckett"]
+        users = [
+            "molière",
+            "shakespeare",
+            "lorca",
+            "aἰσχύλος",  # noqa: RUF001
+            "beckett",
+        ]
 
         # 5 token descriptions
         token_list = deepcopy(self.token_list)

@@ -63,7 +63,7 @@ class RSA_Signature:
     which allows to switch the cryptographic implementation
     """
 
-    def __init__(self, private: bytes = None, public: bytes = None):
+    def __init__(self, private: bytes | None = None, public: bytes | None = None):
         """
         instantiate the verifier and signer
 

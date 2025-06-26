@@ -281,7 +281,7 @@ class YubikeyTokenClass(TokenClass):
         except (TypeError, KeyError) as exx:
             log.info("Unable to decode token prefix %r! %r", yubi_prefix, exx)
 
-        # usage_counter can go from 1 – 0x7fff
+        # usage_counter can go from 1 - 0x7fff
         usage_counter = msg_hex[12:16]
 
         # TODO: We also could check the timestamp

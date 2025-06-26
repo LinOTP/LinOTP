@@ -213,7 +213,7 @@ class ExtFlaskConfig(FlaskConfig):
             return os.path.join(root_dir, ".", value)
         if key == "BABEL_TRANSLATION_DIRECTORIES":
             # This is a Flask-Babel setting that we can't really change,
-            # so it needs to be special-cased – it is a semicolon-separated
+            # so it needs to be special-cased - it is a semicolon-separated
             # search path of directory names, any of which could be relative.
 
             return ";".join(
@@ -228,7 +228,7 @@ class ExtFlaskConfig(FlaskConfig):
         """We need to overload this so the relative-pathname hack will work
         even if people use `foo.get('bar')` instead of
         `foo['bar']`. (It turns out that the built-in `get()` method
-        doesn't go through `__getitem__()` – `__getitem__()`'s mission
+        doesn't go through `__getitem__()` - `__getitem__()`'s mission
         in life is strictly to make the brackets do something.)
         The relative-pathname hack is just relevant for variables which contains
         a _file or _dir entry. So just those calls got handled as warning in all

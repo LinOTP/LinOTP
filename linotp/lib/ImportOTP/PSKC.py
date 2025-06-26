@@ -175,16 +175,16 @@ def parsePSKCdata(
 
     if elem_encKey:
         # Check for AES-128-CBC, preshared key (chapter 6.1)
-        enckeyTag = getTagName(list(elem_encKey)[0])
+        enckeyTag = getTagName(next(iter(elem_encKey)))
         # This will hold the name of the preshared key
         if "KeyName" == enckeyTag:
-            KEYNAME = list(elem_encKey)[0].text
+            KEYNAME = next(iter(elem_encKey)).text
             log.debug("The keyname of preshared encryption is <<%r>>", KEYNAME)
         # check for PasswordBasedEncyprion (chapter 6.2)
         elif "DerivedKey" == enckeyTag:
             log.debug("We found PBE.")
             # Now we check for KeyDerivationMethod
-            elem_keyderivation = list(list(elem_encKey)[0])
+            elem_keyderivation = list(next(iter(elem_encKey)))
             for e in elem_keyderivation:
                 if "KeyDerivationMethod" == getTagName(e):
                     deriv_algo = e.get("Algorithm")

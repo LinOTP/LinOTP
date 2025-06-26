@@ -930,7 +930,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         """
         return
 
-    def _genOtpKey_(self, otpkeylen: int = None) -> str:
+    def _genOtpKey_(self, otpkeylen: int | None = None) -> str:
         """
         private method, to create an otpkey
 

@@ -2046,8 +2046,9 @@ class UserserviceController(BaseController):
 
             g.audit["realm"] = g.authUser.realm
             source_realms_reporting = source_realms or ["/:no realm:/"]
-            g.reporting["realms"] = source_realms_reporting + [
-                g.authUser.realm or "/:no realm:/"
+            g.reporting["realms"] = [
+                *source_realms_reporting,
+                g.authUser.realm or "/:no realm:/",
             ]
             g.audit["success"] = ret_assign
 

@@ -197,10 +197,10 @@ class HttpSMSProvider(ISMSProvider, ConfigParsingMixin):
             pparams = {}
 
             pparams["timeout"] = HttpSMSProvider.DEFAULT_TIMEOUT
-            if "timeout" in self.config and self.config["timeout"]:
+            if self.config.get("timeout"):
                 pparams["timeout"] = parse_timeout(self.config["timeout"])
 
-            if "PROXY" in self.config and self.config["PROXY"]:
+            if self.config.get("PROXY"):
                 if isinstance(self.config["PROXY"], str):
                     proxy_defintion = {
                         "http": self.config["PROXY"],
@@ -239,7 +239,7 @@ class HttpSMSProvider(ISMSProvider, ConfigParsingMixin):
             if server_certificate:
                 pparams["verify"] = server_certificate
 
-            if "HEADERS" in self.config and self.config["HEADERS"]:
+            if self.config.get("HEADERS"):
                 pparams["headers"] = self.config["HEADERS"]
 
             # ------------------------------------------------------ --

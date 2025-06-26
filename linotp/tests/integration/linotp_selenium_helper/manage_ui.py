@@ -29,14 +29,11 @@ import logging
 import os
 import re
 from operator import methodcaller
-from typing import TYPE_CHECKING, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, List, Optional, Union
 from warnings import warn
 
 import requests
-from selenium.common.exceptions import (
-    NoSuchElementException,
-    WebDriverException,
-)
+from selenium.common.exceptions import NoSuchElementException, WebDriverException
 from selenium.webdriver import Chrome, Firefox
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebElement
@@ -417,7 +414,7 @@ class ManageUi(object):
         is_visible = element is not False
         return is_visible
 
-    def admin_api_call(self, call: str, params: Dict = None) -> Dict:
+    def admin_api_call(self, call: str, params: dict | None = None) -> dict:
         """
         Give the API endpoint (call) and the params. Omit the session
         because it will be added automatically to your params.

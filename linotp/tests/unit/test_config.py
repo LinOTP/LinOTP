@@ -4,7 +4,7 @@ import os
 import re
 from pathlib import PosixPath
 
-import pytest  # noqa: F401
+import pytest
 
 from linotp import settings as s
 from linotp.app import ExtFlaskConfig, _configure_app

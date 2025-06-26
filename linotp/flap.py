@@ -1,6 +1,5 @@
 # Pylons-to-Flask porting scaffold.
 
-# noqa pylint: disable=unused-import,invalid-name
 
 import logging
 import os.path

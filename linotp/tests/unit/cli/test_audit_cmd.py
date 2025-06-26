@@ -254,7 +254,7 @@ def test_audit_cleanup_parameters(
     freezer.move_to(FREEZE_DATE)
     formated_time = datetime.now().strftime(app.config["BACKUP_FILE_TIME_FORMAT"])
 
-    result = runner.invoke(cli_main, ["-vv", "audit", "cleanup"] + options)
+    result = runner.invoke(cli_main, ["-vv", "audit", "cleanup", *options])
 
     assert result.exit_code == exit_code
 

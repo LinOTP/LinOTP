@@ -1451,7 +1451,7 @@ class TestAdminController(TestController):
         assert "linotp_admins" == audit_entry[9]
         assert f"{username}@linotp_admins" in audit_entry[10]
 
-    def create_reporting_policy(self, policy_params: dict = None):
+    def create_reporting_policy(self, policy_params: dict | None = None):
         policy_params = policy_params or {}
         params = {
             "name": policy_params.get("name", "reporting_policy"),

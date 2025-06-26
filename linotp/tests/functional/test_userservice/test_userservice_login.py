@@ -864,7 +864,7 @@ class TestUserserviceLogin(TestUserserviceController):
         return token_info, secret_key, public_key
 
     def trigger_push_challenge(
-        self, token_info: Dict, content_type: int = None, data: str = None
+        self, token_info: Dict, content_type: int | None = None, data: str | None = None
     ) -> Tuple[CompatibleTestResponse, str]:
         """Helper to trigger a push challenge request with some mocking
 

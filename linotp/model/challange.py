@@ -103,7 +103,7 @@ class Challenge(ChallengeSchema):
 
     def get(
         self,
-        key: str = None,
+        key: str | None = None,
         fallback: Any = None,
         save: bool = False,
     ) -> Union[None, dict]:

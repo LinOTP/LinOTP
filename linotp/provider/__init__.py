@@ -411,7 +411,7 @@ def getProvider(provider_type, provider_name=None, decrypted=False):
         provider["Default"] = True
     else:
         # we take the first one in the list as the default
-        firstone = list(providers.keys())[0]
+        firstone = next(iter(providers.keys()))
         provider = providers[firstone]
         provider["Default"] = True
         default_provider_key = Default_Provider_Key[provider_type]

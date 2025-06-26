@@ -29,7 +29,7 @@ import hashlib
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest  # noqa: F401
+import pytest
 
 # ----------------------------------------------------------------------
 # Tests for cookie settings.

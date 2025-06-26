@@ -29,7 +29,7 @@
 
 import logging
 import re
-from typing import Dict, List
+from typing import List
 
 from flask import g
 from flask_babel import gettext as _
@@ -167,8 +167,8 @@ def checkAuthorisation(scope, method):
 
 
 def _checkAdminPolicyPost(
-    method: str, param: Dict[str, str] = None, user: User = None
-) -> Dict:
+    method: str, param: dict[str, str] | None = None, user: User = None
+) -> dict:
     """Check post conditions for admin operations.
 
     :param method: the scope of the calling

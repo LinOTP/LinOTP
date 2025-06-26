@@ -134,7 +134,7 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
         self.before_request(self.before_handler)
 
         if hasattr(self, "__after__"):
-            self.after_request(self.__after__)  # noqa pylint: disable=no-member
+            self.after_request(self.__after__)
 
         self.after_request(jwt_refresh)
 

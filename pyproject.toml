@@ -136,8 +136,10 @@ lint.select = [
   "F",    # pyflakes
   "I",    # isort
   "PERF", # perflint
+  "RUF",  # Ruff-specific
   "W",    # pycodestyle warnings
 ]
 lint.ignore = [
-  "E501", # line too long
+  "E501",   # line too long
+  "RUF012", # ignore `mutable class default` for now
 ]

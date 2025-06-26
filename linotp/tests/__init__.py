@@ -75,7 +75,7 @@ with warnings.catch_warnings():
 
 LOG = logging.getLogger("flask.app")
 
-__all__ = ["environ", "url", "TestController"]
+__all__ = ["TestController", "environ", "url"]
 
 environ = {}
 
@@ -935,7 +935,7 @@ class TestController(TestCase):
         assert "default" in realms["mydefrealm"]
         assert realms["mydefrealm"]["default"]
 
-    def _user_service_init(self, auth_user: str, password: str, otp: str = None):
+    def _user_service_init(self, auth_user: str, password: str, otp: str | None = None):
         auth_user = auth_user.encode("utf-8")
         password = password.encode("utf-8")
 

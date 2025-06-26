@@ -98,5 +98,5 @@ def test_dbsnapshot_restore_cmd(app, runner, freezer, args, result):
     assert backup_result.exit_code == 0
 
     args = [a.replace("NOW", str_now) for a in args]
-    cmd_result = runner.invoke(cli_main, ["dbsnapshot", "restore"] + args)
+    cmd_result = runner.invoke(cli_main, ["dbsnapshot", "restore", *args])
     assert cmd_result.exit_code == result

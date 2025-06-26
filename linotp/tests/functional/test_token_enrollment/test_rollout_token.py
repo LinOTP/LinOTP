@@ -31,7 +31,6 @@ Test the onetime token for the selfservice login
 """
 
 import json
-from typing import List
 
 from linotp.tests import TestController
 
@@ -99,8 +98,8 @@ class TestRolloutToken(TestController):
         pw: str,
         pin: str,
         serial: str = ROLLOUT_TOKEN_SERIAL,
-        scopes: List[str] = None,
-        rollout: bool = None,
+        scopes: list[str] | None = None,
+        rollout: bool | None = None,
     ):
         params = {
             "otpkey": pw,
@@ -145,8 +144,8 @@ class TestRolloutToken(TestController):
         self,
         exp_validate: bool,  # should a validate request work with this token?
         exp_userservice: bool,  # should a selfservice login work with this token?
-        scopes: List[str] = None,
-        rollout: bool = None,
+        scopes: list[str] | None = None,
+        rollout: bool | None = None,
     ):
         self.init_rollout_token(
             self.user, self.otp1, self.pin1, scopes=scopes, rollout=rollout
