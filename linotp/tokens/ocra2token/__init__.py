@@ -452,7 +452,7 @@ class OcraSuite:
             try:
                 C = int(C)
                 if C < 0 or C > 2**64:
-                    raise Exception()
+                    raise Exception
             except BaseException as exx:
                 msg = f"Invalid counter value {C!r}"
                 raise ValueError(msg) from exx

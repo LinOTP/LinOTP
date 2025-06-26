@@ -270,7 +270,7 @@ class TestResourceScheduler(unittest.TestCase):
                 try:
                     for uri in next(res_sched):
                         if uri == the_blocked_one:
-                            raise DummyException()
+                            raise DummyException
 
                 except DummyException:
                     raise_counter += 1

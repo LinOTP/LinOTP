@@ -84,7 +84,7 @@ class ResourceRegistry:
         operation is only made, when there is no value for the resource in
         the registry
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @classmethod
     def store(cls, resource, value):
@@ -94,7 +94,7 @@ class ResourceRegistry:
         :param resource: a resource identifier
         :param value: the value which should be associated with the resource
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 # ------------------------------------------------------------------------- --

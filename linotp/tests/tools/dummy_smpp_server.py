@@ -144,9 +144,9 @@ class DummySMPPServer:
             raise
         except OSError as exx:
             self.logger.warning(exx)
-            raise exceptions.ConnectionError() from exx
+            raise exceptions.ConnectionError from exx
         if not pdu_bytes:
-            raise exceptions.ConnectionError()
+            raise exceptions.ConnectionError
 
         try:
             length = struct.unpack(">L", pdu_bytes)[0]
@@ -162,9 +162,9 @@ class DummySMPPServer:
                 raise
             except OSError as exx:
                 self.logger.warning(exx)
-                raise exceptions.ConnectionError() from exx
+                raise exceptions.ConnectionError from exx
             if not pdu_bytes:
-                raise exceptions.ConnectionError()
+                raise exceptions.ConnectionError
             pdu_bytes += more_bytes
         # self.logger.debug(f'>> {pdu_bytes.hex(" ", -4)}')  # Python >=3.8
         self.logger.debug(">> %s", pdu_bytes.hex())

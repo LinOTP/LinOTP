@@ -120,7 +120,7 @@ class RemoteService:
                 # recovery time is not over.
                 # simply raise exception
 
-                raise ServiceUnavailable()
+                raise ServiceUnavailable
 
         # service state is FUNCTIONAL
 
@@ -177,4 +177,4 @@ class RemoteServiceList(list):
 
         else:
             # no service in list succeeded
-            raise AllServicesUnavailable()
+            raise AllServicesUnavailable

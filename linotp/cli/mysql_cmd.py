@@ -111,7 +111,7 @@ def backup_mysql_database():
             " MySQL database. current database driver "
             f"is {engine.url.drivername!r}"
         )
-        raise click.Abort()
+        raise click.Abort
 
     # ---------------------------------------------------------------------- --
 
@@ -147,7 +147,7 @@ def backup_mysql_database():
 
     if result != 0 or not os.path.isfile(backup_filename):
         app.echo(f"Failed to create MySQL backup file: {result!r}")
-        raise click.Abort()
+        raise click.Abort
 
     app.echo(f"MySQL backup file {backup_filename!s} created!", v=1)
 
@@ -164,7 +164,7 @@ def restore_mysql_database(filename: str):
 
     if not os.path.isfile(backup_filename):
         app.echo(f"MySQL backup file {filename!r} cannot be accessed.", v=1)
-        raise click.Abort()
+        raise click.Abort
 
     # ---------------------------------------------------------------------- --
 
@@ -180,7 +180,7 @@ def restore_mysql_database(filename: str):
             "MySQL database. Current database driver "
             f"is {engine.url.drivername!r}"
         )
-        raise click.Abort()
+        raise click.Abort
 
     # ---------------------------------------------------------------------- --
 
@@ -212,7 +212,7 @@ def restore_mysql_database(filename: str):
                 "Failed to restore MySQL backup file: "
                 f"{result.stderr.decode('utf-8')!s}"
             )
-            raise click.Abort()
+            raise click.Abort
 
         msg = result.stdout.decode("utf-8")
 
