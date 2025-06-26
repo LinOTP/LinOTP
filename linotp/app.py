@@ -705,7 +705,7 @@ class LinOTPApp(Flask):
         if not url_prefix:
             url_prefix = cls.default_url_prefix or "/" + ctrl_name
 
-        self.logger.debug(f"Registering {ctrl_class_name} class at {url_prefix}")
+        self.logger.debug("Registering %s class at %s", ctrl_class_name, url_prefix)
         self.register_blueprint(cls(ctrl_name), url_prefix=url_prefix)
 
         self.enabled_controllers.append(ctrl_name)
@@ -847,7 +847,7 @@ def init_security_provider():
         current_app.security_provider = security_provider
 
     except Exception as exx:
-        current_app.logger.error(f"Failed to load security provider definition: {exx}")
+        current_app.logger.error("Failed to load security provider definition: %r", exx)
         raise exx
 
 
@@ -1082,7 +1082,7 @@ def create_app(config_name=None, config_extra=None):
     init_logging(app)
 
     if app.cli_cmd in START_LINOTP_COMMANDS:
-        app.logger.info(f"LinOTP {__version__} starting ...")
+        app.logger.info("LinOTP %s starting ...", __version__)
 
     # Initialize components (that need app_context)
     with app.app_context():

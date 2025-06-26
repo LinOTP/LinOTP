@@ -106,7 +106,7 @@ class RealmsController(BaseController):
             _res = checkPolicyPre("system", "getRealms")
 
         except PolicyException as pe:
-            log.error(f"[get_realms] policy failed: {pe}")
+            log.error("[get_realms] policy failed: %r", pe)
             db.session.rollback()
             error = sendError(pe.message)
             error.status_code = 403
@@ -133,7 +133,7 @@ class RealmsController(BaseController):
             return sendResult(formatted_realms)
 
         except Exception as e:
-            log.error(f"[get_realms] failed: {e}")
+            log.error("[get_realms] failed: %r", e)
             db.session.rollback()
             return sendError(e.message)
 

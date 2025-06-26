@@ -200,8 +200,9 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
                     )
         if len(self.jwt_exempt_methods) > 0:
             log.debug(
-                f"No admin authorization required in {self.__class__.__name__} for actions: "
-                + ", ".join(self.jwt_exempt_methods)
+                "No admin authorization required in %s for actions: %s",
+                self.__class__.__name__,
+                ", ".join(self.jwt_exempt_methods),
             )
 
     def jwt_check(self):

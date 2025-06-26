@@ -132,8 +132,9 @@ class EmailTokenClass(HmacTokenClass):
 
         """
         LOG.debug(
-            "[getClassInfo] begin. Get class render info for section: "
-            f"key {key!r}, ret {ret!r} "
+            "[getClassInfo] begin. Get class render info for section: key %r, ret %r",
+            key,
+            ret,
         )
 
         res = {
@@ -219,9 +220,7 @@ class EmailTokenClass(HmacTokenClass):
         else:
             if ret == "all":
                 ret = res
-        LOG.debug(
-            f"[getClassInfo] end. Returned the configuration section: ret {ret!r} "
-        )
+        LOG.debug("[getClassInfo] end. Returned the configuration section: ret %r", ret)
         return ret
 
     def update(self, param, reset_failcount=True):

@@ -134,6 +134,7 @@ lint.select = [
   "C4",   # flake8-comprehensions
   "EM",   # flake8-errmsg
   "INT",  # flake8-gettext 
+  "G",    # flake8-logging-format 
   "E",    # pycodestyle errors
   "F",    # pyflakes
   "I",    # isort

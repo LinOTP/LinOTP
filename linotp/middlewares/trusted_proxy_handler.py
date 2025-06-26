@@ -93,7 +93,9 @@ class TrustedProxyHandler:
                 resolved_proxies.add(ip_addr)
             else:
                 log.warning(
-                    f"Disregarding non-supported or bad proxy definition: '{proxy}'. This could also be due to a domain name that could not be resolved"
+                    "Disregarding non-supported or bad proxy definition: '%s'. "
+                    "This could also be due to a domain name that could not be resolved",
+                    proxy,
                 )
 
         return resolved_proxies

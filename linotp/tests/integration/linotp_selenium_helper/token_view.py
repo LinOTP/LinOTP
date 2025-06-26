@@ -132,7 +132,7 @@ class TokenView(ManageTab):
         tokens_after = [t.text for t in self._get_token_list()]
 
         if len(tokens_before) <= len(tokens_after):
-            logging.warn(
+            logging.warning(
                 "Number of tokens did not reduce as expected. from=%s to=%s",
                 tokens_before,
                 tokens_after,

@@ -82,7 +82,7 @@ def log_enter_exit(logger):
                 "function_kwargs": kwargs,
             }
 
-            logger.debug(enter_str % func.__name__, extra=extra)
+            logger.debug(enter_str % func.__name__, extra=extra)  # noqa: G002
 
             # --------------------------------------------------------------
 
@@ -96,7 +96,7 @@ def log_enter_exit(logger):
                 "function_returnvalue": returnvalue,
             }
 
-            logger.debug(exit_str % func.__name__, extra=extra)
+            logger.debug(exit_str % func.__name__, extra=extra)  # noqa: G002
 
             # --------------------------------------------------------------
 
@@ -137,7 +137,7 @@ def log_timedelta(logger):
             }
 
             logger.debug(
-                "Spent %f seconds in %s" % (delta_sec, func.__name__),  # noqa: UP031
+                "Spent %f seconds in %s" % (delta_sec, func.__name__),  # noqa: G002, UP031
                 extra=extra,
             )
 

@@ -459,8 +459,10 @@ class ValidationHandler:
                     token_dict["offline_info"] = token.getOfflineInfo()
                 else:
                     log.info(
-                        f"Token {token.getSerial()} (type={token.type}) is not "
-                        "allowed by support_offline policy in current realm"
+                        "Token %r (type=%r) is not "
+                        "allowed by support_offline policy in current realm",
+                        token.getSerial(),
+                        token.type,
                     )
 
             trans_dict["token"] = token_dict
@@ -506,20 +508,21 @@ class ValidationHandler:
         if user_exists and not get_auth_forward_on_no_token(user):
             servers = get_auth_forward(user)
             if servers:
-                log.info(f"forwarding auth request for user {user} to {servers}")
+                log.info("forwarding auth request for user %r to %r", user, servers)
                 res, opt = ForwardServerPolicy.do_request(
                     servers, env, user, passw, options
                 )
-                log.info(f"result of auth request for user {user}: ({res}, {opt})")
+                log.info("result of auth request for user %r: (%r, %r)", user, res, opt)
                 g.audit["action_detail"] = f"Forwarded, result {res}"
                 return res, opt
             else:
-                log.info(f"NOT forwarding auth request for user {user} (no servers)")
+                log.info("NOT forwarding auth request for user %r (no servers)", user)
                 g.audit["action_detail"] = "Not forwarded (no servers)"
         else:
             log.info(
-                f"NOT forwarding auth request for user {user} "
-                "(get_auth_forward_on_no_token returned False)"
+                "NOT forwarding auth request for user %r "
+                "(get_auth_forward_on_no_token returned False)",
+                user,
             )
 
         # ------------------------------------------------------------------ --
@@ -605,16 +608,18 @@ class ValidationHandler:
             elif get_auth_forward_on_no_token(user):
                 servers = get_auth_forward(user)
                 if servers:
-                    log.info(f"forwarding auth request for user {user} to {servers}")
+                    log.info("forwarding auth request for user %r to %r", user, servers)
                     res, opt = ForwardServerPolicy.do_request(
                         servers, env, user, passw, options
                     )
-                    log.info(f"result of auth request for user {user}: ({res}, {opt})")
+                    log.info(
+                        "result of auth request for user %r: (%r, %r)", user, res, opt
+                    )
                     g.audit["action_detail"] = f"Forwarded, result {res}"
                     return res, opt
                 else:
                     log.info(
-                        f"NOT forwarding auth request for user {user} (no servers)"
+                        "NOT forwarding auth request for user %r (no servers)", user
                     )
                     g.audit["action_detail"] = "Not forwarded (no servers)"
 

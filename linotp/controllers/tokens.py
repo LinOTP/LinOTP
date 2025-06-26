@@ -189,9 +189,9 @@ class TokensController(BaseController):
             )
 
             log.info(
-                "[get_tokens] admin {} may view tokens the following realms: {}".format(
-                    check_result["admin"], allowed_realms
-                )
+                "[get_tokens] admin %r may view tokens the following realms: %r",
+                check_result["admin"],
+                allowed_realms,
             )
 
             ### End permissions' check ###
@@ -262,14 +262,14 @@ class TokensController(BaseController):
             return sendResult(result)
 
         except PolicyException as pe:
-            log.exception(f"[get_tokens] policy failed: {pe}")
+            log.exception("[get_tokens] policy failed: %r", pe)
             db.session.rollback()
             error = sendError(pe)
             error.status_code = 403
             return error
 
         except Exception as e:
-            log.exception(f"[get_tokens] failed: {e}")
+            log.exception("[get_tokens] failed: %r", e)
             db.session.rollback()
             return sendError(e)
 
@@ -362,14 +362,14 @@ class TokensController(BaseController):
             return sendResult(formatted_token)
 
         except PolicyException as pe:
-            log.exception(f"[get_token_by_serial] policy failed: {pe}")
+            log.exception("[get_token_by_serial] policy failed: %r", pe)
             db.session.rollback()
             error = sendError(pe)
             error.status_code = 403
             return error
 
         except Exception as e:
-            log.exception(f"[get_token_by_serial] failed: {e}")
+            log.exception("[get_token_by_serial] failed: %r", e)
             db.session.rollback()
             return sendError(e)
 

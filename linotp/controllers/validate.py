@@ -433,7 +433,7 @@ class ValidateController(BaseController):
                     ]:
                         attributes[key] = userInfo.get(key)
 
-                    log.debug(f"[samlcheck] {attributes}")
+                    log.debug("[samlcheck] %r", attributes)
 
             db.session.commit()
             return sendResult({"auth": ok, "attributes": attributes}, 0, opt)

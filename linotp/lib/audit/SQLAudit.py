@@ -127,7 +127,7 @@ class AuditTable(db.Model):
         max_len = getattr(self.__class__, key).prop.columns[0].type.length
         if value and len(value) > max_len:
             if warn:
-                log.warning(f"truncating audit data: [audit.{key}] {value}")
+                log.warning("truncating audit data: [audit.%s] %s", key, value)
             if error:
                 msg = (
                     f"Audit data too long, not truncating [audit.{key}] {value}"

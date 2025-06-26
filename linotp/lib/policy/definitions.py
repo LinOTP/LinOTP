@@ -629,9 +629,9 @@ def validate_policy_definition(policy):
         # validation for this
         if action in actions_to_skip.get(scope, {}):
             log.info(
-                "action validation skipped for policy: {!r} action: {!r}".format(
-                    policy["name"], action
-                )
+                "action validation skipped for policy: %r action: %r",
+                policy["name"],
+                action,
             )
             continue
 
@@ -643,8 +643,10 @@ def validate_policy_definition(policy):
         # .1. definition lookup
         if not definition:
             log.error(
-                "policy: {!r} uses action {!r} which is not defined in the policy"
-                " definitions!".format(policy["name"], action)
+                "policy: %r uses action %r which is not defined in the policy"
+                " definitions!",
+                policy["name"],
+                action,
             )
 
             msg = "unsupported policy action {!r} in policy {!r} ".format(
@@ -727,7 +729,7 @@ def convert_policy_value(value, value_type):
             except ValueError:
                 pass
         # if we end up here, none of the proposed types could be applied
-        log.error(f"unable to convert value {value!r} to {val_type!r}")
+        log.error("unable to convert value %r to %r", value, val_type)
         msg = f"unable to convert {value!r} to {val_type!r}"
         raise ValueError(msg)
 

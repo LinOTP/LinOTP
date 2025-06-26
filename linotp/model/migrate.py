@@ -541,7 +541,7 @@ class Migration:
                         "Failed to upgrade database during migration step: %r",
                         function_name,
                     )
-                    log.error(exx, stack_info=True, exc_info=True)
+                    log.exception(str(exx))
                     model.db.session.rollback()  # pylint: disable=E1101
                     raise exx
 
@@ -838,12 +838,12 @@ class Migration:
 
                 model.db.session.add(entry)
 
-                log.info(f"{entry.Key!r} re encrypted")
+                log.info("%r re encrypted", entry.Key)
 
                 entry_counter += 1
 
             except Exception as exx:
-                log.error(f"Unable to re-encrypt {entry.Key!r}: {exx!r}")
+                log.error("Unable to re-encrypt %r: %r", entry.Key, exx)
 
         # ----------------------------------------------------------------- --
 
@@ -964,7 +964,10 @@ class Migration:
             )
             if changed:
                 log.info(
-                    f"Updating policy value {entry.Key!r} from {entry.Value!r} to {new_value!r}"
+                    "Updating policy value %r from %r to %r",
+                    entry.Key,
+                    entry.Value,
+                    new_value,
                 )
                 entry.Value = new_value
                 model.db.session.add(entry)

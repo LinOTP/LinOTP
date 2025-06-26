@@ -214,7 +214,7 @@ class IdResolver(UserIdResolver):
             try:
                 l_obj = ldap.initialize(uri, trace_level=trace_level)
             except ldap.LDAPError as exx:
-                log.error(f"couldn't connect to {uri}: {exx!r}")
+                log.error("couldn't connect to %r: %r", uri, exx)
                 raise exx
 
             # Set LDAP protocol version used
@@ -263,10 +263,10 @@ class IdResolver(UserIdResolver):
                 else ldap.OPT_X_TLS_NEVER
             )
             log.debug(
-                f"Using root-level CA certificates from {ca_cert_file}"
-                ", server certificates "
-                f"{'must' if caller.only_trusted_certs else 'need not'} "
-                "be valid."
+                "Using root-level CA certificates from %s"
+                ", server certificates %s be valid.",
+                ca_cert_file,
+                "must" if caller.only_trusted_certs else "need not",
             )
             l_obj.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, cert_req)
             l_obj.set_option(ldap.OPT_X_TLS_NEWCTX, 0)
@@ -281,11 +281,11 @@ class IdResolver(UserIdResolver):
                 # and the previous `if` has set the proper LDAP TLS options
                 # for us.
 
-                log.debug(f"Attempting STARTTLS on {uri} (as configured)")
+                log.debug("Attempting STARTTLS on %r (as configured)", uri)
                 try:
                     l_obj.start_tls_s()
                 except ldap.LDAPError as exx:
-                    log.error(f"Couldn't STARTTLS on {uri}: {exx!r}")
+                    log.error("Couldn't STARTTLS on %r: %r", uri, exx)
                     raise exx
 
             else:
@@ -315,7 +315,7 @@ class IdResolver(UserIdResolver):
                 if hasattr(l_obj, "OPT_X_TLS_CIPHER")
                 else "Unknown"
             )
-            log.info(f"LDAP TLS: using cipher={cipher}")
+            log.info("LDAP TLS: using cipher=%r", cipher)
 
         if caller.noreferrals:
             log.debug("using noreferrals: %r", caller.noreferrals)

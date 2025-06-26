@@ -164,7 +164,8 @@ def setup_db(app) -> None:
             log.warning(
                 "The audit database can not share the same"
                 " sqlite database file with the LinOTP database."
-                f' Using "{audit_database_uri}" instead.'
+                " Using '%s' instead.",
+                audit_database_uri,
             )
 
     if audit_database_uri != "OFF":
