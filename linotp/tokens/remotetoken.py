@@ -144,9 +144,8 @@ class RemoteTokenClass(TokenClass):
 
         if key is not None and key in res:
             ret = res.get(key)
-        else:
-            if ret == "all":
-                ret = res
+        elif ret == "all":
+            ret = res
 
         return ret
 
@@ -196,8 +195,6 @@ class RemoteTokenClass(TokenClass):
         self.addToTokenInfo("remote.local_checkpin", self.remoteLocalCheckpin)
         self.addToTokenInfo("remote.realm", self.remoteRealm)
         self.addToTokenInfo("remote.resConf", self.remoteResConf)
-
-        return
 
     def check_pin_local(self):
         """
@@ -323,14 +320,13 @@ class RemoteTokenClass(TokenClass):
             if len(remotePath) == 0:
                 remotePath = "/validate/check"
 
+        # There is no remote.serial and no remote.user, so we will
+        # try to pass the requesting user.
+        elif user is None:
+            log.warning("FIXME: We do not know the user at the moment!")
         else:
-            # There is no remote.serial and no remote.user, so we will
-            # try to pass the requesting user.
-            if user is None:
-                log.warning("FIXME: We do not know the user at the moment!")
-            else:
-                params["user"] = user.login
-                params["realm"] = user.realm
+            params["user"] = user.login
+            params["realm"] = user.realm
 
         params["pass"] = otpval
         if transactionid is not None:
@@ -384,14 +380,13 @@ class RemoteTokenClass(TokenClass):
                     if auth_info and not self.local_pin_check:
                         self.auth_info["auth_info"] = auth_info
 
-                else:
-                    # if false and detail - this is a challenge response
-                    if "detail" in result:
-                        reply = copy.deepcopy(result["detail"])
-                        otp_count = -1
-                        res = False
-                        self.isRemoteChallengeRequest = True
-                        self.remote_challenge_response = reply
+                # if false and detail - this is a challenge response
+                elif "detail" in result:
+                    reply = copy.deepcopy(result["detail"])
+                    otp_count = -1
+                    res = False
+                    self.isRemoteChallengeRequest = True
+                    self.remote_challenge_response = reply
 
         except Exception as exx:
             log.error(

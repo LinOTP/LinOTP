@@ -66,7 +66,6 @@ class TestReportingController(TestController):
         super().setUp()
         self.create_common_resolvers()
         self.create_common_realms()
-        return
 
     def tearDown(self):
         self.delete_all_policies()

@@ -209,7 +209,5 @@ class TestComparePDKDF(unittest.TestCase):
             rawhash1 = pbkdf2(password, salt, dk_length, iterations, hashfunc)
             assert expected_result == binascii.hexlify(rawhash1)
 
-        return
-
 
 # eof #

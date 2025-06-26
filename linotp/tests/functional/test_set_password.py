@@ -90,7 +90,5 @@ class TestSetAdminPassword(TestController):
         msg = '"detail": "password updated for \'admin\'"'
         assert msg in response
 
-        return
-
 
 # eof ########################################################################

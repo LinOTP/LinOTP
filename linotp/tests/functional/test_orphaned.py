@@ -78,8 +78,6 @@ class SQLUser:
         conn_dict = self._parse_connection(connect)
         self.resolverDef.update(conn_dict)
 
-        return
-
     def _parse_connection(self, connect):
         """
         analyse the sql connection string and transform this to a dict
@@ -128,7 +126,6 @@ class SQLUser:
         t = sqlalchemy.sql.expression.text(createStr)
         with self.engine.begin() as conn:
             conn.execute(t)
-        return
 
     def dropTable(self):
         dropStr = f"DROP TABLE {self.userTable};"
@@ -207,7 +204,6 @@ class OrphandTestHelpers:
         self.sqlconnect = self.app.config.get("DATABASE_URI")
         sqlUser = SQLUser(connect=self.sqlconnect)
         self.sqlResolverDef = sqlUser.getResolverDefinition()
-        return
 
     def addUsers(self, usercount=10):
         userAdd = SQLUser(connect=self.sqlconnect)
@@ -308,8 +304,6 @@ class OrphandTestHelpers:
         resp = self.make_system_request(action="getResolver", params=param2)
         assert '"Table": "User2"' in resp, resp
 
-        return
-
     def delSqlResolver(self, name):
         parameters = {
             "resolver": name,
@@ -330,7 +324,6 @@ class OrphandTestHelpers:
             params = {"realm": realmName}
             resp = self.make_system_request("setDefaultRealm", params=params)
             assert '"value": true' in resp, resp
-        return
 
     def delSqlRealm(self, realmName):
         parameters = {
@@ -368,8 +361,6 @@ class OrphandTestHelpers:
 
         response = self.make_admin_request(action="init", params=param)
         assert '"status": true,' in response, response
-
-        return
 
     def authToken(self, user):
         param = {"user": user, "pass": user}
@@ -445,8 +436,6 @@ class TestOrphandTokens(TestController, OrphandTestHelpers):
         self.delSqlRealm(realmName)
         self.delSqlResolver(resolverName)
 
-        return
-
     def test_orphandTokens_byResolver(self):
         """
         test an orphaned token by resolver - where the user is not retrievable by the resolver any more
@@ -504,14 +493,10 @@ class TestOrphandTokens(TestController, OrphandTestHelpers):
         res = self.showTokens()
         assert "/:no user info:/" in res, res
 
-        return
-
     def test_again(self):
         for _i in range(1, 3):
             self.test_orphandTokens_byResolver()
             self.test_orphandTokens_byUser()
-
-        return
 
     def test_umlaut_search(self):
         """
@@ -577,8 +562,6 @@ class TestOrphandTokens(TestController, OrphandTestHelpers):
         assert '"userid": "__9998"' in response, response
         assert '"userid": "__9997"' in response, response
         assert '"userid": "__9999"' in response, response
-
-        return
 
 
 ###eof#########################################################################

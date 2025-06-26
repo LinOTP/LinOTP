@@ -115,7 +115,5 @@ class TestPolicyPassthrough(TestController):
 
         assert '"value": true' in response, response
 
-        return
-
 
 # eof ##

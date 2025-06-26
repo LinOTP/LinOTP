@@ -118,4 +118,3 @@ class TestDuplicateFailcounterIncrement(TestController):
         assert fail_counts[0] == fail_counts[1]
 
         self.delete_all_token()
-        return

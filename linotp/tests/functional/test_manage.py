@@ -301,5 +301,3 @@ class TestManageController(TestController):
         assert msg in response, response
         assert "Heinz Hirtz" in response, response
         assert "token1" in response, response
-
-        return

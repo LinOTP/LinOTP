@@ -136,8 +136,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         }
 
         # Test positive cases (otp_counter_dict)
-        for otp in otp_counter_dict:
-            counter_expected = otp_counter_dict[otp]
+        for otp, counter_expected in otp_counter_dict.items():
             counter_actual = self.yubikey_token.checkOtp(otp)
             assert counter_expected == counter_actual, (
                 "Counter for OTP: "

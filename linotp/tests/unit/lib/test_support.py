@@ -75,5 +75,3 @@ class LicenseSupportTestCase(unittest.TestCase):
 
         assert not valid
         assert "Grace limit reached" not in detail
-
-        return

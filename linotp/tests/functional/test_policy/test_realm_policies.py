@@ -54,7 +54,6 @@ class TestRealmPolicies(TestPoliciesBase):
         self.delete_all_realms()
         self.delete_all_resolvers()
         TestPoliciesBase.tearDown(self)
-        return
 
     def test_realms_allowed_by_admin_show(self):
         """

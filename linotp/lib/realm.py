@@ -419,9 +419,8 @@ def _setDefaultRealm(realms, defaultRealm):
         if k == defaultRealm.lower():
             r["default"] = "true"
             ret = True
-        else:
-            if "default" in r:
-                del r["default"]
+        elif "default" in r:
+            del r["default"]
     return ret
 
 

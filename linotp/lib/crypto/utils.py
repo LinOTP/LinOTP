@@ -457,7 +457,6 @@ def zerome(bufferObject):
     )
     ctypes.memset(data, 0, size.value)
     # print repr(bufferObject)
-    return
 
 
 def init_key_partition(config, partition, key_type="ed25519"):

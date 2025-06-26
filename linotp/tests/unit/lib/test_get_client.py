@@ -318,8 +318,6 @@ class TestGetClientCase(unittest.TestCase):
         ip_addr = get_ip_address("  ")
         assert ip_addr is None
 
-        return
-
     @patch("linotp.lib.type_utils.netaddr.IPNetwork", mock_IPNet)
     @patch("linotp.lib.type_utils.netaddr.IPAddress", mock_IPAddr)
     def test_network_value(self):
@@ -388,8 +386,6 @@ class TestGetClientCase(unittest.TestCase):
 
             in_network = is_addr_in_network("140.181.3.121", "www.my.test.domain ")
             assert in_network is False
-
-        return
 
 
 # Test (deprecated) `client=ADDR` POST parameter feature, including

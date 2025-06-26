@@ -52,7 +52,6 @@ class TestCheckStatus(TestController):
         # create the common resolvers and realm
         self.create_common_resolvers()
         self.create_common_realms()
-        return
 
     def tearDown(self):
         TestController.tearDown(self)
@@ -456,8 +455,6 @@ class TestCheckStatus(TestController):
         self.delete_token(serial2)
         self.delete_policy("hmac_challenge_response")
 
-        return
-
     def test_otppin_2(self):
         """
         check, if empty pass on otp pin policy 2 validates correctly
@@ -580,8 +577,6 @@ class TestCheckStatus(TestController):
         self.delete_policy("hmac_challenge_response")
         self.delete_policy("otppin_policy")
 
-        return
-
     def test_single_token_wo_pin(self):
         """
         test check_status does work without pin
@@ -636,8 +631,6 @@ class TestCheckStatus(TestController):
 
         self.delete_token(serial)
         self.delete_policy("hmac_challenge_response")
-
-        return
 
     def test_check_status_wo_username(self):
         """
@@ -726,8 +719,6 @@ class TestCheckStatus(TestController):
 
         self.delete_token(serial)
         self.delete_policy("hmac_challenge_response")
-
-        return
 
 
 # eof #########################################################################

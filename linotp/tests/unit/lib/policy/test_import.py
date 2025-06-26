@@ -99,7 +99,5 @@ scope = authentication
         policy = args[0]
         assert policy["realm"] == "*"
 
-        return
-
 
 # eof #

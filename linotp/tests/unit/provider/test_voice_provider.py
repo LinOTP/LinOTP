@@ -100,7 +100,5 @@ class TestVoiceProvider(unittest.TestCase):
             )
             _called2 = mocked_log_warning.called
 
-        return
-
 
 # eof #

@@ -242,8 +242,7 @@ class TokenIterator:
             requested_page = int(page)
         except BaseException:
             requested_page = 1
-        if requested_page < 1:
-            requested_page = 1
+        requested_page = max(requested_page, 1)
 
         paginated_tokens: Pagination = (
             Token.query.filter(condition)
@@ -312,11 +311,10 @@ class TokenIterator:
 
         searchType = "any"
         # search for a 'blank' user
-        if (
-            (len(loginUser) == 0 and len(user.login) > 0)
-            or loginUser == "/:no user:/"
-            or loginUser == "/:none:/"
-        ):
+        if (len(loginUser) == 0 and len(user.login) > 0) or loginUser in {
+            "/:no user:/",
+            "/:none:/",
+        }:
             searchType = "blank"
         elif loginUser == "/:no user info:/" or "*" in loginUser:
             searchType = "wildcard"

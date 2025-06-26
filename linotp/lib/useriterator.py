@@ -61,8 +61,6 @@ def iterate_users(user_iterators):
         except Exception as exx:
             log.error("Problem during iteration of userlist iterators: %r", exx)
 
-    return
-
 
 def iterate_resolverusers(user_iterators):
     """
@@ -97,5 +95,3 @@ def iterate_resolverusers(user_iterators):
             pass
         except Exception as exx:
             log.error("Problem during iteration of userlist iterators: %r", exx)
-
-    return

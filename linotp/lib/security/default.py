@@ -108,8 +108,6 @@ class DefaultSecurityModule(SecurityModule):
         self.secFile = config.get("file")
         self.secrets = {}
 
-        return
-
     def isReady(self):
         """
         provides the status, if the security module is fully initializes

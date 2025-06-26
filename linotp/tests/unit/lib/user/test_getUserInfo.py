@@ -61,7 +61,5 @@ class TestGetUserInfo(unittest.TestCase):
 
         assert userInfo["login"] == "heinz"
 
-        return
-
 
 # eof #

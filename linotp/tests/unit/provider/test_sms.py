@@ -40,7 +40,6 @@ class CustomSMTPServer(smtpd.SMTPServer):
         print("Message addressed from:", mailfrom)
         print("Message addressed to  :", rcpttos)
         print("Message length        :", len(data))
-        return
 
 
 class TestSMS(TestCase):

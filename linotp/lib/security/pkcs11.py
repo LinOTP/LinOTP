@@ -173,13 +173,12 @@ def pkcs11error(rv):
 def output(loglevel, text):
     if running_as_main:
         print(f"{loglevel.upper()}: {text}")
-    else:
-        if loglevel == "debug":
-            log.debug(text)
-        elif loglevel == "info":
-            log.info(text)
-        elif loglevel == "error":
-            log.error(text)
+    elif loglevel == "debug":
+        log.debug(text)
+    elif loglevel == "info":
+        log.info(text)
+    elif loglevel == "error":
+        log.error(text)
 
 
 class Pkcs11SecurityModule(DefaultSecurityModule):
@@ -323,8 +322,6 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
 
         self.login(params.get("password"), slotid=slotid)
 
-        return
-
     def pad(self, unpadded_str, block=16):
         """
         PKCS7 padding pads the missing bytes with the value of the number
@@ -459,8 +456,6 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
                 "info",
                 f"[initpkcs11] More than one slot connected: {nSlots.value}",
             )
-
-        return
 
     def login(self, password=None, slotid=0):
         """

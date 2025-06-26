@@ -138,7 +138,5 @@ class TestSMSToken(unittest.TestCase):
 
         assert mobile == token_mobile
 
-        return
-
 
 # eof #

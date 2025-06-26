@@ -51,7 +51,6 @@ class TestTokens(TestController):
         self.delete_all_realms()
         self.delete_all_resolvers()
         TestController.tearDown(self)
-        return
 
     def _create_pw_tokens(
         self, username="horst", realm="mydefrealm", amount_of_users=1

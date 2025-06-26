@@ -139,8 +139,6 @@ class AuditBase:
                 exx,
             )
 
-        return
-
     def getTotal(self, param, AND=True, display_error=True):
         """
         This method returns the total number of audit entries in the audit store

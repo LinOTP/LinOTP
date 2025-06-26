@@ -110,7 +110,5 @@ class TestCheckWithSerial(unittest.TestCase):
         token_list = call_args[0][0]
         assert len(token_list) > 1
 
-        return
-
 
 # eof #

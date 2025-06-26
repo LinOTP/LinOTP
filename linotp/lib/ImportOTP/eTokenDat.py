@@ -163,7 +163,6 @@ class DatToken:
         generic setter, so that no attribute will get lost
         """
         setattr(self, key, val)
-        return
 
     def add_info(self, line):
         """
@@ -225,8 +224,6 @@ class DatToken:
             else:
                 self.set(key, val)
 
-        return
-
     # below: more or less generic setters
     def set_sccAuthenticatorId(self, value):
         """
@@ -237,7 +234,6 @@ class DatToken:
         """
         self.serial = value
         self.init_params["serial"] = value
-        return
 
     def set_sccTokenType(self, value):
         """
@@ -250,7 +246,6 @@ class DatToken:
         if "description" in self.init_params:
             value = self.init_params.get("description") + " " + value
         self.init_params["description"] = value
-        return
 
     def set_sccTick(self, value):
         """
@@ -262,7 +257,6 @@ class DatToken:
 
         self.timestep = int(value)
         self.init_params["timeStep"] = int(value)
-        return
 
     def set_sccPwLen(self, value):
         """
@@ -272,7 +266,6 @@ class DatToken:
         :return: - nothing -
         """
         self.init_params["otplen"] = int(value)
-        return
 
     def set_sccPrTime(self, value):
         """
@@ -295,7 +288,6 @@ class DatToken:
         if "description" in self.init_params:
             value = self.init_params.get("description") + " " + value
         self.init_params["description"] = value
-        return
 
     def set_sccMode(self, value):
         """
@@ -331,7 +323,6 @@ class DatToken:
         """
         if val == "HmacSHA256":
             self.init_params["hashlib"] = "sha256"
-        return
 
     def __repr__(self):
         rep = f"<eToken {self.init_params}>"
@@ -452,8 +443,6 @@ def submit_tokens(lino_url, tokens, user=None, pwd=None):
                 content,
             )
 
-    return
-
 
 def process_file(filename, startdate, lino_url=None, user=None, password=None):
     """
@@ -496,8 +485,6 @@ def process_file(filename, startdate, lino_url=None, user=None, password=None):
     # finally create tokens in the LinOTP
     if lino_url is not None:
         submit_tokens(lino_url, tokens, user=user, pwd=password)
-
-    return
 
 
 def main():
@@ -557,8 +544,6 @@ def main():
         user=user,
         password=password,
     )
-
-    return
 
 
 def usage():

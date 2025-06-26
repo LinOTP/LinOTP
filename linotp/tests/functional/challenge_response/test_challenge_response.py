@@ -187,8 +187,6 @@ class TestChallengeResponseController(TestingChallengeResponseController):
             self.policies = []
             self.once_init = True
 
-        return
-
     def tearDown(self):
         if self.patch_smtp is not None:
             self.patch_smtp.stop()
@@ -347,8 +345,6 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         self.delete_token(serial)
         self.delete_policy(name="ch_resp")
 
-        return
-
     def test_02_spass_regression(self):
         """
         Challenge Response Test: test if SPASS tokens still work - it is a no challenge token
@@ -383,8 +379,6 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         self.delete_token(serial)
         self.delete_policy("otpPin")
 
-        return
-
     def test_11_hmac_challenge_otppin1(self):
         """
         Challenge Response Test: test hmac token with otppin=1 and challenge response
@@ -417,8 +411,6 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         self.delete_token(serial)
 
         self.delete_policy("otpPin")
-
-        return
 
     def test_01_hmac_challenge_std(self):
         """
@@ -514,7 +506,6 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         self.delete_token(serial)
 
         self.delete_policy(name="ch_resp")
-        return
 
     def test_10_multiple_tokens(self):
         """
@@ -628,7 +619,6 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         self.delete_token("H2")
 
         self.delete_policy(name="ch_resp")
-        return
 
     @patch.object(
         linotp.provider.smsprovider.HttpSMSProvider.HttpSMSProvider,
@@ -728,8 +718,6 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         self.delete_token(serial)
         self.delete_policy("otpPin")
 
-        return
-
     @patch.object(
         linotp.provider.smsprovider.HttpSMSProvider.HttpSMSProvider,
         "submitMessage",
@@ -822,8 +810,6 @@ class TestChallengeResponseController(TestingChallengeResponseController):
 
         self.delete_token(serial)
         self.delete_policy("dynamic_mobile_number")
-
-        return
 
     @patch.object(
         linotp.provider.smsprovider.HttpSMSProvider.HttpSMSProvider,
@@ -920,8 +906,6 @@ class TestChallengeResponseController(TestingChallengeResponseController):
 
         self.delete_token(serial)
         self.delete_policy(name="trigger_sms")
-
-        return
 
     def do_auth(
         self,
@@ -1138,8 +1122,6 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         self.delete_policy(name="ch_resp")
         self.delete_policy(name="otpPin")
 
-        return
-
     @patch.object(
         linotp.provider.smsprovider.HttpSMSProvider.HttpSMSProvider,
         "submitMessage",
@@ -1210,8 +1192,6 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         self.delete_policy(name="ch_resp")
         self.delete_policy(name="otpPin")
 
-        return
-
     @patch.object(
         linotp.provider.emailprovider.SMTPEmailProvider,
         "submitMessage",
@@ -1276,7 +1256,6 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         counter = self.do_email_auth("", counter, typ=typ)
 
         self.delete_token(serial)
-        return
 
     def test_60_hmac_two_tokens(self):
         """
@@ -1473,8 +1452,6 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         self.delete_token(serial1)
         self.delete_token(serial2)
 
-        return
-
     def test_61_hmac_active_inactive_tokens(self):
         """
         Challenge Response Test: two hmac token (active/inactive) for one user
@@ -1551,8 +1528,6 @@ class TestChallengeResponseController(TestingChallengeResponseController):
 
         self.delete_token(serial1)
         self.delete_token(serial2)
-
-        return
 
     @patch.object(
         linotp.provider.emailprovider.SMTPEmailProvider,
@@ -1662,8 +1637,6 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         self.delete_token(serial1)
         self.delete_token(serial2)
 
-        return
-
     def test_63_sms_config_error(self):
         """
         Challenge Response Test: sms token challenge and error in config
@@ -1725,8 +1698,6 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         assert found, "no entry 'SMS could not be sent' found"
 
         self.delete_token(serial)
-
-        return
 
     def test_72_exception_in_challenge(self):
         """
@@ -1796,8 +1767,6 @@ class TestChallengeResponseController(TestingChallengeResponseController):
 
         response = self.make_admin_request(action="checkstatus", params=params)
         assert '"values": {}' in response, response
-
-        return
 
     def test_13_multiple_challenges(self):
         """
@@ -1927,7 +1896,6 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         self.delete_token("H2")
 
         self.delete_policy(name="ch_resp")
-        return
 
     def test_challenge_response_auto_resync(self):
         self.setPinPolicy(
@@ -2003,8 +1971,6 @@ class TestChallengeResponseController(TestingChallengeResponseController):
 
         self.delete_token(serial)
         self.delete_policy(name="otpPin")
-
-        return
 
 
 # eof ########################################################################

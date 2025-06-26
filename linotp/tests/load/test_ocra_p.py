@@ -35,8 +35,6 @@ import time
 from datetime import datetime
 from urllib.parse import parse_qs, urlparse
 
-from Cryptodome.Hash import SHA256 as SHA256
-
 from linotp.lib.crypto.utils import (
     createActivationCode,
     kdf2,
@@ -172,7 +170,6 @@ class doRequest(threading.Thread):
     def run(self):
         if hasattr(self.utest, self.test_name):
             self.response = getattr(self.utest, self.test_name)(self.rid)
-        return
 
     def status(self):
         res = '"status": true,' in self.response
@@ -466,7 +463,6 @@ class OcraTest(TestController):
                     self.threads = int(k[1])
                 if k[0] == "ptest.runs":
                     self.runs = int(k[1])
-        return
 
     def tearDown(self):
         return
@@ -609,8 +605,6 @@ class OcraTest(TestController):
         with open("/tmp/challengeTestSet", "w+") as f:
             testStr = json.dumps(tt, indent=4)
             f.write(testStr)
-
-        return
 
     def randOTP(self, otp):
         """randomly change the chars in an otp - to gen a wron otp"""
@@ -857,14 +851,12 @@ class OcraTest(TestController):
 
         if self.runs == -1:
             i = 0
-            while 1 == 1:
+            while True:
                 i = i + 1
                 self._prun_(i, self.threads)
         else:
             for i in range(self.runs):
                 self._prun_(i, self.threads)
-
-        return
 
     def _prun_(self, run_num, numthreads):
         """
@@ -935,7 +927,6 @@ class OcraTest(TestController):
             key = test["keyh"]
             bkey = test["key"]
             ocrapin = "myocrapin"
-            tid = tid
             serial = f"QR_One_{tid!r}_{tcount!r}_{int(time.time())!r}_{random.randint(0, 100)!r}"
             log.info("## serial: %r", serial)
             count = 0

@@ -145,7 +145,6 @@ class IdResolver(UserIdResolver):
         :type  config: the linotp config dict
         """
         log.debug("Setting up PasswdIdResolver")
-        return
 
     def __init__(self):
         """
@@ -258,7 +257,7 @@ class IdResolver(UserIdResolver):
             )
             return False
 
-        if cryptedpasswd == "x" or cryptedpasswd == "*":
+        if cryptedpasswd in {"x", "*"}:
             err = "Sorry, currently no support for shadow passwords"
             log.error("[checkPass] %s ", err)
             raise NotImplementedError(err)
@@ -470,9 +469,8 @@ class IdResolver(UserIdResolver):
         elif s == "s":
             if string.startswith(pattern):
                 return True
-        else:
-            if string == pattern:
-                return True
+        elif string == pattern:
+            return True
 
         return ret
 
@@ -521,7 +519,7 @@ class IdResolver(UserIdResolver):
                 if cUserId >= ival:
                     ret = True
 
-            elif (op == "<" or op == "<=") and cUserId < ival:
+            elif (op in {"<", "<="}) and cUserId < ival:
                 ret = True
 
         return ret
@@ -626,7 +624,6 @@ if __name__ == "__main__":
         #              "descriptio":"*Winkler*",
         #              "userid":" <=1003",
     }
-    #
 
     ret = y.getUserList(search)
 

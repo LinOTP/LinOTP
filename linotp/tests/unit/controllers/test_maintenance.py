@@ -63,8 +63,6 @@ class TestMaintenance:
 
         assert response.status_code == 500
 
-        return
-
     def test_set_loglevel(self, app, adminclient):
         name = "linotp.lib.user"
         config_entry = db.session.get(LoggingConfig, name)

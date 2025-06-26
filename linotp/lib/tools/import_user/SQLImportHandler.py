@@ -71,8 +71,6 @@ class LinOTP_DatabaseContext(DatabaseContext):
         self.session = SqlSession
         self.engine = SqlEngine
 
-        return
-
     def get_session(self):
         """
         encapsulate the access to the session, which is different for the
@@ -107,7 +105,6 @@ class Shell_DatabaseContext(DatabaseContext):
         self.engine = create_engine(sql_url, echo=True)
         self.sessionmaker.configure(bind=self.engine)
         self.session = self.sessionmaker()
-        return
 
     def get_session(self):
         """
@@ -127,7 +124,6 @@ class Shell_DatabaseContext(DatabaseContext):
         """
 
         print("create resolver currently only available in the scope of LinOTP")
-        return
 
 
 class SQLImportHandler(ImportHandler):

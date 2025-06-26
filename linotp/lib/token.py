@@ -158,13 +158,12 @@ class TokenHandler:
                     id=1610,
                 )
 
-        else:  # something wrong
-            if tokenNum > 1:
-                msg = "multiple tokens found - cannot init!"
-                raise TokenAdminError(msg, id=1101)
-            else:
-                msg = "cannot init! Unknown error!"
-                raise TokenAdminError(msg, id=1102)
+        elif tokenNum > 1:
+            msg = "multiple tokens found - cannot init!"
+            raise TokenAdminError(msg, id=1101)
+        else:
+            msg = "cannot init! Unknown error!"
+            raise TokenAdminError(msg, id=1102)
 
         # get the RealmObjects of the user and the tokenrealms
         realms = getRealms4Token(user, tokenrealm)
@@ -273,7 +272,7 @@ class TokenHandler:
                 token_init["phone"] = mobile
 
         # if sms or email, at least one of sms or email is required
-        elif token_types == ["sms", "email"] or token_types == ["*"]:
+        elif token_types in (["sms", "email"], ["*"]):
             if mobile:
                 token_init["type"] = "sms"
                 token_init["phone"] = mobile

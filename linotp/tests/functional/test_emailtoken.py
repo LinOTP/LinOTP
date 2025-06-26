@@ -166,8 +166,6 @@ class TestEmailtokenController(TestController):
         assert response_json["result"]["status"]
         assert response_json["result"]["value"]
 
-        return
-
     def test_00000_multiple_challenges(self):
         """
         Test with multiple challenges

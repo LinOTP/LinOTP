@@ -2410,8 +2410,7 @@ class UserserviceController(BaseController):
             max_count = checkPolicyPre("selfservice", "max_count", param, g.authUser)
             log.debug("checkpolicypre returned %s", max_count)
 
-            if count > max_count:
-                count = max_count
+            count = min(count, max_count)
 
             log.debug("[usergetmultiotp] retrieving OTP value for token %s", serial)
             ret = get_multi_otp(serial, count=int(count), curTime=curTime)

@@ -51,8 +51,6 @@ class LostTokenValidityTest(unittest.TestCase):
 
         assert in_five_days in end_date
 
-        return
-
     @patch("linotp.lib.policy.get_action_value")
     def test_validty_w_duration(self, patch_get_action_value):
         """
@@ -66,8 +64,6 @@ class LostTokenValidityTest(unittest.TestCase):
         )
 
         assert in_one_hour in end_date
-
-        return
 
     @patch("linotp.lib.policy.get_action_value")
     def test_validty_w_duration_expr(self, patch_get_action_value):
@@ -85,8 +81,6 @@ class LostTokenValidityTest(unittest.TestCase):
 
         assert in_one_hour in end_date
 
-        return
-
     @patch("linotp.lib.policy.get_action_value")
     def test_validty_w_duration_expr2(self, patch_get_action_value):
         """
@@ -102,8 +96,6 @@ class LostTokenValidityTest(unittest.TestCase):
         ).strftime("%d/%m/%y %H")
 
         assert in_one_hour in end_date
-
-        return
 
 
 # eof #

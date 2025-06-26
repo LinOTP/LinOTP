@@ -205,7 +205,6 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         self.remote_url = f"http://127.0.0.1:{self.paster_port}"
         self.sms_url = f"http://localhost:{self.paster_port}/testing/http2sms"
         self.radius_url = (f"localhost:{self.radius_authport}",)
-        return
 
     def tearDown(self):
         if self.patch_smtp is not None:

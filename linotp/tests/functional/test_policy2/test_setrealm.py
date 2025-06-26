@@ -136,8 +136,6 @@ class TestPolicySetrealm(TestController):
         response = self.make_validate_request("check", params)
         assert '"value": true' in response, response
 
-        return
-
     def test_setrealm_policy_positiv(self):
         """test setrealm with resolver selector"""
 
@@ -163,8 +161,6 @@ class TestPolicySetrealm(TestController):
 
         response = self.make_validate_request("check", params)
         assert '"value": true' in response, response
-
-        return
 
 
 # eof #

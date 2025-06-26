@@ -211,5 +211,3 @@ class TestLoggingUserInResolver(unittest.TestCase):
 
         for log_data in mocked_logging.log_data:
             assert user_info["password"] not in log_data
-
-        return

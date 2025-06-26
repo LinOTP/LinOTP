@@ -189,8 +189,6 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
         assert "ldap://ok_bind4.psw.de" not in registry
 
-        return
-
     def test_bind_with_fail(self):
         """
         test the failover in the bind handling
@@ -313,8 +311,6 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
             assert "ldap://go_bind4.psw.de" not in registry
 
-        return
-
     def test_checkPass_with_failover(self):
         """
         test the failover in the checkPass handling - pw check has no impact
@@ -414,8 +410,6 @@ class TestLDAPResolverFailover(unittest.TestCase):
         # verify that the 4th entry was never evaluated
 
         assert "ldap://ok_bind4.psw.de" not in registry
-
-        return
 
 
 # eof #

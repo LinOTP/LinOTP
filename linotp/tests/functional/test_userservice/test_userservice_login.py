@@ -120,8 +120,6 @@ class TestUserserviceLogin(TestUserserviceController):
         assert settings["privacy_notice_url"] == privacy_notice_url
         assert settings["footer_text"] == footer_text
 
-        return
-
     def test_no_audit_precontext(self):
         self.test_pre_context()
 
@@ -590,7 +588,6 @@ class TestUserserviceLogin(TestUserserviceController):
         # validate
 
         user = "passthru_user1@myDefRealm"
-        serial = serial
         pin = "1234"
 
         secret_key, public_key = QR.create_keys()
@@ -988,8 +985,6 @@ class TestUserserviceLogin(TestUserserviceController):
             assert token["LinOtp.Isactive"] is False
             assert token["Enrollment"]["status"] == "completed"
 
-        return
-
     def test_qr_token_login(self):
         """Verify the userservice login with an qr token.
 
@@ -1141,8 +1136,6 @@ class TestUserserviceLogin(TestUserserviceController):
 
         response.body = response.data.decode("utf-8")
         assert '"rows": [' in response, response
-
-        return
 
     def test_qr_token_polling_login(self):
         """Verify the userservice login with an qr token.
@@ -1306,8 +1299,6 @@ class TestUserserviceLogin(TestUserserviceController):
 
         response.body = response.data.decode("utf-8")
         assert '"rows": [' in response, response
-
-        return
 
 
 # eof #

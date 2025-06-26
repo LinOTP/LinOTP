@@ -831,7 +831,6 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
     def flush(self):
         self.token.storeToken()
         db.session.commit()
-        return
 
     def update(self, param, reset_failcount=True):
         # key_size as parameter overrules a prevoiusly set
@@ -920,8 +919,6 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         self.resetTokenInfo()
 
-        return
-
     def resetTokenInfo(self):
         """
         base token api - could be overwritten per token
@@ -955,7 +952,6 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         :param description: set the token description
         """
         self.token.setDescription("" + description)
-        return
 
     def getDescription(self):
         """
@@ -973,7 +969,6 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         self.token.LinOtpSyncWindow = int(getFromConfig("DefaultSyncWindow") or 1000)
 
         self.token.LinOtpTokenType = "" + self.type
-        return
 
     def setUser(self, user, report):
         """
@@ -1023,7 +1018,6 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         self.token.LinOtpIdResolver = uidResolver
         self.token.LinOtpIdResClass = uidResClass
         self.token.LinOtpUserid = uid
-        return
 
     def reset(self):
         """

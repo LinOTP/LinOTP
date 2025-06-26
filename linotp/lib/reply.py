@@ -227,12 +227,11 @@ def sendError(exception: Exception | str, id: int = 1):
         if not linotp_errors:
             # Send custom HTTP status in every error case
             send_custom_http_status = True
+        # Only send custom HTTP status in defined error cases
+        elif str(errId) in linotp_errors.split(","):
+            send_custom_http_status = True
         else:
-            # Only send custom HTTP status in defined error cases
-            if str(errId) in linotp_errors.split(","):
-                send_custom_http_status = True
-            else:
-                send_custom_http_status = False
+            send_custom_http_status = False
 
     if send_custom_http_status:
         # Send HTML response with HTTP status 'httperror'

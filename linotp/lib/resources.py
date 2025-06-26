@@ -303,8 +303,6 @@ class ResourceScheduler:
 
                 yield from self._retry_resource(uri)
 
-        return
-
     def block(self, resource, delay=30, immediately=False):
         """
         mark the given resource as blocked for a delay of seconds

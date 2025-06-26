@@ -169,8 +169,6 @@ class TestImportUser(TestController):
         assert len(jresp["result"]["value"]["updated"]) == 22, response
         assert '"created": {}' in response, response
 
-        return
-
     def test_import_user_into_local_admin_resolver(self):
         """Very that it's not possible to overwrite the local admin resolver."""
 
@@ -380,8 +378,6 @@ class TestImportUser(TestController):
         img = jresp.get("detail", {}).get("googleurl", {}).get("img", "")
         assert "data:image" in img, response
 
-        return
-
     def test_import_user_policy(self):
         """
         check that import users is policy protected
@@ -432,8 +428,6 @@ class TestImportUser(TestController):
         assert msg not in response, response
         assert '"updated": {}' in response, response
         assert '"created": {}' in response, response
-
-        return
 
     def test_imported_with_plain_passwords(self):
         """
@@ -547,8 +541,6 @@ class TestImportUser(TestController):
         # test for deprecated googleurl
         img = jresp.get("detail", {}).get("googleurl", {}).get("img", "")
         assert "data:image" in img, response
-
-        return
 
     def test_import_user_requires_system_write(self):
         """Verify that we require system:write permission to import users."""

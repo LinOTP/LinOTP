@@ -123,8 +123,7 @@ class GettokenController(BaseController):
 
             max_count = checkPolicyPre("gettoken", "max_count", param)
             log.debug("[getmultiotp] maxcount policy: %s", max_count)
-            if count > max_count:
-                count = max_count
+            count = min(count, max_count)
 
             log.debug("[getmultiotp] retrieving OTP value for token %s", serial)
             ret = get_multi_otp(serial, count=int(count), curTime=curTime)

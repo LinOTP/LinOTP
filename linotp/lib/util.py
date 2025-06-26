@@ -119,10 +119,9 @@ def getParam(param, which, optional=True):
 
     if which in param:
         ret = param[which]
-    else:
-        if optional is False:
-            msg = f"Missing parameter: {which!r}"
-            raise ParameterError(msg, id=905)
+    elif optional is False:
+        msg = f"Missing parameter: {which!r}"
+        raise ParameterError(msg, id=905)
 
     return ret
 

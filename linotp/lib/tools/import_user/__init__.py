@@ -305,8 +305,6 @@ def main():
 
     print(result)
 
-    return
-
 
 if __name__ == "__main__":
     main()

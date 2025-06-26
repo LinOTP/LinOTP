@@ -594,7 +594,5 @@ class TestAutoassignmentController(TestController):
                 response = self.make_validate_request("check", params=params)
                 assert '"value": true' in response
 
-        return
-
 
 # eof #

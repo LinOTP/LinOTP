@@ -106,7 +106,6 @@ class TestChallengePrompt(TestController):
             public_uid + "ljlhjbkejkctubnejrhuvljkvglvvlbk",
             public_uid + "eihtnehtetluntirtirrvblfkttbjuih",
         ]
-        return
 
     def init_yubikey_token(
         self,
@@ -203,8 +202,6 @@ class TestChallengePrompt(TestController):
 
         self.delete_all_token()
         self.delete_policy("ch_resp")
-
-        return
 
     def test_hmac_challenge_prompt(self):
         """
@@ -323,8 +320,6 @@ class TestChallengePrompt(TestController):
 
         self.delete_policy(name="ch_resp")
 
-        return
-
     @patch.object(
         linotp.provider.smsprovider.HttpSMSProvider.HttpSMSProvider,
         "submitMessage",
@@ -403,7 +398,6 @@ class TestChallengePrompt(TestController):
         # --------------------------------------------------------------- --
 
         self.delete_token(serial)
-        return
 
     def tests_password_token(self):
         """
@@ -471,5 +465,3 @@ class TestChallengePrompt(TestController):
 
         self.delete_all_token()
         self.delete_policy(name="ch_resp")
-
-        return

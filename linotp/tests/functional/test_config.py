@@ -216,8 +216,6 @@ class TestConfigController(TestController):
 
         self.delete_config(prefix="longBase64ConfigEntry")
 
-        return
-
     def test_random_large_hexlify_config(self):
         """
         test long config entries with hexlified data with many split entries
@@ -248,8 +246,6 @@ class TestConfigController(TestController):
             assert config_data.decode("utf-8") == data, "error while comparing data"
 
         self.delete_config(prefix="longHexConfigEntry")
-
-        return
 
     def test_random_large_UFT8_config(self):
         """
@@ -301,8 +297,6 @@ class TestConfigController(TestController):
             assert config_data == data, "error while comparing data"
 
         self.delete_config(prefix="longUnicodeConfigEntry")
-
-        return
 
     def test_UFT8_alphabet_config(self):
         """
@@ -360,8 +354,6 @@ class TestConfigController(TestController):
 
         self.delete_config(prefix="longUnicodeConfigEntry")
 
-        return
-
     def test_wrapping_large_utf8_config(self):
         """
         test long config entries with utf8 chars on split boundary
@@ -418,8 +410,6 @@ class TestConfigController(TestController):
 
         self.delete_config(prefix="longUtf8ConfigEntry")
 
-        return
-
     def test_wrapping_large_utf8_password_config(self):
         """
         test long crypted config entries with utf8 chars on split boundary
@@ -468,8 +458,6 @@ class TestConfigController(TestController):
             # we can't compare the result, as it is the encrypted data
             assert data != config_data, response
 
-        return
-
     def test_wrapping_large_hexlify_config(self):
         """
         test long config entries with hexlified chars on split boundary
@@ -516,8 +504,6 @@ class TestConfigController(TestController):
             assert config_data.decode("utf-8") == data, "error while comparing data"
 
         self.delete_config(prefix="longHexlifyConfigEntry")
-
-        return
 
     def test_wrapping_large_base64_config(self):
         """
@@ -566,8 +552,6 @@ class TestConfigController(TestController):
             assert config_data.decode("utf-8") == data, "error while comparing data"
 
         self.delete_config(prefix="longB64ConfigEntry")
-
-        return
 
     def test_delete_of_previous_continuous(self):
         """
@@ -643,5 +627,3 @@ class TestConfigController(TestController):
 
         finally:
             self.delete_config(prefix="X.")
-
-        return

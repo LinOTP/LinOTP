@@ -50,7 +50,6 @@ class SQLData:
             self.engine = create_engine(connect)
         except Exception as e:
             print(f"{e!r}")
-        return
 
     def addData(self, key, value, typ, description):
         iStr = f"""
@@ -78,7 +77,6 @@ class SQLData:
                     "description": description,
                 },
             )
-        return
 
     def updateData(self, key, value):
         uStr = 'UPDATE "%s"  SET "Value"=:value WHERE "Key" = :key;'
@@ -90,7 +88,6 @@ class SQLData:
         t = sqlalchemy.sql.expression.text(updateStr)
         with self.engine.begin() as conn:
             conn.execute(t, {"key": key, "value": value})
-        return
 
     def delData(self, key):
         dStr = f'DELETE FROM "{self.userTable}" WHERE "Key"=:key;'
@@ -102,7 +99,6 @@ class SQLData:
 
         with self.engine.begin() as conn:
             conn.execute(t, {"key": key})
-        return
 
 
 class TestReplication(TestController):
@@ -117,7 +113,6 @@ class TestReplication(TestController):
         }
         resp = self.make_system_request("delConfig", params)
         assert '"delConfig enableReplication": true' in resp
-        return
 
     def tearDown(self):
         """Overwrite parent tear down, which removes all realms"""
@@ -132,8 +127,6 @@ class TestReplication(TestController):
             "linotp.Config", str(datetime.now() + timedelta(milliseconds=sec))
         )
 
-        return
-
     def delData(self, key):
         sqlData = SQLData(connect=self.sqlconnect)
         sqlData.delData(key)
@@ -141,8 +134,6 @@ class TestReplication(TestController):
         sqlData.updateData(
             "linotp.Config", str(datetime.now() + timedelta(milliseconds=sec))
         )
-
-        return
 
     def addToken(self, user):
         params = {
@@ -153,8 +144,6 @@ class TestReplication(TestController):
         }
         response = self.make_admin_request("init", params)
         assert '"status": true,' in response
-
-        return
 
     def authToken(self, user):
         param = {"user": user, "pass": user}
@@ -191,8 +180,6 @@ class TestReplication(TestController):
             response = self.make_system_request("setConfig", params)
             msg = f'"setConfig {cache}:{expiration}": true'
             assert msg in response, response
-
-        return
 
     def test_replication(self):
         """
@@ -235,8 +222,6 @@ class TestReplication(TestController):
         }
         resp = self.make_system_request("delConfig", params)
         assert '"delConfig enableReplication": true' in resp
-
-        return
 
     def test_replication_2(self):
         """
@@ -289,8 +274,6 @@ class TestReplication(TestController):
         }
         resp = self.make_system_request("delConfig", params)
         assert '"delConfig enableReplication": true' in resp
-
-        return
 
     def updateResolver_test(self):
         """
@@ -360,8 +343,6 @@ class TestReplication(TestController):
         resp = self.make_system_request("delConfig", params)
         assert '"delConfig enableReplication": true' in resp
 
-        return
-
     def updateRealm_test(self):
         """
         test replication with realm and resolver update
@@ -402,8 +383,6 @@ class TestReplication(TestController):
         }
         resp = self.make_system_request("delConfig", params)
         assert '"delConfig enableReplication": true' in resp
-
-        return
 
     def test_auth_updateRealm(self):
         """
@@ -512,8 +491,6 @@ class TestReplication(TestController):
         resp = self.make_system_request("delConfig", params)
         assert '"delConfig enableReplication": true' in resp
 
-        return
-
     def test_policy(self):
         """
         test the replication of policies
@@ -575,8 +552,6 @@ class TestReplication(TestController):
         resp = self.make_system_request("delConfig", params)
         assert '"delConfig enableReplication": true' in resp
 
-        return
-
     def test_updateRealm_with_caching(self):
         """
         test replication with realm and resolver update  with caching enabled
@@ -591,16 +566,12 @@ class TestReplication(TestController):
         finally:
             self.set_caching(enable=False)
 
-        return
-
     def test_updateRealm_wo_caching(self):
         """
         test replication with realm and resolver update  with caching disabled
         """
         self.set_caching(enable=False)
         self.updateRealm_test()
-
-        return
 
     def test_caching_expiration_value(self):
         """
@@ -637,7 +608,6 @@ class TestReplication(TestController):
         self.set_cache_expiry(expiration="180 minutes")
 
         self.set_cache_expiry(expiration="1h 20 minutes 90 s")
-        return
 
     def test_updateResolver_with_caching(self):
         """
@@ -653,16 +623,12 @@ class TestReplication(TestController):
         finally:
             self.set_caching(enable=False)
 
-        return
-
     def test_updateResolver_wo_caching(self):
         """
         test replication with resolver update with caching disabled
         """
         self.set_caching(enable=False)
         self.updateResolver_test()
-
-        return
 
 
 # eof #########################################################################

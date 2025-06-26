@@ -89,8 +89,6 @@ class TestUserserviceAuthController(TestController):
         assert '"status": true' in response, response
         assert (f'"setPolicy {name}": {{') in response, response
 
-        return
-
     def local_setup(self):
         """run the local test setup"""
 
@@ -197,8 +195,6 @@ class TestUserserviceAuthController(TestController):
 
         assert '"delete token": 1' in response, response
 
-        return
-
     # ---------------------------------------------------------------------- --
 
     def test_login_without_token(self):
@@ -263,8 +259,6 @@ class TestUserserviceAuthController(TestController):
         self.delete_all_token()
         self.delete_policy(name="mfa_noToken")
 
-        return
-
     @pytest.mark.exclude_sqlite
     def test_login_with_false_password(self):
         """
@@ -312,8 +306,6 @@ class TestUserserviceAuthController(TestController):
 
         assert unbound_not_found, entries
         assert failed_auth_found, entries
-
-        return
 
     def test_login_with_challenge_response(self):
         """
@@ -475,8 +467,6 @@ class TestUserserviceAuthController(TestController):
         response.body = response.data.decode("utf-8")
         assert '"rows": [' in response, response
 
-        return
-
     def test_login_with_challenge_response_simple(self):
         """
         test authentication with challenge response
@@ -572,8 +562,6 @@ class TestUserserviceAuthController(TestController):
 
         response.body = response.data.decode("utf-8")
         assert '"rows": [' in response, response
-
-        return
 
     def test_login_with_assync_challenge_response(self):
         """Test authentication with challenge response with a single token.

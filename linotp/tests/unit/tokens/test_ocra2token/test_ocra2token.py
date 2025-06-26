@@ -30,8 +30,6 @@ class Ocra2PolicyTest(unittest.TestCase):
 
         assert url == URL, url
 
-        return
-
     @patch("linotp.lib.policy.action.get_policy_definitions")
     @patch("linotp.tokens.ocra2token.ocra2token.getPolicy")
     def test_803_getqrtanurl(self, mock_getPolicy, mock_get_policy_definitions):
@@ -58,5 +56,3 @@ class Ocra2PolicyTest(unittest.TestCase):
         url = get_qrtan_url(qrtan_policy_name="qrtanurl", realms=["testrealm"])
 
         assert url == URL, url
-
-        return

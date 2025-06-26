@@ -47,8 +47,6 @@ class SQLResolverTest(SQLTestController):
         SQLTestController.setUp(self)
         self.setUpSQL()
 
-        return
-
     def tearDown(self):
         """drop the users and the user table"""
 
@@ -161,8 +159,6 @@ class SQLResolverTest(SQLTestController):
         jresp = json.loads(response.body)
         token_info = jresp.get("result", {}).get("value", {}).get("data", [{}])[0]
         assert token_info.get("LinOtp.FailCount", -1) == 0
-
-        return
 
     def test_user_of_SQL_resolver(self):
         username = "hey1"

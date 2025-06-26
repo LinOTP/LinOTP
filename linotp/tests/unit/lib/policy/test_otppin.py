@@ -70,7 +70,5 @@ class TestOtppinPolicy(unittest.TestCase):
         res = check_pin(token, "good", userObj, options={})
         assert res
 
-        return
-
 
 # eof #

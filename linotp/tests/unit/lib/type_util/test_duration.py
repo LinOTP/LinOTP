@@ -92,5 +92,3 @@ class DurationTestCase(unittest.TestCase):
         for duration, _seconds in list(test_vector.items()):
             with pytest.raises(DurationParsingException):
                 parse_duration(duration)
-
-        return

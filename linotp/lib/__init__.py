@@ -106,7 +106,7 @@ def deprecated_methods(deprecated_methods_list):
         if is_get_deprecated():
             doc_posttext = """ """
         if is_post_deprecated():
-            doc_posttext = doc_posttext = """ """
+            doc_posttext = """ """
 
         return doc_posttext
 

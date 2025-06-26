@@ -322,7 +322,6 @@ class TestSystemController(TestController):
         response = self.make_system_request(
             action="delConfig", params={"key": "secretkey"}
         )
-        return
 
     def test_delResolver(self):
         """
@@ -403,8 +402,6 @@ class TestSystemController(TestController):
 
         self.delete_all_policies()
 
-        return
-
     def test_policy_wrong_action_value(self):
         """
         testing to set a policy with a wrong action value
@@ -472,8 +469,6 @@ scope = authentication
 
         assert "ded-ee" not in response, response
 
-        return
-
     def test_import_policy_empty_realm(self):
         """
         test import of policies with no or empty realm
@@ -503,8 +498,6 @@ scope = authentication
         )
 
         assert "ded-ee" not in response, response
-
-        return
 
     def test_import_policy(self):
         policy_content = """[resovler_ss1]
@@ -645,8 +638,6 @@ scope = gettoken
 
         self.delete_policy("readsystem", auth_user="superuser")
         self.delete_policy("superuser", auth_user="superuser")
-
-        return
 
     def test_get_policy_def(self):
         """Just verify that the endpoint works"""

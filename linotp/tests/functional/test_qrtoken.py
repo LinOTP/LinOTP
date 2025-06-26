@@ -1048,8 +1048,6 @@ class TestQRToken(TestController):
 
         self.execute_correct_pairing()
 
-        return
-
     # --------------------------------------------------------------------------- --
 
     def test_pairing_sig_with_user(self):
@@ -1057,16 +1055,12 @@ class TestQRToken(TestController):
 
         self.execute_correct_pairing(user="def")
 
-        return
-
     # --------------------------------------------------------------------------- --
 
     def test_pairing_sig_with_fquser(self):
         """QRTOKEN: check if pairing mechanism works correctly (sig based)"""
 
         self.execute_correct_pairing(user="def@mymixrealm")
-
-        return
 
     # --------------------------------------------------------------------------- --
 
@@ -2564,8 +2558,6 @@ class TestQRToken(TestController):
             value = result.get("value")
 
         assert leading_zero_test
-
-        return
 
     # ----------------------------------------------------------------------- --
 

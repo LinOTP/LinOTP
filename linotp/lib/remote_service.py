@@ -175,6 +175,5 @@ class RemoteServiceList(list):
             except ServiceUnavailable:
                 continue
 
-        else:
-            # no service in list succeeded
-            raise AllServicesUnavailable
+        # no service in list succeeded
+        raise AllServicesUnavailable

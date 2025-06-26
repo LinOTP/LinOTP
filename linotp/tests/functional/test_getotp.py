@@ -236,8 +236,6 @@ class TestGetOtpController(TestController):
         assert "linotpGetotp.active" in config, response
         assert boolean(config["linotpGetotp.active"]) is True
 
-        return
-
     def test_01_getotp_dpw(self):
         """
         test for the correct otp value of the DPW token
@@ -251,8 +249,6 @@ class TestGetOtpController(TestController):
         assert '"otpval": "427701"' in response, (
             f"current time {self.curTime};{response!r}"
         )
-
-        return
 
     def test_03_getmultiotp(self):
         """
@@ -268,8 +264,6 @@ class TestGetOtpController(TestController):
         assert '"12-05-17": "028193"' in response, response
         assert '"12-05-18": "857788"' in response, response
 
-        return
-
     def test_05_getotp_hotp(self):
         """
         test for the correct otp value of the HOTP token
@@ -278,8 +272,6 @@ class TestGetOtpController(TestController):
         response = self.make_gettoken_request(action="getotp", params=parameters)
 
         assert '"otpval": "819132"' in response, response
-
-        return
 
     def test_06_getmultiotp(self):
         """
@@ -294,8 +286,6 @@ class TestGetOtpController(TestController):
 
         assert '"0": "819132"' in response, response
         assert '"1": "301156"' in response, response
-
-        return
 
     def test_07_getotp_totp(self):
         """
@@ -334,8 +324,6 @@ class TestGetOtpController(TestController):
             response = self.make_gettoken_request(action="getotp", params=parameters)
             assert otp in response, response
 
-        return
-
     def test_08_getmultiotp(self):
         """
         test for the correct otp value of the TOTP token
@@ -366,8 +354,6 @@ class TestGetOtpController(TestController):
             assert otp2.get("otpval") == "28155992", response
             assert otp2.get("time") == "2012-05-18 00:14:30", response
 
-        return
-
     def test_09_usergetmultiotp_no_policy(self):
         """
         test for the correct OTP value for a users own token  with missing policy
@@ -383,7 +369,6 @@ class TestGetOtpController(TestController):
         )
 
         assert '"message": "ERR410:' in response, response
-        return
 
     def test_10_usergetmultiotp(self):
         """
@@ -424,8 +409,6 @@ class TestGetOtpController(TestController):
             assert otp2.get("otpval") == "28155992", response
             assert otp2.get("time") == "2012-05-18 00:14:30", response
 
-        return
-
     def test_11_usergetmultiotp_fail(self):
         """
         test for the correct OTP value for a  token that does not belong to the user
@@ -444,8 +427,6 @@ class TestGetOtpController(TestController):
             '"message": "The serial hotp1 does not belong'
             ' to user passthru_user1@mydefrealm"' in response
         ), response
-
-        return
 
 
 # eof ########################################################################

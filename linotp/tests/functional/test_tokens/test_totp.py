@@ -132,8 +132,6 @@ class TestTotpController(TestController):
 
         assert otp == "14050471"
 
-        return
-
     def test_time_shift(self):
         param = {
             "pin": "pin",
@@ -258,5 +256,3 @@ class TestTotpController(TestController):
             t_info = json.loads(tokens[0].get("LinOtp.TokenInfo"))
 
             assert t_info["timeShift"] == 30.0, response.body
-
-        return

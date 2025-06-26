@@ -86,8 +86,6 @@ class TestGetUserFromOptions(unittest.TestCase):
                 f"failed on run {login!r}:{realm!r}:{run!r}"
             )
 
-        return
-
     @patch("linotp.lib.user.getUserFromParam")
     def test_run_test_vector_without_fallback_user(self, mock_getUserFromParam):
         """
@@ -142,8 +140,6 @@ class TestGetUserFromOptions(unittest.TestCase):
             assert login == result["login"] and realm == result["realm"], (
                 f"failed on run {login!r}:{realm!r}:{run!r}"
             )
-
-        return
 
 
 # eof #

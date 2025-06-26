@@ -176,8 +176,6 @@ class CustomVoiceProvider(ConfigParsingMixin, TwillioMixin):
         if twilio_config:
             self.service_config.update(twilio_config)
 
-        return
-
     def submitVoiceMessage(self, calleeNumber, messageTemplate, otp, locale):
         """
         Sends out the voice notification message.

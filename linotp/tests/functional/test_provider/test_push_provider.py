@@ -272,8 +272,6 @@ class TestPushProviderController(TestController):
             configDict["server_certificate"] = server_cert_file_name
             push_prov.loadConfig(configDict)
 
-        return
-
     @patch.object(requests, "post", generate_mocked_http_response())
     def test_request(self):
         """
@@ -300,8 +298,6 @@ class TestPushProviderController(TestController):
 
         assert status
         assert response == VALID_REQUEST
-
-        return
 
 
 def cond_failing_http_response(*args, **kwargs):

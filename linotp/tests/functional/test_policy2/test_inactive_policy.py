@@ -176,7 +176,5 @@ class TestInactivePolicy(TestController):
         value = jresp.get("result", {}).get("value")
         assert value, response
 
-        return
-
 
 # eof #

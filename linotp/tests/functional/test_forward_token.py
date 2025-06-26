@@ -118,8 +118,6 @@ class TestForwardToken(TestController):
         response = self.make_validate_request("check_s", params=parameters)
         assert '"value": true' in response, response
 
-        return
-
     def test_check_s_challenge_response(self):
         """
         Checking auth forwarding with check_s and challenge response
@@ -165,8 +163,6 @@ class TestForwardToken(TestController):
         }
         response = self.make_validate_request("check_s", params=parameters)
         assert '"value": true' in response, response
-
-        return
 
     def test_tokencounter_forwarding(self):
         """
@@ -291,8 +287,6 @@ class TestForwardToken(TestController):
         response = self.make_validate_request("check", params=parameters)
         assert '"value": true' in response, response
 
-        return
-
     def test_check_owner_otppin(self):
         """
         Checking auth forwarding with user check and otppin policy
@@ -325,8 +319,6 @@ class TestForwardToken(TestController):
         parameters = {"user": "passthru_user1", "pass": "geheim1" + otps[2]}
         response = self.make_validate_request("check", params=parameters)
         assert '"value": true' in response, response
-
-        return
 
     def test_multiple_challenges(self):
         """

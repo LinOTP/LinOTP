@@ -133,8 +133,6 @@ class TestForwardServer(TestController):
 
         assert "127.0.0.1" not in Rad_Serv, Rad_Serv
 
-        return
-
     @patch("linotp.lib.auth.validate.ForwardServerPolicy", MockForwardServerPolicy)
     def test_server_forwarding2(self):
         """
@@ -160,8 +158,6 @@ class TestForwardServer(TestController):
         _response = self.make_validate_request(action="check", params=params)
 
         assert "127.0.0.1" not in Rad_Serv, Rad_Serv
-
-        return
 
     @patch("linotp.lib.auth.validate.ForwardServerPolicy", MockForwardServerPolicy)
     def test_server_forwarding_with_no_token_0(self):

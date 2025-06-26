@@ -245,8 +245,6 @@ class Audit(AuditBase):
             db.session.rollback()
             raise exx
 
-        return
-
     def log_entry(self, param):
         """
         This method is used to log the data.
@@ -372,7 +370,7 @@ class Audit(AuditBase):
 
         # Map empty string to None
         audit_dict = {
-            k: v if v != "" and v != "''" else None for k, v in audit_dict.items()
+            k: v if v not in {"", "''"} else None for k, v in audit_dict.items()
         }
 
         return audit_dict

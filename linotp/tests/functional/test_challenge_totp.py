@@ -223,8 +223,6 @@ class TestChallengeResponseController(TestController):
 
             assert '"value": true' in response, response
 
-        return
-
     # ---------------------------------------------------------------------- --
 
     # running challenge response tests with 3 different pin policies
@@ -247,8 +245,6 @@ class TestChallengeResponseController(TestController):
 
         self.delete_token(serial)
         self.delete_all_policies()
-
-        return
 
     def test_totp_auth_otppin_1(self):
         """
@@ -274,8 +270,6 @@ class TestChallengeResponseController(TestController):
         self.delete_token(serial)
         self.delete_all_policies()
 
-        return
-
     def test_totp_auth_otppin_2(self):
         """
         Challenge Response Test: totp token challenge with otppin=2
@@ -299,8 +293,6 @@ class TestChallengeResponseController(TestController):
 
         self.delete_token(serial)
         self.delete_all_policies()
-
-        return
 
 
 # eof #

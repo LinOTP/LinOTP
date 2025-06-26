@@ -154,9 +154,8 @@ def _tokenise_action(action_value, separators=None, escapes=None):
         if character in escapes:
             if not escape_mode:
                 escape_mode.append(character)
-            else:
-                if character == escape_mode[-1]:
-                    escape_mode.pop()
+            elif character == escape_mode[-1]:
+                escape_mode.pop()
             continue
 
         if escape_mode:
@@ -222,8 +221,6 @@ def parse_action(action_value):
     if action:
         msg = f"non terminated action {action!r}"
         raise Exception(msg)
-
-    return
 
 
 def _strip_quotes(value):

@@ -75,8 +75,6 @@ class DefaultProvider:
             if "default" in provider_def:
                 self.old_default = provider_name
 
-        return
-
     def __enter__(self):
         """
         define the new provider via setProvider
@@ -589,8 +587,6 @@ class TestHttpSmsController(TestingChallengeResponseController):
             )
 
             assert found, "no entry 'SMS could not be sent' found"
-
-        return
 
     def create_sms_provider_configuration(
         self,

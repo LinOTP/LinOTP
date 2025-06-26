@@ -242,12 +242,11 @@ class MigrateController(BaseController):
 
                         counter_check_done = True
 
+                    elif not mig:
+                        msg = "MigrationHandler not initialized!"
+                        raise Exception(msg)
                     else:
-                        if not mig:
-                            msg = "MigrationHandler not initialized!"
-                            raise Exception(msg)
-                        else:
-                            log.info("unknown entry")
+                        log.info("unknown entry")
 
             # if somebody removed the last line, we cry for it
             if not counter_check_done:

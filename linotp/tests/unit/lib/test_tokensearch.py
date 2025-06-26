@@ -77,7 +77,5 @@ class TestTokenSearch(unittest.TestCase):
         assert not mocked_token_owner_iterator.called
         assert mocked_get_raw_tokens.call_count == 1
 
-        return
-
 
 # eof #

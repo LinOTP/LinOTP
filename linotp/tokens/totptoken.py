@@ -159,8 +159,6 @@ class TimeHmacTokenClass(HmacTokenClass):
                 self.shift,
             )
 
-        return
-
     @classmethod
     def getClassType(cls):
         """
@@ -256,9 +254,8 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         if key is not None and key in res:
             ret = res.get(key)
-        else:
-            if ret == "all":
-                ret = res
+        elif ret == "all":
+            ret = res
         return ret
 
     def update(self, param):
@@ -329,8 +326,6 @@ class TimeHmacTokenClass(HmacTokenClass):
             self.addToTokenInfo("timeStep", self._timeStep)
         if self.hashlibStr:
             self.addToTokenInfo("hashlib", self.hashlibStr)
-
-        return
 
     def check_otp_exist(self, otp, window=10, user=None, autoassign=False):
         """

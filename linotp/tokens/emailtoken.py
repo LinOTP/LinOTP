@@ -214,9 +214,8 @@ class EmailTokenClass(HmacTokenClass):
         # [comment copied from sms token]
         if key is not None and key in res:
             ret = res.get(key)
-        else:
-            if ret == "all":
-                ret = res
+        elif ret == "all":
+            ret = res
         LOG.debug("[getClassInfo] end. Returned the configuration section: ret %r", ret)
         return ret
 
@@ -254,7 +253,6 @@ class EmailTokenClass(HmacTokenClass):
         HmacTokenClass.update(self, param, reset_failcount)
 
         LOG.debug("[update] end. all token parameters are set.")
-        return
 
     def _getNextOtp(self):
         """

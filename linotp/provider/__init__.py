@@ -564,8 +564,6 @@ def save_legacy_provider(provider_type, params):
         if spec == "Timeout" and "timeout" in params:
             storeConfig(key=config_name, val=params["timeout"])
 
-    return
-
 
 def save_new_provider(provider_type, provider_name, params):
     """

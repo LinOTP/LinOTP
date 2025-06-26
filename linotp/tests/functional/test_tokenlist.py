@@ -50,7 +50,6 @@ class TestTokenlist(TestController):
         self.delete_all_realms()
         self.delete_all_resolvers()
         TestController.tearDown(self)
-        return
 
     def test_wildcard_search(self):
         """
@@ -152,5 +151,3 @@ class TestTokenlist(TestController):
         )
 
         assert serial == token_id, response
-
-        return

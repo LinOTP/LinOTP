@@ -100,8 +100,6 @@ class TestSQLResolverSensitiveData:
             user_info = resolver.getUserInfo(res)
             assert "password" not in user_info
 
-        return
-
     def test_sql_getUserList(self, base_app):
         """SQL: test the userinfo does not return sensitive data."""
 
@@ -113,8 +111,6 @@ class TestSQLResolverSensitiveData:
             for user_info in users:
                 assert "password" not in user_info
 
-        return
-
     def test_sql_checkpass(self, base_app):
         """SQL: Check the password of user1 and user 2 still works."""
 
@@ -123,5 +119,3 @@ class TestSQLResolverSensitiveData:
 
             assert resolver.checkPass(resolver.getUserId("user1"), "password")
             assert resolver.checkPass(resolver.getUserId("user2"), "password")
-
-        return

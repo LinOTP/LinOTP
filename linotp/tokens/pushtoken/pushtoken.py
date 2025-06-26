@@ -109,10 +109,9 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         # (both with active flag 0)
 
         is_completely_finished = TokenClass.isActive(self)
-        return (
-            is_completely_finished
-            or self.current_state == "pairing_response_received"
-            or self.current_state == "pairing_challenge_sent"
+        return is_completely_finished or (
+            self.current_state
+            in {"pairing_response_received", "pairing_challenge_sent"}
         )
 
     # --------------------------------------------------------------------------- --

@@ -252,8 +252,6 @@ class LdapResolverTest(TestController):
 
             assert mocked_getUserId.call_count == 4
 
-        return
-
     def test_cache_with_exception(self):
         """
         verify that the user is not stored in user cache if exception is raised
@@ -289,8 +287,6 @@ class LdapResolverTest(TestController):
             # as nothing is cached the new counter is at least twice of size
 
             assert mocked_getUserId.call_count >= 2 * old_count
-
-        return
 
     def test_multiple_resolvers(self):
         """
@@ -339,8 +335,6 @@ class LdapResolverTest(TestController):
             # and the getUserInfo is fully in the cache
             assert mocked_getUserInfo.call_count == 3
 
-        return
-
     def test_multiple_resolvers_with_not_avaialable(self):
         """
         verify that all resolvers are queried and the user is stored
@@ -387,8 +381,6 @@ class LdapResolverTest(TestController):
             assert mocked_getUserInfo.call_count == 3
 
         raise_exception = False
-
-        return
 
 
 # eof

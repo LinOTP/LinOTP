@@ -87,8 +87,6 @@ def range_tvector():
 
         yield seconds, t_time, counter, totp, hash_algo
 
-    return
-
 
 class TotpTestCase(unittest.TestCase):
     """
@@ -115,8 +113,6 @@ class TotpTestCase(unittest.TestCase):
                     h_seconds,
                 )
 
-        return
-
     def test_time2counter(self):
         for t_step in (60, 30):
             for seconds in range(0, 600, t_step):
@@ -129,8 +125,6 @@ class TotpTestCase(unittest.TestCase):
                 # and check if they match
                 assert seconds == v_seconds, (seconds, v_seconds)
 
-        return
-
     def test_counter_time(self):
         for vector in range_tvector():
             (_seconds, _token_time, counter, _totp, _hash_algo) = vector
@@ -140,5 +134,3 @@ class TotpTestCase(unittest.TestCase):
             ccounter = time2counter(t_seconds, timeStepping=30)
 
             assert ccounter == counter
-
-        return

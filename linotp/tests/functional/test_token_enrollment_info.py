@@ -54,7 +54,6 @@ class TestTokenEnrollmentInfo(TestController):
         self.delete_all_realms()
         self.delete_all_resolvers()
         TestController.tearDown(self)
-        return
 
     def test_tokeninfo_for_pushtoken(self):
         """get token enrollment status for the pushtoken"""
@@ -100,8 +99,6 @@ class TestTokenEnrollmentInfo(TestController):
             enrollment = token.get("Enrollment")
             assert "not completed" in enrollment.get("status")
             assert "unpaired" in enrollment.get("detail")
-
-        return
 
     def test_tokeninfo_for_qrtoken(self):
         """get token enrollment status for the qrtoken"""
@@ -151,8 +148,6 @@ class TestTokenEnrollmentInfo(TestController):
             enrollment = token.get("Enrollment")
             assert "not completed" in enrollment.get("status")
             assert "pairing_url_sent" in enrollment.get("detail")
-
-        return
 
     def test_tokeninfo_for_ocra2(self):
         """get token enrollment status for the ocra2 token"""
@@ -207,8 +202,6 @@ class TestTokenEnrollmentInfo(TestController):
             enrollment = token.get("Enrollment")
             assert "not completed" in enrollment.get("status")
             assert "rollout" in enrollment
-
-        return
 
 
 # eof #

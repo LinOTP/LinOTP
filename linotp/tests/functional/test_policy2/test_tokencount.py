@@ -135,7 +135,5 @@ class TestPolicyTokencount(TestController):
         )
         assert msg in response, response
 
-        return
-
 
 # eof ##

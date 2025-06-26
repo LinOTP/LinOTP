@@ -813,8 +813,6 @@ class TestUserserviceTokenTest(TestUserserviceController):
 
         assert "false" not in response
 
-        return
-
     def test_forward_to_qr_token(self):
         """
         userservice token verification for forward to qrtoken

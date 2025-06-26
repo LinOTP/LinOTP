@@ -44,7 +44,6 @@ class AuditQuery:
         self.page = self._rp_dict.get("page", 1)
 
         self.audit_obj = audit_obj
-        return
 
     def _get_default_columns(self):
         return [

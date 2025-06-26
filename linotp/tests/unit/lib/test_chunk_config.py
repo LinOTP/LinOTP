@@ -243,8 +243,6 @@ class TestChunkConfigCase(unittest.TestCase):
         for key in list(TestConfigEntries.keys()):
             del TestConfigEntries[key]
 
-        return
-
     @patch("linotp.lib.config.db_api._storeConfigEntryDB", storeConfigEntryDB)
     @patch("linotp.model.db.session")
     def test__storeConfigDB_text(self, mock_session):
@@ -278,8 +276,6 @@ class TestChunkConfigCase(unittest.TestCase):
 
         for key in list(TestConfigEntries.keys()):
             del TestConfigEntries[key]
-
-        return
 
     @patch("linotp.lib.crypto.utils.encryptPassword")
     @patch("linotp.lib.config.db_api._storeConfigEntryDB", storeConfigEntryDB)
@@ -319,8 +315,6 @@ class TestChunkConfigCase(unittest.TestCase):
         for key in list(TestConfigEntries.keys()):
             del TestConfigEntries[key]
 
-        return
-
     @patch("linotp.lib.config.db_api._storeConfigEntryDB", storeConfigEntryDB)
     @patch("linotp.model.db.session")
     def test__storeConfigDB_int(self, mock_session):
@@ -355,8 +349,6 @@ class TestChunkConfigCase(unittest.TestCase):
 
         for key in list(TestConfigEntries.keys()):
             del TestConfigEntries[key]
-
-        return
 
 
 @pytest.mark.usefixtures("app")

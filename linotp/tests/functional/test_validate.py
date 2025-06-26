@@ -532,8 +532,6 @@ class TestValidateController(TestController):
         for serial in serials:
             self.delete_token(serial)
 
-        return
-
     #
     #    Use case:
     #        user:                 w.Token / wo.Token / unknown

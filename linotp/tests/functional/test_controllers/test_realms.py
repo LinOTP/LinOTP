@@ -48,7 +48,6 @@ class TestRealms(TestController):
         self.delete_all_realms()
         self.delete_all_resolvers()
         TestController.tearDown(self)
-        return
 
     def test_realms_controller_access(self):
         """verify that authentication is required for the realms controller

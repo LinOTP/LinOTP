@@ -45,13 +45,11 @@ class TestResolver(TestController):
     def setUp(self):
         TestController.setUp(self)
         self.create_common_resolvers()
-        return
 
     def tearDown(self):
         TestController.tearDown(self)
         self.delete_all_realms()
         self.delete_all_resolvers()
-        return
 
     def define_ldap_resolver(self, name, params=None):
         """"""
@@ -174,8 +172,6 @@ class TestResolver(TestController):
         response = self.make_system_request("getResolvers", params={})
         assert "LDA2" not in response, response
 
-        return
-
     def test_resolver_duplicate(self):
         """
         test: it is not possible to have multiple resolvers with same name
@@ -208,8 +204,6 @@ class TestResolver(TestController):
         data = jresp.get("result", {}).get("value", {}).get("data", {})
         assert "fileName" in data, response
         assert "Server" not in data, response
-
-        return
 
     def test_rename_resolver(self):
         """
@@ -433,8 +427,6 @@ class TestResolver(TestController):
         params = {"resolver": "fake_ldap"}
         response = self.make_system_request("delResolver", params)
         assert '"value": true' in response.body
-
-        return
 
 
 # eof #

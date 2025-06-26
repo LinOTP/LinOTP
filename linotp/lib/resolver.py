@@ -617,8 +617,6 @@ def _check_for_resolver_cache_flush(resolver_spec, config_identifier):
         _delete_from_resolver_config_cache(resolver_spec)
         _lookup_resolver_config(resolver_spec, resolver_config)
 
-    return
-
 
 def _flush_user_resolver_cache(resolver_spec):
     """
@@ -809,7 +807,6 @@ def closeResolvers():
                 resolver.close()
     except Exception as exx:
         log.error("Failed to close resolver in context. Error was %r", exx)
-    return
 
 
 def getResolverClassName(cls_identifier, resolver_name):

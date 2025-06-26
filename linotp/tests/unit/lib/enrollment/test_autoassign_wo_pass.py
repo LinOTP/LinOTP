@@ -96,8 +96,6 @@ class TestAutoEnroll(unittest.TestCase):
         assert res
         assert mocked_assignToken.called
 
-        return
-
     @patch("linotp.lib.policy.action.get_policy_definitions")
     @patch("linotp.lib.policy._get_client")
     @patch("linotp.lib.policy.get_client_policy")
@@ -221,8 +219,6 @@ class TestAutoEnroll(unittest.TestCase):
 
         realm = get_autoassignment_from_realm(user)
         assert not realm
-
-        return
 
 
 # eof #

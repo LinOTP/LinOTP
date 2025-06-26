@@ -120,8 +120,6 @@ class TestSupport(TestController):
         assert expiry_date.month == expected_expiry.month
         assert expiry_date.day == expected_expiry.day
 
-        return
-
     def test_demo_license_expiration(self):
         """
         text that the demo license expires after 14 days
@@ -147,8 +145,6 @@ class TestSupport(TestController):
         assert not jresp.get("result", {}).get("value")
         assert "License expired" in jresp.get("detail", {}).get("reason")
 
-        return
-
     def test_set_expires_license(self):
         """
         check that installation of expired license fails
@@ -158,8 +154,6 @@ class TestSupport(TestController):
 
         assert '"status": false' in response
         assert "expired - valid till '2017-12-12'" in response
-
-        return
 
     def test_set_license_fails(self):
         """

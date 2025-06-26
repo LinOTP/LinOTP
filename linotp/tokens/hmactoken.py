@@ -150,9 +150,8 @@ class HmacTokenClass(TokenClass):
 
         if key is not None and key in res:
             ret = res.get(key)
-        else:
-            if ret == "all":
-                ret = res
+        elif ret == "all":
+            ret = res
         return ret
 
     def __init__(self, a_token):
@@ -212,8 +211,6 @@ class HmacTokenClass(TokenClass):
         # ------------------------------------------------------------------ --
 
         TokenClass.update(self, param, reset_failcount)
-
-        return
 
     def validate_seed(self, seed):
         """
@@ -475,13 +472,12 @@ class HmacTokenClass(TokenClass):
         # So the boolean has no .lower()
         if isinstance(setting, bool):
             autosync = setting
+        elif setting.lower() == "true":
+            autosync = True
+        elif setting.lower() == "false":
+            autosync = False
         else:
-            if setting.lower() == "true":
-                autosync = True
-            elif setting.lower() == "false":
-                autosync = False
-            else:
-                autosync = False
+            autosync = False
 
         # if autosync is enabled
         if not autosync:

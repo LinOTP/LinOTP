@@ -76,8 +76,6 @@ class TestCacheActivation(unittest.TestCase):
 
         assert TOKENS["tok3"].get("otplen") == 8, TOKENS
 
-        return
-
     def test_parse_OATH_256(self):
         """
         Test the OATH csv import for sha256 tokens
@@ -91,8 +89,6 @@ class TestCacheActivation(unittest.TestCase):
         for serial, token in list(tokens.items()):
             if "sha256" in serial:
                 assert token["hashlib"] == "sha256", token
-
-        return
 
 
 # eof #

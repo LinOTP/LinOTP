@@ -32,8 +32,6 @@ import logging
 from datetime import datetime
 from urllib.parse import parse_qs, urlparse, urlsplit
 
-from Cryptodome.Hash import SHA256 as SHA256
-
 from linotp.lib.crypto.utils import kdf2
 from linotp.tokens.ocra2token import OcraSuite
 

@@ -681,16 +681,15 @@ def test_init_enc_key_cmd(
     if makes_file:
         assert secret_file_name.exists()
         assert secret_file_name.read_bytes() == SECRET_KEY
-    else:
-        if secret_file_name.exists() and secret_file_name.read_bytes() == SECRET_KEY:
-            msg = "secret file was created but shouldn't have been"
+    elif secret_file_name.exists() and secret_file_name.read_bytes() == SECRET_KEY:
+        msg = "secret file was created but shouldn't have been"
+        raise AssertionError(msg)
+    elif has_file and secret_file_name.exists():
+        if secret_file_name.read_bytes() == ZERO_KEY:
+            pass  # still the old file, this is OK
+        else:
+            msg = "shouldn't touch secret file but it was changed"
             raise AssertionError(msg)
-        elif has_file and secret_file_name.exists():
-            if secret_file_name.read_bytes() == ZERO_KEY:
-                pass  # still the old file, this is OK
-            else:
-                msg = "shouldn't touch secret file but it was changed"
-                raise AssertionError(msg)
 
 
 def test_init_enc_key_cmd_failed_backup(app, tmp_path, runner):

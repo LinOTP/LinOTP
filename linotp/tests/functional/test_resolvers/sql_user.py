@@ -86,8 +86,6 @@ class SqlUserDB:
         conn_dict = self._parse_connection(connect)
         self.resolverDef.update(conn_dict)
 
-        return
-
     def _parse_connection(self, connect):
         """
         analyse the sql connection string and transform this to a dict
@@ -135,8 +133,6 @@ class SqlUserDB:
         t = sqlalchemy.sql.expression.text(createStr)
         with self.engine.begin() as conn:
             conn.execute(t)
-
-        return
 
     def dropTable(self):
         dropStr = f"DROP TABLE {self.userTable}"

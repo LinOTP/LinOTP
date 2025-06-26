@@ -338,8 +338,6 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
 
         self.delete_policy(name="ch_resp")
 
-        return
-
     @patch.object(httplib2.Http, "request", mocked_http_request)
     def test_local_challenge(self):
         """

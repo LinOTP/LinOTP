@@ -50,7 +50,6 @@ class TestMonitoringController(TestController):
         super().setUp()
         self.create_common_resolvers()
         self.create_common_realms()
-        return
 
     def tearDown(self):
         self.delete_all_policies()
@@ -143,8 +142,6 @@ class TestMonitoringController(TestController):
         assert values.get("passwdresolver") == 2, response
         # self.assertEqual(values.get('sync'), False, response)
 
-        return
-
     def test_token_realm_list(self):
         self.create_token(serial="0001")
         self.create_token(serial="0002", user="root")
@@ -157,7 +154,6 @@ class TestMonitoringController(TestController):
         values = resp.get("result").get("value")
         assert values.get("Realms").get("mydefrealm").get("total") == 2, response
         assert values.get("Summary").get("total") == 3, response
-        return
 
     def test_token_active(self):
         policy_params = {
@@ -211,8 +207,6 @@ class TestMonitoringController(TestController):
         assert s_values.get("total", -1) == 3, response
         assert s_values.get("total users", -1) == 1, response
         assert s_values.get("active", -1) == 2, response
-
-        return
 
     def test_token_status_combi(self):
         self.create_token(serial="0021")
@@ -349,8 +343,6 @@ class TestMonitoringController(TestController):
         assert values.get("Realms").get("mydefrealm").get("total") == 2
         assert values.get("Realms").get("myotherrealm").get("total") == 2
         assert values.get("Summary").get("total") == 3, response.body
-
-        return
 
     def test_no_license(self):
         """Verify monitoring response if no license is installed."""

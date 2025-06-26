@@ -79,8 +79,6 @@ class TestResolverTestCase(unittest.TestCase):
 
         assert not res
 
-        return
-
     def test_detect_sql_primary_change(self):
         """
         unit test for sql primary key change
@@ -106,5 +104,3 @@ class TestResolverTestCase(unittest.TestCase):
         res = sql_cls.primary_key_changed({"Map": u_map_1}, {"Map": u_map_1})
 
         assert not res
-
-        return

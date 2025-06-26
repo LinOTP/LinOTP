@@ -116,8 +116,6 @@ class SecurityProvider:
         finally:
             self.rwLock.release()
 
-        return
-
     def loadSecurityModule(self, module_id=None):
         """
         return the specified security module
@@ -229,14 +227,13 @@ class SecurityProvider:
         # amount has to be taken from the hsm-id config
         if hsm_id is None:
             provider_ids = self.config
+        elif hsm_id in self.config:
+            provider_ids = []
+            provider_ids.append(hsm_id)
         else:
-            if hsm_id in self.config:
-                provider_ids = []
-                provider_ids.append(hsm_id)
-            else:
-                error = f"[createHSMPool] failed to find hsm_id: {hsm_id!r}"
-                log.error(error)
-                raise HSMException(error, id=707)
+            error = f"[createHSMPool] failed to find hsm_id: {hsm_id!r}"
+            log.error(error)
+            raise HSMException(error, id=707)
 
         for id in provider_ids:
             pool = self._getHsmPool_(id)

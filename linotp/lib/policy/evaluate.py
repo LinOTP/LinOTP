@@ -780,9 +780,8 @@ def user_list_compare(policy_conditions, login):
         if condition == "*":
             if not match_type or match_type == NOT_MATCH:
                 match_type = WILDCARD_MATCH
-        else:
-            if match_type != EXACT_MATCH:
-                match_type = REGEX_MATCH
+        elif match_type != EXACT_MATCH:
+            match_type = REGEX_MATCH
 
     return match_type, matched
 

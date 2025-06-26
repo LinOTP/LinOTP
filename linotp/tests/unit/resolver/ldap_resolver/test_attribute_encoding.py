@@ -139,7 +139,5 @@ class TestLDAPResolverAttributes(unittest.TestCase):
 
             val.encode("utf-8").decode("utf-8")
 
-        return
-
 
 # eof #

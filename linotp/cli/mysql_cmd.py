@@ -205,7 +205,9 @@ def restore_mysql_database(filename: str):
     app.echo(f"Restoring MySQL backup {backup_filename!r}", v=1)
 
     with open(backup_filename) as backup_file:
-        result = subprocess.run(command, stdin=backup_file, capture_output=True)
+        result = subprocess.run(
+            command, stdin=backup_file, capture_output=True, check=False
+        )
 
         if result.returncode != 0:
             app.echo(

@@ -92,8 +92,6 @@ class LinOtpConfig(dict):
 
         self.refreshConfig(do_reload=do_reload)
 
-        return
-
     def refreshConfig(self, do_reload=False):
         conf = self.glo.getConfig()
 
@@ -111,11 +109,9 @@ class LinOtpConfig(dict):
             self.glo.setConfig(conf, replace=True)
 
         super().update(conf)
-        return
 
     def setRealms(self, realmDict):
         self.realms = realmDict
-        return
 
     def getRealms(self):
         return self.realms

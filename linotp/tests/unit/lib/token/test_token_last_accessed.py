@@ -70,8 +70,6 @@ class TestTokenLastAcces(unittest.TestCase):
         for token in token_list:
             assert token.token.LinOtpLastAuthMatch != ""
 
-        return
-
     @patch("linotp.lib.token.getFromConfig")
     def test_add_last_accessed_info_timeformat(self, m_getFromConfig):
         """
@@ -88,7 +86,6 @@ class TestTokenLastAcces(unittest.TestCase):
         for token in token_list:
             access_time = token.token.LinOtpLastAuthMatch
             assert isinstance(access_time, datetime)
-        return
 
     @patch("linotp.lib.token.getFromConfig")
     def test_add_last_accessed_info_False(self, m_getFromConfig):
@@ -104,7 +101,6 @@ class TestTokenLastAcces(unittest.TestCase):
 
         for token in token_list:
             assert not token.token.LinOtpLastAuthMatch
-        return
 
     @patch("linotp.lib.token.getFromConfig")
     def test_add_last_accessed_info_false(self, m_getFromConfig):
@@ -121,8 +117,6 @@ class TestTokenLastAcces(unittest.TestCase):
         for token in token_list:
             assert not token.token.LinOtpLastAuthMatch
 
-        return
-
     @patch("linotp.lib.token.getFromConfig")
     def test_add_last_accessed_info_none(self, m_getFromConfig):
         """
@@ -137,8 +131,6 @@ class TestTokenLastAcces(unittest.TestCase):
 
         for token in token_list:
             assert not token.token.LinOtpLastAuthMatch
-
-        return
 
 
 # eof #

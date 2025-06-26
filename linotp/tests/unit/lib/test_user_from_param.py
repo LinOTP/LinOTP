@@ -193,8 +193,6 @@ class TestGetFromParam(unittest.TestCase):
         if errors:
             raise Exception(errors)
 
-        return
-
     @patch("linotp.lib.user.getRealms")
     @patch("linotp.lib.user.getResolversOfUser")
     @patch("linotp.lib.user.getDefaultRealm")

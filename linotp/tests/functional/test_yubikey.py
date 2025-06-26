@@ -64,7 +64,6 @@ class TestYubikeyController(TestController):
             public_uid + "ljlhjbkejkctubnejrhuvljkvglvvlbk",
             public_uid + "eihtnehtetluntirtirrvblfkttbjuih",
         ]
-        return
 
     def init_token(
         self,
@@ -128,8 +127,6 @@ class TestYubikeyController(TestController):
             response = self.make_validate_request("check_s", params=params)
             assert '"value": false' in response, f"Response: {response!r}"
 
-        return
-
     def test_yubico_resync(self):
         """
         Enroll and resync the Yubikey
@@ -158,8 +155,6 @@ class TestYubikeyController(TestController):
         }
         response = self.make_admin_request("resync", params=params)
         assert '"value": false' in response, f"Response: {response!r}"
-
-        return
 
     def test_yubico_getSerialByOtp_false(self):
         """
@@ -196,8 +191,6 @@ class TestYubikeyController(TestController):
             get_serial = data.get("serial")
             assert get_serial == "", resp
 
-        return
-
     def test_yubico_getSerialByOtp(self):
         """
         getSerialByOtp test for yubikey token w. and wo. prefix
@@ -223,8 +216,6 @@ class TestYubikeyController(TestController):
                 data = resp.get("result", {}).get("value", {})
                 get_serial = data.get("serial")
                 assert serial == get_serial, resp
-
-        return
 
     def test_yubikey_auth_otppin(self):
         """
@@ -316,8 +307,6 @@ class TestYubikeyController(TestController):
             params = {"user": user, "pass": pin + pw_password}
             response = self.make_validate_request("check", params=params)
             assert '"value": true' in response, response
-
-        return
 
 
 # eof

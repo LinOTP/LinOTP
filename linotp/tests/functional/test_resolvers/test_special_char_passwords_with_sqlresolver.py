@@ -55,8 +55,6 @@ class SQLResolverSpecialPasswordTest(SQLTestController):
         SQLTestController.setUp(self)
         self.setUpSQL()
 
-        return
-
     def tearDown(self):
         """drop the users and the user table"""
 
@@ -157,8 +155,6 @@ class SQLResolverSpecialPasswordTest(SQLTestController):
         response = self.make_validate_request("check", params=params)
         assert '"value": false' in response
 
-        return
-
     def test_sqlresolver_random_passwords(self):
         """
         test that we can use pbkdf2 and bcrypt passwords with an sql resolver
@@ -207,7 +203,6 @@ class SQLResolverSpecialPasswordTest(SQLTestController):
             password = users[name]["mobile"]
             with contextlib.suppress(Exception):
                 self.run_password_check(user, password, realm=realm)
-        return
 
 
 # eof

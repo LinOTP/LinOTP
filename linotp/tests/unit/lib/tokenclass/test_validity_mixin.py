@@ -85,8 +85,6 @@ class TestTokenValidityMixin(unittest.TestCase):
 
         assert fake_token.count_auth == 3, fake_token
 
-        return
-
     def test_del_access_count(self):
         """
         check that the max access counter will be removed
@@ -104,8 +102,6 @@ class TestTokenValidityMixin(unittest.TestCase):
 
         assert "count_auth_max" not in t_info, fake_token
 
-        return
-
     def test_inc_access_count(self):
         """
         check if the access counter (with getter and setter) is incremented
@@ -122,8 +118,6 @@ class TestTokenValidityMixin(unittest.TestCase):
                 break
 
         assert fake_token.count_auth == 4, fake_token
-
-        return
 
     # ---------------------------------------------------------------------- --
 
@@ -147,8 +141,6 @@ class TestTokenValidityMixin(unittest.TestCase):
 
         assert fake_token.count_auth_success == 3, fake_token
 
-        return
-
     def test_inc_success_count(self):
         """
         check if the success counter (with getter and setter) is incremented
@@ -163,8 +155,6 @@ class TestTokenValidityMixin(unittest.TestCase):
                 break
 
         assert fake_token.count_auth_success == 4, fake_token
-
-        return
 
     def test_del_success_count(self):
         """
@@ -206,8 +196,6 @@ class TestTokenValidityMixin(unittest.TestCase):
 
         assert "validity_period_end" not in t_info, fake_token
 
-        return
-
     def test_del_expiry_start(self):
         """
         check expiration end compare
@@ -228,8 +216,6 @@ class TestTokenValidityMixin(unittest.TestCase):
         t_info = fake_token.getTokenInfo()
 
         assert "validity_period_start" not in t_info, fake_token
-
-        return
 
     # ---------------------------------------------------------------------- --
 

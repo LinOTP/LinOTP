@@ -143,5 +143,3 @@ class TestAdminController(unittest.TestCase):
         AdminController._parse_tokeninfo(tok)
 
         assert tok["LinOtp.TokenInfo"] == {}
-
-        return

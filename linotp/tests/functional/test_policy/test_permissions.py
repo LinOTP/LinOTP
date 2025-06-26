@@ -51,7 +51,6 @@ class TestPermissions(TestPoliciesBase):
         self.delete_all_realms()
         self.delete_all_resolvers()
         TestPoliciesBase.tearDown(self)
-        return
 
     @property
     def _all_permissions(self):

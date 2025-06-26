@@ -138,8 +138,6 @@ class TestParseActionValue(unittest.TestCase):
 
         assert res == res_dict
 
-        return
-
     def test_parse_actionvalue_exception(self):
         """
         parse_action_value raises some parsing exceptions
@@ -200,8 +198,6 @@ class TestParseActionValue(unittest.TestCase):
 
         for val, expect in test_set:
             assert expect == parse_action_value(val)
-
-        return
 
 
 # eof #

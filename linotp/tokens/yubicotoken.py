@@ -171,9 +171,8 @@ class YubicoTokenClass(TokenClass):
 
         if key is not None and key in res:
             ret = res.get(key)
-        else:
-            if ret == "all":
-                ret = res
+        elif ret == "all":
+            ret = res
         return ret
 
     def update(self, param):
@@ -196,8 +195,6 @@ class YubicoTokenClass(TokenClass):
         TokenClass.update(self, param)
 
         self.addToTokenInfo("yubico.tokenid", self.tokenid)
-
-        return
 
     def resync(self, otp1, otp2, options=None):
         """

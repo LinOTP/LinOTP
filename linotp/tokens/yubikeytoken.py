@@ -50,7 +50,6 @@ class YubikeyTokenClass(TokenClass):
         self.setType("yubikey")
 
         self.hKeyRequired = True
-        return
 
     @classmethod
     def getClassType(cls):
@@ -88,9 +87,8 @@ class YubikeyTokenClass(TokenClass):
 
         if key is not None and key in res:
             ret = res.get(key)
-        else:
-            if ret == "all":
-                ret = res
+        elif ret == "all":
+            ret = res
         return ret
 
     def check_otp_exist(self, otp, window=None, user=None, autoassign=False):
@@ -186,8 +184,6 @@ class YubikeyTokenClass(TokenClass):
         if "public_uid" in param:
             self.addToTokenInfo("public_uid", param["public_uid"])
 
-        return
-
     def resetTokenInfo(self):
         """
         resetTokenInfo - hook called during token init/update
@@ -204,8 +200,6 @@ class YubikeyTokenClass(TokenClass):
             if "public_uid" in info:
                 del info["public_uid"]
             self.setTokenInfo(info)
-
-        return
 
     def checkOtp(self, otpVal, counter=None, window=None, options=None):
         """

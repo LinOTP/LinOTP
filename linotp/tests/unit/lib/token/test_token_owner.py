@@ -55,8 +55,6 @@ class TestTokenOwner(unittest.TestCase):
 
         exx.match("no user found")
 
-        return
-
     def test_isTokenOwner_no_user(self):
         """
         test if no user is given
@@ -71,8 +69,6 @@ class TestTokenOwner(unittest.TestCase):
             th.isTokenOwner(serial, user)
 
         exx.match("no user found")
-
-        return
 
     @patch("linotp.lib.token.get_raw_tokens")
     @patch("linotp.lib.token.getUserId")
@@ -96,8 +92,6 @@ class TestTokenOwner(unittest.TestCase):
         assert error.id == 1102
         assert error.getDescription() == f"No token with serial {serial} found"
 
-        return
-
     @patch("linotp.lib.token.get_token")
     @patch("linotp.lib.token.getUserId")
     def test_isTokenOwner_token_and_user(self, mocked_getUserId, mocked_get_token):
@@ -116,8 +110,6 @@ class TestTokenOwner(unittest.TestCase):
         res = th.isTokenOwner(serial, user)
 
         assert res
-
-        return
 
     @patch("linotp.lib.token.get_token")
     @patch("linotp.lib.token.getUserId")
@@ -140,8 +132,6 @@ class TestTokenOwner(unittest.TestCase):
 
         assert res
 
-        return
-
     @patch("linotp.lib.token.get_token")
     @patch("linotp.lib.token.getUserId")
     def test_hasOwner_token_and_user(self, mocked_getUserId, mocked_get_token):
@@ -161,8 +151,6 @@ class TestTokenOwner(unittest.TestCase):
 
         assert res
 
-        return
-
     @patch("linotp.lib.token.get_token")
     def test_hasOwner_token_and_root_user(self, mocked_get_token):
         """
@@ -179,8 +167,6 @@ class TestTokenOwner(unittest.TestCase):
 
         assert res
 
-        return
-
     @patch("linotp.lib.token.get_token")
     def test_hasOwner_token_and_no_user(self, mocked_get_token):
         """
@@ -196,8 +182,6 @@ class TestTokenOwner(unittest.TestCase):
         res = th.hasOwner(serial)
 
         assert res is False
-
-        return
 
 
 # eof #

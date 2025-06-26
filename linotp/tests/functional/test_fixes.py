@@ -74,7 +74,6 @@ def test_ticket_425(app, adminclient):
             """start the thread"""
             response = self.client.post("/system/setConfig", json=self.params)
             self.response = response.json
-            return
 
         def status(self):
             """
@@ -161,7 +160,6 @@ class TestFixesController(TestController):
         self.delete_all_realms()
         self.delete_all_resolvers()
         TestController.tearDown(self)
-        return
 
     def remove_tokens(self):
         """
@@ -171,7 +169,6 @@ class TestFixesController(TestController):
         """
         for serial in self.serials:
             self.del_token(serial)
-        return
 
     def del_token(self, serial):
         """
@@ -284,8 +281,6 @@ class TestFixesController(TestController):
 
         self.del_token("troot")
 
-        return
-
     def test_ticket_12018(self):
         """
         #12018: OTPLen of /admin/init is not ignored
@@ -303,8 +298,6 @@ class TestFixesController(TestController):
         res = self.del_token(serial)
         assert '"status": true,' in res
         assert '"value": 1' in res
-
-        return
 
 
 # eof###########################################################################

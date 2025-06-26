@@ -77,5 +77,3 @@ class TestCacheActivation(unittest.TestCase):
 
         mocked_cache_manager = mocked_context["CacheManager"]
         assert mocked_cache_manager.expiretime == 36 * 3600
-
-        return

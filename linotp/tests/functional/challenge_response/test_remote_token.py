@@ -97,8 +97,6 @@ class TestRemoteToken(TestingChallengeResponseController):
         self.create_common_resolvers()
         self.create_common_realms()
 
-        return
-
     def create_local_tokens(self, serial):
         serial = f"LSP{serial}"
 
@@ -193,8 +191,6 @@ class TestRemoteToken(TestingChallengeResponseController):
         )
         assert '"set pin": 1' in response, response
 
-        return
-
     @patch.object(httplib2.Http, "request", mocked_http_request)
     def test_check_token_local_pin(self):
         """
@@ -239,8 +235,6 @@ class TestRemoteToken(TestingChallengeResponseController):
         response = self.make_validate_request("check", params=parameters)
 
         assert '"value": false' in response, response
-
-        return
 
     @patch.object(httplib2.Http, "request", mocked_http_request)
     def test_check_token_remote_pin(self):
@@ -306,8 +300,6 @@ class TestRemoteToken(TestingChallengeResponseController):
         response = self.make_validate_request("check", params=parameters)
 
         assert '"value": false' in response, response
-
-        return
 
     @patch.object(httplib2.Http, "request", mocked_http_request)
     def test_fix_12061(self):
@@ -393,8 +385,6 @@ class TestRemoteToken(TestingChallengeResponseController):
 
         for serial in serials:
             self.delete_token(serial)
-
-        return
 
 
 # eof###########################################################################

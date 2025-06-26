@@ -1614,30 +1614,18 @@ def get_authenticated_user(
     # if we have an realmbox, we take the user as it is
     # - the realm is always given
     # - appended realms result in error
-    if realm_box:
+    if realm_box or realm:
         user = User(username, realm, "")
         users.append(user)
-
-    # else if no realm box is given
-    #   and realm is not empty:
-    #    - create the user from the values (as we are in auto_assign, etc)
-    #   and the realm is empty! (s. login.mako
-    #    - the user either appends his realm
-    #    - or will get the realm appended
-    #
     else:
-        if realm:
-            user = User(username, realm, "")
+        def_realm = options.get("defaultRealm", getDefaultRealm())
+        if def_realm:
+            user = User(username, def_realm, "")
             users.append(user)
-        else:
-            def_realm = options.get("defaultRealm", getDefaultRealm())
-            if def_realm:
-                user = User(username, def_realm, "")
-                users.append(user)
-            if "@" in username:
-                u_name, u_realm = username.rsplit("@", 1)
-                user = User(u_name, u_realm, "")
-                users.append(user)
+        if "@" in username:
+            u_name, u_realm = username.rsplit("@", 1)
+            user = User(u_name, u_realm, "")
+            users.append(user)
 
     # Authenticate user
     auth_user = None

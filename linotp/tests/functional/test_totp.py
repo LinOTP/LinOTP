@@ -206,8 +206,6 @@ class TotpToken:
 
         self.hmacOtp = HmacOtp(self.key, digits=self.digits, hashfunc=algo)
 
-        return
-
     def getOtp(self, counter: int = -1, offset=0, jitter=0, seconds=None):
         """
         @note: we require the ability to set the counter directly

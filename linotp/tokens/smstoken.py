@@ -329,9 +329,8 @@ class SmsTokenClass(HmacTokenClass):
 
         if key and key in res:
             ret = res.get(key)
-        else:
-            if ret == "all":
-                ret = res
+        elif ret == "all":
+            ret = res
 
         return ret
 
@@ -372,8 +371,6 @@ class SmsTokenClass(HmacTokenClass):
             param["genkey"] = 1
 
         HmacTokenClass.update(self, param, reset_failcount)
-
-        return
 
     def is_challenge_response(self, passw, user, options=None, challenges=None):
         """
@@ -744,7 +741,6 @@ class SmsTokenClass(HmacTokenClass):
         :return: nothing
         """
         self.setSMSInfo("phone", phone)
-        return
 
     def setUntil(self, until):
         """
@@ -758,7 +754,6 @@ class SmsTokenClass(HmacTokenClass):
         """
 
         self.setSMSInfo("until", until)
-        return
 
     def _getPhone(self):
         """
@@ -830,7 +825,6 @@ class SmsTokenClass(HmacTokenClass):
         :return: nothing
         """
         self.addToTokenInfo(key, value)
-        return
 
     def getSMSInfo(self):
         """

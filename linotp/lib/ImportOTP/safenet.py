@@ -79,19 +79,18 @@ def parseSafeNetXML(xml):
                                     COUNTER = elem_app.text
             if not SERIAL:
                 log.error("Found token without a serial")
-            else:
-                if HMAC:
-                    hashlib = "sha1"
-                    if len(HMAC) == 64:
-                        hashlib = "sha256"
+            elif HMAC:
+                hashlib = "sha1"
+                if len(HMAC) == 64:
+                    hashlib = "sha256"
 
-                    TOKENS[SERIAL] = {
-                        "hmac_key": HMAC,
-                        "counter": COUNTER,
-                        "type": "HMAC",
-                        "hashlib": hashlib,
-                    }
-                else:
-                    log.error("Found token %s without a element 'Seed'", SERIAL)
+                TOKENS[SERIAL] = {
+                    "hmac_key": HMAC,
+                    "counter": COUNTER,
+                    "type": "HMAC",
+                    "hashlib": hashlib,
+                }
+            else:
+                log.error("Found token %s without a element 'Seed'", SERIAL)
 
     return TOKENS

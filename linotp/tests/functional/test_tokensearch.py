@@ -53,7 +53,6 @@ class TestTokensearch(TestController):
         self.delete_all_realms()
         self.delete_all_resolvers()
         TestController.tearDown(self)
-        return
 
     def remove_tokens(self):
         """
@@ -128,8 +127,6 @@ class TestTokensearch(TestController):
         params = {"user": "pass*thru@example.com"}
         response = self.make_admin_request("show", params=params)
         assert serial in response
-
-        return
 
     def test_search_token_with_params(self):
         self.set_splitAtSign(False)

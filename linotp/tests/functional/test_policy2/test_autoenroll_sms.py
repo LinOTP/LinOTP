@@ -157,8 +157,6 @@ class TestAutoassignSMSController(TestController):
         assert "this is your otp" in REQUEST_BODY["text"], REQUEST_BODY
         assert "sms submitted" in response, response
 
-        return
-
     @patch("requests.Session.post", mocked_http_request)
     def test_simple_autoenroll_sms(self):
         """
@@ -190,8 +188,6 @@ class TestAutoassignSMSController(TestController):
         response = self.make_validate_request("simplecheck", params)
         assert "this is your otp" in REQUEST_BODY["text"], REQUEST_BODY
         assert "sms submitted" in response, response
-
-        return
 
     @patch("requests.Session.post", mocked_http_request)
     def test_validate_sms_token_wo_owner(self):
@@ -235,8 +231,6 @@ class TestAutoassignSMSController(TestController):
 
         response = self.make_validate_request("check_s", params=params)
         assert "false" not in response.body
-
-        return
 
     @patch("requests.Session.post", mocked_http_request)
     def test_autoassigne_sms_token(self):
@@ -295,8 +289,6 @@ class TestAutoassignSMSController(TestController):
 
         response = self.make_validate_request("simplecheck", params=params)
         assert ":-)" in response, response
-
-        return
 
 
 # eof

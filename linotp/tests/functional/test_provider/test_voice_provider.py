@@ -210,8 +210,6 @@ class TestVoiceProviderController(TestController):
             configDict["server_certificate"] = server_cert_file_name
             voice_provider.loadConfig(configDict)
 
-        return
-
     @patch.object(requests.Session, "post", mocked_http_request)
     def test_request(self):
         """

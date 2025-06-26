@@ -199,7 +199,6 @@ class IdResolver(UserIdResolver):
         :return: -nothing-
         """
         log.debug("Setting up LDAPIdResolver")
-        return
 
     @classmethod
     def connect(cls, uri, caller, trace_level=0):
@@ -433,11 +432,10 @@ class IdResolver(UserIdResolver):
                 result_type, result_data = l_obj.result(ldap_result_id, 0)
                 if result_data == []:
                     break
-                else:
-                    if result_type == ldap.RES_SEARCH_ENTRY:
-                        # compose response as we like it
-                        userdata["userid"] = result_data[0][0]
-                        resultList.append(userdata)
+                elif result_type == ldap.RES_SEARCH_ENTRY:
+                    # compose response as we like it
+                    userdata["userid"] = result_data[0][0]
+                    resultList.append(userdata)
 
         except ldap.SIZELIMIT_EXCEEDED as exx:
             if len(resultList) < sizelimit:

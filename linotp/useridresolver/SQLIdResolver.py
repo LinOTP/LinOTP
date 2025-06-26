@@ -285,13 +285,12 @@ def build_simple_connect(
             connect.append(f"@{server}:{int(port)}")
         else:
             connect.append(f"@{server}")
-    else:
-        # in case of no server and a user, we have to append the empty @ sign
-        # as otherwise the parser will interpret the :password as port which
-        # will fail as it is not of type int
+    # in case of no server and a user, we have to append the empty @ sign
+    # as otherwise the parser will interpret the :password as port which
+    # will fail as it is not of type int
 
-        if user and user.strip():
-            connect.append("@")
+    elif user and user.strip():
+        connect.append("@")
 
     # ------------------------------------------------------------------ --
 
@@ -317,8 +316,6 @@ class dbObject:
         self.engine = None
         self.meta = None
         self.sess = None
-
-        return None
 
     def connect(self, sqlConnect, db=None, timeout=5):
         """
@@ -386,13 +383,11 @@ class dbObject:
         log.debug("[dbObject::close]")
         if self.sess is not None:
             self.sess.close()
-        return
 
 
 # connect callback - currently not used
 def call_on_connect(dbapi_con, connection_record):
     log.debug("[call_on_connect] new DBAPI connection")
-    return
 
 
 def testconnection(params):
@@ -530,7 +525,6 @@ class IdResolver(UserIdResolver):
         :type  config: the linotp config dict
         """
         log.debug("Setting up SQLIdResolver")
-        return
 
     def __init__(self):
         """initialize the SQLResolver class"""
@@ -573,7 +567,6 @@ class IdResolver(UserIdResolver):
         if self.dbObj is not None:
             self.dbObj.close()
             self.dbObj = None
-        return
 
     def getResolverId(self):
         """
@@ -773,7 +766,6 @@ class IdResolver(UserIdResolver):
             log.error("[checkMapping] Exception: %r", exx)
 
         log.debug("[checkMapping] done")
-        return
 
     def getUserId(self, loginName):
         """
@@ -1103,15 +1095,14 @@ class IdResolver(UserIdResolver):
                 value = value[1:].strip()
                 exp = column < value
 
+            # for postgres no escape is required!!
+            # but we have to cast its type to string
+            # as it does not support dynamic typing like sqlite
+            elif self.sqlConnect.startswith("postg"):
+                column_cast_to_string = cast(column, types.String)
+                exp = column_cast_to_string.like(value)
             else:
-                # for postgres no escape is required!!
-                # but we have to cast its type to string
-                # as it does not support dynamic typing like sqlite
-                if self.sqlConnect.startswith("postg"):
-                    column_cast_to_string = cast(column, types.String)
-                    exp = column_cast_to_string.like(value)
-                else:
-                    exp = column.like(value, escape="\\")
+                exp = column.like(value, escape="\\")
 
             log.debug("[__createSearchString] searchStr : %s", exp)
             return exp

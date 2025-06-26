@@ -320,8 +320,6 @@ class TestAdminController(TestController):
         value = resp.get("result", {}).get("error", {}).get("code", 0)
         assert value == 9876, resp
 
-        return
-
     def test_db_for_default_realm_and_resolver(self):
         """
         Tests, after db initialiazation,
@@ -514,7 +512,6 @@ class TestAdminController(TestController):
         assert '"value": true' in response, response
 
         self.delete_token("umlauttoken")
-        return
 
     def test_losttoken_email(self):
         """
@@ -572,7 +569,6 @@ class TestAdminController(TestController):
 
         self.delete_token(token_name)
         self.delete_token(lost_token_name)
-        return
 
     def test_losttoken_sms(self):
         """
@@ -630,7 +626,6 @@ class TestAdminController(TestController):
 
         self.delete_token(token_name)
         self.delete_token(lost_token_name)
-        return
 
     def test_losttoken_fail(self):
         """
@@ -689,7 +684,6 @@ class TestAdminController(TestController):
 
         self.delete_token(token_name)
         self.delete_token(lost_token_name)
-        return
 
     def test_losttoken_spass(self):
         """
@@ -771,7 +765,6 @@ class TestAdminController(TestController):
         # all fine, clean up
         self.delete_token(token_name)
         self.delete_token(temp_token_name)
-        return
 
     def test_enroll_umlaut(self):
         parameters = {
@@ -881,8 +874,6 @@ class TestAdminController(TestController):
         assert '"set countAuthSuccessMax": 1' in response, response
         assert '"set countAuth": 1' in response, response
         assert '"set countAuthMax": 1' in response, response
-
-        return
 
     def test_set_validity(self):
         """

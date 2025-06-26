@@ -106,7 +106,6 @@ class TestRemoteToken2(TestingChallengeResponseController):
 
         self.create_common_resolvers()
         self.create_realms()
-        return
 
     def tearDown(self):
         """Overwrite parent tear down, which removes all realms"""
@@ -153,8 +152,6 @@ class TestRemoteToken2(TestingChallengeResponseController):
         for val in list(stat.values()):
             assert val, response
 
-        return
-
     def create_autoassign_policy(self):
         p_name = "autoassignment_user"
 
@@ -175,8 +172,6 @@ class TestRemoteToken2(TestingChallengeResponseController):
         for val in list(stat.values()):
             assert val, response
 
-        return
-
     def create_autoassign_forward_policy(self):
         p_name = "autoassignment_forward"
 
@@ -196,7 +191,6 @@ class TestRemoteToken2(TestingChallengeResponseController):
         assert len(stat) > 0, response
         for val in list(stat.values()):
             assert val, response
-        return
 
     def init_remote_token(self, target_serial, target_otplen=6):
         """
@@ -645,8 +639,6 @@ class TestRemoteToken2(TestingChallengeResponseController):
         assert len(data) > 0, response
         username = data[0].get("User.username", "")
         assert username == "passthru_user1", response
-
-        return
 
 
 # eof###########################################################################

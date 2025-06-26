@@ -420,8 +420,6 @@ class Challenges:
             challenge.signChallenge(hsm)
             challenge.save()
 
-        return
-
     @staticmethod
     def finish_challenges(token, success=False):
         """
@@ -468,8 +466,6 @@ class Challenges:
         # finally delete the expired ones
         if expired_challenges:
             Challenges.delete_challenges(None, expired_challenges)
-
-        return
 
     @staticmethod
     def verify_checksum(challenge):

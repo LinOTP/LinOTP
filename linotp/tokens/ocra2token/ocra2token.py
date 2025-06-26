@@ -416,9 +416,8 @@ class Ocra2TokenClass(TokenClass):
 
         if key and key in res:
             ret = res.get(key)
-        else:
-            if ret == "all":
-                ret = res
+        elif ret == "all":
+            ret = res
 
         return ret
 
@@ -435,7 +434,6 @@ class Ocra2TokenClass(TokenClass):
         self.transId = 0
 
         self.mode = ["challenge"]
-        return
 
     def getInfo(self):
         """
@@ -497,8 +495,6 @@ class Ocra2TokenClass(TokenClass):
         self._rollout_1(params)
         self._rollout_2(params)
 
-        return
-
     def _rollout_1(self, params):
         """
         do the rollout 1 step
@@ -557,8 +553,6 @@ class Ocra2TokenClass(TokenClass):
             self.info = info
 
             self.token.LinOtpIsactive = False
-
-        return
 
     def get_enrollment_status(self):
         """
@@ -722,8 +716,6 @@ class Ocra2TokenClass(TokenClass):
             # setup new state
             self.addToTokenInfo("rollout", "2")
             self.enable(True)
-
-        return
 
     def getOcraSuiteSuite(self):
         """

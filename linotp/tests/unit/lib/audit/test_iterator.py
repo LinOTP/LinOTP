@@ -189,7 +189,6 @@ class AuditIteratorTestCase(unittest.TestCase):
             {}, rp_dict={"sortname": None, "sortorder": "asc"}
         )
         audit.row2dict.assert_called_once_with(None)
-        return
 
     def test_user_search(self):
         """
@@ -217,8 +216,6 @@ class AuditIteratorTestCase(unittest.TestCase):
                 "sortorder": "asc",
             },
         )
-
-        return
 
     def test_JSONAuditIterator_1(self):
         """
@@ -377,5 +374,3 @@ class AuditIteratorTestCase(unittest.TestCase):
         for value in csv_audit_iterator:
             result_csv += value
         assert expected_csv == result_csv, f"{expected_csv!r} \n\n{result_csv!r}"
-
-        return

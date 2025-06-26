@@ -304,8 +304,7 @@ class ReportingIterator:
                 )
                 the_page = 0
 
-            if the_page < 0:
-                the_page = 0
+            the_page = max(the_page, 0)
 
             start = the_page * pagesize
             stop = (the_page + 1) * pagesize

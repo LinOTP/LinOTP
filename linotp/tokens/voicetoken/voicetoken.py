@@ -230,9 +230,8 @@ class VoiceTokenClass(HmacTokenClass):
 
         if key and key in res:
             ret = res.get(key)
-        else:
-            if ret == "all":
-                ret = res
+        elif ret == "all":
+            ret = res
 
         log.debug("Returned the configuration section: ret %r ", ret)
 

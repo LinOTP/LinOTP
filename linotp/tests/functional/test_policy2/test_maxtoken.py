@@ -99,8 +99,6 @@ class TestPolicyMaxtoken(TestController):
         message = "ERR411: The maximum number of allowed tokens"
         assert message in response, response
 
-        return
-
     def test_maxtoken_enroll(self):
         """
         test maxtoken check for multiple same user in realm and user wildcard
@@ -131,8 +129,6 @@ class TestPolicyMaxtoken(TestController):
         response = self.enroll_token(token_params)
         message = "ERR411: The maximum number of allowed tokens per user is exceeded"
         assert message in response, response
-
-        return
 
     def test_maxtoken_selfservice(self):
         """

@@ -105,5 +105,3 @@ class TestMigrate(unittest.TestCase):
 
             out_value = crypter.decrypt(enc_value, just_mac=key + value)
             assert value == out_value
-
-        return

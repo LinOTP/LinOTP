@@ -138,8 +138,6 @@ class TestCompare(unittest.TestCase):
             )  # 6:00
             assert not match
 
-        return
-
     def test_ip_compare(self):
         """
         test the ip comparison method
@@ -209,8 +207,6 @@ class TestCompare(unittest.TestCase):
         match_type, match = user_list_compare(user_conditions, wanda2)
         assert match
         assert match_type == "regex:match"
-
-        return
 
     def test_action_compare(self):
         match_type, res = action_compare(

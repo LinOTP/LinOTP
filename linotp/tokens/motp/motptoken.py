@@ -121,9 +121,8 @@ class MotpTokenClass(HmacTokenClass):
 
         if key and key in res:
             ret = res.get(key)
-        else:
-            if ret == "all":
-                ret = res
+        elif ret == "all":
+            ret = res
 
         return ret
 
@@ -136,8 +135,6 @@ class MotpTokenClass(HmacTokenClass):
         """
         HmacTokenClass.__init__(self, a_token)
         self.setType("mOTP")
-
-        return
 
     def update(self, param, reset_failcount=True):
         """
@@ -168,8 +165,6 @@ class MotpTokenClass(HmacTokenClass):
         self.setUserPin(otpPin)
 
         HmacTokenClass.update(self, param, reset_failcount)
-
-        return
 
     def checkOtp(self, anOtpVal, counter, window, options=None):
         """

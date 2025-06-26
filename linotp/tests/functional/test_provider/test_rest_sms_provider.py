@@ -164,8 +164,6 @@ class TestRestSmsController(TestingChallengeResponseController):
         assert '"value": false' in response, response
         assert "transactionid" in response, response
 
-        return
-
     @patch("requests.Session.post", mocked_http_request)
     def test_smstext_with_data(self):
         """
@@ -241,8 +239,6 @@ class TestRestSmsController(TestingChallengeResponseController):
 
         assert '"value": false' in response, response
         assert "transactionid" in response, response
-
-        return
 
     @patch("requests.Session.post", mocked_http_request)
     def test_smstext_with_ignore_data(self):
@@ -378,8 +374,6 @@ class TestRestSmsController(TestingChallengeResponseController):
             assert '"value": false' in response, response
             assert "transactionid" in response, response
 
-        return
-
     @patch("requests.Session.post", mocked_http_request)
     def test_phone_list(self):
         """
@@ -450,8 +444,6 @@ class TestRestSmsController(TestingChallengeResponseController):
         assert "transactionid" in response, response
 
         assert "016012345678" in REQUEST_BODY.get("to", [])[0]
-
-        return
 
 
 ###eof#########################################################################

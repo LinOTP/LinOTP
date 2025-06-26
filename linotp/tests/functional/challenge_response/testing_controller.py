@@ -193,5 +193,3 @@ class TestingChallengeResponseController(TestController):
         if proc:
             r = proc.kill()
             log.debug(r)
-
-        return

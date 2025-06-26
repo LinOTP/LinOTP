@@ -168,8 +168,6 @@ def motp_test():
     # expecting true
     print("result: ", ntime, " should be 126753370")
 
-    return
-
 
 if __name__ == "__main__":
     motp_test()

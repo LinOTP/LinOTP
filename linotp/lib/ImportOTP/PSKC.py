@@ -36,7 +36,7 @@ import logging
 import re
 import xml.etree.ElementTree as etree
 
-import linotp.lib.crypto.pbkdf2 as pbkdf2
+from linotp.lib.crypto import pbkdf2
 from linotp.lib.ImportOTP import ImportException, getTagName
 
 sha = hashlib.sha1
@@ -76,7 +76,7 @@ def getMacMethod(elem):
 
 
 def aes_decrypt(transport_b64, key_hex, serial=""):
-    import Cryptodome.Cipher.AES as AES
+    from Cryptodome.Cipher import AES
 
     def hack(data, serial=""):
         bsize = 16
@@ -419,71 +419,70 @@ def parsePSKCdata(
                     "and EncryptedValue!",
                     serial,
                 )
-            else:
-                if ENC_ALGO == "aes128-cbc":
-                    #
-                    #   Verifiy the MAC Value
-                    #
-                    if MAC_Method == "hmac-sha1":
-                        MAC_digest_bin = hmac.new(
-                            MACKEY_bin, base64.b64decode(KD_cipher_b64), sha
-                        ).digest()
-                        MAC_digest_b64 = base64.b64encode(MAC_digest_bin).decode()
-                        log.debug("AES128-CBC secret cipher: %r", KD_cipher_b64)
-                        log.debug("calculated MAC value    : %r", MAC_digest_b64)
-                        log.debug("read MAC value          : %r", KD_mac_b64)
+            elif ENC_ALGO == "aes128-cbc":
+                #
+                #   Verifiy the MAC Value
+                #
+                if MAC_Method == "hmac-sha1":
+                    MAC_digest_bin = hmac.new(
+                        MACKEY_bin, base64.b64decode(KD_cipher_b64), sha
+                    ).digest()
+                    MAC_digest_b64 = base64.b64encode(MAC_digest_bin).decode()
+                    log.debug("AES128-CBC secret cipher: %r", KD_cipher_b64)
+                    log.debug("calculated MAC value    : %r", MAC_digest_b64)
+                    log.debug("read MAC value          : %r", KD_mac_b64)
 
-                        # decrypt key
-                        HMAC_KEY_bin = aes_decrypt(
-                            KD_cipher_b64, ENCRYPTION_KEY_hex, serial
-                        )
+                    # decrypt key
+                    HMAC_KEY_bin = aes_decrypt(
+                        KD_cipher_b64, ENCRYPTION_KEY_hex, serial
+                    )
 
-                        if MAC_digest_b64 == KD_mac_b64:
-                            TOKENS[serial] = {
-                                "hmac_key": HMAC_KEY_bin.hex(),
-                                "counter": KD_counter,
-                                "type": TOKEN_TYPE,
-                                "timeStep": KD_TimeInterval,
-                                "otplen": KD_otplen,
-                                "hashlib": KD_hashlib,
-                                "ocrasuite": KD_Suite,
-                            }
-                        else:
-                            log.error(
-                                "The MAC value for %s does not fit. The HMAC "
-                                "secrets could be compromised!",
-                                serial,
-                            )
-                            msg = (
-                                f"The MAC value for {serial} does not fit. The HMAC "
-                                "secrets could be compromised!"
-                            )
-                            raise ImportException(msg)
-                            # TOKENS[serial] = { 'hmac_key' : binascii.hexlify(HMAC_KEY_bin),
-                            #            'counter' : KD_counter, 'type' : TOKEN_TYPE,
-                            #            'timeStep' : KD_TimeInterval, 'otplen' : KD_otplen,
-                            #            'hashlib' : KD_hashlib }
+                    if MAC_digest_b64 == KD_mac_b64:
+                        TOKENS[serial] = {
+                            "hmac_key": HMAC_KEY_bin.hex(),
+                            "counter": KD_counter,
+                            "type": TOKEN_TYPE,
+                            "timeStep": KD_TimeInterval,
+                            "otplen": KD_otplen,
+                            "hashlib": KD_hashlib,
+                            "ocrasuite": KD_Suite,
+                        }
                     else:
-                        log.warning(
-                            "At the moment we only support hmac-sha1. We found %r",
-                            MAC_Method,
+                        log.error(
+                            "The MAC value for %s does not fit. The HMAC "
+                            "secrets could be compromised!",
+                            serial,
                         )
-
-                elif KD_hmac_key_b64:
-                    TOKENS[serial] = {
-                        "hmac_key": base64.b64decode(KD_hmac_key_b64).hex(),
-                        "counter": KD_counter,
-                        "type": TOKEN_TYPE,
-                        "timeStep": KD_TimeInterval,
-                        "otplen": KD_otplen,
-                        "hashlib": KD_hashlib,
-                        "ocrasuite": KD_Suite,
-                    }
+                        msg = (
+                            f"The MAC value for {serial} does not fit. The HMAC "
+                            "secrets could be compromised!"
+                        )
+                        raise ImportException(msg)
+                        # TOKENS[serial] = { 'hmac_key' : binascii.hexlify(HMAC_KEY_bin),
+                        #            'counter' : KD_counter, 'type' : TOKEN_TYPE,
+                        #            'timeStep' : KD_TimeInterval, 'otplen' : KD_otplen,
+                        #            'hashlib' : KD_hashlib }
                 else:
                     log.warning(
-                        "neither a PlainValue nor an EncryptedValue was "
-                        "found for the secret of key %s",
-                        serial,
+                        "At the moment we only support hmac-sha1. We found %r",
+                        MAC_Method,
                     )
+
+            elif KD_hmac_key_b64:
+                TOKENS[serial] = {
+                    "hmac_key": base64.b64decode(KD_hmac_key_b64).hex(),
+                    "counter": KD_counter,
+                    "type": TOKEN_TYPE,
+                    "timeStep": KD_TimeInterval,
+                    "otplen": KD_otplen,
+                    "hashlib": KD_hashlib,
+                    "ocrasuite": KD_Suite,
+                }
+            else:
+                log.warning(
+                    "neither a PlainValue nor an EncryptedValue was "
+                    "found for the secret of key %s",
+                    serial,
+                )
 
     return TOKENS

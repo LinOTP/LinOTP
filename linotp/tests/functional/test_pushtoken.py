@@ -915,8 +915,6 @@ class TestPushToken(TestController):
 
         assert "KIPT" in transaction["token"]["serial"], response
 
-        return
-
     # -------------------------------------------------------------------------- --
 
     def test_multiple_signreq(self):
@@ -1050,8 +1048,6 @@ class TestPushToken(TestController):
         assert open_challenges == 9
         assert accept_challenges == 2
 
-        return
-
     # -------------------------------------------------------------------------- --
 
     def test_signreq_reject(self):
@@ -1116,8 +1112,6 @@ class TestPushToken(TestController):
         assert transaction["status"] == "closed", response
         assert transaction["reject"], response
         assert not transaction["valid_tan"], response
-
-        return
 
     # -------------------------------------------------------------------------- --
 

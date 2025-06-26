@@ -508,8 +508,6 @@ class TestU2FController(TestController):
             if "value" in response_registration2["result"]:
                 assert not response_registration2["result"]["value"]
 
-        return
-
     def _authentication_challenge(self, pin=None):
         """
         Test authentication of a previously registered token with given token pin
@@ -707,7 +705,6 @@ class TestU2FController(TestController):
         self._authentication_response(challenges[0])
         challenges = self._authentication_challenge()
         self._authentication_response(challenges[0])
-        return
 
     def test_u2f_multiple_registration_and_authentication_without_pin(self):
         """
@@ -726,7 +723,6 @@ class TestU2FController(TestController):
         self._authentication_response(challenges[0])
         challenges = self._authentication_challenge()
         self._authentication_response(challenges[0])
-        return
 
     def test_u2f_registration_and_wrong_authentication_without_pin(self):
         """
@@ -737,7 +733,6 @@ class TestU2FController(TestController):
         # Authenticate twice
         challenges = self._authentication_challenge()
         self._authentication_response(challenges[0], correct=False)
-        return
 
     def test_u2f_multiple_registration_and_wrong_authentication_without_pin(
         self,
@@ -754,7 +749,6 @@ class TestU2FController(TestController):
         self._authentication_response(challenges[0], correct=False)
         challenges = self._authentication_challenge()
         self._authentication_response(challenges[1], correct=False)
-        return
 
     def test_u2f_wrong_registration_without_pin(self):
         """
@@ -775,7 +769,6 @@ class TestU2FController(TestController):
         self._authentication_response(challenges[0])
         challenges = self._authentication_challenge(pin)
         self._authentication_response(challenges[0])
-        return
 
     def test_u2f_multiple_registration_and_authentication_with_pin(self):
         """
@@ -795,7 +788,6 @@ class TestU2FController(TestController):
         self._authentication_response(challenges[0])
         challenges = self._authentication_challenge(pin)
         self._authentication_response(challenges[0])
-        return
 
     def test_u2f_registration_and_wrong_authentication_with_pin(self):
         """
@@ -806,7 +798,6 @@ class TestU2FController(TestController):
         self._registration(pin)
         challenges = self._authentication_challenge(pin)
         self._authentication_response(challenges[0], correct=False)
-        return
 
     def test_u2f_multiple_registration_and_wrong_authentication_with_pin(self):
         """
@@ -822,7 +813,6 @@ class TestU2FController(TestController):
         self._authentication_response(challenges[0], correct=False)
         challenges = self._authentication_challenge(pin)
         self._authentication_response(challenges[1], correct=False)
-        return
 
     def test_u2f_wrong_registration_with_pin(self):
         """

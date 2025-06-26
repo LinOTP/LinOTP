@@ -111,7 +111,7 @@ class TokenView(ManageTab):
 
     def _delete_selected_tokens(self):
         tokens_before = [t.text for t in self._get_token_list()]
-        if not len(tokens_before):
+        if not tokens_before:
             return
 
         find_by_id(self.driver, self.delete_button_id).click()

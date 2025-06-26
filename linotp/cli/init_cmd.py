@@ -101,7 +101,7 @@ def _run_command(task: str, cmd: list[str], **kwargs: dict[str, Any]) -> bool:
 
     kwargs.update({"stdout": subprocess.PIPE, "stderr": subprocess.STDOUT})
     try:
-        result = subprocess.run(cmd, **kwargs)
+        result = subprocess.run(cmd, check=False, **kwargs)
     except OSError as ex:
         ret = CmdResult(True, None, str(ex))
     else:

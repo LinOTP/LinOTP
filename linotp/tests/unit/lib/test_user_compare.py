@@ -82,7 +82,5 @@ class TestUserCompare(unittest.TestCase):
 
         assert not result
 
-        return
-
 
 # eof #

@@ -159,7 +159,6 @@ class TestController(TestCase):
     def teardown_class(cls):
         """teardown - cleanup of test class execution result"""
         LOG.info("######## teardown_class: %r", cls)
-        return
 
     @staticmethod
     def delete_cookie(app_client, key):
@@ -170,7 +169,6 @@ class TestController(TestCase):
         :param key: the key of the cookie
         """
         app_client.delete_cookie(".localhost", key)
-        return
 
     @staticmethod
     def get_cookies(response):
@@ -699,8 +697,6 @@ class TestController(TestCase):
         for sys_policy in sys_policies:
             self.delete_policy(sys_policy, auth_user=auth_user)
 
-        return
-
     def create_policy(self, params):
         """
         Create a policy. Following keys are expected in params: name, scope,
@@ -762,8 +758,6 @@ class TestController(TestCase):
             response = self.make_system_request("delConfig", params={"key": entry})
 
             assert "false" not in response
-
-        return
 
     def delete_policy(self, name, auth_user="admin"):
         """

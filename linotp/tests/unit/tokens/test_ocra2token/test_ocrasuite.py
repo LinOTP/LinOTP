@@ -200,4 +200,3 @@ class OcraTest(unittest.TestCase):
                 data = ocra.combineData(**params)
                 otp = ocra.compute(data, key)
                 assert otp == result
-        return
