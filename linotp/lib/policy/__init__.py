@@ -906,9 +906,6 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
 
     elif method == "setPin":
         if "userpin" in param:
-            if "userpin" not in param:
-                raise ParameterError(_("Missing parameter: %r") % "userpin", id=905)
-
             # check admin authorization
             policies1 = getAdminPolicies("setSCPIN")
             policies2 = getAdminPolicies("setMOTPPIN")
@@ -937,9 +934,6 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
                 )
 
         if "sopin" in param:
-            if "sopin" not in param:
-                raise ParameterError(_("Missing parameter: %r") % "sopin", id=905)
-
             # check admin authorization
             policies = getAdminPolicies("setSCPIN")
             if policies["active"] and not checkAdminAuthorization(
