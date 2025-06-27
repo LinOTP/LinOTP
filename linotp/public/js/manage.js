@@ -1218,25 +1218,73 @@ function token_setpin() {
     }
 
     var pin = $('#pin1').val();
-
     var pintype = $('#pintype').val();
+    var pintypeLowerCase = pintype.toLowerCase();
 
-    for (i = 0; i < count; i++) {
-        var serial = tokens[i];
-        if (pintype.toLowerCase() == "otp") {
-            clientUrlFetch("/admin/set", { "serial": serial, "pin": pin }, setpin_callback);
-        } else if ((pintype.toLowerCase() == "motp")) {
-            clientUrlFetch("/admin/setPin", { "serial": serial, "userpin": pin }, setpin_callback);
-        } else if ((pintype.toLowerCase() == "ocrapin")) {
-            clientUrlFetch("/admin/setPin", { "serial": serial, "userpin": pin }, setpin_callback);
-        } else
+    // Determine endpoint and pin param based on PIN type
+    var url, pinParam;
+    if (pintypeLowerCase === "otp") {
+        url = "/admin/set";
+        pinParam = "pin";
+    } else if (pintypeLowerCase === "motp" || pintypeLowerCase === "ocrapin") {
+        url = "/admin/setPin";
+        pinParam = "userpin";
+    } else {
+        alert_info_text({
+            'text': "text_unknown_pintype",
+            'param': pintype,
+            'type': ERROR,
+            'is_escaped': true
+        });
+        return false;
+    }
+
+    // Track overall operation status
+    var did_all_succeed = true;
+    var completed = 0;
+
+    // Handler for responses from the server
+    function handleResponse(response) {
+        var obj = jQuery.parseJSON(response);
+        if (!obj.result.status) {
+            did_all_succeed = false;
             alert_info_text({
-                'text': "text_unknown_pintype",
-                'param': pintype,
+                'text': "text_setpin_failed",
+                'param': escape(obj.result.error.message),
                 'type': ERROR,
                 'is_escaped': true
             });
+        }
+
+        completed++;
+        checkAndReport();
     }
+
+    // Check if all tokens have been processed and show summary
+    function checkAndReport() {
+        if (completed === count) {
+            if (did_all_succeed) {
+                alert_info_text({
+                    'text': "text_setpin_success",
+                    'is_escaped': true
+                });
+            }
+        }
+    }
+
+    // Process each token
+    for (var i = 0; i < count; i++) {
+        var serial = tokens[i];
+        var params = {};
+        params["serial"] = serial;
+        params[pinParam] = pin;
+
+        clientUrlFetch(url, params, function (xhdr, textStatus) {
+            handleResponse(xhdr.responseText);
+        });
+
+    }
+
     return true;
 }
 
