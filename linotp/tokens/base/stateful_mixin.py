@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -38,7 +37,7 @@ from linotp.lib.error import TokenStateError
 log = logging.getLogger(__name__)
 
 
-class StatefulTokenMixin(object):
+class StatefulTokenMixin:
     """
     A mixin used by token types that have different
     rollout states (e.g. QRToken and OCRA2)
@@ -74,11 +73,12 @@ class StatefulTokenMixin(object):
 
         current_state_id = self.getFromTokenInfo("state")
         if current_state_id not in valid_state_ids:
-            raise TokenStateError(
-                "Token %r must be in one of the following "
-                "states for this action: %s, but current "
-                "state is %s" % (self, ",".join(valid_state_ids), current_state_id)
+            msg = (
+                "Token {!r} must be in one of the following "
+                "states for this action: {}, but current "
+                "state is {}".format(self, ",".join(valid_state_ids), current_state_id)
             )
+            raise TokenStateError(msg)
 
     def change_state(self, state_id):
         """

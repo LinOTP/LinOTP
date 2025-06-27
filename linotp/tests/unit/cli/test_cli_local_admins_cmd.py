@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -35,9 +34,7 @@ from linotp.cli import main as cli_main
 from linotp.lib.config import getFromConfig
 from linotp.model.config import set_config
 from linotp.model.local_admin_user import (
-    DuplicateUserError,
     LocalAdminResolver,
-    NoSuchUserError,
 )
 
 
@@ -103,7 +100,7 @@ def resolver(app):
     ],
 )
 def test_local_admins_list(app, runner, resolver, options, expected):
-    result = runner.invoke(cli_main, ["local-admins", "list"] + options)
+    result = runner.invoke(cli_main, ["local-admins", "list", *options])
     assert result.exit_code == 0
     assert result.output == expected
 
@@ -130,7 +127,7 @@ def test_local_admins_list_invalid_key(app, runner, resolver):
             "user5",
             {
                 "givenname": "Никола́й Андре́евич",
-                "surname": "Ри́мский-Ко́рсаков",
+                "surname": "Ри́мский-Ко́рсаков",  # noqa: RUF001
                 "email": "bumblebee@example.com",
                 "phone": "+7812456789",
                 "mobile": "+7111111111",
@@ -215,7 +212,7 @@ def test_local_admins_modify_missing_user(app, runner, resolver):
     [
         ("foo", [], "{PWD}\n{PWD}\n"),
         ("bar", ["--password={PWD}"], ""),
-        ("baz", [f"--password=-"], "{PWD}\n"),
+        ("baz", ["--password=-"], "{PWD}\n"),
     ],
 )
 def test_local_admins_password(app, runner, resolver, pwd, args, stdin_data):
@@ -225,7 +222,7 @@ def test_local_admins_password(app, runner, resolver, pwd, args, stdin_data):
 
     result = runner.invoke(
         cli_main,
-        ["local-admins", "password"] + args + [username],
+        ["local-admins", "password", *args, username],
         input=stdin_data,
     )
 
@@ -260,7 +257,7 @@ def test_local_admins_remove(app, runner, resolver, args, stdin_data, gone):
     username = "hugo"
     result = runner.invoke(
         cli_main,
-        ["local-admins", "remove"] + args + [username],
+        ["local-admins", "remove", *args, username],
         input=stdin_data,
     )
     assert result.exit_code == (0 if gone else 1)
@@ -309,4 +306,5 @@ def test_local_admins_enable_command(app, runner, resolver, res_list):
             == "useridresolver.SQLIdResolver.IdResolver." + resolver.admin_resolver_name
         )
     else:
-        assert False, "still no resolvers in admin realm"
+        msg = "still no resolvers in admin realm"
+        raise AssertionError(msg)

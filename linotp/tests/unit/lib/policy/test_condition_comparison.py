@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -54,27 +53,27 @@ class TestCompare(unittest.TestCase):
 
         value_condition = ", , ,, "
         _mtype, res = value_list_compare(value_condition, "d")
-        assert res == False
+        assert res is False
 
         value_condition = ", a , b ,,, c"
         _mtype, res = value_list_compare(value_condition, "d")
-        assert res == False
+        assert res is False
 
         value_condition = ", a , b ,,, c"
         _mtype, res = value_list_compare(value_condition, "b")
-        assert res
+        assert res is True
 
         value_condition = ", a , b=x ,,, c"
         _mtype, res = value_list_compare(value_condition, "b")
-        assert res
+        assert res is True
 
         value_condition = ", a , b=x ,,, c=x"
         _mtype, res = value_list_compare(value_condition, "b=a")
-        assert res == False
+        assert res is False
 
         value_condition = ", a , b ,,, c=x, ,"
         _mtype, res = value_list_compare(value_condition, "b=a")
-        assert res == False
+        assert res is False
 
     def test_wildcard_list_compare(self):
         """
@@ -87,15 +86,15 @@ class TestCompare(unittest.TestCase):
 
         value_condition = " , ,,,,, , ,,     ,,  ,"
         _mtype, res = wildcard_list_compare(value_condition, "write")
-        assert res == False
+        assert res is False
 
         value_condition = ""
         _mtype, res = wildcard_list_compare(value_condition, "write")
-        assert res == False
+        assert res is False
 
         value_condition = "* , write"
         _mtype, res = wildcard_list_compare(value_condition, "write")
-        assert res
+        assert res is True
 
     def test_time_compare(self):
         """
@@ -138,8 +137,6 @@ class TestCompare(unittest.TestCase):
                 time_conditions, datetime(2016, 12, 14, 6, 0)
             )  # 6:00
             assert not match
-
-        return
 
     def test_ip_compare(self):
         """
@@ -210,8 +207,6 @@ class TestCompare(unittest.TestCase):
         match_type, match = user_list_compare(user_conditions, wanda2)
         assert match
         assert match_type == "regex:match"
-
-        return
 
     def test_action_compare(self):
         match_type, res = action_compare(

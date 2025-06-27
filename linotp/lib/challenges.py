@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -26,7 +25,6 @@
 #
 
 import datetime
-import functools
 import json
 import logging
 
@@ -42,7 +40,7 @@ from linotp.model.challange import Challenge
 log = logging.getLogger(__name__)
 
 
-class Challenges(object):
+class Challenges:
     DefaultTransactionIdLength = 17
 
     @staticmethod
@@ -58,9 +56,8 @@ class Challenges(object):
         )
 
         if transid_len < 12 or transid_len > 17:
-            raise Exception(
-                "TransactionIdLength must be between 12 and 17, was %d" % transid_len
-            )
+            msg = f"TransactionIdLength must be between 12 and 17, was {transid_len}"
+            raise Exception(msg)
         return transid_len
 
     @staticmethod
@@ -137,9 +134,8 @@ class Challenges(object):
         while True:
             try:
                 if not challenge_id:
-                    transactionid = "%s%s" % (
-                        Challenge.createTransactionId(length=id_length),
-                        id_postfix,
+                    transactionid = (
+                        f"{Challenge.createTransactionId(length=id_length)}{id_postfix}"
                     )
                 else:
                     transactionid = challenge_id
@@ -157,7 +153,7 @@ class Challenges(object):
 
             except Exception as exce:
                 log.error("Failed to create challenge: %r", exce)
-                reason = "%r" % exce
+                reason = f"{exce!r}"
                 ReasonException = exce
 
             # prevent an unlimited loop
@@ -168,7 +164,8 @@ class Challenges(object):
                     retry_counter,
                     reason,
                 )
-                raise Exception("Failed to create challenge %r" % reason)
+                msg = f"Failed to create challenge {reason!r}"
+                raise Exception(msg)
 
         expired_challenges, valid_challenges = Challenges.get_challenges(token)
 
@@ -214,7 +211,7 @@ class Challenges(object):
 
         except Exception as exce:
             log.error("Failed to create challenge: %r", exce)
-            reason = "%r" % exce
+            reason = f"{exce!r}"
             ReasonException = exce
             res = False
 
@@ -265,7 +262,7 @@ class Challenges(object):
         challenge["linotp_tokentype"] = token.type
         try:
             challenge["linotp_tokendescription"] = token.token.LinOtpTokenDesc
-        except:
+        except Exception:
             challenge["linotp_tokendescription"] = None
 
         return (res, challenge)
@@ -287,7 +284,7 @@ class Challenges(object):
                     challenge_id = challenge.get("id")
             elif isinstance(challenge, Challenge):
                 challenge_id = challenge.get("id")
-            elif isinstance(challenge, (str, int)):
+            elif isinstance(challenge, str | int):
                 challenge_id = challenge
 
             try:
@@ -339,7 +336,8 @@ class Challenges(object):
             transid = state
 
         if not token and not transid:
-            raise Exception("unqualified query")
+            msg = "unqualified query"
+            raise Exception(msg)
 
         serial = token and token.getSerial()
 
@@ -393,7 +391,7 @@ class Challenges(object):
         :param matching_challenges: all challenges that have
                                     been correctly answered
         """
-        from linotp.lib.token import get_token
+        from linotp.lib.token import get_token  # noqa: PLC0415
 
         to_be_closed_challenges = set()
 
@@ -421,8 +419,6 @@ class Challenges(object):
             # and calculate the mac for this token data
             challenge.signChallenge(hsm)
             challenge.save()
-
-        return
 
     @staticmethod
     def finish_challenges(token, success=False):
@@ -470,8 +466,6 @@ class Challenges(object):
         # finally delete the expired ones
         if expired_challenges:
             Challenges.delete_challenges(None, expired_challenges)
-
-        return
 
     @staticmethod
     def verify_checksum(challenge):

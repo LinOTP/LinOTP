@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -121,9 +120,8 @@ def setPolicy(policy):
     required_attributes = ["action", "scope", "realm"]
     for required_attribute in required_attributes:
         if required_attribute not in policy or not policy[required_attribute]:
-            raise PolicyWarning(
-                "Missing attribute %s in policy %s" % (required_attribute, name)
-            )
+            msg = f"Missing attribute {required_attribute} in policy {name}"
+            raise PolicyWarning(msg)
 
     # before storing the policy, we have to check the impact:
     # if there is a problem, we will raise an exception with a warning
@@ -152,7 +150,7 @@ def setPolicy(policy):
     ]
 
     for attr in attributes:
-        key = "Policy.%s.%s" % (name, attr)
+        key = f"Policy.{name}.{attr}"
         value = policy[attr]
         typ = ""
         descr = "a policy definition"
@@ -170,8 +168,9 @@ def deletePolicy(name, enforce=False):
     """
     res = {}
     if not re.match("^[a-zA-Z0-9_]*$", name):
+        msg = "policy name may only contain the characters a-zA-Z0-9_"
         raise ServerError(
-            "policy name may only contain the characters a-zA-Z0-9_",
+            msg,
             id=8888,
         )
 
@@ -266,10 +265,10 @@ def _check_policy_impact(
     # for any system policy:
     # if no user is defined defined this can as well result in a lockout
     if not user.strip():
-        reason = "no user defined for system policy %s!" % name
+        reason = f"no user defined for system policy {name}!"
     # same for empty realm
     if not realm.strip():
-        reason = "no realm defined for system policy %s!" % name
+        reason = f"no realm defined for system policy {name}!"
 
     # if there has been no system policy with write option
     # and there are active system policy left
@@ -277,9 +276,8 @@ def _check_policy_impact(
         reason = "no active system policy with 'write' permission defined!"
 
     if reason and enforce is False:
-        raise PolicyWarning(
-            "Warning: potential lockout due to policy defintion: %s" % reason
-        )
+        msg = f"Warning: potential lockout due to policy defintion: {reason}"
+        raise PolicyWarning(msg)
 
     # admin policy could as well result in lockout
     return
@@ -290,11 +288,10 @@ def create_policy_export_file(policy, filename):
     This function takes a policy dictionary and creates an export file from it
     """
     TMP_DIRECTORY = "/tmp"
-    file_name = "%s/%s" % (TMP_DIRECTORY, filename)
+    file_name = f"{TMP_DIRECTORY}/{filename}"
     if len(policy) == 0:
-        f = open(file_name, "w")
-        f.write("")
-        f.close()
+        with open(file_name, "w", encoding="utf-8") as f:
+            f.write("")
     else:
         for value in list(policy.values()):
             for k in list(value.keys()):

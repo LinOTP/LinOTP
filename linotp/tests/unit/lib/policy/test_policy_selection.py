@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -32,8 +31,7 @@ Best match criteria are 'exact:match', 'regex:match' and 'wildcard:match'
 """
 
 import unittest
-
-from mock import patch
+from unittest.mock import patch
 
 from linotp.lib.policy.evaluate import PolicyEvaluator
 from linotp.lib.user import User
@@ -53,16 +51,13 @@ def fn_mock_domain_comp(user_obj, condition):
     if condition in fqn:
         return True
 
-    if condition == "*.%s:" % user_obj.resolver_config_identifier:
+    if condition == f"*.{user_obj.resolver_config_identifier}:":
         return True
 
-    if condition == "*@%s" % user_obj.realm:
+    if condition == f"*@{user_obj.realm}":
         return True
 
-    if condition == "*":
-        return True
-
-    return False
+    return condition == "*"
 
 
 # -------------------------------------------------------------------------- --
@@ -134,7 +129,7 @@ class TestPoliciesSelection(unittest.TestCase):
 
         # compare the results
 
-        expected_matches = set(["self2", "self3", "self4", "self5"])
+        expected_matches = {"self2", "self3", "self4", "self5"}
 
         matching_policies_names = set(matching_policies.keys())
         assert matching_policies_names == expected_matches
@@ -178,7 +173,7 @@ class TestPoliciesSelection(unittest.TestCase):
 
         # compare the results
 
-        expected_matches = set(["self6", "self8"])
+        expected_matches = {"self6", "self8"}
 
         matching_policies_names = set(matching_policies.keys())
         assert matching_policies_names == expected_matches, matching_policies_names
@@ -223,7 +218,7 @@ class TestPoliciesSelection(unittest.TestCase):
 
         # compare the results
 
-        expected_matches = set(["self6"])
+        expected_matches = {"self6"}
 
         matching_policies_names = set(matching_policies.keys())
         assert matching_policies_names == expected_matches
@@ -272,7 +267,7 @@ class TestPoliciesSelection(unittest.TestCase):
 
         # compare the results
 
-        expected_matches = set(["self6", "self7"])
+        expected_matches = {"self6", "self7"}
 
         matching_policies_names = set(matching_policies.keys())
         assert matching_policies_names == expected_matches
@@ -320,7 +315,7 @@ class TestPoliciesSelection(unittest.TestCase):
 
         # compare the results
 
-        expected_matches = set(["self1", "self4", "self5", "self8"])
+        expected_matches = {"self1", "self4", "self5", "self8"}
 
         matching_policies_names = set(matching_policies.keys())
         assert matching_policies_names == expected_matches

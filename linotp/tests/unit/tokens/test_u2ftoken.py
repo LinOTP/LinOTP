@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -26,11 +25,12 @@
 #
 
 import logging
-import sys
 import unittest
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
-from mock import MagicMock, Mock, patch
+
+from linotp.tokens.u2ftoken.u2ftoken import U2FTokenClass
 
 
 class U2FTokenClassTestCase(unittest.TestCase):
@@ -41,8 +41,6 @@ class U2FTokenClassTestCase(unittest.TestCase):
     """
 
     def setUp(self):
-        from linotp.tokens.u2ftoken.u2ftoken import U2FTokenClass
-
         # Without this logging in the tested class fails
         logging.basicConfig()
 
@@ -194,7 +192,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         Test update function with an unknown requested_phase parameter and current_phase None
         """
         self.u2f_token.getFromTokenInfo = Mock(return_value=None)
-        param = dict(description=None, phase="some_unknown_phase")
+        param = {"description": None, "phase": "some_unknown_phase"}
         with pytest.raises(Exception) as excinfo:
             self.u2f_token.update(param)
         assert "Wrong phase parameter!" in str(excinfo.value)
@@ -205,7 +203,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         Test update function with an unknown requested_phase parameter and current_phase 'registration'
         """
         self.u2f_token.getFromTokenInfo = Mock(return_value="registration")
-        param = dict(description=None, phase="some_unknown_phase")
+        param = {"description": None, "phase": "some_unknown_phase"}
         with pytest.raises(Exception) as excinfo:
             self.u2f_token.update(param)
         assert "Wrong phase parameter!" in str(excinfo.value)
@@ -216,7 +214,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         Test update function with an unknown requested_phase parameter and current_phase 'authentication'
         """
         self.u2f_token.getFromTokenInfo = Mock(return_value="authentication")
-        param = dict(description=None, phase="some_unknown_phase")
+        param = {"description": None, "phase": "some_unknown_phase"}
         with pytest.raises(Exception) as excinfo:
             self.u2f_token.update(param)
         assert "Wrong phase parameter!" in str(excinfo.value)
@@ -228,7 +226,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         """
         self.u2f_token.getFromTokenInfo = Mock(return_value=None)
         self.u2f_token.addToTokenInfo = Mock()
-        param = dict(description=None, phase="registration1")
+        param = {"description": None, "phase": "registration1"}
         self.u2f_token.update(param)
         self.u2f_token.getFromTokenInfo.assert_called_once_with("phase", None)
         self.u2f_token.addToTokenInfo.assert_called_once_with("phase", "registration")
@@ -241,7 +239,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         Test update function with requested_phase 'registration1' and current_phase 'registration'
         """
         self.u2f_token.getFromTokenInfo = Mock(return_value="registration")
-        param = dict(description=None, phase="registration1")
+        param = {"description": None, "phase": "registration1"}
         with pytest.raises(Exception) as excinfo:
             self.u2f_token.update(param)
         assert "Wrong phase parameter!" in str(excinfo.value)
@@ -254,7 +252,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         Test update function with requested_phase 'registration1' and current_phase 'authentication'
         """
         self.u2f_token.getFromTokenInfo = Mock(return_value="authentication")
-        param = dict(description=None, phase="registration1")
+        param = {"description": None, "phase": "registration1"}
         with pytest.raises(Exception) as excinfo:
             self.u2f_token.update(param)
         assert "Wrong phase parameter!" in str(excinfo.value)
@@ -265,7 +263,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         Test update function with requested_phase 'registration2' and current_phase None
         """
         self.u2f_token.getFromTokenInfo = Mock(return_value=None)
-        param = dict(description=None, phase="registration2")
+        param = {"description": None, "phase": "registration2"}
         with pytest.raises(Exception) as excinfo:
             self.u2f_token.update(param)
         assert (
@@ -285,7 +283,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         patcher = patch("linotp.tokens.u2ftoken.u2ftoken.check_pin", spec=True)
         check_pin_mock = patcher.start()
         check_pin_mock.return_value = True
-        param = dict(description=None, phase="registration2", pin="test!pin")
+        param = {"description": None, "phase": "registration2", "pin": "test!pin"}
         self.u2f_token.update(param)
         self.u2f_token.getFromTokenInfo.assert_called_once_with("phase", None)
         check_pin_mock.assert_called_once_with(self.u2f_token, "test!pin")
@@ -302,7 +300,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         patcher = patch("linotp.tokens.u2ftoken.u2ftoken.check_pin", spec=True)
         check_pin_mock = patcher.start()
         check_pin_mock.return_value = False
-        param = dict(description=None, phase="registration2", pin="test!pin")
+        param = {"description": None, "phase": "registration2", "pin": "test!pin"}
         with pytest.raises(ValueError) as excinfo:
             self.u2f_token.update(param)
         assert "Wrong token pin!" in str(excinfo.value)
@@ -317,7 +315,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         Test update function with requested_phase 'registration2' and current_phase 'authentication'
         """
         self.u2f_token.getFromTokenInfo = Mock(return_value="authentication")
-        param = dict(description=None, phase="registration2")
+        param = {"description": None, "phase": "registration2"}
         with pytest.raises(Exception) as excinfo:
             self.u2f_token.update(param)
         assert (
@@ -331,7 +329,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         Test update function with requested_phase None and current_phase None
         """
         self.u2f_token.getFromTokenInfo = Mock(return_value=None)
-        param = dict(description=None, phase=None)
+        param = {"description": None, "phase": None}
         with pytest.raises(Exception) as excinfo:
             self.u2f_token.update(param)
         assert "Wrong phase parameter!" in str(excinfo.value)
@@ -342,7 +340,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         Test update function with an requested_phase None and current_phase 'registration'
         """
         self.u2f_token.getFromTokenInfo = Mock(return_value="registration")
-        param = dict(description=None, phase=None)
+        param = {"description": None, "phase": None}
         with pytest.raises(Exception) as excinfo:
             self.u2f_token.update(param)
         assert "Wrong phase parameter!" in str(excinfo.value)
@@ -353,7 +351,7 @@ class U2FTokenClassTestCase(unittest.TestCase):
         Test update function with requested_phase None and current_phase 'authentication'
         """
         self.u2f_token.getFromTokenInfo = Mock(return_value="authentication")
-        param = dict(description=None, phase=None)
+        param = {"description": None, "phase": None}
         with pytest.raises(Exception) as excinfo:
             self.u2f_token.update(param)
         assert 'Unknown "phase" and "current_phase" parameter combination!' in str(

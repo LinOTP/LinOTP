@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -54,7 +53,6 @@ class SQLTestController(TestController):
         self.sqlconnect = connect or self.app.config.get("DATABASE_URI")
         sqlUser = SqlUserDB(connect=self.sqlconnect)
         self.sqlResolverDef = sqlUser.getResolverDefinition()
-        return
 
     def createUserTable(self, schema_additions=None):
         """
@@ -112,15 +110,15 @@ class SQLTestController(TestController):
 
         for i in range(1, usercount + 1):
             user = {
-                "user": "%s%d" % (usernamePrefix, i),
-                "telephonenumber": "012345-678-%d" % i,
-                "mobile": "00123-456-%d" % i,
-                "sn": "yak%d" % i,
-                "givenname": "kayak%d" % i,
+                "user": f"{usernamePrefix}{i}",
+                "telephonenumber": f"012345-678-{i}",
+                "mobile": f"00123-456-{i}",
+                "sn": f"yak{i}",
+                "givenname": f"kayak{i}",
                 "password": "JT7bTACk0ud6U",
                 "uid": i,
             }
-            user["mail"] = "%s.%s@example.com" % (
+            user["mail"] = "{}.{}@example.com".format(
                 user["sn"],
                 user["givenname"],
             )
@@ -152,13 +150,11 @@ class SQLTestController(TestController):
         assert '"value": true' in resp, resp
 
         resp = self.make_system_request(action="getResolvers")
-        assert '"resolvername": "%s"' % (name) in resp, resp
+        assert f'"resolvername": "{name}"' in resp, resp
 
         param2 = {"resolver": name}
         resp = self.make_system_request(action="getResolver", params=param2)
         assert '"Table": "User2"' in resp, resp
-
-        return
 
     def delSqlResolver(self, name):
         """delete the sql resolver"""
@@ -174,7 +170,7 @@ class SQLTestController(TestController):
         """
         add resolver to realm
         """
-        resolver = "useridresolver.SQLIdResolver.IdResolver.%s" % resolverName
+        resolver = f"useridresolver.SQLIdResolver.IdResolver.{resolverName}"
         parameters = {"resolvers": resolver, "realm": realmName}
 
         resp = self.make_system_request("setRealm", params=parameters)
@@ -184,7 +180,6 @@ class SQLTestController(TestController):
             params = {"realm": realmName}
             resp = self.make_system_request("setDefaultRealm", params=params)
             assert '"value": true' in resp, resp
-        return
 
     def delSqlRealm(self, realmName):
         """delete realm"""

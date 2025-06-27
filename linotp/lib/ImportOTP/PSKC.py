@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -35,9 +34,11 @@ import hashlib
 import hmac
 import logging
 import re
-import xml.etree.cElementTree as etree
+import xml.etree.ElementTree as etree
 
-import linotp.lib.crypto.pbkdf2 as pbkdf2
+from Cryptodome.Cipher import AES
+
+from linotp.lib.crypto import pbkdf2
 from linotp.lib.ImportOTP import ImportException, getTagName
 
 sha = hashlib.sha1
@@ -57,9 +58,10 @@ def getEncMethod(elem):
     m = re.search(r"#(.*)$", algo)
     if m:
         algo = m.group(1)
-    if "aes128-cbc" != algo:
+    if algo != "aes128-cbc":
         log.error("The algorithm %s is not supported", algo)
-        raise ImportException("The algorithm %s is not supported" % algo)
+        msg = f"The algorithm {algo} is not supported"
+        raise ImportException(msg)
     return algo
 
 
@@ -68,15 +70,14 @@ def getMacMethod(elem):
     m = re.search(r"#(.*)$", meth)
     if m:
         meth = m.group(1)
-    if "hmac-sha1" != meth:
+    if meth != "hmac-sha1":
         log.error("The method %s is not supported", meth)
-        raise ImportException("The method %s is not supported" % meth)
+        msg = f"The method {meth} is not supported"
+        raise ImportException(msg)
     return meth
 
 
 def aes_decrypt(transport_b64, key_hex, serial=""):
-    import Cryptodome.Cipher.AES as AES
-
     def hack(data, serial=""):
         bsize = 16
         a = data[-1]
@@ -87,7 +88,7 @@ def aes_decrypt(transport_b64, key_hex, serial=""):
             return data
 
         padding = data[len(data) - a :]
-        if not (bytes([a]) * a == padding):
+        if bytes([a]) * a != padding:
             # it seems not to be padded
             return data
 
@@ -151,7 +152,8 @@ def parsePSKCdata(
     ENCRYPTION_KEY_hex = preshared_key_hex
 
     if getTagName(elem_keycontainer).lower() != "keycontainer":
-        raise ImportException("No toplevel element KeyContainer")
+        msg = "No toplevel element KeyContainer"
+        raise ImportException(msg)
 
     tag = elem_keycontainer.tag
     match = re.match("^({.*?})Key[Cc]ontainer$", tag)
@@ -175,39 +177,39 @@ def parsePSKCdata(
 
     if elem_encKey:
         # Check for AES-128-CBC, preshared key (chapter 6.1)
-        enckeyTag = getTagName(list(elem_encKey)[0])
+        enckeyTag = getTagName(next(iter(elem_encKey)))
         # This will hold the name of the preshared key
-        if "KeyName" == enckeyTag:
-            KEYNAME = list(elem_encKey)[0].text
+        if enckeyTag == "KeyName":
+            KEYNAME = next(iter(elem_encKey)).text
             log.debug("The keyname of preshared encryption is <<%r>>", KEYNAME)
         # check for PasswordBasedEncyprion (chapter 6.2)
-        elif "DerivedKey" == enckeyTag:
+        elif enckeyTag == "DerivedKey":
             log.debug("We found PBE.")
             # Now we check for KeyDerivationMethod
-            elem_keyderivation = list(list(elem_encKey)[0])
+            elem_keyderivation = list(next(iter(elem_encKey)))
             for e in elem_keyderivation:
-                if "KeyDerivationMethod" == getTagName(e):
+                if getTagName(e) == "KeyDerivationMethod":
                     deriv_algo = e.get("Algorithm")
                     m = re.search(r"#(.*)$", deriv_algo)
                     PBE_DERIVE_ALGO = m.group(1)
                     log.debug("Algorithm of the PBE: %r", PBE_DERIVE_ALGO)
-                    if "pbkdf2" == PBE_DERIVE_ALGO:
+                    if PBE_DERIVE_ALGO == "pbkdf2":
                         for p in list(e):
-                            if "PBKDF2-params" == getTagName(p):
+                            if getTagName(p) == "PBKDF2-params":
                                 for sp in list(p):
                                     spTag = getTagName(sp)
-                                    if "Salt" == spTag:
+                                    if spTag == "Salt":
                                         for salt in list(sp):
-                                            if "Specified" == getTagName(salt):
+                                            if getTagName(salt) == "Specified":
                                                 PBE_SALT = salt.text
                                             else:
                                                 log.warning(
                                                     "Unknown element in element Salt: %r",
                                                     getTagName(salt),
                                                 )
-                                    elif "IterationCount" == spTag:
+                                    elif spTag == "IterationCount":
                                         PBE_ITERATION_COUNT = sp.text
-                                    elif "KeyLength" == spTag:
+                                    elif spTag == "KeyLength":
                                         PBE_KEY_LENGTH = sp.text
                     else:
                         # probably pbkdf1
@@ -215,9 +217,8 @@ def parsePSKCdata(
                             "We do not support key derivation method %r",
                             deriv_algo,
                         )
-                        raise ImportException(
-                            "We do not support key derivation method %s" % deriv_algo
-                        )
+                        msg = f"We do not support key derivation method {deriv_algo}"
+                        raise ImportException(msg)
                 log.debug("found the salt <<%r>>", PBE_SALT)
 
             if password and len(password) > 5 and len(password) <= 64:
@@ -241,9 +242,8 @@ def parsePSKCdata(
                 log.error(
                     "You must provide a password that is longer than 5 characters and up to 64 characters long."
                 )
-                raise ImportException(
-                    "You must provide a password that is longer than 5 characters and up to 64 characters long."
-                )
+                msg = "You must provide a password that is longer than 5 characters and up to 64 characters long."
+                raise ImportException(msg)
 
         # Do the MAC Key
         # This will hold the MAC key
@@ -254,10 +254,10 @@ def parsePSKCdata(
         # Find the MAC: ENC_ALGO and MAC_bin
         for e in list(elem_mackey):
             tag = getTagName(e)
-            if "CipherData" == tag:
+            if tag == "CipherData":
                 for c in list(e):
                     cipher_tag = getTagName(c)
-                    if "CipherValue" == cipher_tag:
+                    if cipher_tag == "CipherValue":
                         cipherValue = c.text.strip()
                         log.debug(
                             "Found this MAC Key cipherValue: <<%r>>",
@@ -269,10 +269,9 @@ def parsePSKCdata(
                             "Found unsupported child in CipherData: %r",
                             cipher_tag,
                         )
-                        raise ImportException(
-                            "Found unsupported child in CipherData: %r" % cipher_tag
-                        )
-            elif "EncryptionMethod" == tag:
+                        msg = f"Found unsupported child in CipherData: {cipher_tag!r}"
+                        raise ImportException(msg)
+            elif tag == "EncryptionMethod":
                 ENC_ALGO = getEncMethod(e)
             else:
                 log.warning("Found unknown tag: %r", tag)
@@ -282,8 +281,9 @@ def parsePSKCdata(
     # Now we get the list of keypackages
 
     elem_KeyPackageList = elem_keycontainer.findall(namespace + TAG_NAME_KEYPACKAGE)
-    if 0 == len(elem_KeyPackageList):
-        raise ImportException("No element %s contained!" % TAG_NAME_KEYPACKAGE)
+    if len(elem_KeyPackageList) == 0:
+        msg = f"No element {TAG_NAME_KEYPACKAGE} contained!"
+        raise ImportException(msg)
 
     # Now parsing all the keys
     for elem_package in elem_KeyPackageList:
@@ -314,11 +314,11 @@ def parsePSKCdata(
         TOKEN_TYPE = None
 
         if algorithm:
-            if "hotp" == algorithm.lower():
+            if algorithm.lower() == "hotp":
                 TOKEN_TYPE = "hmac"
-            elif "totp" == algorithm.lower():
+            elif algorithm.lower() == "totp":
                 TOKEN_TYPE = "totp"
-            elif "ocra" == algorithm.lower():
+            elif algorithm.lower() == "ocra":
                 TOKEN_TYPE = "ocra2"
 
         if do_checkserial and not checkSerial(serial):
@@ -337,10 +337,10 @@ def parsePSKCdata(
             for e in list(elem_algoParam):
                 eTag = getTagName(e)
                 log.debug("Evaluating element <<%r>>", eTag)
-                if "ResponseFormat" == eTag:
+                if eTag == "ResponseFormat":
                     KD_otplen = int(e.get("Length"))
                     log.debug("Found length = %r", e.get("Length"))
-                elif "Suite" == eTag:
+                elif eTag == "Suite":
                     if TOKEN_TYPE == "ocra2":
                         KD_Suite = e.text
                         log.debug("Found OCRA Suite = %r", KD_Suite)
@@ -365,46 +365,46 @@ def parsePSKCdata(
             for e in list(elem_keydata):
                 eTag = getTagName(e)
                 log.debug("Evaluating element <<%r>>", eTag)
-                if "Secret" == eTag:
+                if eTag == "Secret":
                     for se in list(e):
                         seTag = getTagName(se)
-                        if "EncryptedValue" == seTag:
+                        if seTag == "EncryptedValue":
                             for ev in list(se):
                                 evTag = getTagName(ev)
-                                if "EncryptionMethod" == evTag:
+                                if evTag == "EncryptionMethod":
                                     KD_algo = getEncMethod(ev)
-                                elif "CipherData" == evTag:
+                                elif evTag == "CipherData":
                                     for ciph in list(ev):
                                         ciphTag = getTagName(ciph)
-                                        if "CipherValue" == ciphTag:
+                                        if ciphTag == "CipherValue":
                                             KD_cipher_b64 = ciph.text.strip()
 
-                        elif "PlainValue" == seTag:
+                        elif seTag == "PlainValue":
                             KD_hmac_key_b64 = se.text.strip()
-                        elif "ValueMAC" == seTag:
+                        elif seTag == "ValueMAC":
                             KD_mac_b64 = se.text.strip()
 
-                elif "Counter" == eTag:
+                elif eTag == "Counter":
                     for se in list(e):
                         seTag = getTagName(se)
-                        if "PlainValue" == seTag:
+                        if seTag == "PlainValue":
                             KD_counter = se.text
                         else:
                             log.warning("We do only support PlainValue counters")
-                elif "TimeInterval" == eTag:
+                elif eTag == "TimeInterval":
                     for se in list(e):
                         seTag = getTagName(se)
-                        if "PlainValue" == seTag:
+                        if seTag == "PlainValue":
                             KD_TimeInterval = se.text
                             log.debug("Found TimeInterval = %r", KD_TimeInterval)
                         else:
                             log.warning(
                                 "We do only support PlainValue for TimeInterval"
                             )
-                elif "Time" == eTag:
+                elif eTag == "Time":
                     for se in list(e):
                         seTag = getTagName(se)
-                        if "PlainValue" == seTag:
+                        if seTag == "PlainValue":
                             KD_Time = se.text
                             log.debug("Found Time offset = %s", KD_Time)
                         else:
@@ -419,70 +419,70 @@ def parsePSKCdata(
                     "and EncryptedValue!",
                     serial,
                 )
-            else:
-                if "aes128-cbc" == ENC_ALGO:
-                    #
-                    #   Verifiy the MAC Value
-                    #
-                    if "hmac-sha1" == MAC_Method:
-                        MAC_digest_bin = hmac.new(
-                            MACKEY_bin, base64.b64decode(KD_cipher_b64), sha
-                        ).digest()
-                        MAC_digest_b64 = base64.b64encode(MAC_digest_bin).decode()
-                        log.debug("AES128-CBC secret cipher: %r", KD_cipher_b64)
-                        log.debug("calculated MAC value    : %r", MAC_digest_b64)
-                        log.debug("read MAC value          : %r", KD_mac_b64)
+            elif ENC_ALGO == "aes128-cbc":
+                #
+                #   Verifiy the MAC Value
+                #
+                if MAC_Method == "hmac-sha1":
+                    MAC_digest_bin = hmac.new(
+                        MACKEY_bin, base64.b64decode(KD_cipher_b64), sha
+                    ).digest()
+                    MAC_digest_b64 = base64.b64encode(MAC_digest_bin).decode()
+                    log.debug("AES128-CBC secret cipher: %r", KD_cipher_b64)
+                    log.debug("calculated MAC value    : %r", MAC_digest_b64)
+                    log.debug("read MAC value          : %r", KD_mac_b64)
 
-                        # decrypt key
-                        HMAC_KEY_bin = aes_decrypt(
-                            KD_cipher_b64, ENCRYPTION_KEY_hex, serial
-                        )
+                    # decrypt key
+                    HMAC_KEY_bin = aes_decrypt(
+                        KD_cipher_b64, ENCRYPTION_KEY_hex, serial
+                    )
 
-                        if MAC_digest_b64 == KD_mac_b64:
-                            TOKENS[serial] = {
-                                "hmac_key": HMAC_KEY_bin.hex(),
-                                "counter": KD_counter,
-                                "type": TOKEN_TYPE,
-                                "timeStep": KD_TimeInterval,
-                                "otplen": KD_otplen,
-                                "hashlib": KD_hashlib,
-                                "ocrasuite": KD_Suite,
-                            }
-                        else:
-                            log.error(
-                                "The MAC value for %s does not fit. The HMAC "
-                                "secrets could be compromised!",
-                                serial,
-                            )
-                            raise ImportException(
-                                "The MAC value for %s does not fit. The HMAC "
-                                "secrets could be compromised!" % serial
-                            )
-                            # TOKENS[serial] = { 'hmac_key' : binascii.hexlify(HMAC_KEY_bin),
-                            #            'counter' : KD_counter, 'type' : TOKEN_TYPE,
-                            #            'timeStep' : KD_TimeInterval, 'otplen' : KD_otplen,
-                            #            'hashlib' : KD_hashlib }
+                    if MAC_digest_b64 == KD_mac_b64:
+                        TOKENS[serial] = {
+                            "hmac_key": HMAC_KEY_bin.hex(),
+                            "counter": KD_counter,
+                            "type": TOKEN_TYPE,
+                            "timeStep": KD_TimeInterval,
+                            "otplen": KD_otplen,
+                            "hashlib": KD_hashlib,
+                            "ocrasuite": KD_Suite,
+                        }
                     else:
-                        log.warning(
-                            "At the moment we only support hmac-sha1. We found %r",
-                            MAC_Method,
+                        log.error(
+                            "The MAC value for %s does not fit. The HMAC "
+                            "secrets could be compromised!",
+                            serial,
                         )
-
-                elif KD_hmac_key_b64:
-                    TOKENS[serial] = {
-                        "hmac_key": base64.b64decode(KD_hmac_key_b64).hex(),
-                        "counter": KD_counter,
-                        "type": TOKEN_TYPE,
-                        "timeStep": KD_TimeInterval,
-                        "otplen": KD_otplen,
-                        "hashlib": KD_hashlib,
-                        "ocrasuite": KD_Suite,
-                    }
+                        msg = (
+                            f"The MAC value for {serial} does not fit. The HMAC "
+                            "secrets could be compromised!"
+                        )
+                        raise ImportException(msg)
+                        # TOKENS[serial] = { 'hmac_key' : binascii.hexlify(HMAC_KEY_bin),
+                        #            'counter' : KD_counter, 'type' : TOKEN_TYPE,
+                        #            'timeStep' : KD_TimeInterval, 'otplen' : KD_otplen,
+                        #            'hashlib' : KD_hashlib }
                 else:
                     log.warning(
-                        "neither a PlainValue nor an EncryptedValue was "
-                        "found for the secret of key %s",
-                        serial,
+                        "At the moment we only support hmac-sha1. We found %r",
+                        MAC_Method,
                     )
+
+            elif KD_hmac_key_b64:
+                TOKENS[serial] = {
+                    "hmac_key": base64.b64decode(KD_hmac_key_b64).hex(),
+                    "counter": KD_counter,
+                    "type": TOKEN_TYPE,
+                    "timeStep": KD_TimeInterval,
+                    "otplen": KD_otplen,
+                    "hashlib": KD_hashlib,
+                    "ocrasuite": KD_Suite,
+                }
+            else:
+                log.warning(
+                    "neither a PlainValue nor an EncryptedValue was "
+                    "found for the secret of key %s",
+                    serial,
+                )
 
     return TOKENS

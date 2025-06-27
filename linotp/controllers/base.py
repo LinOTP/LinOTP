@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,7 +26,7 @@
 """The Controller's Base class"""
 
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from functools import wraps
 from inspect import getfullargspec
 from types import FunctionType
@@ -36,9 +35,11 @@ from warnings import warn
 from flask import Blueprint, current_app, g, request
 from flask_jwt_extended import (
     create_access_token,
+    get_jwt,
     get_jwt_identity,
     set_access_cookies,
     unset_jwt_cookies,
+    verify_jwt_in_request,
 )
 from flask_jwt_extended.exceptions import (
     CSRFError,
@@ -52,16 +53,7 @@ from linotp.lib.context import request_context
 from linotp.lib.realm import getRealms
 from linotp.lib.reply import sendError, sendResult
 from linotp.lib.resolver import getResolverObject
-from linotp.lib.tools.flask_jwt_extended_migration import (
-    get_jwt,
-    verify_jwt_in_request,
-)
-from linotp.lib.user import (
-    NoResolverFound,
-    User,
-    getUserFromParam,
-    getUserFromRequest,
-)
+from linotp.lib.user import NoResolverFound, User, getUserFromParam, getUserFromRequest
 
 log = logging.getLogger(__name__)
 
@@ -87,7 +79,7 @@ class ControllerMetaClass(type):
         a hassle to prefix all of their names with `_`.
         """
 
-        cls = super(ControllerMetaClass, meta).__new__(meta, name, bases, dct)
+        cls = super().__new__(meta, name, bases, dct)
 
         if name == "BaseController":
             cls._url_methods = set()
@@ -131,7 +123,7 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
     jwt_exempt = False
 
     def __init__(self, name, install_name="", **kwargs):
-        super(BaseController, self).__init__(name, __name__, **kwargs)
+        super().__init__(name, __name__, **kwargs)
 
         self.jwt_exempt_methods = set()
 
@@ -141,7 +133,7 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
         self.before_request(self.before_handler)
 
         if hasattr(self, "__after__"):
-            self.after_request(self.__after__)  # noqa pylint: disable=no-member
+            self.after_request(self.__after__)
 
         self.after_request(jwt_refresh)
 
@@ -152,10 +144,7 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
             # Route the method to a URL of the same name,
             # except for index, which is routed to
             # /<controller-name>/
-            if method_name == "index":
-                url = "/"
-            else:
-                url = "/" + method_name
+            url = "/" if method_name == "index" else "/" + method_name
 
             method = getattr(self, method_name)
 
@@ -208,8 +197,9 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
                     )
         if len(self.jwt_exempt_methods) > 0:
             log.debug(
-                f"No admin authorization required in {self.__class__.__name__} for actions: "
-                + ", ".join(self.jwt_exempt_methods)
+                "No admin authorization required in %s for actions: %s",
+                self.__class__.__name__,
+                ", ".join(self.jwt_exempt_methods),
             )
 
     def jwt_check(self):
@@ -250,7 +240,7 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
                 "This can be a user who saved and reused a token, or an attacker using a stolen token:\n%r",
                 e,
             )
-        except DecodeError as e:
+        except DecodeError:
             cookie_name = current_app.config["JWT_ACCESS_COOKIE_NAME"]
             cookie = request.cookies[cookie_name]
             log.error("jwt_check: could not decode JWT: %r", cookie)
@@ -269,7 +259,9 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
 
         The result is placed into request_context['RequestUser']
         """
-        from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
+        from linotp.useridresolver.UserIdResolver import (  # noqa: PLC0415
+            ResolverNotAvailable,
+        )
 
         requestUser = None
         try:
@@ -302,12 +294,13 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
                 warn(
                     "Returning Request is no longer necessary",
                     DeprecationWarning,
+                    stacklevel=1,
                 )
                 return None
             return response
 
 
-def methods(mm=["GET"]):
+def methods(mm: list[str] | None = None):
     """
     Decorator to specify the allowable HTTP methods for a
     controller/blueprint method. It turns out that `Flask.add_url_rule`
@@ -315,6 +308,8 @@ def methods(mm=["GET"]):
     what HTTP methods should be allowed on a view, so that's where we're
     putting the methods list.
     """
+    if mm is None:
+        mm = ["GET"]
 
     def inner_func(func):
         func.methods = mm[:]
@@ -349,7 +344,7 @@ def jwt_refresh(response):
         return response
     try:
         exp_timestamp = get_jwt()["exp"]
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         target_timestamp = datetime.timestamp(now + timedelta(seconds=delta))
         if target_timestamp > exp_timestamp:
             log.debug("jwt_refresh: refreshing access token")
@@ -361,7 +356,7 @@ def jwt_refresh(response):
         return response
 
 
-class JWTMixin(object):
+class JWTMixin:
     """
     Provides `login` and `logout` methods that generate or dispose of
     JWT access tokens (and double-submit tokens for CSRF protection).

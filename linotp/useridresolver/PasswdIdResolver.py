@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -146,7 +145,6 @@ class IdResolver(UserIdResolver):
         :type  config: the linotp config dict
         """
         log.debug("Setting up PasswdIdResolver")
-        return
 
     def __init__(self):
         """
@@ -184,57 +182,50 @@ class IdResolver(UserIdResolver):
 
         log.info("[loadFile] loading users from file %s", self.fileName)
 
-        fileHandle = open(self.fileName, "r")
-
-        line = fileHandle.readline()
-
         ID = self.sF["userid"]
         NAME = self.sF["username"]
         PASS = self.sF["cryptpass"]
         DESCRIPTION = self.sF["description"]
 
-        while line:
-            line = line.strip()
-            if len(line) == 0 or line.startswith("#"):
-                line = fileHandle.readline()
-                continue
+        with open(self.fileName, encoding="utf-8") as file:
+            for line in file:
+                line = line.strip()
+                if not line or line.startswith("#"):
+                    continue
 
-            line = str2unicode(line)
-            fields = line.split(":", 7)
-            self.nameDict["%s" % fields[NAME]] = fields[ID]
+                line = str2unicode(line)
+                fields = line.split(":", 7)
+                self.nameDict[f"{fields[NAME]}"] = fields[ID]
 
-            # for speed reason - build a revers lookup
-            self.reversDict[fields[ID]] = "%s" % fields[NAME]
+                # for speed reason - build a revers lookup
+                self.reversDict[fields[ID]] = f"{fields[NAME]}"
 
-            # for full info store the line
-            self.descDict[fields[ID]] = fields
+                # for full info store the line
+                self.descDict[fields[ID]] = fields
 
-            # store the crypted password
-            self.passDict[fields[ID]] = fields[PASS]
+                # store the crypted password
+                self.passDict[fields[ID]] = fields[PASS]
 
-            # store surname, givenname and phones
-            descriptions = fields[DESCRIPTION].split(",")
-            name = descriptions[0]
-            names = name.split(" ", 1)
-            self.givennameDict[fields[ID]] = names[0]
-            self.surnameDict[fields[ID]] = ""
-            self.officePhoneDict[fields[ID]] = ""
-            self.homePhoneDict[fields[ID]] = ""
-            self.emailDict[fields[ID]] = ""
-            if len(names) >= 2:
-                self.surnameDict[fields[ID]] = names[1]
-            if len(descriptions) >= 4:
-                self.officePhoneDict[fields[ID]] = descriptions[2]
-                self.homePhoneDict[fields[ID]] = descriptions[3]
-            if len(descriptions) >= 5:
-                for field in descriptions[4:]:
-                    # very basic e-mail regex
-                    email_match = re.search(r".+@.+\..+", field)
-                    if email_match:
-                        self.emailDict[fields[ID]] = email_match.group(0)
-
-            """ print ">>" + key[0] + "<< " + key[2] """
-            line = fileHandle.readline()
+                # store surname, givenname and phones
+                descriptions = fields[DESCRIPTION].split(",")
+                name = descriptions[0]
+                names = name.split(" ", 1)
+                self.givennameDict[fields[ID]] = names[0]
+                self.surnameDict[fields[ID]] = ""
+                self.officePhoneDict[fields[ID]] = ""
+                self.homePhoneDict[fields[ID]] = ""
+                self.emailDict[fields[ID]] = ""
+                if len(names) >= 2:
+                    self.surnameDict[fields[ID]] = names[1]
+                if len(descriptions) >= 4:
+                    self.officePhoneDict[fields[ID]] = descriptions[2]
+                    self.homePhoneDict[fields[ID]] = descriptions[3]
+                if len(descriptions) >= 5:
+                    for field in descriptions[4:]:
+                        # very basic e-mail regex
+                        email_match = re.search(r".+@.+\..+", field)
+                        if email_match:
+                            self.emailDict[fields[ID]] = email_match.group(0)
 
     def checkPass(self, uid, password):
         """
@@ -266,7 +257,7 @@ class IdResolver(UserIdResolver):
             )
             return False
 
-        if cryptedpasswd == "x" or cryptedpasswd == "*":
+        if cryptedpasswd in {"x", "*"}:
             err = "Sorry, currently no support for shadow passwords"
             log.error("[checkPass] %s ", err)
             raise NotImplementedError(err)
@@ -400,15 +391,15 @@ class IdResolver(UserIdResolver):
             # OR filter
             # is true if no `searchTerm` in given `searchDict` or
             # value of `searchTerm` matches at least one searchable field
-            searchTermValue = searchDict.get("searchTerm", None)
-            orFilter = False if searchTermValue else True
+            searchTermValue = searchDict.get("searchTerm")
+            orFilter = not searchTermValue
             if searchTermValue:
                 for checkingFunc in searchKeyToCheckFunctionMapping.values():
                     try:
                         if checkingFunc(user_value, searchTermValue):
                             orFilter = True
                             break
-                    except:
+                    except Exception:
                         pass
             # AND filter
             # is true if all `search_keys` match their `search_value`.
@@ -478,9 +469,8 @@ class IdResolver(UserIdResolver):
         elif s == "s":
             if string.startswith(pattern):
                 return True
-        else:
-            if string == pattern:
-                return True
+        elif string == pattern:
+            return True
 
         return ret
 
@@ -529,13 +519,8 @@ class IdResolver(UserIdResolver):
                 if cUserId >= ival:
                     ret = True
 
-            elif op == "<":
-                if cUserId < ival:
-                    ret = True
-
-            elif op == "<=":
-                if cUserId < ival:
-                    ret = True
+            elif (op in {"<", "<="}) and cUserId < ival:
+                ret = True
 
         return ret
 
@@ -587,7 +572,8 @@ class IdResolver(UserIdResolver):
 
         if missing:
             log.error("missing config entries: %r", missing)
-            raise ResolverLoadConfigError(" missing config entries: %r" % missing)
+            msg = f" missing config entries: {missing!r}"
+            raise ResolverLoadConfigError(msg)
 
         fileName = l_config["fileName"]
 
@@ -596,9 +582,8 @@ class IdResolver(UserIdResolver):
         fileName = os.path.realpath(fileName)
 
         if not os.path.isfile(fileName) or not os.access(fileName, os.R_OK):
-            raise ResolverLoadConfigError(
-                "File %r does not exist or is not accessible" % fileName
-            )
+            msg = f"File {fileName!r} does not exist or is not accessible"
+            raise ResolverLoadConfigError(msg)
         self.fileName = fileName
         self.loadFile()
 
@@ -623,12 +608,12 @@ if __name__ == "__main__":
     user = "koelbel"
     loginId = y.getUserId(user)
 
-    print(" %s -  %s" % (user, loginId))
+    print(f" {user} -  {loginId}")
     print(" reId - " + y.getResolverId())
 
     ret = y.getUserInfo(loginId)
 
-    print("result %r" % ret)
+    print(f"result {ret!r}")
 
     ret = y.getSearchFields()
     # ret["username"]="^bea*"
@@ -639,7 +624,6 @@ if __name__ == "__main__":
         #              "descriptio":"*Winkler*",
         #              "userid":" <=1003",
     }
-    #
 
     ret = y.getUserList(search)
 

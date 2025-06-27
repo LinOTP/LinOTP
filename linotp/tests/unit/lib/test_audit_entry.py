@@ -31,7 +31,6 @@ import unittest
 
 import pytest
 from flask import g
-from mock import patch
 
 from linotp.lib.auth.finishtokens import FinishTokens
 
@@ -99,5 +98,3 @@ class TestAuditEntryCase(unittest.TestCase):
 
         assert "action_detail" in g.audit
         assert msg in g.audit["action_detail"]
-
-        return

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,13 +26,12 @@
 """This file file contains the Forward token class"""
 
 import logging
-from typing import Optional
 
 from flask_babel import gettext as _
 
 from linotp.lib.auth.validate import check_pin, split_pin_otp
 from linotp.lib.policy import getPolicy
-from linotp.lib.token import get_token_owner, getTokenRealms
+from linotp.lib.token import get_token_owner, get_tokens, getTokenRealms
 from linotp.tokens import tokenclass_registry
 from linotp.tokens.base import TokenClass
 
@@ -114,7 +112,7 @@ class ForwardTokenClass(TokenClass):
             if forwardSerial:
                 self.forwardSerial = forwardSerial
                 self._update_targetToken()
-        except:
+        except Exception:
             self.forwardSerial = None
             self.mode = ["authenticate", "challenge"]
             self.targetToken: TokenClass = None
@@ -179,9 +177,8 @@ class ForwardTokenClass(TokenClass):
 
         if key is not None and key in res:
             ret = res.get(key)
-        else:
-            if ret == "all":
-                ret = res
+        elif ret == "all":
+            ret = res
 
         return ret
 
@@ -298,7 +295,7 @@ class ForwardTokenClass(TokenClass):
         }
 
     def check_challenge_response(
-        self, challenges, user, passw, options: Optional[dict] = None
+        self, challenges, user, passw, options: dict | None = None
     ):
         """
         reply the challenges of the target token
@@ -367,12 +364,12 @@ class ForwardTokenClass(TokenClass):
         """
         helper - to get the target token
         """
-        from linotp.lib.token import get_tokens
 
         tokens = get_tokens(serial=forwardSerial)
 
         if not tokens:
-            raise Exception("no target token with serial %r found" % forwardSerial)
+            msg = f"no target token with serial {forwardSerial!r} found"
+            raise Exception(msg)
 
         targetToken = tokens[0]
         return targetToken

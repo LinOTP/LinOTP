@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -26,9 +25,9 @@
 #
 """Contains UserIdResolver class"""
 
+import contextlib
 import logging
 import re
-from typing import Dict, List
 
 from selenium.webdriver.common.by import By
 
@@ -49,7 +48,7 @@ class NewResolverDialog(ManageDialog):
     "New resolver dialog"
 
     def __init__(self, manage_ui):
-        super(NewResolverDialog, self).__init__(manage_ui, "dialog_resolver_create")
+        super().__init__(manage_ui, "dialog_resolver_create")
 
 
 class UserIdResolverManager(ManageDialog):
@@ -81,7 +80,8 @@ class UserIdResolverManager(ManageDialog):
         elif resolver_type == "passwdresolver":
             return PasswdUserIdResolver
         else:
-            raise Exception("Unknown UserIdResolver type:%s" % (resolver_type))
+            msg = f"Unknown UserIdResolver type:{resolver_type}"
+            raise Exception(msg)
 
     @staticmethod
     def parse_resolver_element(line):
@@ -92,7 +92,7 @@ class UserIdResolverManager(ManageDialog):
                 self.name = name
                 self.resolverType = resolverType
                 self.element = element
-                self.name_in_dialog = "%s [%s]" % (name, resolverType)
+                self.name_in_dialog = f"{name} [{resolverType}]"
 
         res_name = line.find_element(By.CSS_SELECTOR, ".name").text
         res_type = line.find_element(By.CSS_SELECTOR, ".type").text
@@ -124,7 +124,7 @@ class UserIdResolverManager(ManageDialog):
             for line in lines:
                 self.resolvers.append(self.parse_resolver_element(line))
 
-    def _get_resolver_by_name(self, name: str) -> Dict:
+    def _get_resolver_by_name(self, name: str) -> dict:
         """Get resolver given the name.
 
         Return tuple:
@@ -133,11 +133,11 @@ class UserIdResolverManager(ManageDialog):
          name in dialog
         """
         r = [r for r in self.resolvers if r.name == name]
-        assert len(r) == 1, "Resolver name %r not found in current resolver list" % name
+        assert len(r) == 1, f"Resolver name {name!r} not found in current resolver list"
         resolver = r[0]
         return resolver
 
-    def get_defined_resolvers(self) -> List[str]:
+    def get_defined_resolvers(self) -> list[str]:
         """Return a list of currently defined resolver names."""
         self.raise_if_closed()
         return [r.name for r in self.resolvers]
@@ -167,10 +167,8 @@ class UserIdResolverManager(ManageDialog):
 
         formdata = dict(data)
 
-        try:
+        with contextlib.suppress(KeyError):
             del formdata["certificate"]
-        except KeyError:
-            pass
 
         # Fill in new resolver form
         resolver.fill_form(formdata)
@@ -190,7 +188,7 @@ class UserIdResolverManager(ManageDialog):
 
         return data["name"]
 
-    def create_resolver_via_api(self, data: Dict) -> Dict:
+    def create_resolver_via_api(self, data: dict) -> dict:
         """Create resolver using API call.
 
         :param data: dictionary of parameters as used in create_resolver
@@ -201,8 +199,6 @@ class UserIdResolverManager(ManageDialog):
             params = {
                 "EnforceTLS": "False",
                 "only_trusted_certs": "False",
-                "TIMEOUT": "5",
-                "EnforceTLS": "False",
                 "TIMEOUT": "5",
                 "SIZELIMIT": "500",
                 "NOREFERRALS": "True",
@@ -266,11 +262,11 @@ class UserIdResolverManager(ManageDialog):
         Checks that the status was ok and returns the resulting data
         """
         return self.manage.admin_api_call(
-            "system/getResolver", dict(resolver=resolver_name)
+            "system/getResolver", {"resolver": resolver_name}
         )
 
     def close(self):
-        super(UserIdResolverManager, self).close()
+        super().close()
         if self.no_realms_defined_dialog.is_open():
             self._handle_first_resolver_dialogs()
 
@@ -318,7 +314,7 @@ class UserIdResolverManager(ManageDialog):
         assert self.find_by_id("dialog_resolver_ask_delete")
 
         t = find_by_css(driver, "#dialog_resolver_ask_delete > p").text
-        t == "Do you want to delete the resolver?"
+        assert t == "Do you want to delete the resolver?"
 
         self.find_by_id("button_resolver_ask_delete_delete").click()
 
@@ -338,8 +334,7 @@ class UserIdResolverManager(ManageDialog):
         self.parse_contents()
 
         assert len(self.resolvers) == resolver_count - 1, (
-            "The number of resolvers shown should decrease after deletion. Before: %s, after:%s"
-            % (resolver_count, len(self.resolvers))
+            f"The number of resolvers shown should decrease after deletion. Before: {resolver_count}, after:{len(self.resolvers)}"
         )
 
     def delete_resolver_via_api(self, resolver_name: str):
@@ -348,7 +343,8 @@ class UserIdResolverManager(ManageDialog):
         resolvers = self.manage.admin_api_call("system/getResolvers")
 
         if resolver_name not in resolvers:
-            raise UserIdResolverException("resolver %r does not found!" % resolver_name)
+            msg = f"resolver {resolver_name!r} does not found!"
+            raise UserIdResolverException(msg)
 
         self.manage.admin_api_call("system/delResolver", {"resolver": resolver_name})
 
@@ -434,18 +430,13 @@ class UserIdResolverManager(ManageDialog):
 
             m = re.search(r"Number of users found: (?P<nusers>\d+)", alert_box_text)
             if m is None:
-                raise Exception(
-                    "test_connection for %s failed: %s" % (name, alert_box_text)
-                )
+                msg = f"test_connection for {name} failed: {alert_box_text}"
+                raise Exception(msg)
             num_found = int(m.group("nusers"))
 
             if expected_users:
                 assert num_found == expected_users, (
-                    "Expected number of users:%s, found:%s"
-                    % (
-                        expected_users,
-                        num_found,
-                    )
+                    f"Expected number of users:{expected_users}, found:{num_found}"
                 )
 
             # Close the popup

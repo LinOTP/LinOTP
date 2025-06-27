@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -25,11 +24,9 @@
 #    Support: www.linotp.de
 #
 
-import json
 import os
 import unittest
-
-from mock import patch
+from unittest.mock import patch
 
 from linotp.provider import load_provider_ini, save_new_provider
 
@@ -75,7 +72,7 @@ class TestProviderTestCase(unittest.TestCase):
         },
     ]
 
-    class MockedFileSMSProvider(object):
+    class MockedFileSMSProvider:
         def getConfigMapping(self):
             config_mapping = {
                 "timeout": ("Timeout", None),
@@ -124,10 +121,9 @@ class TestProviderTestCase(unittest.TestCase):
                 val="smsprovider.FileSMSProvider.FileSMSProvider",
             )
 
-        except AssertionError as aserror:
+        except AssertionError as exx:
             call_args_list = mock_storeConfig.call_args_list
-            raise Exception(
-                "Error was: %r, calls were: %r" % (aserror.message, call_args_list)
-            )
+            msg = f"Error was: {exx.message!r}, calls were: {call_args_list!r}"
+            raise Exception(msg) from exx
 
         assert res == (True, {})

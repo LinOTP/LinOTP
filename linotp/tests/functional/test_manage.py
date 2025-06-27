@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -198,7 +197,7 @@ class TestManageController(TestController):
             elif token.get("id") == "token3":
                 assert "renate" in token["cell"], resp
                 match_count += 1
-        assert match_count == 3, "Not all matches found in resp %r" % resp
+        assert match_count == 3, f"Not all matches found in resp {resp!r}"
 
         # only renates token
         params = {"qtype": "loginname", "query": "renate"}
@@ -215,7 +214,7 @@ class TestManageController(TestController):
             if token.get("id") == "token3":
                 assert "renate" in token["cell"], resp
                 match_count += 1
-        assert match_count == 1, "Not all matches found in resp %r" % resp
+        assert match_count == 1, f"Not all matches found in resp {resp!r}"
 
         # only tokens in realm1
         params = {"qtype": "realm", "query": "realm1"}
@@ -235,7 +234,7 @@ class TestManageController(TestController):
                 assert "nick" in token["cell"], resp
                 match_count += 1
 
-        assert match_count == 2, "Not all matches found in resp %r" % resp
+        assert match_count == 2, f"Not all matches found in resp {resp!r}"
 
         # search in all columns
         params = {"qtype": "all", "query": "token2"}
@@ -252,7 +251,7 @@ class TestManageController(TestController):
                 assert "nick" in token["cell"], resp
                 match_count += 1
 
-        assert match_count == 1, "Not all matches found in resp %r" % resp
+        assert match_count == 1, f"Not all matches found in resp {resp!r}"
 
     def test_userflexi(self):
         """
@@ -302,5 +301,3 @@ class TestManageController(TestController):
         assert msg in response, response
         assert "Heinz Hirtz" in response, response
         assert "token1" in response, response
-
-        return

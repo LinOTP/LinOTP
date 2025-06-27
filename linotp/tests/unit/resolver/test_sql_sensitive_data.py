@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 #
 #    LinOTP - the open source solution for two factor authentication
@@ -29,14 +28,12 @@
 
 import json
 import os
-from unittest import TestCase
-
-from mock import patch
+from unittest.mock import patch
 
 from linotp.useridresolver.SQLIdResolver import IdResolver as SQLResolver
 
 
-class TestSQLResolverSensitiveData(object):
+class TestSQLResolverSensitiveData:
     """Test class for SQL sensitive data"""
 
     resolver = None
@@ -52,7 +49,7 @@ class TestSQLResolverSensitiveData(object):
             "config": {
                 "Driver": "sqlite",
                 "Port": "",
-                "Database": "%s/imported/data/linotp-users.sql" % current_directory,
+                "Database": f"{current_directory}/imported/data/linotp-users.sql",
                 "Server": "",
                 "User": "",
                 "Password": "",
@@ -103,8 +100,6 @@ class TestSQLResolverSensitiveData(object):
             user_info = resolver.getUserInfo(res)
             assert "password" not in user_info
 
-        return
-
     def test_sql_getUserList(self, base_app):
         """SQL: test the userinfo does not return sensitive data."""
 
@@ -116,8 +111,6 @@ class TestSQLResolverSensitiveData(object):
             for user_info in users:
                 assert "password" not in user_info
 
-        return
-
     def test_sql_checkpass(self, base_app):
         """SQL: Check the password of user1 and user 2 still works."""
 
@@ -126,5 +119,3 @@ class TestSQLResolverSensitiveData(object):
 
             assert resolver.checkPass(resolver.getUserId("user1"), "password")
             assert resolver.checkPass(resolver.getUserId("user2"), "password")
-
-        return

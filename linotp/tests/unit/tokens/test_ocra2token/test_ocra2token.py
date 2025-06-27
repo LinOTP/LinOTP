@@ -1,6 +1,5 @@
 import unittest
-
-from mock import patch
+from unittest.mock import patch
 
 from linotp.tokens.ocra2token.ocra2token import get_qrtan_url
 
@@ -18,7 +17,7 @@ class Ocra2PolicyTest(unittest.TestCase):
                 "name": "authQRTAN",
                 "scope": "authentication",
                 "realm": "testrealm",
-                "action": "qrtanurl_init=%s" % URL,
+                "action": f"qrtanurl_init={URL}",
             }
         }
 
@@ -30,8 +29,6 @@ class Ocra2PolicyTest(unittest.TestCase):
         url = get_qrtan_url(qrtan_policy_name="qrtanurl_init", realms=["testrealm"])
 
         assert url == URL, url
-
-        return
 
     @patch("linotp.lib.policy.action.get_policy_definitions")
     @patch("linotp.tokens.ocra2token.ocra2token.getPolicy")
@@ -46,7 +43,7 @@ class Ocra2PolicyTest(unittest.TestCase):
                 "name": "authQRTAN",
                 "scope": "authentication",
                 "realm": "testrealm, realm2, realm3",
-                "action": "qrtanurl=%s" % URL,
+                "action": f"qrtanurl={URL}",
             }
         }
 
@@ -59,5 +56,3 @@ class Ocra2PolicyTest(unittest.TestCase):
         url = get_qrtan_url(qrtan_policy_name="qrtanurl", realms=["testrealm"])
 
         assert url == URL, url
-
-        return

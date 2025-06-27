@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -44,7 +43,7 @@ from linotp.lib.config import (
 from linotp.lib.config.parsing import ConfigNotRecognized, ConfigTree
 from linotp.lib.context import request_context as context
 from linotp.model import db
-from linotp.model.realm import Realm, db
+from linotp.model.realm import Realm
 from linotp.model.tokenRealm import TokenRealm
 
 log = logging.getLogger(__name__)
@@ -171,7 +170,7 @@ def _check_for_cache_flush(realm_name, realm_definition):
 
     if flush_resolvers:
         # refresh the user resolver lookup in the realm user cache
-        from linotp.lib.user import delete_realm_resolver_cache
+        from linotp.lib.user import delete_realm_resolver_cache  # noqa: PLC0415
 
         delete_realm_resolver_cache(realm_name)
 
@@ -420,9 +419,8 @@ def _setDefaultRealm(realms, defaultRealm):
         if k == defaultRealm.lower():
             r["default"] = "true"
             ret = True
-        else:
-            if "default" in r:
-                del r["default"]
+        elif "default" in r:
+            del r["default"]
     return ret
 
 
@@ -457,10 +455,7 @@ def setDefaultRealm(defaultRealm, check_if_exists=True):
     """
 
     # TODO: verify merge
-    if check_if_exists:
-        ret = isRealmDefined(defaultRealm)
-    else:
-        ret = True
+    ret = isRealmDefined(defaultRealm) if check_if_exists else True
 
     if ret is True or defaultRealm == "":
         storeConfig("linotp.DefaultRealm", defaultRealm)
@@ -501,9 +496,8 @@ def deleteRealm(realmname):
     admin_realm_name = current_app.config["ADMIN_REALM_NAME"].lower()
 
     if realmname == admin_realm_name:
-        raise DeleteForbiddenError(
-            f"It is not allowed to delete the admin realm {admin_realm_name}"
-        )
+        msg = f"It is not allowed to delete the admin realm {admin_realm_name}"
+        raise DeleteForbiddenError(msg)
 
     log.debug("deleting realm object with name=%s", realmname)
     r = getRealmObject(name=realmname)
@@ -521,7 +515,7 @@ def deleteRealm(realmname):
             _delete_realm_config(realmname=realmname)
             db.session.delete(r)
 
-            from linotp.lib.user import delete_realm_resolver_cache
+            from linotp.lib.user import delete_realm_resolver_cache  # noqa: PLC0415
 
             delete_realm_resolver_cache(realmname)
 
@@ -593,18 +587,16 @@ def match_realms(request_realms, allowed_realms):
     elif "*" in request_realms:
         realms = list(all_allowed_realms | {"/:no realm:/"})
     # other cases, we iterate through the realm list
-    elif len(request_realms) > 0 and not (request_realms == [""]):
+    elif len(request_realms) > 0 and request_realms != [""]:
         invalid_realms = []
         for search_realm in request_realms:
             search_realm = search_realm.strip().lower()
-            if search_realm in all_allowed_realms:
-                realms.append(search_realm)
-            elif search_realm == "/:no realm:/":
+            if search_realm in all_allowed_realms or search_realm == "/:no realm:/":
                 realms.append(search_realm)
             else:
                 invalid_realms.append(search_realm)
         if not realms and invalid_realms:
-            from linotp.lib.policy import PolicyException
+            from linotp.lib.policy import PolicyException  # noqa: PLC0415
 
             raise PolicyException(
                 _(

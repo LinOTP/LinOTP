@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -39,15 +38,11 @@ specify it with nose-testconfig (e.g. --tc=paster.port:5005).
 """
 
 import json
-import logging
 import tempfile
-import urllib.parse
+from unittest.mock import patch
 
 import requests
-from mock import patch
 
-import linotp.provider.smsprovider.FileSMSProvider
-import linotp.provider.smsprovider.HttpSMSProvider
 from linotp.lib.util import str2unicode
 from linotp.tests.functional.challenge_response.testing_controller import (
     TestingChallengeResponseController,
@@ -79,8 +74,6 @@ class DefaultProvider:
         for provider_name, provider_def in list(providers.items()):
             if "default" in provider_def:
                 self.old_default = provider_name
-
-        return
 
     def __enter__(self):
         """
@@ -142,7 +135,7 @@ class TestHttpSmsController(TestingChallengeResponseController):
         self.serials = ["sms01", "sms02"]
         self.max = 22
         for num in range(3, self.max):
-            serial = "sms%02d" % num
+            serial = f"sms{num:02d}"
             self.serials.append(serial)
 
         TestingChallengeResponseController.setUp(self)
@@ -152,7 +145,7 @@ class TestHttpSmsController(TestingChallengeResponseController):
         self.initTokens()
         self.initProvider()
 
-        self.sms_url = "http://localhost:%s/testing/http2sms" % self.paster_port
+        self.sms_url = f"http://localhost:{self.paster_port}/testing/http2sms"
 
     def tearDown(self):
         TestingChallengeResponseController.tearDown(self)
@@ -345,7 +338,7 @@ class TestHttpSmsController(TestingChallengeResponseController):
             )
 
             assert "state" in response.json["id"], (
-                "Expecting 'state' as challenge inidcator %r" % response
+                f"Expecting 'state' as challenge inidcator {response!r}"
             )
 
             # check last audit entry
@@ -528,7 +521,7 @@ class TestHttpSmsController(TestingChallengeResponseController):
                 assert "state" in response.json["detail"], response
                 assert "sms submitted" in response.json["detail"]["message"], response
 
-                with open(filename, "r") as f:
+                with open(filename) as f:
                     line = f.read()
 
                 line = str2unicode(line)
@@ -536,7 +529,7 @@ class TestHttpSmsController(TestingChallengeResponseController):
 
                 _left, otp = line.split("Täst")
                 response = self.make_validate_request(
-                    "check", params={"user": "user1", "pass": "1234%s" % otp}
+                    "check", params={"user": "user1", "pass": f"1234{otp}"}
                 )
 
                 assert response.json["result"]["value"], response
@@ -584,23 +577,16 @@ class TestHttpSmsController(TestingChallengeResponseController):
 
             params = {"sortorder": "desc", "rp": 3, "page": 1}
             response = self.make_audit_request(action="search", params=params)
-
-            found = False
             jresp = json.loads(response.body)
 
-            for row in jresp.get("rows", []):
-                entry = row.get("cell", [])
-                for info in entry:
-                    if isinstance(info, str):
-                        if "SMS could not be sent" in info:
-                            found = True
-                            break
-                if found:
-                    break
+            found = any(
+                "SMS could not be sent" in cell
+                for row in jresp.get("rows", [])
+                for cell in row.get("cell", [])
+                if isinstance(cell, str)
+            )
 
             assert found, "no entry 'SMS could not be sent' found"
-
-        return
 
     def create_sms_provider_configuration(
         self,
@@ -665,7 +651,7 @@ class TestHttpSmsController(TestingChallengeResponseController):
             response = self.make_validate_request("check_s", params=params)
 
             assert "state" in response.json["detail"], (
-                "Expecting 'state' as challenge inidcator %r" % response
+                f"Expecting 'state' as challenge inidcator {response!r}"
             )
 
         provider_conf = self.create_sms_provider_configuration(
@@ -682,7 +668,7 @@ class TestHttpSmsController(TestingChallengeResponseController):
             response = self.make_validate_request("check_s", params=params)
 
             assert "state" in response.json["detail"], (
-                "Expecting 'state' as challenge inidcator %r" % response
+                f"Expecting 'state' as challenge inidcator {response!r}"
             )
 
     @patch.object(requests, "post")
@@ -720,7 +706,7 @@ class TestHttpSmsController(TestingChallengeResponseController):
                 response = self.make_validate_request("check_s", params=params)
 
                 assert "state" in response.json["detail"], (
-                    "Expecting 'state' %d: %r" % (i, response)
+                    f"Expecting 'state' {i}: {response!r}"
                 )
 
             # ------------------------------------------------------------- --

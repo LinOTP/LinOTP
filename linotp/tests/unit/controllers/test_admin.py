@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -26,10 +25,10 @@
 #
 import copy
 import unittest
+from unittest import mock
 
 import flask
 import pytest
-from mock import mock
 
 from linotp.controllers.admin import AdminController
 from linotp.lib.user import User
@@ -144,5 +143,3 @@ class TestAdminController(unittest.TestCase):
         AdminController._parse_tokeninfo(tok)
 
         assert tok["LinOtp.TokenInfo"] == {}
-
-        return

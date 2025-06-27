@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -223,7 +221,7 @@ def make_connect(driver, user, pass_, server, port, db, conParams=""):
             param_str = param_str.replace(key, value)
 
         url_quote = urllib.parse.quote_plus(param_str)
-        connect = "%s%s" % (driver, url_quote)
+        connect = f"{driver}{url_quote}"
     else:
         connect = build_simple_connect(driver, user, pass_, server, port, db, conParams)
 
@@ -259,7 +257,7 @@ def build_simple_connect(
 
     # add driver scope as protocoll
 
-    connect.append("%s://" % driver)
+    connect.append(f"{driver}://")
 
     # ------------------------------------------------------------------ --
 
@@ -269,9 +267,9 @@ def build_simple_connect(
         user = user.strip()
 
         if pass_ and pass_.strip():
-            connect.append("%s:%s" % (user, pass_))
+            connect.append(f"{user}:{pass_}")
         else:
-            connect.append("%s" % user)
+            connect.append(f"{user}")
 
     # ------------------------------------------------------------------ --
 
@@ -284,29 +282,28 @@ def build_simple_connect(
 
         if port and port.strip():
             port = port.strip()
-            connect.append("@%s:%d" % (server, int(port)))
+            connect.append(f"@{server}:{int(port)}")
         else:
-            connect.append("@%s" % server)
-    else:
-        # in case of no server and a user, we have to append the empty @ sign
-        # as otherwise the parser will interpret the :password as port which
-        # will fail as it is not of type int
+            connect.append(f"@{server}")
+    # in case of no server and a user, we have to append the empty @ sign
+    # as otherwise the parser will interpret the :password as port which
+    # will fail as it is not of type int
 
-        if user and user.strip():
-            connect.append("@")
+    elif user and user.strip():
+        connect.append("@")
 
     # ------------------------------------------------------------------ --
 
     # add database
     if db and db.strip():
-        connect.append("/%s" % db.strip())
+        connect.append(f"/{db.strip()}")
 
     # ------------------------------------------------------------------ --
 
     # add additional parameters
 
     if conParams:
-        connect.append("?%s" % conParams)
+        connect.append(f"?{conParams}")
 
     return "".join(connect)
 
@@ -319,8 +316,6 @@ class dbObject:
         self.engine = None
         self.meta = None
         self.sess = None
-
-        return None
 
     def connect(self, sqlConnect, db=None, timeout=5):
         """
@@ -363,7 +358,7 @@ class dbObject:
             log.error("Connection error: %r", exx)
             msg = str(exx)
             if "timeout expired" in msg or "can't connect to" in msg:
-                raise ResolverNotAvailable(msg)
+                raise ResolverNotAvailable(msg) from exx
 
             raise
 
@@ -388,13 +383,11 @@ class dbObject:
         log.debug("[dbObject::close]")
         if self.sess is not None:
             self.sess.close()
-        return
 
 
 # connect callback - currently not used
 def call_on_connect(dbapi_con, connection_record):
     log.debug("[call_on_connect] new DBAPI connection")
-    return
 
 
 def testconnection(params):
@@ -514,7 +507,7 @@ class IdResolver(UserIdResolver):
 
         except Exception as exx:
             log.error("[testconnection] Exception: %r", exx)
-            return False, {"err_string": "%r" % exx, "rows": num}
+            return False, {"err_string": f"{exx!r}", "rows": num}
 
         finally:
             dbObj.close()
@@ -532,7 +525,6 @@ class IdResolver(UserIdResolver):
         :type  config: the linotp config dict
         """
         log.debug("Setting up SQLIdResolver")
-        return
 
     def __init__(self):
         """initialize the SQLResolver class"""
@@ -575,7 +567,6 @@ class IdResolver(UserIdResolver):
         if self.dbObj is not None:
             self.dbObj.close()
             self.dbObj = None
-        return
 
     def getResolverId(self):
         """
@@ -684,7 +675,8 @@ class IdResolver(UserIdResolver):
         l_config, missing = self.filter_config(config, conf)
         if missing:
             log.error("missing config entries: %r", missing)
-            raise ResolverLoadConfigError(" missing config entries: %r" % missing)
+            msg = f"missing config entries: {missing!r}"
+            raise ResolverLoadConfigError(msg)
 
         self.managed = l_config.get("readonly", False)
         # example for connect:
@@ -723,12 +715,12 @@ class IdResolver(UserIdResolver):
             self.sqlUserInfo = json.loads(userInfo)
 
         except ValueError as exx:
-            raise ResolverLoadConfigError(
-                "Invalid userinfo - no json document: %s %r" % (userInfo, exx)
-            )
+            msg = f"Invalid userinfo - no json document: {userInfo} {exx!r}"
+            raise ResolverLoadConfigError(msg) from exx
 
         except Exception as exx:
-            raise Exception("linotp.sqlresolver.Map: %r" % exx)
+            msg = f"linotp.sqlresolver.Map: {exx!r}"
+            raise Exception(msg) from exx
 
         self.checkMapping()
 
@@ -762,11 +754,11 @@ class IdResolver(UserIdResolver):
 
             if invalid_columns:
                 dbObj.close()
-                raise Exception(
-                    "Invalid map with invalid columns: %r. "
-                    "Possible columns: %s"
-                    % (invalid_columns, [co.name for co in table.columns])
+                msg = (
+                    f"Invalid map with invalid columns: {invalid_columns!r}. "
+                    f"Possible columns: {[co.name for co in table.columns]}"
                 )
+                raise Exception(msg)
             else:
                 log.debug("Valid mapping: %r", self.sqlUserInfo)
 
@@ -774,7 +766,6 @@ class IdResolver(UserIdResolver):
             log.error("[checkMapping] Exception: %r", exx)
 
         log.debug("[checkMapping] done")
-        return
 
     def getUserId(self, loginName):
         """
@@ -899,9 +890,7 @@ class IdResolver(UserIdResolver):
                 typ = "text"
                 if isinstance(sqlTyp, types.String):
                     typ = "text"
-                elif isinstance(sqlTyp, types.Numeric):
-                    typ = "numeric"
-                elif isinstance(sqlTyp, types.Integer):
+                elif isinstance(sqlTyp, types.Numeric | types.Integer):
                     typ = "numeric"
                 sf[key] = typ
 
@@ -942,7 +931,8 @@ class IdResolver(UserIdResolver):
 
         except KeyError as exx:
             log.error("[getUserList] Invalid Mapping Error: %r", exx)
-            raise KeyError("Invalid Mapping %r " % exx)
+            msg = f"Invalid Mapping {exx!r} "
+            raise KeyError(msg) from exx
 
         except Exception as exx:
             log.error("[getUserList] Exception: %r", exx)
@@ -974,7 +964,7 @@ class IdResolver(UserIdResolver):
                 value = row[colName]
                 log.debug("[_getUserInfo] %r:%r", value, type(value))
 
-            except NoSuchColumnError as e:
+            except NoSuchColumnError:
                 log.error("[_getUserInfo]")
                 value = "-ERR: column mapping-"
 
@@ -993,10 +983,7 @@ class IdResolver(UserIdResolver):
         # use the Where clause to only see certain users.
         if self.sqlWhere != "":
             clause = expression.text(self.sqlWhere)
-            if filtr is None:
-                filtr = clause
-            else:
-                filtr = and_(clause, filtr)
+            filtr = clause if filtr is None else and_(clause, filtr)
             log.debug("[__add_where_clause_filter] searchString: %r", filtr)
         return filtr
 
@@ -1012,7 +999,8 @@ class IdResolver(UserIdResolver):
         column_name = self.sqlUserInfo.get("username")
         if column_name is None:
             log.error("[_getUserIdFilter] username column definition required!")
-            raise Exception("username column definition required!")
+            msg = "username column definition required!"
+            raise Exception(msg)
         log.debug("[_getUserIdFilter] type loginName: %s", type(loginName))
         log.debug("[_getUserIdFilter] type filtr: %s", type(column_name))
 
@@ -1048,9 +1036,8 @@ class IdResolver(UserIdResolver):
                 if column_name.lower() == column_mapping_key.lower()
             ]
             if not possible_column_name_list:
-                raise KeyError(
-                    "[_createSearchString] no column found for %s", column_name
-                )
+                msg = "[_createSearchString] no column found for %s"
+                raise KeyError(msg, column_name)
 
             # more tolerant mapping of column names for some sql dialects
             # as you can define columnnames in mixed case but table mapping
@@ -1108,15 +1095,14 @@ class IdResolver(UserIdResolver):
                 value = value[1:].strip()
                 exp = column < value
 
+            # for postgres no escape is required!!
+            # but we have to cast its type to string
+            # as it does not support dynamic typing like sqlite
+            elif self.sqlConnect.startswith("postg"):
+                column_cast_to_string = cast(column, types.String)
+                exp = column_cast_to_string.like(value)
             else:
-                # for postgres no escape is required!!
-                # but we have to cast its type to string
-                # as it does not support dynamic typing like sqlite
-                if self.sqlConnect.startswith("postg"):
-                    column_cast_to_string = cast(column, types.String)
-                    exp = column_cast_to_string.like(value)
-                else:
-                    exp = column.like(value, escape="\\")
+                exp = column.like(value, escape="\\")
 
             log.debug("[__createSearchString] searchStr : %s", exp)
             return exp
@@ -1129,7 +1115,7 @@ class IdResolver(UserIdResolver):
         # OR filter
         searchTermValue = searchDict.get("searchTerm")
         if searchTermValue:
-            for column_name in self.sqlUserInfo.keys():
+            for column_name in self.sqlUserInfo:
                 column = get_column(column_name)
                 if exp is None:
                     exp = get_sql_expression(column, searchTermValue)

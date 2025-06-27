@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -51,7 +50,6 @@ class YubikeyTokenClass(TokenClass):
         self.setType("yubikey")
 
         self.hKeyRequired = True
-        return
 
     @classmethod
     def getClassType(cls):
@@ -89,9 +87,8 @@ class YubikeyTokenClass(TokenClass):
 
         if key is not None and key in res:
             ret = res.get(key)
-        else:
-            if ret == "all":
-                ret = res
+        elif ret == "all":
+            ret = res
         return ret
 
     def check_otp_exist(self, otp, window=None, user=None, autoassign=False):
@@ -177,10 +174,7 @@ class YubikeyTokenClass(TokenClass):
         # we use the public_uid to calculate the otplen which is at 48 or 32
         # the public_uid is stored and used in validation
 
-        if "public_uid" in param:
-            otplen = 32 + len(param["public_uid"])
-        else:
-            otplen = 48
+        otplen = 32 + len(param["public_uid"]) if "public_uid" in param else 48
 
         if "otplen" not in param:
             param["otplen"] = otplen
@@ -189,8 +183,6 @@ class YubikeyTokenClass(TokenClass):
 
         if "public_uid" in param:
             self.addToTokenInfo("public_uid", param["public_uid"])
-
-        return
 
     def resetTokenInfo(self):
         """
@@ -208,8 +200,6 @@ class YubikeyTokenClass(TokenClass):
             if "public_uid" in info:
                 del info["public_uid"]
             self.setTokenInfo(info)
-
-        return
 
     def checkOtp(self, otpVal, counter=None, window=None, options=None):
         """
@@ -281,16 +271,16 @@ class YubikeyTokenClass(TokenClass):
         except (TypeError, KeyError) as exx:
             log.info("Unable to decode token prefix %r! %r", yubi_prefix, exx)
 
-        # usage_counter can go from 1 – 0x7fff
+        # usage_counter can go from 1 - 0x7fff
         usage_counter = msg_hex[12:16]
 
         # TODO: We also could check the timestamp
         # - the timestamp. see http://www.yubico.com/wp-content/uploads/2013/04/YubiKey-Manual-v3_1.pdf
-        timestamp = msg_hex[16:22]
+        _timestamp = msg_hex[16:22]
 
         # session counter can go from 00 to 0xff
         session_counter = msg_hex[22:24]
-        random = msg_hex[24:28]
+        _random = msg_hex[24:28]
 
         log.debug(
             "[checkOtp] decrypted: usage_count: %r, session_count: %r",
@@ -302,7 +292,7 @@ class YubikeyTokenClass(TokenClass):
         # occupies the last 2 bytes of the decrypted OTP value. Calculating the
         # CRC-16 checksum of the whole decrypted OTP should give a fixed residual
         # of 0xf0b8 (see Yubikey-Manual - Chapter 6: Implementation details).
-        crc = msg_hex[28:]
+        _crc = msg_hex[28:]
         log.debug("[checkOtp] calculated checksum (61624): %r", checksum(msg_bin))
         if checksum(msg_bin) != 0xF0B8:
             log.warning("[checkOtp] CRC checksum for token %r failed", serial)

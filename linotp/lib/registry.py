@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 #
 #    LinOTP - the open source solution for two factor authentication
@@ -49,10 +48,7 @@ class ClassRegistry(dict):
             # _registry_key assignment is a workaround
             # for the missing nonlocal statement in python2.x
 
-            if registry_key is None:
-                _registry_key = cls_.__name__
-            else:
-                _registry_key = registry_key
+            _registry_key = cls_.__name__ if registry_key is None else registry_key
 
             self[_registry_key] = cls_
             return cls_

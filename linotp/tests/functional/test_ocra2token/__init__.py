@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -28,21 +27,12 @@
 
 """ """
 
-import binascii
 import json
 import logging
-import urllib.error
-import urllib.parse
-import urllib.request
-from datetime import datetime, timedelta
+from datetime import datetime
 from urllib.parse import parse_qs, urlparse, urlsplit
 
-from Cryptodome.Hash import SHA256 as SHA256
-
-import linotp.lib.crypto
-from linotp.lib.crypto.utils import check, createActivationCode, kdf2
-from linotp.lib.ext.pbkdf2 import PBKDF2
-from linotp.lib.reply import create_img
+from linotp.lib.crypto.utils import kdf2
 from linotp.tokens.ocra2token import OcraSuite
 
 log = logging.getLogger(__name__)
@@ -93,7 +83,8 @@ class OcraOtp:
         elif o[2]:  # path
             qs = o[2].lstrip("?")
         else:
-            raise Exception("no query parameter defined!")
+            msg = "no query parameter defined!"
+            raise Exception(msg)
 
         params = parse_qs(qs)
         if "si" not in params:
@@ -105,10 +96,7 @@ class OcraOtp:
             self._setup_()
 
         signature = self.ocra.signData(data.encode("utf-8"), key=self.bkey)
-        if si.encode("utf-8") == signature:
-            return True
-
-        return False
+        return si.encode("utf-8") == signature
 
     def init_2(self, response, activationKey):
         self.activationkey = activationKey

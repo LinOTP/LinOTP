@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -49,7 +48,6 @@ class TestRealms(TestController):
         self.delete_all_realms()
         self.delete_all_resolvers()
         TestController.tearDown(self)
-        return
 
     def test_realms_controller_access(self):
         """verify that authentication is required for the realms controller
@@ -177,7 +175,7 @@ class TestRealms(TestController):
         )
         result = response.json
         # myDefRealm has 27 users
-        assert 27 == len(result["result"]["value"])
+        assert len(result["result"]["value"]) == 27
 
         response = self.make_api_v2_request(
             f"/realms/{realm_name}/users",
@@ -186,7 +184,7 @@ class TestRealms(TestController):
         )
         result = response.json
         # 2 passthru_user in myDefRealm
-        assert 2 == len(result["result"]["value"])
+        assert len(result["result"]["value"]) == 2
 
         response = self.make_api_v2_request(
             f"/realms/{realm_name}/users",
@@ -194,4 +192,4 @@ class TestRealms(TestController):
             auth_user="admin",
         )
         result = response.json
-        assert 3 == len(result["result"]["value"])
+        assert len(result["result"]["value"]) == 3

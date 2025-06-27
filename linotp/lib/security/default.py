@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -103,12 +102,11 @@ class DefaultSecurityModule(SecurityModule):
                 "[getSecret] no secret file defined. The SECRET_FILE "
                 " parameter is missing in your linotp.cfg."
             )
-            raise Exception("no secret file defined: linotpSecretFile!")
+            msg = "no secret file defined: linotpSecretFile!"
+            raise Exception(msg)
 
         self.secFile = config.get("file")
         self.secrets = {}
-
-        return
 
     def isReady(self):
         """
@@ -134,24 +132,25 @@ class DefaultSecurityModule(SecurityModule):
         """
         id = int(id)
 
-        if self.crypted:
-            if id in self.secrets:
-                return self.secrets.get(id)
+        if self.crypted and id in self.secrets:
+            return self.secrets.get(id)
 
         secret = ""
         try:
             with open(self.secFile, "rb") as f:
-                for _i in range(0, id + 1):
+                for _i in range(id + 1):
                     secret = f.read(32)
             if not secret:
                 # secret = setupKeyFile(secFile, id+1)
+                msg = "No secret key defined for index: %r !\nPlease extend your %s !"
                 raise Exception(
-                    "No secret key defined for index: %r !\nPlease extend your %s !",
+                    msg,
                     id,
                     self.secFile,
                 )
         except Exception as exx:
-            raise Exception("Exception: %r" % exx)
+            msg = f"Exception: {exx!r}"
+            raise Exception(msg) from exx
 
         if self.crypted:
             self.secrets[id] = secret
@@ -172,7 +171,8 @@ class DefaultSecurityModule(SecurityModule):
         if self.crypted is False:
             return
         if "password" not in params:
-            raise Exception("missing password")
+            msg = "missing password"
+            raise Exception(msg)
 
         # if we have a crypted file and a password, we take all keys
         # from the file and put them in a hash
@@ -225,7 +225,8 @@ class DefaultSecurityModule(SecurityModule):
         """
 
         if self.is_ready is False:
-            raise Exception("setup of security module incomplete")
+            msg = "setup of security module incomplete"
+            raise Exception(msg)
 
         key = self.getSecret(id)
         input_data = binascii.b2a_hex(data)
@@ -258,7 +259,8 @@ class DefaultSecurityModule(SecurityModule):
         """
 
         if self.is_ready is False:
-            raise Exception("setup of security module incomplete")
+            msg = "setup of security module incomplete"
+            raise Exception(msg)
 
         key = self.getSecret(id)
         aes = AES.new(key, AES.MODE_CBC, iv)
@@ -333,7 +335,7 @@ class DefaultSecurityModule(SecurityModule):
         """
         return self._encryptValue(cryptPass, CONFIG_KEY)
 
-    def encryptPin(self, cryptPin: bytes, iv: bytes = None) -> str:
+    def encryptPin(self, cryptPin: bytes, iv: bytes | None = None) -> str:
         """
         dedicated security module methods: encryptPin
         which used one slot id to encrypt a string
@@ -350,7 +352,7 @@ class DefaultSecurityModule(SecurityModule):
         return self._encryptValue(cryptPin, TOKEN_KEY, iv=iv)
 
     # base methods for pin and password
-    def _encryptValue(self, value: bytes, keyNum, iv: bytes = None):
+    def _encryptValue(self, value: bytes, keyNum, iv: bytes | None = None):
         """
         _encryptValue - base method to encrypt a value
         - uses one slot id to encrypt a string
@@ -451,7 +453,7 @@ class DefaultSecurityModule(SecurityModule):
             # as we compare on hex, we have to multiply by 2
             digest_size = hmac_obj.digest_size * 2
 
-            for x, y in zip(hex_mac, sign_mac):
+            for x, y in zip(hex_mac, sign_mac, strict=True):
                 res |= ord(x) ^ ord(y)
 
             if len(sign_mac) != digest_size:

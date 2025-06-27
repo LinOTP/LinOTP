@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -44,7 +43,7 @@ class UserView(ManageTab):
     TAB_INDEX = 2
 
     def __init__(self, manage_ui, realm_name=None):
-        super(UserView, self).__init__(manage_ui)
+        super().__init__(manage_ui)
         if realm_name:
             # This realm will be autoselected when the view is opened
             self.realm_name = realm_name.lower()
@@ -55,10 +54,7 @@ class UserView(ManageTab):
         """We assume we are one the main page /manage and then select
         the realm from the <select> dropdown on the left
         """
-        if not realm_name:
-            realm_name = self.realm_name
-        else:
-            realm_name = realm_name.lower()
+        realm_name = self.realm_name if not realm_name else realm_name.lower()
 
         realm_select = self.driver.find_element(By.ID, "realm")
 
@@ -92,7 +88,7 @@ class UserView(ManageTab):
         @param realm_name If given, switch to this realm first
         """
         usertab = self._open_tab_user_view(realm_name)
-        assert usertab, "User tab could not be opened for realm %s" % realm_name
+        assert usertab, f"User tab could not be opened for realm {realm_name}"
 
         self.clear_filters(realm_name)
         pPageStat = usertab.find_element(
@@ -103,10 +99,11 @@ class UserView(ManageTab):
             return 0
         numbers = [int(s) for s in pPageStat.split() if s.isdigit()]
         if len(numbers) != 3:
-            raise UserViewException(
+            msg = (
                 "Could not determine number of users. "
-                "Missing: 'Displaying N1 to N2 of N3'. Found:<%s>" % pPageStat
+                f"Missing: 'Displaying N1 to N2 of N3'. Found:<{pPageStat}>"
             )
+            raise UserViewException(msg)
         return numbers[2]
 
     def _get_searchbox_element(self):
@@ -156,7 +153,7 @@ class UserView(ManageTab):
 
         usernames = self.driver.find_elements(
             By.CSS_SELECTOR,
-            '#%s #user_table [abbr="username"] div' % usertab_id,
+            f'#{usertab_id} #user_table [abbr="username"] div',
         )
 
         for user in usernames:

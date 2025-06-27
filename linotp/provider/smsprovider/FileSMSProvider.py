@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -70,16 +69,17 @@ class FileSMSProvider(ISMSProvider):
         here = self.config.get("here", "")
 
         if here:
-            filename = "%s%s%s" % (here, os.path.sep, filename)
+            filename = f"{here}{os.path.sep}{filename}"
         try:
             with open(filename, "w") as f:
-                msg = "%s:%s" % (str2unicode(phone), str2unicode(message))
+                msg = f"{str2unicode(phone)}:{str2unicode(message)}"
                 f.write(msg)
             ret = True
 
         except Exception as exx:
             log.error("Failed to open file %r", filename)
-            raise ProviderNotAvailable("Failed to open file %r" % filename)
+            msg = f"Failed to open file {filename!r}"
+            raise ProviderNotAvailable(msg) from exx
 
         return ret
 

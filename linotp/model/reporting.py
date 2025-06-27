@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -41,7 +40,7 @@ class Reporting(ReportingSchema):
         detail: str = "",
         session: str = "",
         description: str = "",
-        timestamp: str = None,
+        timestamp: str | None = None,
     ):
         super().__init__(
             event=str(event),

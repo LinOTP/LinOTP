@@ -1,8 +1,8 @@
 import unittest
 from collections import namedtuple
+from unittest.mock import patch
 
 import pytest
-from mock import patch
 
 from linotp.lib.policy import PolicyException
 from linotp.lib.policy.maxtoken import (
@@ -36,15 +36,14 @@ def fake_get_client_policy(client, scope, action, realm, user, userObj):
 
         return fake_policies
 
-    raise Exception(
-        "fake_get_client_policy has no fake return value for realm %s" % realm
-    )
+    msg = f"fake_get_client_policy has no fake return value for realm {realm}"
+    raise Exception(msg)
 
 
 @pytest.mark.usefixtures("app")
 class MaxTokenPolicyTest(unittest.TestCase):
     @patch("linotp.lib.policy.util.context", new=fake_context)
-    @patch("linotp.lib.policy.maxtoken.context", new=fake_context)
+    @patch("linotp.lib.context.request_context", new=fake_context)
     def test_no_or_empty_user(self):
         """
         checking if _checkTokenAssigned passes with empty user
@@ -69,7 +68,7 @@ class MaxTokenPolicyTest(unittest.TestCase):
             )
 
     @patch("linotp.lib.policy.util.context", new=fake_context)
-    @patch("linotp.lib.policy.maxtoken.context", new=fake_context)
+    @patch("linotp.lib.context.request_context", new=fake_context)
     @patch(
         "linotp.lib.policy.maxtoken.get_client_policy",
         new=fake_get_client_policy,
@@ -104,7 +103,7 @@ class MaxTokenPolicyTest(unittest.TestCase):
             )
 
     @patch("linotp.lib.policy.util.context", new=fake_context)
-    @patch("linotp.lib.policy.maxtoken.context", new=fake_context)
+    @patch("linotp.lib.context.request_context", new=fake_context)
     @patch(
         "linotp.lib.policy.maxtoken.get_client_policy",
         new=fake_get_client_policy,

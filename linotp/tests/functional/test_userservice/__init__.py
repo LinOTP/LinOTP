@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,7 +26,7 @@
 
 import json
 
-from linotp.tests import TestController, url
+from linotp.tests import TestController
 
 
 class TestUserserviceController(TestController):

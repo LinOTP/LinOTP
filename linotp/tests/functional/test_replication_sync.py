@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -42,7 +41,7 @@ from linotp.tests import TestController
 log = logging.getLogger(__name__)
 
 
-class SQLData(object):
+class SQLData:
     def __init__(self, connect="sqlite://"):
         self.userTable = "Config"
 
@@ -50,23 +49,19 @@ class SQLData(object):
         try:
             self.engine = create_engine(connect)
         except Exception as e:
-            print("%r" % e)
-        return
+            print(f"{e!r}")
 
     def addData(self, key, value, typ, description):
-        iStr = """
-            INSERT INTO "%s"( "Key", "Value", "Type", "Description")
+        iStr = f"""
+            INSERT INTO "{self.userTable}"( "Key", "Value", "Type", "Description")
             VALUES (:key, :value, :typ, :description);
-            """ % (self.userTable)
+            """
 
         if self.engine.url.drivername.startswith("mysql"):
-            iStr = """
-            INSERT INTO %s (%s.Key, Value, Type, Description)
+            iStr = f"""
+            INSERT INTO {self.userTable} ({self.userTable}.Key, Value, Type, Description)
             VALUES (:key, :value, :typ, :description);
-            """ % (
-                self.userTable,
-                self.userTable,
-            )
+            """
 
         intoStr = iStr
 
@@ -82,7 +77,6 @@ class SQLData(object):
                     "description": description,
                 },
             )
-        return
 
     def updateData(self, key, value):
         uStr = 'UPDATE "%s"  SET "Value"=:value WHERE "Key" = :key;'
@@ -94,22 +88,17 @@ class SQLData(object):
         t = sqlalchemy.sql.expression.text(updateStr)
         with self.engine.begin() as conn:
             conn.execute(t, {"key": key, "value": value})
-        return
 
     def delData(self, key):
-        dStr = 'DELETE FROM "%s" WHERE "Key"=:key;' % (self.userTable)
+        dStr = f'DELETE FROM "{self.userTable}" WHERE "Key"=:key;'
         if self.engine.url.drivername.startswith("mysql"):
-            dStr = "DELETE FROM %s WHERE %s.Key=:key;" % (
-                self.userTable,
-                self.userTable,
-            )
+            dStr = f"DELETE FROM {self.userTable} WHERE {self.userTable}.Key=:key;"
 
         delStr = dStr
         t = sqlalchemy.sql.expression.text(delStr)
 
         with self.engine.begin() as conn:
             conn.execute(t, {"key": key})
-        return
 
 
 class TestReplication(TestController):
@@ -124,7 +113,6 @@ class TestReplication(TestController):
         }
         resp = self.make_system_request("delConfig", params)
         assert '"delConfig enableReplication": true' in resp
-        return
 
     def tearDown(self):
         """Overwrite parent tear down, which removes all realms"""
@@ -139,8 +127,6 @@ class TestReplication(TestController):
             "linotp.Config", str(datetime.now() + timedelta(milliseconds=sec))
         )
 
-        return
-
     def delData(self, key):
         sqlData = SQLData(connect=self.sqlconnect)
         sqlData.delData(key)
@@ -148,8 +134,6 @@ class TestReplication(TestController):
         sqlData.updateData(
             "linotp.Config", str(datetime.now() + timedelta(milliseconds=sec))
         )
-
-        return
 
     def addToken(self, user):
         params = {
@@ -160,8 +144,6 @@ class TestReplication(TestController):
         }
         response = self.make_admin_request("init", params)
         assert '"status": true,' in response
-
-        return
 
     def authToken(self, user):
         param = {"user": user, "pass": user}
@@ -184,7 +166,7 @@ class TestReplication(TestController):
         for cache in caches:
             params = {cache: enable_str}
             response = self.make_system_request("setConfig", params)
-            msg = '"setConfig %s:%s": true' % (cache, enable_str)
+            msg = f'"setConfig {cache}:{enable_str}": true'
             assert msg in response, response
 
     def set_cache_expiry(self, expiration):
@@ -196,10 +178,8 @@ class TestReplication(TestController):
         for cache in caches:
             params = {cache: expiration}
             response = self.make_system_request("setConfig", params)
-            msg = '"setConfig %s:%s": true' % (cache, expiration)
+            msg = f'"setConfig {cache}:{expiration}": true'
             assert msg in response, response
-
-        return
 
     def test_replication(self):
         """
@@ -242,8 +222,6 @@ class TestReplication(TestController):
         }
         resp = self.make_system_request("delConfig", params)
         assert '"delConfig enableReplication": true' in resp
-
-        return
 
     def test_replication_2(self):
         """
@@ -296,8 +274,6 @@ class TestReplication(TestController):
         }
         resp = self.make_system_request("delConfig", params)
         assert '"delConfig enableReplication": true' in resp
-
-        return
 
     def updateResolver_test(self):
         """
@@ -367,8 +343,6 @@ class TestReplication(TestController):
         resp = self.make_system_request("delConfig", params)
         assert '"delConfig enableReplication": true' in resp
 
-        return
-
     def updateRealm_test(self):
         """
         test replication with realm and resolver update
@@ -409,8 +383,6 @@ class TestReplication(TestController):
         }
         resp = self.make_system_request("delConfig", params)
         assert '"delConfig enableReplication": true' in resp
-
-        return
 
     def test_auth_updateRealm(self):
         """
@@ -519,8 +491,6 @@ class TestReplication(TestController):
         resp = self.make_system_request("delConfig", params)
         assert '"delConfig enableReplication": true' in resp
 
-        return
-
     def test_policy(self):
         """
         test the replication of policies
@@ -582,8 +552,6 @@ class TestReplication(TestController):
         resp = self.make_system_request("delConfig", params)
         assert '"delConfig enableReplication": true' in resp
 
-        return
-
     def test_updateRealm_with_caching(self):
         """
         test replication with realm and resolver update  with caching enabled
@@ -598,16 +566,12 @@ class TestReplication(TestController):
         finally:
             self.set_caching(enable=False)
 
-        return
-
     def test_updateRealm_wo_caching(self):
         """
         test replication with realm and resolver update  with caching disabled
         """
         self.set_caching(enable=False)
         self.updateRealm_test()
-
-        return
 
     def test_caching_expiration_value(self):
         """
@@ -644,7 +608,6 @@ class TestReplication(TestController):
         self.set_cache_expiry(expiration="180 minutes")
 
         self.set_cache_expiry(expiration="1h 20 minutes 90 s")
-        return
 
     def test_updateResolver_with_caching(self):
         """
@@ -660,16 +623,12 @@ class TestReplication(TestController):
         finally:
             self.set_caching(enable=False)
 
-        return
-
     def test_updateResolver_wo_caching(self):
         """
         test replication with resolver update with caching disabled
         """
         self.set_caching(enable=False)
         self.updateResolver_test()
-
-        return
 
 
 # eof #########################################################################

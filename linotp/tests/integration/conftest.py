@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -32,11 +31,9 @@ Pytest fixtures for linotp integration tests
 
 from datetime import datetime
 from pathlib import Path
-from typing import Dict
 
 import integration_data as data
 import pytest
-from linotp_selenium_helper.manage_ui import ManageUi
 from linotp_selenium_helper.test_case import TestCase
 
 
@@ -52,7 +49,7 @@ def testcase():
 
 
 @pytest.fixture
-def musicians_resolver(testcase: TestCase) -> Dict[str, str]:
+def musicians_resolver(testcase: TestCase) -> dict[str, str]:
     """Create the musicians LDAP resolver and remove it after test.
 
     manage a resolver for a test:
@@ -79,18 +76,18 @@ def musicians_resolver(testcase: TestCase) -> Dict[str, str]:
     if not existing:
         useridresolver_manager.create_resolver_via_api(data.musicians_ldap_resolver)
 
-    yield dict(
-        name=music_resolver["name"],
-        type=music_resolver["type"],
-        fullname=music_resolver["type"] + "." + music_resolver["name"],
-    )
+    yield {
+        "name": music_resolver["name"],
+        "type": music_resolver["type"],
+        "fullname": music_resolver["type"] + "." + music_resolver["name"],
+    }
 
     if not existing:
         useridresolver_manager.delete_resolver_via_api(music_resolver["name"])
 
 
 @pytest.fixture
-def musicians_realm(testcase: TestCase, musicians_resolver: Dict[str, str]) -> str:
+def musicians_realm(testcase: TestCase, musicians_resolver: dict[str, str]) -> str:
     """Create the musician realm and remove it after the test.
 
     manage a realm for a test:

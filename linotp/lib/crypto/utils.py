@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -111,7 +110,7 @@ def compare_password(password, crypted_password):
     # compatibilty case:
     # the rare case for the broken system crypto libs like on macos
 
-    from crypt import crypt as libcrypt
+    from crypt import crypt as libcrypt  # noqa: PLC0415
 
     new_crypted_passw = libcrypt(password, crypted_password)
     return compare(new_crypted_passw, crypted_password)
@@ -144,7 +143,7 @@ def compare(one, two):
     :return: boolean
 
     """
-    return all(tup1 == tup2 for tup1, tup2 in zip(one, two))
+    return all(tup1 == tup2 for tup1, tup2 in zip(one, two, strict=True))
 
 
 def get_hashalgo_from_description(description, fallback="sha1"):
@@ -162,9 +161,11 @@ def get_hashalgo_from_description(description, fallback="sha1"):
     try:
         hash_func = Hashlib_map.get(description.lower(), Hashlib_map[fallback.lower()])
     except Exception as exx:
-        raise Exception("unsupported hash function %r:%r", description, exx)
+        msg = "unsupported hash function %r:%r"
+        raise Exception(msg, description, exx) from exx
     if not callable(hash_func):
-        raise Exception("hash function not callable %r", hash_func)
+        msg = "hash function not callable %r"
+        raise Exception(msg, hash_func)
 
     return hash_func
 
@@ -185,7 +186,7 @@ def check(st):
     return res.upper()
 
 
-def createActivationCode(acode: str = None, checksum=True):
+def createActivationCode(acode: str | None = None, checksum=True):
     """
     create the activation code
 
@@ -193,10 +194,7 @@ def createActivationCode(acode: str = None, checksum=True):
     :param checksum: flag to indicate, if a checksum will be calculated
     :return: return the activation code
     """
-    if acode is None:
-        acode = geturandom(20)
-    else:
-        acode = acode.encode("utf-8")
+    acode = geturandom(20) if acode is None else acode.encode("utf-8")
 
     activationcode = base64.b32encode(acode)
     if checksum is True:
@@ -258,18 +256,19 @@ def kdf2(
         bcode = base64.b32decode(acode)
 
     except Exception as exx:
-        error = "Error during decoding activation code %r: %r" % (acode, exx)
+        error = f"Error during decoding activation code {acode!r}: {exx!r}"
         log.error(error)
-        raise Exception(error)
+        raise Exception(error) from exx
 
     if checksum is True:
         checkCode = str(activationcode[-2:])
         veriCode = str(check(bcode)[-2:])
         if checkCode != veriCode:
-            raise Exception(
+            msg = (
                 "[crypt:kdf2] activation code checksum error."
-                " [%s]%s:%s" % (acode, veriCode, checkCode)
+                f" [{acode}]{veriCode}:{checkCode}"
             )
+            raise Exception(msg)
 
     activ = binascii.hexlify(bcode).decode()
 
@@ -353,16 +352,15 @@ def _get_hsm_obj_from_context(hsm=None):
     :rtype:
     """
 
-    if hsm:
-        hsm_obj = hsm.get("obj")
-    else:
-        hsm_obj = context.get("hsm", {}).get("obj")
+    hsm_obj = hsm.get("obj") if hsm else context.get("hsm", {}).get("obj")
 
     if not hsm_obj:
-        raise HSMException("no hsm defined in execution context!")
+        msg = "no hsm defined in execution context!"
+        raise HSMException(msg)
 
     if hsm_obj.isReady() is False:
-        raise HSMException("hsm not ready!")
+        msg = "hsm not ready!"
+        raise HSMException(msg)
     return hsm_obj
 
 
@@ -459,7 +457,6 @@ def zerome(bufferObject):
     )
     ctypes.memset(data, 0, size.value)
     # print repr(bufferObject)
-    return
 
 
 def init_key_partition(config, partition, key_type="ed25519"):
@@ -468,16 +465,17 @@ def init_key_partition(config, partition, key_type="ed25519"):
     store it in the linotp config
     """
 
-    if not key_type == "ed25519":
-        raise ValueError("Unsupported keytype: %s", key_type)
+    if key_type != "ed25519":
+        msg = f"Unsupported keytype: {key_type}"
+        raise ValueError(msg)
 
-    import linotp.lib.config
+    import linotp.lib.config  # noqa: PLC0415
 
     public_key, secret_key = gen_dsa_keypair()
     secret_key_entry = base64.b64encode(secret_key).decode("utf-8")
 
     linotp.lib.config.storeConfig(
-        key="SecretKey.Partition.%d" % partition,
+        key=f"SecretKey.Partition.{partition}",
         val=secret_key_entry,
         typ="encrypted_data",
     )
@@ -485,7 +483,7 @@ def init_key_partition(config, partition, key_type="ed25519"):
     public_key_entry = base64.b64encode(public_key).decode("utf-8")
 
     linotp.lib.config.storeConfig(
-        key="PublicKey.Partition.%d" % partition,
+        key=f"PublicKey.Partition.{partition}",
         val=public_key_entry,
         typ="encrypted_data",
     )
@@ -497,24 +495,24 @@ def get_secret_key(partition):
     extracts and decodes the secret key and returns it as a 32 bytes.
     """
 
-    import linotp.lib.config
+    import linotp.lib.config  # noqa: PLC0415
 
-    key = "linotp.SecretKey.Partition.%d" % partition
+    key = f"linotp.SecretKey.Partition.{partition}"
 
     # FIXME: unencryption should not happen at this early stage
     secret_key_b64 = linotp.lib.config.getFromConfig(key).get_unencrypted()
 
     if not secret_key_b64:
-        raise ConfigAdminError("No secret key found for %d" % partition)
+        msg = f"No secret key found for {partition}"
+        raise ConfigAdminError(msg)
 
     secret_key = base64.b64decode(secret_key_b64)
 
     # TODO: key type checking
 
     if len(secret_key) != 64:
-        raise ValidateError(
-            "Secret key has an invalid format. Key must be 64 bytes long"
-        )
+        msg = "Secret key has an invalid format. Key must be 64 bytes long"
+        raise ValidateError(msg)
 
     return secret_key
 
@@ -525,24 +523,24 @@ def get_public_key(partition):
     extracts and decodes the public key and returns it as a 32 bytes.
     """
 
-    import linotp.lib.config
+    import linotp.lib.config  # noqa: PLC0415
 
-    key = "linotp.PublicKey.Partition.%d" % partition
+    key = f"linotp.PublicKey.Partition.{partition}"
 
     # FIXME: unencryption should not happen at this early stage
     public_key_b64 = linotp.lib.config.getFromConfig(key).get_unencrypted()
 
     if not public_key_b64:
-        raise ConfigAdminError("No public key found for %d" % partition)
+        msg = f"No public key found for {partition}"
+        raise ConfigAdminError(msg)
 
     public_key = base64.b64decode(public_key_b64)
 
     # TODO: key type checking
 
     if len(public_key) != 32:
-        raise ValidateError(
-            "Public key has an invalid format. Key must be 32 bytes long"
-        )
+        msg = "Public key has an invalid format. Key must be 32 bytes long"
+        raise ValidateError(msg)
 
     return public_key
 
@@ -604,10 +602,10 @@ def extract_tan(signature, digits):
     itan = struct.unpack(">I", signature[offset : offset + 4])[0] & 0x7FFFFFFF
 
     # convert the binaries of the signature to an integer based string
-    tan = "%d" % (itan % 10**digits)
+    tan = f"{(itan % 10**digits):d}"
 
     # fill up the tan with leading zeros
-    stan = "%s%s" % ("0" * (digits - len(tan)), tan)
+    stan = f"{'0' * (digits - len(tan))}{tan}"
 
     return stan
 

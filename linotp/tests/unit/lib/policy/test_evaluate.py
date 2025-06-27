@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -30,8 +29,6 @@ Test the passthrough Policy in combination with the passOnNoToken
 """
 
 import unittest
-
-from mock import patch
 
 from linotp.lib.policy.evaluate import PolicyEvaluator
 

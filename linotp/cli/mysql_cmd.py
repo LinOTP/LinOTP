@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -112,7 +111,7 @@ def backup_mysql_database():
             " MySQL database. current database driver "
             f"is {engine.url.drivername!r}"
         )
-        raise click.Abort()
+        raise click.Abort
 
     # ---------------------------------------------------------------------- --
 
@@ -144,11 +143,11 @@ def backup_mysql_database():
     app.echo(f"MySQL backup {backup_filename!r}", v=1)
 
     cmd = " ".join(command)
-    result = subprocess.call(cmd, shell=True)  # nosec
+    result = subprocess.call(cmd, shell=True)  # nosec # nosemgrep B602
 
     if result != 0 or not os.path.isfile(backup_filename):
         app.echo(f"Failed to create MySQL backup file: {result!r}")
-        raise click.Abort()
+        raise click.Abort
 
     app.echo(f"MySQL backup file {backup_filename!s} created!", v=1)
 
@@ -165,7 +164,7 @@ def restore_mysql_database(filename: str):
 
     if not os.path.isfile(backup_filename):
         app.echo(f"MySQL backup file {filename!r} cannot be accessed.", v=1)
-        raise click.Abort()
+        raise click.Abort
 
     # ---------------------------------------------------------------------- --
 
@@ -181,7 +180,7 @@ def restore_mysql_database(filename: str):
             "MySQL database. Current database driver "
             f"is {engine.url.drivername!r}"
         )
-        raise click.Abort()
+        raise click.Abort
 
     # ---------------------------------------------------------------------- --
 
@@ -205,15 +204,17 @@ def restore_mysql_database(filename: str):
 
     app.echo(f"Restoring MySQL backup {backup_filename!r}", v=1)
 
-    with open(backup_filename, "r") as backup_file:
-        result = subprocess.run(command, stdin=backup_file, capture_output=True)
+    with open(backup_filename) as backup_file:
+        result = subprocess.run(
+            command, stdin=backup_file, capture_output=True, check=False
+        )
 
         if result.returncode != 0:
             app.echo(
                 "Failed to restore MySQL backup file: "
                 f"{result.stderr.decode('utf-8')!s}"
             )
-            raise click.Abort()
+            raise click.Abort
 
         msg = result.stdout.decode("utf-8")
 

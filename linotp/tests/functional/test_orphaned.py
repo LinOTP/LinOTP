@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -31,7 +30,6 @@
 import copy
 import json
 import logging
-import unittest
 
 import pytest
 import sqlalchemy
@@ -42,25 +40,22 @@ from linotp.tests import TestController
 log = logging.getLogger(__name__)
 
 
-class SQLUser(object):
+class SQLUser:
     def __init__(self, connect="sqlite://"):
         self.tableName = "User2"
         self.usercol = '"user"'
-        self.userTable = '"%s"' % (self.tableName)
+        self.userTable = f'"{self.tableName}"'
 
         self.connection = None
         try:
             self.engine = create_engine(connect)
             self.sqlurl = self.engine.url
             if self.sqlurl.drivername.startswith("mysql"):
-                self.userTable = "%s.%s" % (
-                    self.sqlurl.database,
-                    self.tableName,
-                )
+                self.userTable = f"{self.sqlurl.database}.{self.tableName}"
                 self.usercol = "user"
 
         except Exception as e:
-            print("%r" % e)
+            print(f"{e!r}")
 
         umap = {
             "userid": "id",
@@ -82,8 +77,6 @@ class SQLUser(object):
         # extend the dict with userid resolver attributes from the connect
         conn_dict = self._parse_connection(connect)
         self.resolverDef.update(conn_dict)
-
-        return
 
     def _parse_connection(self, connect):
         """
@@ -116,10 +109,10 @@ class SQLUser(object):
         return self.resolverDef
 
     def creatTable(self):
-        createStr = """
-            CREATE TABLE %s
+        createStr = f"""
+            CREATE TABLE {self.userTable}
             (
-              %s text,
+              {self.usercol} text,
               telephonenumber text,
               mobile text,
               sn text,
@@ -129,17 +122,13 @@ class SQLUser(object):
               id text,
               mail text
             )
-            """ % (
-            self.userTable,
-            self.usercol,
-        )
+            """
         t = sqlalchemy.sql.expression.text(createStr)
         with self.engine.begin() as conn:
             conn.execute(t)
-        return
 
     def dropTable(self):
-        dropStr = "DROP TABLE %s;" % (self.userTable)
+        dropStr = f"DROP TABLE {self.userTable};"
         t = sqlalchemy.sql.expression.text(dropStr)
         with self.engine.begin() as conn:
             conn.execute(t)
@@ -156,15 +145,12 @@ class SQLUser(object):
         uid,
         mail,
     ):
-        intoStr = """
-            INSERT INTO %s( %s, telephonenumber, mobile,
+        intoStr = f"""
+            INSERT INTO {self.userTable}( {self.usercol}, telephonenumber, mobile,
             sn, givenname, password, salt, id, mail)
             VALUES (:user, :telephonenumber, :mobile, :sn, :givenname,
                     :password, :salt, :id, :mail);
-            """ % (
-            self.userTable,
-            self.usercol,
-        )
+            """
         t = sqlalchemy.sql.expression.text(intoStr)
 
         with self.engine.begin() as conn:
@@ -187,7 +173,7 @@ class SQLUser(object):
         # FROM Config WHERE Config.Key = :key"""), key=REPLICATION_CONFIG_KEY)
 
     def query(self):
-        selectStr = "select * from %s" % (self.userTable)
+        selectStr = f"select * from {self.userTable}"
         with self.engine.begin() as conn:
             result = conn.execute(selectStr)
         res = list(result)
@@ -195,30 +181,29 @@ class SQLUser(object):
 
     def delUsers(self, uid=None, username=None):
         if username is not None:
-            delStr = "DELETE FROM %s  WHERE user=:user;" % (self.userTable)
+            delStr = f"DELETE FROM {self.userTable}  WHERE user=:user;"
             t = sqlalchemy.sql.expression.text(delStr)
             with self.engine.begin() as conn:
                 conn.execute(t, {"user": username})
 
         elif type(uid) in (str, ""):
-            delStr = "DELETE FROM %s  WHERE id=:id;" % (self.userTable)
+            delStr = f"DELETE FROM {self.userTable}  WHERE id=:id;"
             t = sqlalchemy.sql.expression.text(delStr)
             with self.engine.begin() as conn:
                 conn.execute(t, {"id": uid})
 
         elif uid is None:
-            delStr = "DELETE FROM %s ;" % (self.userTable)
+            delStr = f"DELETE FROM {self.userTable} ;"
             t = sqlalchemy.sql.expression.text(delStr)
             with self.engine.begin() as conn:
                 conn.execute(t)
 
 
-class OrphandTestHelpers(object):
+class OrphandTestHelpers:
     def setUpSQL(self):
         self.sqlconnect = self.app.config.get("DATABASE_URI")
         sqlUser = SQLUser(connect=self.sqlconnect)
         self.sqlResolverDef = sqlUser.getResolverDefinition()
-        return
 
     def addUsers(self, usercount=10):
         userAdd = SQLUser(connect=self.sqlconnect)
@@ -232,14 +217,14 @@ class OrphandTestHelpers(object):
             userAdd.delUsers()
 
         for i in range(1, usercount):
-            user = "hey%d" % i
-            telephonenumber = "012345-678-%d" % i
-            mobile = "00123-456-%d" % i
-            sn = "yak%d" % i
-            givenname = "kayak%d" % i
+            user = f"hey{i}"
+            telephonenumber = f"012345-678-{i}"
+            mobile = f"00123-456-{i}"
+            sn = f"yak{i}"
+            givenname = f"kayak{i}"
             password = "safr2r32"
             salt = "t123"
-            uid = "__%d" % i
+            uid = f"__{i}"
             mail = sn + "." + givenname + "@example.com"
 
             userAdd.addUser(
@@ -287,7 +272,7 @@ class OrphandTestHelpers(object):
             },
         ]
         for user in u_dict:
-            user["mail"] = "%s.%s@example.com" % (
+            user["mail"] = "{}.{}@example.com".format(
                 user["sn"],
                 user["givenname"],
             )
@@ -313,13 +298,11 @@ class OrphandTestHelpers(object):
         assert '"value": true' in resp, resp
 
         resp = self.make_system_request(action="getResolvers")
-        assert '"resolvername": "%s"' % (name) in resp, resp
+        assert f'"resolvername": "{name}"' in resp, resp
 
         param2 = {"resolver": name}
         resp = self.make_system_request(action="getResolver", params=param2)
         assert '"Table": "User2"' in resp, resp
-
-        return
 
     def delSqlResolver(self, name):
         parameters = {
@@ -331,7 +314,7 @@ class OrphandTestHelpers(object):
         return resp
 
     def addSqlRealm(self, realmName, resolverName, defaultRealm=False):
-        resolver = "useridresolver.SQLIdResolver.IdResolver.%s" % resolverName
+        resolver = f"useridresolver.SQLIdResolver.IdResolver.{resolverName}"
         parameters = {"resolvers": resolver, "realm": realmName}
 
         resp = self.make_system_request("setRealm", params=parameters)
@@ -341,7 +324,6 @@ class OrphandTestHelpers(object):
             params = {"realm": realmName}
             resp = self.make_system_request("setDefaultRealm", params=params)
             assert '"value": true' in resp, resp
-        return
 
     def delSqlRealm(self, realmName):
         parameters = {
@@ -379,8 +361,6 @@ class OrphandTestHelpers(object):
 
         response = self.make_admin_request(action="init", params=param)
         assert '"status": true,' in response, response
-
-        return
 
     def authToken(self, user):
         param = {"user": user, "pass": user}
@@ -456,8 +436,6 @@ class TestOrphandTokens(TestController, OrphandTestHelpers):
         self.delSqlRealm(realmName)
         self.delSqlResolver(resolverName)
 
-        return
-
     def test_orphandTokens_byResolver(self):
         """
         test an orphaned token by resolver - where the user is not retrievable by the resolver any more
@@ -504,7 +482,7 @@ class TestOrphandTokens(TestController, OrphandTestHelpers):
         try:
             empty_user_list = self.getUserList(resolverName)
         except Exception as e:
-            message = "%r" % e
+            message = f"{e!r}"
             log.error(message)
         assert len(empty_user_list) == 0, empty_user_list
         # assert "invalid resolver class specification" in message
@@ -515,14 +493,10 @@ class TestOrphandTokens(TestController, OrphandTestHelpers):
         res = self.showTokens()
         assert "/:no user info:/" in res, res
 
-        return
-
     def test_again(self):
         for _i in range(1, 3):
             self.test_orphandTokens_byResolver()
             self.test_orphandTokens_byUser()
-
-        return
 
     def test_umlaut_search(self):
         """
@@ -588,8 +562,6 @@ class TestOrphandTokens(TestController, OrphandTestHelpers):
         assert '"userid": "__9998"' in response, response
         assert '"userid": "__9997"' in response, response
         assert '"userid": "__9999"' in response, response
-
-        return
 
 
 ###eof#########################################################################

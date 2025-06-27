@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -34,9 +33,9 @@ import json
 import logging
 import os
 from datetime import datetime, timedelta
+from unittest.mock import patch
 
 from freezegun import freeze_time
-from mock import patch
 
 import linotp.lib.support
 from linotp.lib.support import InvalidLicenseException
@@ -75,7 +74,7 @@ class TestSupport(TestController):
 
         demo_license_file = os.path.join(self.fixture_path, license_filename)
 
-        with open(demo_license_file, "r") as f:
+        with open(demo_license_file) as f:
             demo_license = f.read()
 
         upload_files = [("license", "demo-lic.pem", demo_license)]
@@ -100,7 +99,8 @@ class TestSupport(TestController):
         response = self.make_system_request("isSupportValid")
 
         if "your product is unlicensed" in response:
-            raise InvalidLicenseException("your product is unlicensed")
+            msg = "your product is unlicensed"
+            raise InvalidLicenseException(msg)
 
         assert '"status": true' in response
         assert '"value": true' in response
@@ -119,8 +119,6 @@ class TestSupport(TestController):
         assert expiry_date.year == expected_expiry.year
         assert expiry_date.month == expected_expiry.month
         assert expiry_date.day == expected_expiry.day
-
-        return
 
     def test_demo_license_expiration(self):
         """
@@ -147,8 +145,6 @@ class TestSupport(TestController):
         assert not jresp.get("result", {}).get("value")
         assert "License expired" in jresp.get("detail", {}).get("reason")
 
-        return
-
     def test_set_expires_license(self):
         """
         check that installation of expired license fails
@@ -159,15 +155,13 @@ class TestSupport(TestController):
         assert '"status": false' in response
         assert "expired - valid till '2017-12-12'" in response
 
-        return
-
     def test_set_license_fails(self):
         """
         check that license could not be installed if too many tokens are used
         """
 
         for i in range(1, 10):
-            params = {"type": "hmac", "genkey": 1, "serial": "HMAC_DEMO%d" % i}
+            params = {"type": "hmac", "genkey": 1, "serial": f"HMAC_DEMO{i}"}
             response = self.make_admin_request("init", params)
             assert '"status": true' in response
             assert '"value": true' in response
@@ -223,7 +217,7 @@ class TestSupport(TestController):
                 params = {
                     "type": "hmac",
                     "genkey": 1,
-                    "serial": "HMAC_DEMO%d" % i,
+                    "serial": f"HMAC_DEMO{i}",
                 }
                 response = self.make_admin_request("init", params)
                 assert '"status": true' in response
@@ -280,7 +274,7 @@ class TestSupport(TestController):
             # 2. enroll tokens up to the license limit, which is
             #    6 tokens + 2 grace tokens
 
-            for i in range(1, 6 + 2):
+            for _i in range(1, 6 + 2):
                 response = self.make_userselfservice_request(
                     "enroll", params={"type": "hmac"}, auth_user=auth_user
                 )
@@ -313,7 +307,7 @@ class TestSupport(TestController):
 
         with freeze_time(license_valid_date):
             license_file = os.path.join(self.fixture_path, "linotp2.token_user.pem")
-            with open(license_file, "r") as f:
+            with open(license_file) as f:
                 license = f.read()
 
             upload_files = [("license", "linotp2.token_user.pem", license)]
@@ -334,12 +328,12 @@ class TestSupport(TestController):
             # - tokens per user are not limited
 
             for user in ["hans", "rollo", "susi", "horst", "user1", "user2"]:
-                for i in range(0, 2):
+                for i in range(2):
                     params = {
                         "type": "pw",
                         "user": user + "@myDefRealm",
                         "otpkey": "geheim",
-                        "serial": "%s.%d" % (user, i),
+                        "serial": f"{user}.{i}",
                     }
                     response = self.make_admin_request("init", params)
                     assert '"value": true' in response, response
@@ -366,19 +360,19 @@ class TestSupport(TestController):
 
             # disable one of the users tokens and now we can enroll more users
 
-            for i in range(0, 2):
+            for i in range(2):
                 params = {
-                    "serial": "hans.%d" % i,
+                    "serial": f"hans.{i}",
                 }
                 response = self.make_admin_request("disable", params)
                 assert '"value": 1' in response
 
-            for i in range(0, 2):
+            for i in range(2):
                 params = {
                     "type": "pw",
                     "user": "root@myDefRealm",
                     "otpkey": "geheim",
-                    "serial": "root.%d" % i,
+                    "serial": f"root.{i}",
                 }
 
                 response = self.make_admin_request("init", params)
@@ -437,7 +431,7 @@ class TestSupport(TestController):
                 "type": "pw",
                 "user": user + "@myDefRealm",
                 "otpkey": "geheim",
-                "serial": "%s.%d" % (user, 3),
+                "serial": f"{user}.{3}",
             }
             response = self.make_admin_request("init", params)
             assert response.json["result"]["value"], response
@@ -448,7 +442,7 @@ class TestSupport(TestController):
                 "type": "pw",
                 "user": user + "@myDefRealm",
                 "otpkey": "geheim",
-                "serial": "%s.%d" % (user, 4),
+                "serial": f"{user}.{4}",
             }
             response = self.make_admin_request("init", params)
             assert not response.json["result"]["status"], response
@@ -477,7 +471,7 @@ class TestSupport(TestController):
                 "type": "pw",
                 "user": user + "@myDefRealm",
                 "otpkey": "geheim",
-                "serial": "%s.%d" % (user, 3),
+                "serial": f"{user}.{3}",
             }
             response = self.make_admin_request("init", params)
             assert response.json["result"]["value"], response
@@ -488,7 +482,7 @@ class TestSupport(TestController):
                 "type": "pw",
                 "user": user + "@myDefRealm",
                 "otpkey": "geheim",
-                "serial": "%s.%d" % (user, 3),
+                "serial": f"{user}.{3}",
             }
             response = self.make_admin_request("init", params)
             assert not response.json["result"]["status"], response
@@ -521,7 +515,7 @@ class TestSupport(TestController):
 
         with freeze_time(license_valid_date):
             license_file = os.path.join(self.fixture_path, "linotp2.token_user.pem")
-            with open(license_file, "r") as f:
+            with open(license_file) as f:
                 license = f.read()
 
             upload_files = [("license", "linotp2.token_user.pem", license)]
@@ -578,7 +572,7 @@ class TestSupport(TestController):
 
         with freeze_time(license_valid_date):
             license_file = os.path.join(self.fixture_path, "linotp2.token_user.pem")
-            with open(license_file, "r") as f:
+            with open(license_file) as f:
                 license = f.read()
 
             upload_files = [("license", "linotp2.token_user.pem", license)]
@@ -656,11 +650,11 @@ class TestSupport(TestController):
             assert '"status": true' in response
             assert '"value": true' in response
 
-            for i in range(0, licensed_tokens + grace_limit):
+            for i in range(licensed_tokens + grace_limit):
                 params = {
                     "type": "hmac",
                     "genkey": 1,
-                    "serial": "HMAC_DEMO%d" % i,
+                    "serial": f"HMAC_DEMO{i}",
                 }
                 response = self.make_admin_request("init", params)
                 assert '"status": true' in response
@@ -676,7 +670,7 @@ class TestSupport(TestController):
             params = {
                 "type": "hmac",
                 "genkey": 1,
-                "serial": "HMAC_DEMO%d" % 100,
+                "serial": "HMAC_DEMO100",
             }
 
             response = self.make_admin_request("init", params)
@@ -688,7 +682,7 @@ class TestSupport(TestController):
             params = {
                 "type": "forward",
                 "otpkey": "geheim",
-                "forward.serial": "HMAC_DEMO%d" % 1,
+                "forward.serial": "HMAC_DEMO1",
             }
 
             response = self.make_admin_request("init", params)

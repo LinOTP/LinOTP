@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -42,12 +41,10 @@ def get_imprint(realm):
     res = ""
     realm = realm.lower()
     directory = config.get("linotp.imprint_directory", "/etc/linotp/imprint")
-    filename = "%s/%s.imprint" % (directory, realm)
+    filename = f"{directory}/{realm}.imprint"
     try:
-        pass
-        f = open(filename)
-        res = f.read()
-        f.close()
+        with open(filename) as f:
+            res = f.read()
     except Exception as e:
         log.info("[get_imprint] can not read imprint file: %s. (%r)", filename, e)
 

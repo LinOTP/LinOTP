@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -28,8 +27,7 @@
 
 import os
 import unittest
-
-from mock import patch
+from unittest.mock import patch
 
 import linotp.provider.voiceprovider.custom_voice_provider
 from linotp.provider.voiceprovider.custom_voice_provider import (
@@ -92,7 +90,7 @@ class TestVoiceProvider(unittest.TestCase):
             custom_provider.submitVoiceMessage(
                 "+49 123546891", "your otp", "123456", "en"
             )
-            called = mocked_log_warning.called
+            _called = mocked_log_warning.called
 
         with patch(
             "linotp.provider.voiceprovider.custom_voice_provider.log.warning"
@@ -100,9 +98,7 @@ class TestVoiceProvider(unittest.TestCase):
             custom_provider.submitVoiceMessage(
                 "+49 123546891", "your {otp}", "123456", "en"
             )
-            called2 = mocked_log_warning.called
-
-        return
+            _called2 = mocked_log_warning.called
 
 
 # eof #

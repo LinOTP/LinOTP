@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,8 +26,8 @@
 """static policy definitions"""
 
 import logging
-from typing import Dict
 
+import linotp.lib.token
 from linotp.lib.context import request_context
 from linotp.lib.policy.util import parse_action
 from linotp.lib.type_utils import boolean, parse_duration
@@ -120,8 +119,8 @@ POLICY_DEFINTIONS = {
         "setDescription": {"type": "bool"},
         "setMOTPPIN": {"type": "bool"},
         "getotp": {"type": "bool"},
-        "otp_pin_maxlength": {"type": "int", "value": list(range(0, 100))},
-        "otp_pin_minlength": {"type": "int", "value": list(range(0, 100))},
+        "otp_pin_maxlength": {"type": "int", "value": list(range(100))},
+        "otp_pin_minlength": {"type": "int", "value": list(range(100))},
         "otp_pin_contents": {"type": "str"},
         "max_count_dpw": {"type": "int"},
         "max_count_hotp": {"type": "int"},
@@ -177,7 +176,7 @@ POLICY_DEFINTIONS = {
             "type": "int",
             "desc": "Limit the number of tokens a user in the realm may have assigned.",
         },
-        "otp_pin_random": {"type": "int", "value": list(range(0, 100))},
+        "otp_pin_random": {"type": "int", "value": list(range(100))},
         "otp_pin_random_content": {
             "type": "string",
             "desc": "The contents of the temporary password, "
@@ -489,7 +488,7 @@ POLICY_DEFINTIONS = {
 }
 
 
-def get_policy_definitions(scope: str = None) -> Dict:
+def get_policy_definitions(scope: str | None = None) -> dict:
     """cache the policy definitions access in the local request context.
 
     as the evaluation of the policy definition is resource intensive we cache
@@ -530,14 +529,12 @@ def _get_policy_definitions():
     # - init<TT>
     # - enroll<TT>, but only, if there is a rendering section
 
-    import linotp.lib.token
-
     token_type_list = linotp.lib.token.get_token_type_list()
 
     for ttype in token_type_list:
-        pol["enrollment"]["maxtoken%s" % ttype.upper()] = {"type": "int"}
+        pol["enrollment"][f"maxtoken{ttype.upper()}"] = {"type": "int"}
 
-        pol["admin"]["init%s" % ttype.upper()] = {"type": "bool"}
+        pol["admin"][f"init{ttype.upper()}"] = {"type": "bool"}
 
         # ----------------------------------------------------------------- --
 
@@ -550,9 +547,9 @@ def _get_policy_definitions():
 
         conf = linotp.lib.token.getTokenConfig(ttype, section="selfservice")
         if conf and "enroll" in conf:
-            pol["selfservice"]["enroll%s" % ttype.upper()] = {
+            pol["selfservice"][f"enroll{ttype.upper()}"] = {
                 "type": "bool",
-                "desc": "The user is allowed to enroll a %s token." % ttype,
+                "desc": f"The user is allowed to enroll a {ttype} token.",
             }
 
         # ----------------------------------------------------------------- --
@@ -631,8 +628,9 @@ def validate_policy_definition(policy):
         # validation for this
         if action in actions_to_skip.get(scope, {}):
             log.info(
-                "action validation skipped for policy: %r action: %r"
-                % (policy["name"], action)
+                "action validation skipped for policy: %r action: %r",
+                policy["name"],
+                action,
             )
             continue
 
@@ -645,12 +643,15 @@ def validate_policy_definition(policy):
         if not definition:
             log.error(
                 "policy: %r uses action %r which is not defined in the policy"
-                " definitions!" % (policy["name"], action)
+                " definitions!",
+                policy["name"],
+                action,
             )
 
-            raise ValueError(
-                "unsupported policy action %r in policy %r " % (action, policy["name"])
+            msg = "unsupported policy action {!r} in policy {!r} ".format(
+                action, policy["name"]
             )
+            raise ValueError(msg)
 
         # .2. type conversion
         # if there is a policy definition and there is a type declaration
@@ -659,20 +660,22 @@ def validate_policy_definition(policy):
             try:
                 value = convert_policy_value(value, definition["type"])
             except ValueError as exx:
-                raise Exception(
-                    "Action value %r for %s.%s not of the expected type %r"
-                    % (value, scope, action, definition["type"])
+                msg = (
+                    "Action value {!r} for {}.{} not of the expected type {!r}".format(
+                        value, scope, action, definition["type"]
+                    )
                 )
+                raise Exception(msg) from exx
 
         # .3. a "value" comparison:
         # if there is a "value" definition, we have to assur that the value is
         # in the value range or in the set
         if "value" in definition:
             if value not in definition["value"]:
-                raise Exception(
-                    "Action value %r for %s.%s not in supported values %r"
-                    % (value, scope, action, definition["value"])
+                msg = "Action value {!r} for {}.{} not in supported values {!r}".format(
+                    value, scope, action, definition["value"]
                 )
+                raise Exception(msg)
 
         # .3. b "range" comparison
         # if there is a "range" definition all provided entries of the action
@@ -682,13 +685,13 @@ def validate_policy_definition(policy):
         elif "range" in definition:
             # normalize the value so that we always deal with the set()
             if not isinstance(value, set):
-                value = set([value])
+                value = {value}
 
             if len(value - set(definition["range"])) != 0:
-                raise Exception(
-                    "Action value %r for %s.%s not in supported range %r"
-                    % (value, scope, action, definition["range"])
+                msg = "Action value {!r} for {}.{} not in supported range {!r}".format(
+                    value, scope, action, definition["range"]
                 )
+                raise Exception(msg)
 
     return
 
@@ -707,7 +710,8 @@ def convert_policy_value(value, value_type):
 
         elif value_type in ["str", "string"]:
             if not isinstance(value, str):
-                raise ValueError("value %r is not of type string!")
+                msg = "value %r is not of type string!"
+                raise ValueError(msg)
             return value
 
         elif value_type == "int":
@@ -724,8 +728,9 @@ def convert_policy_value(value, value_type):
             except ValueError:
                 pass
         # if we end up here, none of the proposed types could be applied
-        log.error("unable to convert value %r to %r" % (value, val_type))
-        raise ValueError("unable to convert %r to %r" % (value, val_type))
+        log.error("unable to convert value %r to %r", value, val_type)
+        msg = f"unable to convert {value!r} to {val_type!r}"
+        raise ValueError(msg)
 
     elif value_type == "set":
         # there is no easy way to deal with a set currently as a set defines
@@ -742,7 +747,7 @@ def convert_policy_value(value, value_type):
             value_set.add(val)
 
         if len(value_set) == 1:
-            return list(value_set)[0]
+            return next(iter(value_set))
 
         return value_set
 

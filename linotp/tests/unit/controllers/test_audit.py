@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -40,20 +39,20 @@ def auditparams():
     Fixture that provides parameters that can be used to construct
     a test audit log entry
     """
-    params = dict(
-        serial="ABC123",
-        action="testAction",
-        success="1",
-        tokentype="pw",
-        user="operator",
-        realm="realmtest",
-        administrator="admin",
-        action_detail="This is a test audit entry",
-        info="info entry",
-        client="client1",
-        log_level="debug",
-        clearance_level="1",
-    )
+    params = {
+        "serial": "ABC123",
+        "action": "testAction",
+        "success": "1",
+        "tokentype": "pw",
+        "user": "operator",
+        "realm": "realmtest",
+        "administrator": "admin",
+        "action_detail": "This is a test audit entry",
+        "info": "info entry",
+        "client": "client1",
+        "log_level": "debug",
+        "clearance_level": "1",
+    }
     return params
 
 
@@ -75,7 +74,7 @@ def search(adminclient):
     # to the app and client fixtures within the function
 
     def _search(expected_status_code=200, json=True, **params):
-        outform = json and "json" or "csv"
+        outform = (json and "json") or "csv"
         queryparams = dict(params, outform=outform)
         response = adminclient.get("audit/search", query_string=queryparams)
         assert response.status_code == 200
@@ -85,7 +84,7 @@ def search(adminclient):
     return _search
 
 
-class TestAuditSearch(object):
+class TestAuditSearch:
     def test_audit_json_empty(self, search):
         response = search()
         expected = {"page": 1, "rows": [], "total": 0}
@@ -115,8 +114,8 @@ class TestAuditSearch(object):
         # THEN the operation is logged and can be read by audit/search
         response = adminclient.get("/api/v2/auditlog/")
         assert (
-            "system/getConfig"
-            == response.json["result"]["value"]["pageRecords"][0]["action"]
+            response.json["result"]["value"]["pageRecords"][0]["action"]
+            == "system/getConfig"
         ), response.json
 
         # test auditlog can be filtered
@@ -143,7 +142,7 @@ class TestAuditSearch(object):
                 query_string={filter: "Empty response -> filtering works"},
             )
             returned_entries = response.json["result"]["value"]["pageRecords"]
-            assert 0 == len(returned_entries), (filter, response.json)
+            assert len(returned_entries) == 0, (filter, response.json)
 
         # test wildcard operator `*`
         response = adminclient.get(
@@ -151,7 +150,7 @@ class TestAuditSearch(object):
             query_string={"action": "*ystem/getConfi*"},
         )
         returned_entries = response.json["result"]["value"]["pageRecords"]
-        assert 1 == len(returned_entries), (filter, response.json)
+        assert len(returned_entries) == 1, (filter, response.json)
 
     def test_audit_with_v2_sorting(self, adminclient, search):
         # create an audit record by retrieving the system config
@@ -165,8 +164,8 @@ class TestAuditSearch(object):
             query_string={"sortBy": "action", "sortOrder": "asc"},
         )
         returned_entries_asc = response_asc.json["result"]["value"]["pageRecords"]
-        assert 2 == len(returned_entries_asc), response_asc.json
-        assert "api/v2/auditlog/" == returned_entries_asc[0]["action"], (
+        assert len(returned_entries_asc) == 2, response_asc.json
+        assert returned_entries_asc[0]["action"] == "api/v2/auditlog/", (
             returned_entries_asc
         )
 
@@ -176,8 +175,8 @@ class TestAuditSearch(object):
             query_string={"sortBy": "action", "sortOrder": "desc"},
         )
         returned_entries_desc = response_desc.json["result"]["value"]["pageRecords"]
-        assert 3 == len(returned_entries_desc), response_desc.json
-        assert "system/getConfig" == returned_entries_desc[0]["action"], (
+        assert len(returned_entries_desc) == 3, response_desc.json
+        assert returned_entries_desc[0]["action"] == "system/getConfig", (
             returned_entries_desc
         )
 

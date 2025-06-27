@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -28,8 +27,7 @@
 """unit test for complex policy comparisons"""
 
 import unittest
-
-from mock import patch
+from unittest.mock import patch
 
 from linotp.lib.auth.validate import check_pin
 from linotp.lib.user import User
@@ -39,10 +37,7 @@ class FakeToken:
     type = "test"
 
     def checkPin(self, passw, options=None):
-        if passw == "good":
-            return True
-        else:
-            return False
+        return passw == "good"
 
 
 class TestOtppinPolicy(unittest.TestCase):
@@ -74,8 +69,6 @@ class TestOtppinPolicy(unittest.TestCase):
         token.type = "spass"
         res = check_pin(token, "good", userObj, options={})
         assert res
-
-        return
 
 
 # eof #

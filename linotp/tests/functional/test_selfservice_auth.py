@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -33,8 +32,6 @@ Test the support for userservice controller including authentication
 import logging
 import os
 
-import pytest
-
 from linotp.tests import TestController
 
 log = logging.getLogger(__name__)
@@ -56,7 +53,6 @@ class TestSelfserviceAuthController(TestController):
 
     def tearDown(self):
         TestController.tearDown(self)
-        pass
 
     def create_extra_resolver(self):
         resolver_params = {
@@ -92,7 +88,7 @@ class TestSelfserviceAuthController(TestController):
 
         response = self.make_system_request("setPolicy", params=policy)
         assert '"status": true' in response, response
-        assert ('"setPolicy %s": {' % name) in response, response
+        assert (f'"setPolicy {name}": {{') in response, response
 
     ##########################################################################
 

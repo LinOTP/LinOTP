@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -40,14 +39,11 @@ specify it with nose-testconfig (e.g. --tc=paster.port:5005).
 
 import json
 import logging
-import urllib.parse
 from datetime import datetime, timedelta
+from unittest.mock import patch
 
-import requests
 from freezegun import freeze_time
-from mock import patch
 
-import linotp.provider.smsprovider.RestSMSProvider
 from linotp.tests.functional.challenge_response.testing_controller import (
     TestingChallengeResponseController,
 )
@@ -168,8 +164,6 @@ class TestRestSmsController(TestingChallengeResponseController):
         assert '"value": false' in response, response
         assert "transactionid" in response, response
 
-        return
-
     @patch("requests.Session.post", mocked_http_request)
     def test_smstext_with_data(self):
         """
@@ -245,8 +239,6 @@ class TestRestSmsController(TestingChallengeResponseController):
 
         assert '"value": false' in response, response
         assert "transactionid" in response, response
-
-        return
 
     @patch("requests.Session.post", mocked_http_request)
     def test_smstext_with_ignore_data(self):
@@ -382,8 +374,6 @@ class TestRestSmsController(TestingChallengeResponseController):
             assert '"value": false' in response, response
             assert "transactionid" in response, response
 
-        return
-
     @patch("requests.Session.post", mocked_http_request)
     def test_phone_list(self):
         """
@@ -454,8 +444,6 @@ class TestRestSmsController(TestingChallengeResponseController):
         assert "transactionid" in response, response
 
         assert "016012345678" in REQUEST_BODY.get("to", [])[0]
-
-        return
 
 
 ###eof#########################################################################

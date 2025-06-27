@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -32,7 +31,6 @@ import json
 import logging
 import os
 import string
-from typing import List
 
 from flask import g
 from flask_babel import gettext as _
@@ -73,7 +71,7 @@ ENCODING = "utf-8"
 ###############################################
 
 
-class TokenHandler(object):
+class TokenHandler:
     def initToken(self, param, user, tokenrealm=None):
         """
         initToken - create a new token or update a token
@@ -126,8 +124,9 @@ class TokenHandler(object):
                     typ,
                     list(tokenclass_registry.keys()),
                 )
+                msg = f"[initToken] failed: unknown token type {typ!r}"
                 raise TokenAdminError(
-                    "[initToken] failed: unknown token type %r" % typ,
+                    msg,
                     id=1610,
                 )
             token = createToken(serial)
@@ -139,11 +138,12 @@ class TokenHandler(object):
             old_typ = token.LinOtpTokenType
             if old_typ.lower() != typ.lower():
                 msg = (
-                    "token %r already exist with type %r. Can not "
-                    "initialize token with new type %r" % (serial, old_typ, typ)
+                    f"token {serial!r} already exist with type {old_typ!r}. Can not "
+                    f"initialize token with new type {typ!r}"
                 )
                 log.error("[initToken] %s", msg)
-                raise TokenAdminError("initToken failed: %s" % msg)
+                msg = f"initToken failed: {msg}"
+                raise TokenAdminError(msg)
 
             #  prevent update of an unsupported token type
             if typ.lower() not in tokenclass_registry:
@@ -152,16 +152,18 @@ class TokenHandler(object):
                     typ,
                     list(tokenclass_registry.keys()),
                 )
+                msg = f"[initToken] failed: unknown token type {typ!r}"
                 raise TokenAdminError(
-                    "[initToken] failed: unknown token type %r" % typ,
+                    msg,
                     id=1610,
                 )
 
-        else:  # something wrong
-            if tokenNum > 1:
-                raise TokenAdminError("multiple tokens found - cannot init!", id=1101)
-            else:
-                raise TokenAdminError("cannot init! Unknown error!", id=1102)
+        elif tokenNum > 1:
+            msg = "multiple tokens found - cannot init!"
+            raise TokenAdminError(msg, id=1101)
+        else:
+            msg = "cannot init! Unknown error!"
+            raise TokenAdminError(msg, id=1102)
 
         # get the RealmObjects of the user and the tokenrealms
         realms = getRealms4Token(user, tokenrealm)
@@ -185,7 +187,8 @@ class TokenHandler(object):
             token.storeToken()
         except Exception as exx:
             log.error("Could not create token")
-            raise TokenAdminError("token create failed %r" % exx, id=1112)
+            msg = f"token create failed {exx!r}"
+            raise TokenAdminError(msg, id=1112) from exx
 
         log.debug("Token object %r was created", tokenObj)
         return (True, tokenObj)
@@ -210,7 +213,8 @@ class TokenHandler(object):
             auto, token_types = linotp.lib.policy.get_auto_enrollment(user)
         except Exception as exx:
             log.error("%r", exx)
-            raise Exception("[auto_enrollToken] %r" % exx)
+            msg = f"[auto_enrollToken] {exx!r}"
+            raise Exception(msg) from exx
 
         if not auto:
             msg = "no auto_enrollToken configured"
@@ -221,7 +225,7 @@ class TokenHandler(object):
         u_info = getUserInfo(uid, res, resc)
 
         # enroll token for user
-        desc = "auto enrolled for %s@%s" % (user.login, user.realm)
+        desc = f"auto enrolled for {user.login}@{user.realm}"
         token_init = {"genkey": 1, "description": desc[:80]}
 
         email = u_info.get("email", None)
@@ -229,24 +233,19 @@ class TokenHandler(object):
 
         # check if token type is in defined set of types
         if not token_types:
-            msg = "auto_enrollment for user %s failed: unknown token type %r" % (
-                user,
-                token_types,
-            )
+            msg = f"auto_enrollment for user {user} failed: unknown token type {token_types!r}"
             log.warning(msg)
             return False, {"error": msg}
 
         if not email and not mobile:
-            msg = "auto_enrollment for user %s failed: missing sms or email!" % user
+            msg = f"auto_enrollment for user {user} failed: missing sms or email!"
             log.warning(msg)
             return False, {"error": msg}
 
         # for sms token we require a valid phone number of the user
         if token_types == ["sms"]:
             if not mobile:
-                msg = (
-                    "auto_enrollment for user %s failed: missing mobile number!" % user
-                )
+                msg = f"auto_enrollment for user {user} failed: missing mobile number!"
                 log.warning(msg)
                 return False, {"error": msg}
 
@@ -256,7 +255,7 @@ class TokenHandler(object):
         # for email token we require a valid email address of the user
         elif token_types == ["email"]:
             if not email:
-                msg = "auto_enrollment for user %s failed: missing email!" % user
+                msg = f"auto_enrollment for user {user} failed: missing email!"
                 log.warning(msg)
                 return False, {"error": msg}
 
@@ -273,7 +272,7 @@ class TokenHandler(object):
                 token_init["phone"] = mobile
 
         # if sms or email, at least one of sms or email is required
-        elif token_types == ["sms", "email"] or token_types == ["*"]:
+        elif token_types in (["sms", "email"], ["*"]):
             if mobile:
                 token_init["type"] = "sms"
                 token_init["phone"] = mobile
@@ -283,10 +282,7 @@ class TokenHandler(object):
 
         authUser = get_authenticated_user(user.login, user.realm, passw)
         if authUser is None:
-            msg = "User %r@%r failed to authenticate against userstore" % (
-                user.login,
-                user.realm,
-            )
+            msg = f"User {user.login!r}@{user.realm!r} failed to authenticate against userstore"
             log.error(msg)
             return False, {"error": msg}
 
@@ -296,10 +292,7 @@ class TokenHandler(object):
 
         (res, tokenObj) = self.initToken(token_init, user)
         if res is False:
-            msg = "Failed to create token for user %s@%s during autoenrollment" % (
-                user.login,
-                user.realm,
-            )
+            msg = f"Failed to create token for user {user.login}@{user.realm} during autoenrollment"
             log.error(msg)
             return False, {"error": msg}
 
@@ -323,7 +316,7 @@ class TokenHandler(object):
             )
             info = {
                 "message": message,
-                "Subject": "New %s token enrolled" % tokenObj.type,
+                "Subject": f"New {tokenObj.type} token enrolled",
                 "Pin": new_pin,
                 "tokentype": tokenObj.type,
             }
@@ -350,8 +343,8 @@ class TokenHandler(object):
             (_res, reply) = Challenges.create_challenge(tokenObj, options=options)
             if _res is not True:
                 error = (
-                    "failed to create challenge for user %s@%s during "
-                    "autoenrollment" % (user.login, user.realm)
+                    f"failed to create challenge for user {user.login}@{user.realm} during "
+                    "autoenrollment"
                 )
                 log.error(error)
                 raise Exception(error)
@@ -402,13 +395,13 @@ class TokenHandler(object):
         client = context["Client"]
 
         if not new_serial:
-            new_serial = "lost%s" % serial
+            new_serial = f"lost{serial}"
 
         res["serial"] = new_serial
         init_params = {
             "type": "pw",
             "serial": new_serial,
-            "description": "temporary replacement for %s" % serial,
+            "description": f"temporary replacement for {serial}",
         }
 
         if "type" in param:
@@ -471,10 +464,8 @@ class TokenHandler(object):
                 default="",
             )
 
-            character_pool = "%s%s%s" % (
-                string.ascii_lowercase,
-                string.ascii_uppercase,
-                string.digits,
+            character_pool = (
+                f"{string.ascii_lowercase}{string.ascii_uppercase}{string.digits}"
             )
             if contents != "":
                 character_pool = ""
@@ -560,16 +551,18 @@ class TokenHandler(object):
         # handle the given user
 
         if not user:
-            raise TokenAdminError("no user found %r" % user, id=1104)
+            msg = f"no user found {user!r}"
+            raise TokenAdminError(msg, id=1104)
 
         (userid, idResolver, idResolverClass) = getUserId(user)
 
         # special case for the sqlresolver with uid column defined as int
         if isinstance(userid, int):
-            userid = "%d" % userid
+            userid = f"{userid}"
 
         if not (userid and idResolver and idResolverClass):
-            raise TokenAdminError("no user found %s" % user.login, id=1104)
+            msg = f"no user found {user.login}"
+            raise TokenAdminError(msg, id=1104)
 
         # ----------------------------------------------------------------- --
 
@@ -582,10 +575,7 @@ class TokenHandler(object):
 
         # compare the user with the owner
 
-        if token_idResolverClass == idResolverClass and token_userid == userid:
-            return True
-
-        return False
+        return bool(token_idResolverClass == idResolverClass and token_userid == userid)
 
     def hasOwner(self, serial):
         """
@@ -598,10 +588,7 @@ class TokenHandler(object):
 
         (uuserid, uidResolver, uidResolverClass) = token.getUser()
 
-        if uuserid and uidResolver and uidResolverClass:
-            return True
-
-        return False
+        return bool(uuserid and uidResolver and uidResolverClass)
 
     def getTokenOwner(self, serial):
         """
@@ -638,7 +625,7 @@ class TokenHandler(object):
             # as long as we find a token, modify the serial:
             i = i + 1
             result = False
-            new_serial = "%s_%02i" % (serial, i)
+            new_serial = f"{serial}_{i:02d}"
 
         return (result, new_serial)
 
@@ -746,7 +733,7 @@ class TokenHandler(object):
 
         tokens = self.getTokensOfType(typ=None, realm=user.realm, assigned="0")
         for token in tokens:
-            from linotp.lib import policy
+            from linotp.lib import policy  # noqa: PLC0415
 
             (pin, otp) = token.splitPinPass(passw)
             if policy.autoassignment_forward(user) and token.type == "remote":
@@ -786,7 +773,7 @@ class TokenHandler(object):
             return False
 
         # should the password of the autoassignement be used as pin??
-        if True == linotp.lib.policy.ignore_autoassignment_pin(user):
+        if linotp.lib.policy.ignore_autoassignment_pin(user) is True:
             pin = None
 
         # if found, assign the found token to the user.login
@@ -811,10 +798,7 @@ class TokenHandler(object):
 
         token = get_token(serial)
 
-        if user.login == "":
-            report = False
-        else:
-            report = True
+        report = user.login != ""
 
         token.setUser(user, report)
 
@@ -832,10 +816,11 @@ class TokenHandler(object):
             token.storeToken()
         except Exception as exx:
             log.error("[assign Token] update Token DB failed: %r", exx)
+            msg = f"Token assign failed for {user.login}/{serial} : {exx!r}"
             raise TokenAdminError(
-                "Token assign failed for %s/%s : %r" % (user.login, serial, exx),
+                msg,
                 id=1105,
-            )
+            ) from exx
 
         log.debug(
             "[assignToken] successfully assigned token with serial %r to user %r",
@@ -860,10 +845,11 @@ class TokenHandler(object):
         try:
             token.storeToken()
         except Exception as exx:
+            msg = f"Token unassign failed for {user!r}/{serial!r}: {exx!r}"
             raise TokenAdminError(
-                "Token unassign failed for %r/%r: %r" % (user, serial, exx),
+                msg,
                 id=1105,
-            )
+            ) from exx
 
         log.debug(
             "[unassignToken] successfully unassigned token with serial %r",
@@ -940,8 +926,9 @@ class TokenHandler(object):
         ]
 
         if len(validation_results) > 1:
+            msg = "get_token_by_otp: multiple tokens are matching this OTP value!"
             raise TokenAdminError(
-                "get_token_by_otp: multiple tokens are matching this OTP value!",
+                msg,
                 id=1200,
             )
 
@@ -964,11 +951,11 @@ class TokenHandler(object):
             sqlQuery = sqlQuery.filter(func.lower(Token.LinOtpTokenType) == typ.lower())
         if assigned is not None:
             # filter if assigned or not
-            if "0" == str(assigned):
+            if str(assigned) == "0":
                 sqlQuery = sqlQuery.filter(
-                    or_(Token.LinOtpUserid == None, Token.LinOtpUserid == "")
+                    or_(Token.LinOtpUserid == None, Token.LinOtpUserid == "")  # noqa: E711
                 )
-            elif "1" == str(assigned):
+            elif str(assigned) == "1":
                 sqlQuery = sqlQuery.filter(func.length(Token.LinOtpUserid) > 0)
             else:
                 log.warning(
@@ -1002,7 +989,8 @@ class TokenHandler(object):
         :return: the number of deleted tokens
         """
         if not user and not serial:
-            raise ParameterError("Parameter user or serial required!", id=1212)
+            msg = "Parameter user or serial required!"
+            raise ParameterError(msg, id=1212)
 
         tokenList = get_raw_tokens(user, serial)
 
@@ -1038,13 +1026,15 @@ class TokenHandler(object):
             )
 
         except Exception as exx:
-            raise TokenAdminError("removeToken: Token update failed: %r" % exx, id=1132)
+            msg = f"removeToken: Token update failed: {exx!r}"
+            raise TokenAdminError(msg, id=1132) from exx
 
         return len(serials)
 
     def setCounterWindow(self, countWindow, user, serial):
         if user is None and serial is None:
-            raise ParameterError("Parameter user or serial required!", id=1212)
+            msg = "Parameter user or serial required!"
+            raise ParameterError(msg, id=1212)
 
         log.debug("[setCounterWindow] setting count window for serial %r", serial)
         tokenList = get_tokens(user, serial)
@@ -1057,7 +1047,8 @@ class TokenHandler(object):
 
     def setDescription(self, description, user=None, serial=None):
         if user is None and serial is None:
-            raise ParameterError("Parameter user or serial required!", id=1212)
+            msg = "Parameter user or serial required!"
+            raise ParameterError(msg, id=1212)
 
         log.debug("[setDescription] setting description for serial %r", serial)
         tokenList = get_tokens(user, serial)
@@ -1073,7 +1064,8 @@ class TokenHandler(object):
         sets the Hashlib in the tokeninfo
         """
         if user is None and serial is None:
-            raise ParameterError("Parameter user or serial required!", id=1212)
+            msg = "Parameter user or serial required!"
+            raise ParameterError(msg, id=1212)
 
         tokenList = get_tokens(user, serial)
 
@@ -1085,7 +1077,8 @@ class TokenHandler(object):
 
     def setMaxFailCount(self, maxFail, user, serial):
         if (user is None) and (serial is None):
-            raise ParameterError("Parameter user or serial required!", id=1212)
+            msg = "Parameter user or serial required!"
+            raise ParameterError(msg, id=1212)
 
         log.debug("[setMaxFailCount] for serial: %r, user: %r", serial, user)
         tokenList = get_tokens(user, serial)
@@ -1098,7 +1091,8 @@ class TokenHandler(object):
 
     def setSyncWindow(self, syncWindow, user, serial):
         if user is None and serial is None:
-            raise ParameterError("Parameter user or serial required!", id=1212)
+            msg = "Parameter user or serial required!"
+            raise ParameterError(msg, id=1212)
 
         log.debug("[setSyncWindow] setting syncwindow for serial %r", serial)
         tokenList = get_tokens(user, serial)
@@ -1111,7 +1105,8 @@ class TokenHandler(object):
 
     def setOtpLen(self, otplen, user, serial):
         if (user is None) and (serial is None):
-            raise ParameterError("Parameter user or serial required!", id=1212)
+            msg = "Parameter user or serial required!"
+            raise ParameterError(msg, id=1212)
 
         tokenList = get_tokens(user, serial)
 
@@ -1131,7 +1126,8 @@ class TokenHandler(object):
         :return: number of changed tokens
         """
         if (user is None) and (serial is None):
-            raise ParameterError("Parameter user or serial required!", id=1212)
+            msg = "Parameter user or serial required!"
+            raise ParameterError(msg, id=1212)
 
         log.debug("[enableToken] enable=%r, user=%r, serial=%r", enable, user, serial)
         tokenList = get_tokens(user, serial)
@@ -1161,7 +1157,7 @@ class TokenHandler(object):
         )
         token_from = get_token(serial_from)
         token_to = get_token(serial_to)
-        import linotp.tokens.base
+        import linotp.tokens.base  # noqa: PLC0415
 
         linotp.tokens.base.TokenClass.copy_pin(token_from, token_to)
         return 1
@@ -1199,7 +1195,8 @@ class TokenHandler(object):
         sets an abitrary Tokeninfo field
         """
         if user is None and serial is None:
-            raise ParameterError("Parameter user or serial required!", id=1212)
+            msg = "Parameter user or serial required!"
+            raise ParameterError(msg, id=1212)
 
         tokenList = get_tokens(user, serial)
 
@@ -1221,7 +1218,8 @@ class TokenHandler(object):
         ret = False
 
         if (user is None) and (serial is None):
-            raise ParameterError("Parameter user or serial required!", id=1212)
+            msg = "Parameter user or serial required!"
+            raise ParameterError(msg, id=1212)
 
         log.debug("[resyncToken] resync token with serial %r", serial)
         tokenList = get_tokens(user, serial)
@@ -1278,7 +1276,7 @@ class TokenHandler(object):
 # local
 
 
-def createTokenClassObject(token: Token, token_type: string = None):
+def createTokenClassObject(token: Token, token_type: str | None = None):
     """
     createTokenClassObject - create a token class object from a given type
 
@@ -1301,7 +1299,7 @@ def createTokenClassObject(token: Token, token_type: string = None):
     token_type = token_type.lower()
 
     token_class = None
-    from linotp.tokens.base import TokenClass
+    from linotp.tokens.base import TokenClass  # noqa: PLC0415
 
     # search which tokenclass should be created and create it!
     if token_type.lower() in tokenclass_registry:
@@ -1310,7 +1308,8 @@ def createTokenClassObject(token: Token, token_type: string = None):
             token_class: TokenClass = constructor(token)
 
         except Exception as exx:
-            raise TokenAdminError("createTokenClassObject failed:  %r" % exx, id=1609)
+            msg = f"createTokenClassObject failed:  {exx!r}"
+            raise TokenAdminError(msg, id=1609) from exx
 
     else:
         # we try to use the parent class, which is able to handle most
@@ -1446,7 +1445,8 @@ def getRolloutToken4User(user=None, serial=None, tok_type="ocra2"):
                 serials.append(token.LinOtpTokenSerialnumber)
 
     if len(serials) > 1:
-        raise Exception("multiple tokens found in rollout state: %r" % serials)
+        msg = f"multiple tokens found in rollout state: {serials!r}"
+        raise Exception(msg)
 
     if len(serials) == 1:
         serial = serials[0]
@@ -1648,11 +1648,11 @@ def token_owner_iterator():
 
 
 def get_tokens(
-    user: User = None,
-    serial: string = None,
-    token_type: string = None,
+    user: User | None = None,
+    serial: str | None = None,
+    token_type: str | None = None,
     read_for_update: bool = False,
-    active: bool = None,
+    active: bool | None = None,
 ):
     """
     Get a list of tokens of type TokenClass or any of its subclasses.
@@ -1667,18 +1667,18 @@ def get_tokens(
     return [createTokenClassObject(token) for token in tokens]
 
 
-def get_token(serial: string):
+def get_token(serial: str):
     token = get_raw_token(serial)
     return createTokenClassObject(token)
 
 
 def get_raw_tokens(
-    user: User = None,
-    serial: string = None,
-    token_type: string = None,
+    user: User | None = None,
+    serial: str | None = None,
+    token_type: str | None = None,
     read_for_update: bool = False,
-    active: bool = None,
-) -> List[Token]:
+    active: bool | None = None,
+) -> list[Token]:
     """
     Get a list of tokens of type Token, an object containing the database fields for the token and little more.
 
@@ -1732,7 +1732,8 @@ def get_raw_tokens(
 
             except ResourceClosedError as exx:
                 log.warning("Token already locked for update: %r", exx)
-                raise Exception("Token already locked for update: (%r)" % exx)
+                msg = f"Token already locked for update: ({exx!r})"
+                raise Exception(msg) from exx
 
         with db.session.no_autoflush:
             sqlQuery = db.session.execute(stmt).scalars()
@@ -1757,7 +1758,7 @@ def get_raw_tokens(
             resolverClass = resolverClass.replace("useridresolver.", "useridresolver%.")
 
             if isinstance(uid, int):
-                uconditions += ((Token.LinOtpUserid == "%d" % uid),)
+                uconditions += ((Token.LinOtpUserid == f"{uid:d}"),)
             else:
                 uconditions += ((Token.LinOtpUserid == uid),)
 
@@ -1777,7 +1778,8 @@ def get_raw_tokens(
 
                 except ResourceClosedError as exx:
                     log.warning("Token already locked for update: %r", exx)
-                    raise Exception("Token already locked for update: (%r)" % exx)
+                    msg = f"Token already locked for update: ({exx!r})"
+                    raise Exception(msg) from exx
 
             # ---------------------------------------------------------- --
 
@@ -1787,15 +1789,17 @@ def get_raw_tokens(
                 # the user
                 t_realms = token.getRealmNames()
                 u_realm = user.realm
-                if u_realm != "*":
-                    if len(t_realms) > 0 and len(u_realm) > 0:
-                        if u_realm.lower() not in t_realms:
-                            log.debug(
-                                "user realm and token realm missmatch %r::%r",
-                                u_realm,
-                                t_realms,
-                            )
-                            continue
+                if (
+                    u_realm != "*"
+                    and (len(t_realms) > 0 and len(u_realm) > 0)
+                    and (u_realm.lower() not in t_realms)
+                ):
+                    log.debug(
+                        "user realm and token realm missmatch %r::%r",
+                        u_realm,
+                        t_realms,
+                    )
+                    continue
 
                 log.debug(
                     "[get_tokens] user serial (user): %r",
@@ -1813,9 +1817,11 @@ def get_raw_token(serial: string):
     if number_of_tokens == 1:
         return tokens[0]
     elif number_of_tokens == 0:
-        raise TokenAdminError("No token with serial %s found" % serial, id=1102)
+        msg = f"No token with serial {serial} found"
+        raise TokenAdminError(msg, id=1102)
     else:
-        raise TokenAdminError("multiple tokens found with serial %s!" % serial, id=1101)
+        msg = f"multiple tokens found with serial {serial}!"
+        raise TokenAdminError(msg, id=1101)
 
 
 def setDefaults(token):
@@ -1833,9 +1839,9 @@ def tokenExist(serial):
     returns true if the token exists
     """
     try:
-        token = get_token(serial)
+        _token = get_token(serial)
         return True
-    except:
+    except Exception:
         return False
 
 
@@ -1869,19 +1875,26 @@ def get_token_owner(token):
         if len(common_realms) > 1:
             raise Exception(
                 _(
-                    "get_token_owner: The user %s/%s and the token"
-                    " %s is located in several realms: "
-                    "%s!" % (uid, resolverClass, serial, common_realms)
+                    "get_token_owner: The user %(uid)s/%(resolver)s and the token"
+                    " %(serial)s is located in several realms: "
+                    "%(realms)s!"
                 )
+                % {
+                    "uid": uid,
+                    "resolver": resolverClass,
+                    "serial": serial,
+                    "realms": common_realms,
+                }
             )
         realm = common_realms[0]
     elif len(realms) == 0:
         raise Exception(
             _(
-                "get_token_owner: The user %s in the resolver"
-                " %s for token %s could not be found in any "
-                "realm!" % (uid, resolverClass, serial)
+                "get_token_owner: The user %(uid)s in the resolver"
+                " %(resolver)s for token %(serial)s could not be found in any "
+                "realm!"
             )
+            % {"uid": uid, "resolver": resolverClass, "serial": serial}
         )
     else:
         realm = realms[0]
@@ -2062,7 +2075,8 @@ def setPin(pin, user, serial, param=None):
         param = {}
 
     if (user is None) and (serial is None):
-        raise ParameterError("Parameter user or serial required!", id=1212)
+        msg = "Parameter user or serial required!"
+        raise ParameterError(msg, id=1212)
 
     if user is not None:
         log.info("[setPin] setting Pin for user %r@%r", user.login, user.realm)
@@ -2088,7 +2102,8 @@ def setPinUser(userPin, serial):
     user = None
 
     if serial is None:
-        raise ParameterError("Parameter 'serial' is required!", id=1212)
+        msg = "Parameter 'serial' is required!"
+        raise ParameterError(msg, id=1212)
 
     log.debug("[setPinUser] setting Pin for serial %r", serial)
     tokenList = get_tokens(user, serial)
@@ -2109,7 +2124,8 @@ def setPinSo(soPin, serial):
     user = None
 
     if serial is None:
-        raise ParameterError("Parameter 'serial' is required!", id=1212)
+        msg = "Parameter 'serial' is required!"
+        raise ParameterError(msg, id=1212)
 
     log.debug("[setPinSo] setting Pin for serial %r", serial)
     tokenList = get_tokens(user, serial)
@@ -2124,7 +2140,8 @@ def setPinSo(soPin, serial):
 def resetToken(user=None, serial=None):
     if (user is None) and (serial is None):
         log.warning("[resetToken] Parameter serial or user required!")
-        raise ParameterError("Parameter user or serial required!", id=1212)
+        msg = "Parameter user or serial required!"
+        raise ParameterError(msg, id=1212)
 
     log.debug("[resetToken] reset token with serial %r", serial)
     tokenList = get_tokens(user, serial)
@@ -2146,11 +2163,11 @@ def _gen_serial(prefix, tokennum, min_len=8):
     :return: hex digit string
     """
     h_serial = ""
-    num_str = "%.4d" % tokennum
+    num_str = f"{tokennum:04d}"
     h_len = min_len - len(num_str)
     if h_len > 0:
         h_serial = binascii.hexlify(os.urandom(h_len)).decode().upper()[0:h_len]
-    return "%s%s%s" % (prefix, num_str, h_serial)
+    return f"{prefix}{num_str}{h_serial}"
 
 
 def genSerial(tokenType=None, prefix=None):
@@ -2233,7 +2250,7 @@ def _calculate_validity_end(validity):
             datetime.date.today() + datetime.timedelta(days=int(validity))
         ).strftime("%d/%m/%y")
 
-        end_date = "%s 23:59" % end_date
+        end_date = f"{end_date} 23:59"
 
     except ValueError:
         end_date = (datetime.datetime.now() + parse_duration(validity)).strftime(

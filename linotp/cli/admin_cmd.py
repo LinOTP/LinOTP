@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -35,7 +34,7 @@ import sys
 from flask import current_app
 from flask.cli import AppGroup
 
-from linotp.model import fix_db_encoding, setup_db
+from linotp.model import fix_db_encoding
 
 admin_cmds = AppGroup(
     "admin",

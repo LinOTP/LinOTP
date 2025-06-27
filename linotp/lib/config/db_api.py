@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -97,7 +96,7 @@ def _storeConfigDB(key, val, typ=None, desc=None):
     # could vary, we could not calculate the number of chunks and thus use
     # an iterator to split the value into chunks
     text_slice = utf8_slice if len(value) < len(value.encode("utf-8")) else simple_slice
-    chunks = [cont_value for cont_value in text_slice(value, MAX_VALUE_LEN)]
+    chunks = list(text_slice(value, MAX_VALUE_LEN))
 
     # ---------------------------------------------------------------------- --
 
@@ -120,7 +119,7 @@ def _delete_continous_entry_db(key):
     :param key: the key prefix of the chunks
     """
 
-    search_key = "%s__[%%:%%]" % (key)
+    search_key = f"{key}__[%:%]"
     continous_entries = Config.query.filter(Config.Key.like(search_key))
 
     for continous_entry in continous_entries:
@@ -259,8 +258,9 @@ def _removeConfigDB(key):
             # Session.add(theConf)
             db.session.delete(entry)
 
-    except Exception as e:
-        raise ConfigAdminError("remove Config failed for %r: %r" % (key, e), id=1133)
+    except Exception as exx:
+        msg = f"remove Config failed for {key!r}: {exx!r}"
+        raise ConfigAdminError(msg, id=1133) from exx
 
     return len(to_be_deleted)
 

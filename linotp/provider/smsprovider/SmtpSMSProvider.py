@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -146,14 +145,13 @@ class SmtpSMSProvider(ISMSProvider):
             return ret
 
         # prepare the phone number
-        msisdn = "true" in ("%r" % self.config.get("MSISDN", "false")).lower()
+        msisdn = "true" in ("{!r}".format(self.config.get("MSISDN", "false"))).lower()
         if msisdn:
             phone = self._get_msisdn_phonenumber(phone)
 
         # prepare the smtp server connection parameters
         default_port = 25
 
-        start_tls_params = {}
         start_tls = str(self.config.get("start_tls", False)).lower() == "true"
         if start_tls:
             default_port = 587
@@ -194,12 +192,7 @@ class SmtpSMSProvider(ISMSProvider):
         body = body.replace(PHONE_TAG, phone)
         body = body.replace(MSG_TAG, message)
 
-        msg = "From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n%s" % (
-            fromaddr,
-            toaddr,
-            subject,
-            body,
-        )
+        msg = f"From: {fromaddr}\r\nTo: {toaddr}\r\nSubject: {subject}\r\n\r\n{body}"
 
         serv = None
         try:
@@ -220,9 +213,8 @@ class SmtpSMSProvider(ISMSProvider):
                     serv.ehlo()
                 else:
                     log.error("Start_TLS not supported:")
-                    raise Exception(
-                        "Start_TLS requested but not supported by server %r" % server
-                    )
+                    msg = f"Start_TLS requested but not supported by server {server!r}"
+                    raise Exception(msg)
             if user:
                 if serv.has_extn("AUTH"):
                     log.debug(
@@ -241,18 +233,16 @@ class SmtpSMSProvider(ISMSProvider):
             log.debug("quit: (%r) %r", code, response)
             ret = True
 
-        except smtplib.socket.error as exc:
+        except smtplib.socket.error as exx:
             log.error("Error: could not connect to server")
             if boolean(self.config.get("raise_exception", True)):
-                raise ProviderNotAvailable(
-                    "Error: could not connect to server: %r" % exc
-                )
+                msg = f"Error: could not connect to server: {exx!r}"
+                raise ProviderNotAvailable(msg) from exx
             ret = False
-
         except Exception as exx:
             log.error("[submitMessage] %s", exx)
             if boolean(self.config.get("raise_exception", False)):
-                raise Exception(exx)
+                raise
             ret = False
 
         finally:

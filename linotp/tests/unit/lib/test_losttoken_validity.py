@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -30,8 +29,7 @@ Tests the chunked data handling in the config
 
 import datetime
 import unittest
-
-from mock import patch
+from unittest.mock import patch
 
 from linotp.lib.token import _calculate_validity_end
 
@@ -53,8 +51,6 @@ class LostTokenValidityTest(unittest.TestCase):
 
         assert in_five_days in end_date
 
-        return
-
     @patch("linotp.lib.policy.get_action_value")
     def test_validty_w_duration(self, patch_get_action_value):
         """
@@ -68,8 +64,6 @@ class LostTokenValidityTest(unittest.TestCase):
         )
 
         assert in_one_hour in end_date
-
-        return
 
     @patch("linotp.lib.policy.get_action_value")
     def test_validty_w_duration_expr(self, patch_get_action_value):
@@ -87,8 +81,6 @@ class LostTokenValidityTest(unittest.TestCase):
 
         assert in_one_hour in end_date
 
-        return
-
     @patch("linotp.lib.policy.get_action_value")
     def test_validty_w_duration_expr2(self, patch_get_action_value):
         """
@@ -104,8 +96,6 @@ class LostTokenValidityTest(unittest.TestCase):
         ).strftime("%d/%m/%y %H")
 
         assert in_one_hour in end_date
-
-        return
 
 
 # eof #

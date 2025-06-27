@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,7 +26,6 @@
 """policy evaluation"""
 
 from datetime import datetime
-from typing import Dict
 
 from netaddr import IPAddress, IPNetwork
 
@@ -43,7 +41,7 @@ REGEX_MATCH = "regex:match"
 NOT_MATCH = "not:match"
 
 
-class PolicyEvaluator(object):
+class PolicyEvaluator:
     """
     policy evaluation engine
 
@@ -110,7 +108,7 @@ class PolicyEvaluator(object):
 
         try:
             # preserve the old filters
-            sec_filters = [old_filter for old_filter in self.filters]
+            sec_filters = list(self.filters)
 
             self.set_filters(param)
             policies = self.evaluate(strict_matches=strict_matches)
@@ -293,7 +291,7 @@ class PolicyEvaluator(object):
 
         return selection
 
-    def add_match_type(self, matches: Dict, matches_dict: Dict, policy: str):
+    def add_match_type(self, matches: dict, matches_dict: dict, policy: str):
         """helper to add the matches into a common dict.
 
         the dict will contain
@@ -504,7 +502,7 @@ def action_compare(policy_actions, action):
     # we only check if the action name is in the policy actions, the value
     # evaluation is done by using the get_action_value() function
 
-    for a_name in parse_action_value(action).keys():
+    for a_name in parse_action_value(action):
         if a_name in p_actions:
             return EXACT_MATCH, True
 
@@ -694,7 +692,8 @@ def user_list_compare(policy_conditions, login):
         else:
             user = User(login)
     else:
-        raise Exception("unsupported type of login")
+        msg = "unsupported type of login"
+        raise Exception(msg)
 
     full_qualified_names = user.get_full_qualified_names()
 
@@ -722,10 +721,7 @@ def user_list_compare(policy_conditions, login):
             if isinstance(login, str) and "@" in login:
                 usr, _sep, realm = login.rpartition("@")
 
-                if realm in getRealms():
-                    c_user = User(usr, realm)
-                else:
-                    c_user = User(login)
+                c_user = User(usr, realm) if realm in getRealms() else User(login)
 
             else:
                 c_user = user
@@ -754,10 +750,7 @@ def user_list_compare(policy_conditions, login):
             if isinstance(login, str) and "@" in login:
                 usr, _sep, realm = login.rpartition("@")
 
-                if realm in getRealms():
-                    c_user = User(usr, realm)
-                else:
-                    c_user = User(login)
+                c_user = User(usr, realm) if realm in getRealms() else User(login)
 
             else:
                 c_user = user
@@ -787,9 +780,8 @@ def user_list_compare(policy_conditions, login):
         if condition == "*":
             if not match_type or match_type == NOT_MATCH:
                 match_type = WILDCARD_MATCH
-        else:
-            if match_type != EXACT_MATCH:
-                match_type = REGEX_MATCH
+        elif match_type != EXACT_MATCH:
+            match_type = REGEX_MATCH
 
     return match_type, matched
 
@@ -873,10 +865,11 @@ def cron_compare(condition, now):
     condition_parts = [part for part in parts if part.strip()]
 
     if len(condition_parts) != 6:
-        raise Exception(
+        msg = (
             "Error in Time Condition format: Expected 6 but "
             f"got {len(condition_parts)} parts in cron notation"
         )
+        raise Exception(msg)
 
     #
     # extract the members of the cron condition

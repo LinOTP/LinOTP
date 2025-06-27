@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,8 +26,7 @@
 
 import json
 import unittest
-
-from mock import patch
+from unittest.mock import patch
 
 from linotp.lib.user import getUserFromParam
 
@@ -165,10 +163,8 @@ class TestGetFromParam(unittest.TestCase):
         """
 
         errors = []
-        config_id = 0
 
         for test_set in self.test_sets:
-            config_id += 1
             config = test_set["config"]
 
             mock_getFromConfig.return_value = config["split@sign"]
@@ -177,20 +173,13 @@ class TestGetFromParam(unittest.TestCase):
             mock_getRealms.return_value = config["realms"]
 
             # ------------------------------------------------------------- --
-            run_id = 0
-            for run in test_set["runs"]:
-                run_id += 1
+            for run_id, run in enumerate(test_set["runs"], 1):
                 param = run["params"]
                 result = run["result"]
 
                 user = getUserFromParam(param)
 
-                msg = "Failed for config: %r\n at run[%r] %r\nresult was %r" % (
-                    config,
-                    run_id,
-                    run,
-                    user,
-                )
+                msg = f"Failed for config: {config!r}\n at run[{run_id!r}] {run!r}\nresult was {user!r}"
 
                 try:
                     assert user.login == result["login"], msg
@@ -203,8 +192,6 @@ class TestGetFromParam(unittest.TestCase):
 
         if errors:
             raise Exception(errors)
-
-        return
 
     @patch("linotp.lib.user.getRealms")
     @patch("linotp.lib.user.getResolversOfUser")
@@ -225,10 +212,7 @@ class TestGetFromParam(unittest.TestCase):
 
         raisedException = None
 
-        config_id = 0
-
         for test_set in self.test_sets:
-            config_id += 1
             config = test_set["config"]
 
             mock_getFromConfig.return_value = config["split@sign"]
@@ -250,13 +234,12 @@ class TestGetFromParam(unittest.TestCase):
                 .replace("realms", "Benutzer ist in folgenden Realms")
             )
 
-            table.append("%s %s" % (panel, cc))
+            table.append(f"{panel} {cc}")
             table.append("")
 
             # ------------------------------------------------------------- --
-            run_id = 0
+
             for run in test_set["runs"]:
-                run_id += 1
                 param = run["params"]
 
                 user = getUserFromParam(param)
@@ -268,7 +251,7 @@ class TestGetFromParam(unittest.TestCase):
                 rparams = json.dumps(result)
                 rr = rparams.replace("{", "|* ").replace(",", " * ").replace("}", "")
 
-                table.append("||Parameters: %s||Result: %s|" % (pp, rr))
+                table.append(f"||Parameters: {pp}||Result: {rr}|")
 
             table.append("{panel}")
             table.append("")

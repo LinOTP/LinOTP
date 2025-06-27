@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -30,12 +29,12 @@
 
 import binascii
 import json
+import math
 from datetime import datetime, timedelta
 from hashlib import sha1
 
 from freezegun import freeze_time
 
-from linotp.lib.crypto.utils import geturandom
 from linotp.lib.HMAC import HmacOtp
 from linotp.tests import TestController
 
@@ -96,7 +95,6 @@ unix_start_time = datetime(year=1970, month=1, day=1)
 def time2counter(t_time, t_step=60):
     t_delta = (t_time - unix_start_time).total_seconds()
     counts = t_delta / t_step
-    import math
 
     return math.floor(counts)
 
@@ -133,8 +131,6 @@ class TestTotpController(TestController):
         otp = get_otp(key=seed, counter=t_counter)
 
         assert otp == "14050471"
-
-        return
 
     def test_time_shift(self):
         param = {
@@ -260,5 +256,3 @@ class TestTotpController(TestController):
             t_info = json.loads(tokens[0].get("LinOtp.TokenInfo"))
 
             assert t_info["timeShift"] == 30.0, response.body
-
-        return

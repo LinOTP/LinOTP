@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #
 #   LinOTP - the open source solution for two factor authentication
 #   Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -28,9 +26,6 @@
 module.
 
 """
-
-import json
-from pathlib import Path
 
 import pytest
 from flask import g

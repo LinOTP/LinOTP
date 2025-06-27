@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -47,21 +46,22 @@ class TwillioMixin:
         ]
 
         if "accountSid" not in twilio_config:
-            raise KeyError("missing the required account identifier")
+            msg = "missing the required account identifier"
+            raise KeyError(msg)
 
         if "authToken" not in twilio_config:
-            raise KeyError("missing the required authentication token")
+            msg = "missing the required authentication token"
+            raise KeyError(msg)
 
         if "voice" not in twilio_config:
             twilio_config["voice"] = "alice"
 
         if "callerNumber" not in twilio_config:
-            raise KeyError("missing the required caller number")
+            msg = "missing the required caller number"
+            raise KeyError(msg)
 
         if set(twilio_config.keys()) != set(twilio_config_keys):
-            raise KeyError(
-                "unsupported key provided [%r]: %r!"
-                % (twilio_config_keys, list(twilio_config.keys()))
-            )
+            msg = f"unsupported key provided [{twilio_config_keys!r}]: {list(twilio_config.keys())!r}!"
+            raise KeyError(msg)
 
         return {"twilioConfig": twilio_config}

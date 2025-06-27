@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -39,7 +38,7 @@ class TestPoliciesBase(TestController):
 
         file_name = self._get_file_name(data_file)
 
-        with open(file_name, "r") as data_file:
+        with open(file_name) as data_file:
             data = data_file.read()
 
             return data

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -26,8 +25,7 @@
 #
 
 import unittest
-
-from mock import patch
+from unittest.mock import patch
 
 from linotp.lib.token import TokenHandler
 from linotp.lib.user import User
@@ -83,8 +81,6 @@ class TestUserCompare(unittest.TestCase):
         result = th.isTokenOwner("TokenSerial", user)
 
         assert not result
-
-        return
 
 
 # eof #

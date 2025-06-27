@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -64,7 +63,7 @@ class TestImportOTP(TestController):
 
         file_name = self._get_file_name(data_file)
 
-        with open(file_name, "r") as data_file:
+        with open(file_name) as data_file:
             data = data_file.read()
 
             return data
@@ -113,8 +112,6 @@ class TestImportOTP(TestController):
         assert len(TOKENS) == 2, TOKENS
         assert TOKENS.get("RAINER02") is not None, TOKENS
         assert TOKENS.get("RAINER01") is not None, TOKENS
-
-        return
 
     def test_import_DAT(self):
         """
@@ -186,8 +183,6 @@ class TestImportOTP(TestController):
         error_msg = "<imported>2</imported>"
         assert error_msg in response, response
 
-        return
-
     def test_parse_PSKC_OCRA(self):
         """
         Test import OCRA via PSCK
@@ -206,8 +201,6 @@ class TestImportOTP(TestController):
         assert TOKENS.get("306EUO4-00958") is not None, TOKENS
         assert TOKENS.get("306EUO4-00960") is not None, TOKENS
 
-        return
-
     def test_parse_HOTP_PSKC(self):
         """
         Test import HOTP via PSKC
@@ -219,8 +212,6 @@ class TestImportOTP(TestController):
 
         assert len(TOKENS) == 6, TOKENS
 
-        return
-
     def test_parse_Yubikey_CSV(self):
         """
         Test the parsing of Yubikey CSV file
@@ -231,8 +222,6 @@ class TestImportOTP(TestController):
         TOKENS = parseYubicoCSV(csv)
         assert len(TOKENS) == 5, TOKENS
 
-        return
-
     def test_parse_XML(self):
         """
         Test parse an SafeNet XML import
@@ -241,8 +230,6 @@ class TestImportOTP(TestController):
 
         TOKENS = parseSafeNetXML(xml)
         assert len(TOKENS) == 2, TOKENS
-
-        return
 
     def test_import_OATH(self):
         """
@@ -257,8 +244,6 @@ class TestImportOTP(TestController):
         error_msg = "The provided token seed contains non-hexadecimal characters"
         assert error_msg in response, response
         assert "<status>False</status>" in response, response
-
-        return
 
     def test_import_OATH_256(self):
         """
@@ -305,8 +290,6 @@ class TestImportOTP(TestController):
         response = self.make_validate_request("check_s", params)
         assert '"value": false' in response, response
 
-        return
-
     def test_import_OATH_512(self):
         """
         test to import token data with sha512 seeds
@@ -352,8 +335,6 @@ class TestImportOTP(TestController):
         response = self.make_validate_request("check_s", params)
         assert '"value": false' in response, response
 
-        return
-
     def test_import_PSKC(self):
         """
         Test to import PSKC data
@@ -382,8 +363,6 @@ class TestImportOTP(TestController):
 
         assert "<imported>0</imported>" in response, response
 
-        return
-
     def test_import_empty_file(self):
         """
         Test loading empty file
@@ -401,8 +380,6 @@ class TestImportOTP(TestController):
         assert "<status>False</status>" in response, response
         assert "Error loading tokens. File or Type empty!" in response, response
 
-        return
-
     def test_import_unknown(self):
         """
         Test to import unknown type
@@ -414,8 +391,6 @@ class TestImportOTP(TestController):
         assert "<status>False</status>" in response, response
         assert "Unknown file type" in response, response
 
-        return
-
     def test_import_XML(self):
         """
         Test to import XML data
@@ -426,8 +401,6 @@ class TestImportOTP(TestController):
 
         assert "<imported>2</imported>" in response, response
 
-        return
-
     def test_import_Yubikey(self):
         """
         Test to import Yubikey CSV
@@ -437,8 +410,6 @@ class TestImportOTP(TestController):
         response = self.upload_tokens("yubi_tokens.csv", params=params)
 
         assert "<imported>5</imported>" in response, response
-
-        return
 
     def test_import_Yubikey_hmac(self):
         """
@@ -465,8 +436,6 @@ class TestImportOTP(TestController):
 
         assert 6 in otp_lens
         assert 8 in otp_lens
-
-        return
 
     def test_import_Yubikey_hmac_disabled(self):
         """
@@ -503,7 +472,7 @@ class TestImportOTP(TestController):
         params = {
             "scope": "admin",
             "action": "*",
-            "realm": "%s" % target_realm,
+            "realm": f"{target_realm}",
             "user": "*",
             "name": "all_actions",
         }
@@ -534,8 +503,6 @@ class TestImportOTP(TestController):
             assert target_realm in token_realms, token
 
         self.delete_policy("all_actions")
-
-        return
 
     def test_yubikey_challenge(self):
         """
@@ -573,7 +540,7 @@ class TestImportOTP(TestController):
 
         jresp = json.loads(response.body)
 
-        err_msg = "Error getting token list. Response %r" % (jresp)
+        err_msg = f"Error getting token list. Response {jresp!r}"
         assert jresp["result"]["status"], err_msg
 
         # extract the token info
@@ -625,9 +592,7 @@ class TestImportOTP(TestController):
         response = self.make_validate_request("check", params=params)
 
         for serial in serials:
-            assert not (serial in response), response
-
-        return
+            assert serial not in response, response
 
     def test_import_OATH_with_admin_policy(self):
         """
@@ -693,8 +658,6 @@ class TestImportOTP(TestController):
 
         self.delete_all_realms()
         self.delete_all_resolvers()
-
-        return
 
 
 # eof #

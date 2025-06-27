@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -93,8 +92,6 @@ class LinOtpConfig(dict):
 
         self.refreshConfig(do_reload=do_reload)
 
-        return
-
     def refreshConfig(self, do_reload=False):
         conf = self.glo.getConfig()
 
@@ -112,11 +109,9 @@ class LinOtpConfig(dict):
             self.glo.setConfig(conf, replace=True)
 
         super().update(conf)
-        return
 
     def setRealms(self, realmDict):
         self.realms = realmDict
-        return
 
     def getRealms(self):
         return self.realms
@@ -199,7 +194,8 @@ class LinOtpConfig(dict):
             typ, check_type_function = Config_Types[key]
 
             if not check_type_function(value):
-                raise ValueError("Config Error: %s must be of type %r" % (key, typ))
+                msg = f"Config Error: {key} must be of type {typ!r}"
+                raise ValueError(msg)
 
     def get(self, key, default=None):
         """
@@ -266,10 +262,7 @@ class LinOtpConfig(dict):
         self.glo.delConfig(Key)
 
         # sync with db
-        if key.startswith("linotp."):
-            Key = key
-        else:
-            Key = "linotp." + key
+        Key = key if key.startswith("linotp.") else "linotp." + key
 
         _removeConfigDB(Key)
         _storeConfigDB("linotp.Config", datetime.now())

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -26,8 +25,6 @@
 #
 
 """unit test for autosms policy"""
-
-import pytest
 
 from linotp.lib.context import request_context as context
 from linotp.lib.policy import get_auth_AutoSMSPolicy

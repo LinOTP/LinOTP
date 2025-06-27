@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,11 +26,10 @@
 
 import json
 from tempfile import NamedTemporaryFile
-from typing import Dict, Tuple
+from unittest import mock
+from unittest.mock import patch
 
-import mock
 import pytest
-from mock import patch
 
 import linotp.provider.pushprovider.default_push_provider as default_provider
 import linotp.provider.smsprovider.FileSMSProvider
@@ -100,9 +98,9 @@ class TestUserserviceLogin(TestUserserviceController):
         policy = {
             "name": "no_mfa",
             "action": "history, "
-            + 'imprint_url="%s", ' % imprint_url
-            + 'footer_text="%s", ' % footer_text
-            + "privacy_notice_url=%s, " % privacy_notice_url,
+            + f'imprint_url="{imprint_url}", '
+            + f'footer_text="{footer_text}", '
+            + f"privacy_notice_url={privacy_notice_url}, ",
             "user": " passthru.*.myDefRes:",
             "realm": "*",
             "scope": "selfservice",
@@ -122,14 +120,12 @@ class TestUserserviceLogin(TestUserserviceController):
         assert settings["privacy_notice_url"] == privacy_notice_url
         assert settings["footer_text"] == footer_text
 
-        return
-
     def test_no_audit_precontext(self):
         self.test_pre_context()
 
         with pytest.raises(IndexError):
             # no entry for pre_context
-            audit_entry = self.get_last_audit_entry_for_action(
+            _audit_entry = self.get_last_audit_entry_for_action(
                 "userservice/pre_context"
             )
 
@@ -218,7 +214,7 @@ class TestUserserviceLogin(TestUserserviceController):
             "517407",
         ]
 
-        otps = otps[::-1]
+        otps.reverse()
 
         params = {
             "user": "passthru_user1@myDefRealm",
@@ -270,7 +266,7 @@ class TestUserserviceLogin(TestUserserviceController):
     def test_audit_entry_login(self):
         self.test_mfa_login_one_step()
         audit_entry = self.get_last_audit_entry_for_action("userservice/login")
-        assert "1" == audit_entry[5]
+        assert audit_entry[5] == "1"
 
     def test_mfa_login_two_step(self):
         """test with multiple step mfa authentication."""
@@ -295,7 +291,7 @@ class TestUserserviceLogin(TestUserserviceController):
             "517407",
         ]
 
-        otps = otps[::-1]
+        otps.reverse()
 
         params = {
             "user": "passthru_user1@myDefRealm",
@@ -592,7 +588,6 @@ class TestUserserviceLogin(TestUserserviceController):
         # validate
 
         user = "passthru_user1@myDefRealm"
-        serial = serial
         pin = "1234"
 
         secret_key, public_key = QR.create_keys()
@@ -664,7 +659,7 @@ class TestUserserviceLogin(TestUserserviceController):
             "name": "qr_pair_cb",
             "scope": "authentication",
             "realm": "*",
-            "action": "qrtoken_pairing_callback_url=%s" % cb_url,
+            "action": f"qrtoken_pairing_callback_url={cb_url}",
             "user": "*",
         }
 
@@ -679,7 +674,7 @@ class TestUserserviceLogin(TestUserserviceController):
             "name": "qr_chall_cb",
             "scope": "authentication",
             "realm": "*",
-            "action": "qrtoken_challenge_callback_url=%s" % cb_url,
+            "action": f"qrtoken_challenge_callback_url={cb_url}",
             "user": "*",
         }
 
@@ -748,7 +743,7 @@ class TestUserserviceLogin(TestUserserviceController):
             "name": "push_pair_cb",
             "scope": "authentication",
             "realm": "*",
-            "action": "pushtoken_pairing_callback_url=%s" % cb_url,
+            "action": f"pushtoken_pairing_callback_url={cb_url}",
             "user": "*",
         }
 
@@ -763,7 +758,7 @@ class TestUserserviceLogin(TestUserserviceController):
             "name": "push_chall_cb",
             "scope": "authentication",
             "realm": "*",
-            "action": "pushtoken_challenge_callback_url=%s" % cb_url,
+            "action": f"pushtoken_challenge_callback_url={cb_url}",
             "user": "*",
         }
 
@@ -864,8 +859,8 @@ class TestUserserviceLogin(TestUserserviceController):
         return token_info, secret_key, public_key
 
     def trigger_push_challenge(
-        self, token_info: Dict, content_type: int = None, data: str = None
-    ) -> Tuple[CompatibleTestResponse, str]:
+        self, token_info: dict, content_type: int | None = None, data: str | None = None
+    ) -> tuple[CompatibleTestResponse, str]:
         """Helper to trigger a push challenge request with some mocking
 
         :param token_info: containing all token details
@@ -987,10 +982,8 @@ class TestUserserviceLogin(TestUserserviceController):
                 "myQrToken",
                 "myPushToken",
             ]
-            assert token["LinOtp.Isactive"] == False
+            assert token["LinOtp.Isactive"] is False
             assert token["Enrollment"]["status"] == "completed"
-
-        return
 
     def test_qr_token_login(self):
         """Verify the userservice login with an qr token.
@@ -1143,8 +1136,6 @@ class TestUserserviceLogin(TestUserserviceController):
 
         response.body = response.data.decode("utf-8")
         assert '"rows": [' in response, response
-
-        return
 
     def test_qr_token_polling_login(self):
         """Verify the userservice login with an qr token.
@@ -1308,8 +1299,6 @@ class TestUserserviceLogin(TestUserserviceController):
 
         response.body = response.data.decode("utf-8")
         assert '"rows": [' in response, response
-
-        return
 
 
 # eof #

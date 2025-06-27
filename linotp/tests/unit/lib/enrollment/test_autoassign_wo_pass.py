@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -26,10 +25,10 @@
 #
 
 import unittest
+from unittest.mock import patch
 
 import pytest
 from flask import g
-from mock import patch
 
 from linotp.lib.policy import (
     get_autoassignment_from_realm,
@@ -63,7 +62,7 @@ class TestAutoEnroll(unittest.TestCase):
         user = User("Hugo", realm="def_realm")
         otp = "123467"
 
-        class Token(object):
+        class Token:
             LinOtpCountWindow = 10
             typ = ""
 
@@ -96,8 +95,6 @@ class TestAutoEnroll(unittest.TestCase):
 
         assert res
         assert mocked_assignToken.called
-
-        return
 
     @patch("linotp.lib.policy.action.get_policy_definitions")
     @patch("linotp.lib.policy._get_client")
@@ -195,7 +192,7 @@ class TestAutoEnroll(unittest.TestCase):
                 "client": "*",
                 "user": "*",
                 "time": "*",
-                "action": "autoassignment_from_realm=%s" % src_realm,
+                "action": f"autoassignment_from_realm={src_realm}",
                 "scope": "enrollment",
             }
         }
@@ -215,15 +212,13 @@ class TestAutoEnroll(unittest.TestCase):
                 "client": "127.0.0.1",
                 "user": "*",
                 "time": "*",
-                "action": "autoassignment_from_realm=%s" % src_realm,
+                "action": f"autoassignment_from_realm={src_realm}",
                 "scope": "enrollment",
             }
         }
 
         realm = get_autoassignment_from_realm(user)
         assert not realm
-
-        return
 
 
 # eof #

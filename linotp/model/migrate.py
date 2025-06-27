@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -30,7 +29,7 @@ database schema migration hook
 
 import binascii
 import logging
-from typing import Any, Optional, Tuple, Union
+from typing import Any
 
 import sqlalchemy as sa
 from flask import current_app
@@ -39,6 +38,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.exc import OperationalError
 
 from linotp import model
+from linotp.lib.security.default import TOKEN_KEY, DefaultSecurityModule
 
 log = logging.getLogger(__name__)
 
@@ -63,13 +63,10 @@ def has_column(engine: Engine, table_name: str, column: sa.Column) -> bool:
     # get the list of all columns with their description as dict
 
     columns = insp.get_columns(table_name)
-    for column_item in columns:
-        if column_item.get("name") == column.name:
-            return True
-    return False
+    return any(column_item.get("name") == column.name for column_item in columns)
 
 
-def _compile_name(name: str, dialect: Optional[str] = None) -> str:
+def _compile_name(name: str, dialect: str | None = None) -> str:
     """Helper - to adjust the names of table / column / index to quoted or not.
 
     in postgresql the tablenames / column /index names must be quotes
@@ -104,8 +101,7 @@ def add_column(engine: Engine, table_name: str, column: sa.Column):
 
     with engine.connect() as connection:
         connection.execute(
-            "ALTER TABLE %s ADD COLUMN %s %s"
-            % (c_table_name, c_column_name, c_column_type)
+            f"ALTER TABLE {c_table_name} ADD COLUMN {c_column_name} {c_column_type}"
         )
 
 
@@ -129,12 +125,12 @@ def add_index(engine: Engine, table_name: str, column: sa.Column) -> None:
 
     c_column_name = column.compile(dialect=engine.dialect)
 
-    index_name = "ix_%s_%s" % (table_name, column.name)
+    index_name = f"ix_{table_name}_{column.name}"
     c_index_name = _compile_name(index_name, dialect=engine.dialect)
 
     with engine.connect() as connection:
         connection.execute(
-            "CREATE INDEX %s ON %s ( %s )" % (c_index_name, c_table_name, c_column_name)
+            f"CREATE INDEX {c_index_name} ON {c_table_name} ( {c_column_name} )"
         )
 
 
@@ -156,9 +152,7 @@ def drop_column(engine: Engine, table_name: str, column: sa.Column) -> None:
 
     c_column_name = column.compile(dialect=engine.dialect)
     with engine.connect() as connection:
-        connection.execute(
-            "ALTER TABLE %s drop COLUMN %s " % (c_table_name, c_column_name)
-        )
+        connection.execute(f"ALTER TABLE {c_table_name} drop COLUMN {c_column_name} ")
 
 
 def re_encode(
@@ -295,7 +289,7 @@ class MYSQL_Migration:
 
     def _convert_Config_to_utf8(self) -> Any:
         """Migrate the Config Value and Description to utf8."""
-        cmd = "Update Config Set %s, %s ;" % (
+        cmd = "Update Config Set {}, {} ;".format(
             self._convert("Config.Description"),
             self._convert("Config.Value"),
         )
@@ -303,7 +297,7 @@ class MYSQL_Migration:
 
     def _convert_Token_to_utf8(self) -> Any:
         """Migrate the Token Description and LinOtpTokenInfo to utf8."""
-        cmd = "Update Token Set %s, %s ;" % (
+        cmd = "Update Token Set {}, {} ;".format(
             self._convert("Token.LinOtpTokenDesc"),
             self._convert("Token.LinOtpTokenInfo"),
         )
@@ -311,7 +305,7 @@ class MYSQL_Migration:
 
     def _convert_ImportedUser_to_utf8(self) -> Any:
         """Migrate Username, Surname, Givenname and Email of imported_user to utf8."""
-        cmd = "Update imported_user Set %s, %s, %s, %s ;" % (
+        cmd = "Update imported_user Set {}, {}, {}, {} ;".format(
             self._convert("imported_user.username"),
             self._convert("imported_user.surname"),
             self._convert("imported_user.givenname"),
@@ -437,7 +431,7 @@ class Migration:
             is None
         )
 
-    def get_current_version(self) -> Optional[str]:
+    def get_current_version(self) -> str | None:
         """Get the db model version number.
 
         :return: current db version or None
@@ -479,9 +473,9 @@ class Migration:
 
     def migrate(
         self,
-        from_version: Optional[str] = None,
-        to_version: Optional[str] = None,
-    ) -> Union[str, None]:
+        from_version: str | None = None,
+        to_version: str | None = None,
+    ) -> str | None:
         """Run all migration steps between the versions.
 
         run all steps, which are of ordered list migration_steps
@@ -524,11 +518,12 @@ class Migration:
                 # get the function pointer to the set version
 
                 exec_version = next_version.replace(".", "_")
-                function_name = "migrate_%s" % exec_version
+                function_name = f"migrate_{exec_version}"
 
                 if not hasattr(self, function_name):
                     log.error("unknown migration function %r", function_name)
-                    raise Exception("unknown migration to %r" % next_version)
+                    msg = f"unknown migration to {next_version!r}"
+                    raise Exception(msg)
 
                 migration_step = getattr(self, function_name)
 
@@ -544,7 +539,7 @@ class Migration:
                         "Failed to upgrade database during migration step: %r",
                         function_name,
                     )
-                    log.error(exx, stack_info=True, exc_info=True)
+                    log.exception(str(exx))
                     model.db.session.rollback()  # pylint: disable=E1101
                     raise exx
 
@@ -651,7 +646,7 @@ class Migration:
         # with LinOTP 3.0.0 we changed the audit signing method
         # making signatures of older entries invalid.
         # We log a warning to suggest manual deletion of old entries.
-        from linotp.lib.audit.base import getAudit
+        from linotp.lib.audit.base import getAudit  # noqa PLC0415
 
         audit_obj = getAudit()
         total_audit_entries = audit_obj.getTotal({})
@@ -709,7 +704,7 @@ class Migration:
                 " linotp admin fix-db-encoding"
             )
 
-    def iso8859_to_utf8_conversion(self) -> Tuple[bool, str]:
+    def iso8859_to_utf8_conversion(self) -> tuple[bool, str]:
         """
         Migrate all User (only Username, Surname, Givenname and Email),
         Config and Token entries from latin1 to utf-8,
@@ -739,7 +734,7 @@ class Migration:
 
         except OperationalError as exx:
             log.info("Failed to run convertion: %r", exx)
-            return False, "Failed to run convertion: %r" % exx
+            return False, f"Failed to run convertion: {exx!r}"
 
         finally:
             # in any case, we remove the conversion suggestion label
@@ -750,7 +745,7 @@ class Migration:
 
         return True, "User, Config and Token data converted to utf-8."
 
-    def migrate_3_1_0_0(self) -> Tuple[bool, str]:
+    def migrate_3_1_0_0(self) -> tuple[bool, str]:
         """Migrate the encrpyted data to pkcs7 padding.
 
         this requires to
@@ -759,11 +754,6 @@ class Migration:
 
         This has to be done for the tokens and for the encrypted config values
         """
-
-        from linotp.lib.security.default import (
-            TOKEN_KEY,
-            DefaultSecurityModule,
-        )
 
         class MigrationSecurityModule(DefaultSecurityModule):
             """Migration helper class, which contains the old padding.
@@ -778,13 +768,15 @@ class Migration:
                 eof = len(output) - 1
 
                 if eof == -1:
-                    raise Exception("invalid encoded secret!")
+                    msg = "invalid encoded secret!"
+                    raise Exception(msg)
 
                 while output[eof] == 0x00:
                     eof -= 1
 
                 if not (output[eof - 1] == 0x01 and output[eof] == 0x02):
-                    raise Exception("invalid encoded secret!")
+                    msg = "invalid encoded secret!"
+                    raise Exception(msg)
 
                 return output[: eof - 1]
 
@@ -839,12 +831,12 @@ class Migration:
 
                 model.db.session.add(entry)
 
-                log.info("%r re encrypted" % entry.Key)
+                log.info("%r re encrypted", entry.Key)
 
                 entry_counter += 1
 
             except Exception as exx:
-                log.error("Unable to re-encrypt %r: %r" % (entry.Key, exx))
+                log.error("Unable to re-encrypt %r: %r", entry.Key, exx)
 
         # ----------------------------------------------------------------- --
 
@@ -882,7 +874,7 @@ class Migration:
             # ------------------------------------------------------------- --
 
             encrypted_value = binascii.unhexlify(token.LinOtpKeyEnc)
-            enc = binascii.hexlify(encrypted_value)
+            _enc = binascii.hexlify(encrypted_value)
 
             value = sec_module.decrypt(value=encrypted_value, iv=iv, id=TOKEN_KEY)
 
@@ -901,8 +893,8 @@ class Migration:
         sec_module.unpadd_data = DefaultSecurityModule.unpadd_data
 
         return True, (
-            "re-encryption completed! %r tokens and %r config entries "
-            "migrated" % (token_counter, entry_counter)
+            f"re-encryption completed! {token_counter!r} tokens and {entry_counter!r} config entries "
+            "migrated"
         )
 
     def migrate_3_2_0_0(self):
@@ -965,8 +957,10 @@ class Migration:
             )
             if changed:
                 log.info(
-                    "Updating policy value %r from %r to %r"
-                    % (entry.Key, entry.Value, new_value)
+                    "Updating policy value %r from %r to %r",
+                    entry.Key,
+                    entry.Value,
+                    new_value,
                 )
                 entry.Value = new_value
                 model.db.session.add(entry)
@@ -980,7 +974,7 @@ def _parse_action(action_value):
     # to avoid circular import import lazily parse_action
     # parse_action is used here in migrate script and internally in policy module
     # creating separate module only for it would be overkill at least for now
-    from linotp.lib.policy.util import parse_action
+    from linotp.lib.policy.util import parse_action  # noqa: PLC0415
 
     return parse_action(action_value)
 

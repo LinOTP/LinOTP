@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -30,7 +29,6 @@ import binascii
 import copy
 import json
 import logging
-from datetime import datetime
 from hashlib import sha256
 
 from flask import g
@@ -239,7 +237,7 @@ def split_pin_otp(token, passw, user=None, options=None):
         return 3, pin, otp
 
 
-class ValidationHandler(object):
+class ValidationHandler:
     def check_by_transactionid(self, transid, passw, options=None):
         """
         check the passw against the open transaction
@@ -257,7 +255,7 @@ class ValidationHandler(object):
         if not serials:
             reply = {
                 "value": False,
-                "failure": "No challenge for transaction %r found" % transid,
+                "failure": f"No challenge for transaction {transid!r} found",
             }
             return False, reply
 
@@ -275,7 +273,8 @@ class ValidationHandler(object):
                 continue
 
             if not tokens and not token_type:
-                raise Exception("tokenmismatch for token serial: %r" % serial)
+                msg = f"tokenmismatch for token serial: {serial!r}"
+                raise Exception(msg)
 
             # there could be only one
             token = tokens[0]
@@ -336,12 +335,12 @@ class ValidationHandler(object):
                     (res, opt) = Challenges.create_challenge(theToken, options)
                     res = False
                 else:
-                    raise ParameterError("Missing parameter: pass", id=905)
+                    msg = "Missing parameter: pass"
+                    raise ParameterError(msg, id=905)
 
             else:
-                raise Exception(
-                    "No token found: unable to create challenge for %s" % serial
-                )
+                msg = f"No token found: unable to create challenge for {serial}"
+                raise Exception(msg)
 
         else:
             (res, opt) = self.checkTokenList(
@@ -460,8 +459,10 @@ class ValidationHandler(object):
                     token_dict["offline_info"] = token.getOfflineInfo()
                 else:
                     log.info(
-                        f"Token {token.getSerial()} (type={token.type}) is not "
-                        "allowed by support_offline policy in current realm"
+                        "Token %r (type=%r) is not "
+                        "allowed by support_offline policy in current realm",
+                        token.getSerial(),
+                        token.type,
                     )
 
             trans_dict["token"] = token_dict
@@ -507,28 +508,21 @@ class ValidationHandler(object):
         if user_exists and not get_auth_forward_on_no_token(user):
             servers = get_auth_forward(user)
             if servers:
-                log.info(
-                    "forwarding auth request for user {} to {}".format(user, servers)
-                )
+                log.info("forwarding auth request for user %r to %r", user, servers)
                 res, opt = ForwardServerPolicy.do_request(
                     servers, env, user, passw, options
                 )
-                log.info(
-                    "result of auth request for user {}: ({}, {})".format(
-                        user, res, opt
-                    )
-                )
-                g.audit["action_detail"] = "Forwarded, result {}".format(res)
+                log.info("result of auth request for user %r: (%r, %r)", user, res, opt)
+                g.audit["action_detail"] = f"Forwarded, result {res}"
                 return res, opt
             else:
-                log.info(
-                    "NOT forwarding auth request for user {} (no servers)".format(user)
-                )
+                log.info("NOT forwarding auth request for user %r (no servers)", user)
                 g.audit["action_detail"] = "Not forwarded (no servers)"
         else:
             log.info(
-                "NOT forwarding auth request for user {} "
-                "(get_auth_forward_on_no_token returned False)".format(user)
+                "NOT forwarding auth request for user %r "
+                "(get_auth_forward_on_no_token returned False)",
+                user,
             )
 
         # ------------------------------------------------------------------ --
@@ -614,39 +608,32 @@ class ValidationHandler(object):
             elif get_auth_forward_on_no_token(user):
                 servers = get_auth_forward(user)
                 if servers:
-                    log.info(
-                        "forwarding auth request for user {} to {}".format(
-                            user, servers
-                        )
-                    )
+                    log.info("forwarding auth request for user %r to %r", user, servers)
                     res, opt = ForwardServerPolicy.do_request(
                         servers, env, user, passw, options
                     )
                     log.info(
-                        "result of auth request for user {}: ({}, {})".format(
-                            user, res, opt
-                        )
+                        "result of auth request for user %r: (%r, %r)", user, res, opt
                     )
-                    g.audit["action_detail"] = "Forwarded, result {}".format(res)
+                    g.audit["action_detail"] = f"Forwarded, result {res}"
                     return res, opt
                 else:
                     log.info(
-                        "NOT forwarding auth request for user {} (no servers)".format(
-                            user
-                        )
+                        "NOT forwarding auth request for user %r (no servers)", user
                     )
                     g.audit["action_detail"] = "Not forwarded (no servers)"
 
             return False, opt
 
         if passw is None:
-            raise ParameterError("Missing parameter:pass", id=905)
+            msg = "Missing parameter:pass"
+            raise ParameterError(msg, id=905)
 
         (res, opt) = self.checkTokenList(tokenList, passw, user, options=options)
 
         return (res, opt)
 
-    def checkTokenList(self, tokenList, passw, user=User(), options=None):
+    def checkTokenList(self, tokenList, passw, user: User | None = None, options=None):
         """
         identify a matching token and test, if the token is valid, locked ..
         This function is called by checkSerialPass and checkUserPass to
@@ -765,7 +752,8 @@ class ValidationHandler(object):
                 elif token.is_expired():
                     msg = "Authentication validity period exceeded"
                 else:
-                    raise Exception("Validity check failed without reason")
+                    msg = "Validity check failed without reason"
+                    raise Exception(msg)
 
                 audit_entry["action_detail"] = msg
                 token.incOtpFailCounter()
@@ -815,13 +803,12 @@ class ValidationHandler(object):
                 # and continue with the next one
                 log.error("checking token %r failed: %r", token, exx)
                 ret = -1
-                reply = "%r" % exx
-                audit_entry["action_detail"] = "checking token %r failed: %r" % (
-                    token,
-                    exx,
+                reply = f"{exx!r}"
+                audit_entry["action_detail"] = (
+                    f"checking token {token!r} failed: {exx!r}"
                 )
 
-                audit_entry["info"] = audit_entry.get("info", "") + "%r" % exx
+                audit_entry["info"] = audit_entry.get("info", "") + f"{exx!r}"
 
                 continue
             finally:
@@ -931,14 +918,14 @@ class ValidationHandler(object):
         ]
 
         if not tokenList:
-            g.audit["action_detail"] = "The serial %s could not be found!" % serialnum
+            g.audit["action_detail"] = f"The serial {serialnum} could not be found!"
             return res, opt
 
         # FIXME if the Token has set a PIN and the User does not want to enter
         # the PIN for authentication, we need to do something different here...
         #  and avoid PIN checking in __checkToken.
         #  We could pass an "option" to __checkToken.
-        (res, opt) = self.checkTokenList(tokenList, passw)
+        (res, opt) = self.checkTokenList(tokenList, passw, user=User())
 
         # Now we need to get the user
         if res is not False and "serial" in g.audit:

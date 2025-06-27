@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -76,15 +75,15 @@ class EnrollTokenDialog(ManageDialog):
         # Check the last alert line
         info = self.manage.alert_box_handler.last_line
         if info.type != "info" or not info.text.startswith("created token with serial"):
-            raise RuntimeError(
-                "Password not correctly created. Message:{}".format(info)
-            )
+            msg = f"Password not correctly created. Message:{info}"
+            raise RuntimeError(msg)
 
         # Find the token serial number
         token_serial = info.element.find_element(By.CSS_SELECTOR, ".text_param1").text
 
         if not token_serial or not token_serial.startswith(token_prefix):
-            raise Exception("Token was not enrolled correctly.")
+            msg = "Token was not enrolled correctly."
+            raise Exception(msg)
 
         return token_serial
 
@@ -125,7 +124,7 @@ class EnrollTokenDialog(ManageDialog):
 
         wel_hmac_otplen = self.driver.find_element(By.ID, "hmac_otplen")
         wel_hmac_algorithm = self.driver.find_element(By.ID, "hmac_algorithm")
-        wel_enroll_hmac_desc = self.driver.find_element(By.ID, "enroll_hmac_desc")
+        _wel_enroll_hmac_desc = self.driver.find_element(By.ID, "enroll_hmac_desc")
 
         if hmac_key:
             # select: seed input - no random seed

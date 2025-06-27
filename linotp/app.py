@@ -26,10 +26,10 @@ import secrets
 import stat
 import sys
 import time
+import traceback
 from datetime import datetime
 from logging.config import dictConfig as logging_dictConfig
 from pathlib import Path
-from typing import List, Optional
 from uuid import uuid4
 
 from beaker.cache import CacheManager
@@ -38,6 +38,7 @@ from flask import Config as FlaskConfig
 from flask import Flask, abort, current_app, jsonify, redirect, request, url_for
 from flask import g as flask_g
 from flask_babel import Babel
+from flask_jwt_extended import JWTManager
 from werkzeug.exceptions import HTTPException
 from werkzeug.middleware.profiler import ProfilerMiddleware
 
@@ -63,7 +64,6 @@ from .lib.resolver import (
 )
 from .lib.security.provider import SecurityProvider
 from .lib.tools.expiring_list import CustomExpiringList
-from .lib.tools.flask_jwt_extended_migration import JWTManager
 from .lib.util import get_client, get_log_level
 from .middlewares.trusted_proxy_handler import TrustedProxyHandler
 from .model import SYS_EXIT_CODE, setup_db
@@ -123,8 +123,6 @@ class ExtFlaskConfig(FlaskConfig):
 
     class RelativePathName(str):
         """“Marker” that a string is really a relative path name."""
-
-        pass
 
     def __init__(self, *args, **kwargs):
         """Initialise the LinOTP config mechanism. The `config_schema`
@@ -213,7 +211,7 @@ class ExtFlaskConfig(FlaskConfig):
             return os.path.join(root_dir, ".", value)
         if key == "BABEL_TRANSLATION_DIRECTORIES":
             # This is a Flask-Babel setting that we can't really change,
-            # so it needs to be special-cased – it is a semicolon-separated
+            # so it needs to be special-cased - it is a semicolon-separated
             # search path of directory names, any of which could be relative.
 
             return ";".join(
@@ -228,7 +226,7 @@ class ExtFlaskConfig(FlaskConfig):
         """We need to overload this so the relative-pathname hack will work
         even if people use `foo.get('bar')` instead of
         `foo['bar']`. (It turns out that the built-in `get()` method
-        doesn't go through `__getitem__()` – `__getitem__()`'s mission
+        doesn't go through `__getitem__()` - `__getitem__()`'s mission
         in life is strictly to make the brackets do something.)
         The relative-pathname hack is just relevant for variables which contains
         a _file or _dir entry. So just those calls got handled as warning in all
@@ -291,14 +289,14 @@ class LinOTPApp(Flask):
     """Beaker cache for this app"""
     cache = None
 
-    available_languages: List[str] = []
+    available_languages: list[str] = []
 
     def __init__(self):
         self.cli_cmd = os.environ.get("LINOTP_CMD", "")
         self.config_class = ExtFlaskConfig  # our special `Config` class
         self.audit_obj = None  # No audit logging so far
-        self.security_provider: Optional[SecurityProvider] = None
-        self.enabled_controllers: List[str] = []
+        self.security_provider: SecurityProvider | None = None
+        self.enabled_controllers: list[str] = []
         """Currently activated controller names"""
 
         # ------------------------------------------------------------------ --
@@ -306,7 +304,7 @@ class LinOTPApp(Flask):
         # we create an app-wide shared linotp config object whose main purpose is
         # to synchronize the access to changes within multiple threads
 
-        self.linotp_app_config: Optional[LinotpAppConfig] = None
+        self.linotp_app_config: LinotpAppConfig | None = None
 
         # ------------------------------------------------------------------ --
 
@@ -337,13 +335,13 @@ class LinOTPApp(Flask):
             try:
                 with open(filename) as f:
                     license_str = f.read()
-            except IOError:
+            except OSError:
                 log.error("could not open licence file: %s", filename)
 
             if not license_str:
                 log.error("empty license file: %s", filename)
             else:
-                import linotp.lib.support
+                import linotp.lib.support  # noqa: PLC0415
 
                 res, msg = linotp.lib.support.setSupportLicense(license_str)
                 if res is False:
@@ -393,7 +391,8 @@ class LinOTPApp(Flask):
             # This is called as `…(payload)` or `…(header, payload)` but we're only interested in `payload`
             jti = args[-1].get("jti")
             if jti is None:
-                raise KeyError("jti")
+                msg = "jti"
+                raise KeyError(msg)
             return self.jwt_blocklist.item_in_list(jti)
 
     def start_session(self):
@@ -547,11 +546,11 @@ class LinOTPApp(Flask):
         # ------------------------------------------------------------------ --
         # load the providers
 
-        from linotp.provider import Provider_types, getProvider
+        from linotp.provider import Provider_types, getProvider  # noqa: PLC0415
 
         provider = {
             provider_type: getProvider(provider_type)
-            for provider_type in Provider_types.keys()
+            for provider_type in Provider_types
         }
 
         request_context["Provider"] = provider
@@ -563,7 +562,7 @@ class LinOTPApp(Flask):
         # public / private key pair
 
         partition = 0
-        if "SecretKey.Partition.%d" % partition not in linotp_config:
+        if f"SecretKey.Partition.{partition}" not in linotp_config:
             init_key_partition(linotp_config, partition=partition)
 
     def getRadiusDictionaryPath(self):
@@ -593,8 +592,6 @@ class LinOTPApp(Flask):
         """
         cache_manager = request_context["CacheManager"]
         if not cache_manager:
-            import traceback
-
             log.warning(
                 "[%s] Could not initialise cache due to missing manager",
                 traceback.format_stack(None, 1),
@@ -690,9 +687,8 @@ class LinOTPApp(Flask):
         :param ctrl_class_name: Name of controller class to load. Defaults to CtrlNameController
         """
         if not ctrl_name:
-            raise ConfigurationError(
-                "no controller module specified: {}".format(ctrl_name)
-            )
+            msg = f"no controller module specified: {ctrl_name}"
+            raise ConfigurationError(msg)
         if not ctrl_class_name:
             # "foobar" => "FoobarController"
             ctrl_class_name = ctrl_name.title() + "Controller"
@@ -700,16 +696,13 @@ class LinOTPApp(Flask):
         mod = importlib.import_module("." + ctrl_name, "linotp.controllers")
         cls = getattr(mod, ctrl_class_name, None)
         if cls is None:
-            raise ConfigurationError(
-                "{} does not define the '{}' class".format(ctrl_name, ctrl_class_name)
-            )
+            msg = f"{ctrl_name} does not define the '{ctrl_class_name}' class"
+            raise ConfigurationError(msg)
 
         if not url_prefix:
             url_prefix = cls.default_url_prefix or "/" + ctrl_name
 
-        self.logger.debug(
-            "Registering {0} class at {1}".format(ctrl_class_name, url_prefix)
-        )
+        self.logger.debug("Registering %s class at %s", ctrl_class_name, url_prefix)
         self.register_blueprint(cls(ctrl_name), url_prefix=url_prefix)
 
         self.enabled_controllers.append(ctrl_name)
@@ -746,7 +739,7 @@ class LinOTPApp(Flask):
         private_key = self.config["AUDIT_PRIVATE_KEY_FILE"]
         if not os.path.isfile(public_key) or not os.path.isfile(private_key):
             print(
-                f"CRITICAL: Audit log keypair does not exist; use `linotp init audit-keys` to generate one.",
+                "CRITICAL: Audit log keypair does not exist; use `linotp init audit-keys` to generate one.",
                 file=sys.stderr,
             )
             sys.exit(SYS_EXIT_CODE)
@@ -851,9 +844,7 @@ def init_security_provider():
         current_app.security_provider = security_provider
 
     except Exception as exx:
-        current_app.logger.error(
-            "Failed to load security provider definition: {}".format(exx)
-        )
+        current_app.logger.error("Failed to load security provider definition: %r", exx)
         raise exx
 
 
@@ -1088,7 +1079,7 @@ def create_app(config_name=None, config_extra=None):
     init_logging(app)
 
     if app.cli_cmd in START_LINOTP_COMMANDS:
-        app.logger.info("LinOTP {} starting ...".format(__version__))
+        app.logger.info("LinOTP %s starting ...", __version__)
 
     # Initialize components (that need app_context)
     with app.app_context():

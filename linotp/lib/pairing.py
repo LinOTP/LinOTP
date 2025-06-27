@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -169,13 +168,14 @@ def generate_pairing_url(
 
     try:
         TOKEN_TYPE = TOKEN_TYPES[token_type]
-    except KeyError:
+    except KeyError as exx:
         allowed_types = ", ".join(list(TOKEN_TYPES.keys()))
+        msg = "token_type"
         raise InvalidFunctionParameter(
-            "token_type",
-            "Unsupported token type %s. Supported "
-            "types for pairing are: %s" % (token_type, allowed_types),
-        )
+            msg,
+            f"Unsupported token type {token_type}. Supported "
+            f"types for pairing are: {allowed_types}",
+        ) from exx
 
     # ---------------------------------------------------------------------- --
 
@@ -228,9 +228,8 @@ def generate_pairing_url(
         server_public_key = get_public_key(partition)
 
         if len(server_public_key) != 32:
-            raise InvalidFunctionParameter(
-                "server_public_key", "Public key must be 32 bytes long"
-            )
+            msg = "server_public_key"
+            raise InvalidFunctionParameter(msg, "Public key must be 32 bytes long")
 
         data += server_public_key
 
@@ -266,21 +265,21 @@ def generate_pairing_url(
 
     if flags & FLAG_PAIR_DIGITS:
         if not (6 <= otp_pin_length <= 12):
-            raise InvalidFunctionParameter(
-                "otp_pin_length", "Pin length must be in the range 6..12"
-            )
+            msg = "otp_pin_length"
+            raise InvalidFunctionParameter(msg, "Pin length must be in the range 6..12")
         data += struct.pack("<b", otp_pin_length)
 
     if flags & FLAG_PAIR_HMAC:
         try:
             HASH_ALGO = hash_algorithms[hash_algorithm]
-        except KeyError:
+        except KeyError as exx:
             allowed_values = ", ".join(list(hash_algorithms.keys()))
+            msg = "hash_algorithm"
             raise InvalidFunctionParameter(
-                "hash_algorithm",
-                "Unsupported hash algorithm %s, "
-                "allowed values are %s" % (hash_algorithm, allowed_values),
-            )
+                msg,
+                f"Unsupported hash algorithm {hash_algorithm}, "
+                f"allowed values are {allowed_values}",
+            ) from exx
         data += struct.pack("<b", HASH_ALGO)
 
     # ---------------------------------------------------------------------- --
@@ -323,10 +322,8 @@ def get_pairing_data_parser(token_type):
     if token_type == TYPE_PUSHTOKEN:
         return parse_and_verify_pushtoken_pairing_data
 
-    raise ValueError(
-        "unsupported token type %d, supported types "
-        "are %s" % (token_type, SUPPORTED_TOKEN_TYPES)
-    )
+    msg = f"unsupported token type {token_type}, supported types are {SUPPORTED_TOKEN_TYPES}"
+    raise ValueError(msg)
 
 
 # -------------------------------------------------------------------------- --
@@ -392,7 +389,8 @@ def decrypt_pairing_response(enc_pairing_response):
     #            ------------------------------------------- --
 
     if len(data) < 1 + 4 + 32 + 16:
-        raise ParameterError("Malformed pairing response")
+        msg = "Malformed pairing response"
+        raise ParameterError(msg)
 
     # ---------------------------------------------------------------------- --
 
@@ -402,10 +400,11 @@ def decrypt_pairing_response(enc_pairing_response):
     version, partition = struct.unpack("<bI", header)
 
     if version != PAIR_RESPONSE_VERSION:
-        raise ValueError(
+        msg = (
             "Unexpected pair-response version, "
-            "expected: %d, got: %d" % (PAIR_RESPONSE_VERSION, version)
+            f"expected: {PAIR_RESPONSE_VERSION}, got: {version}"
         )
+        raise ValueError(msg)
 
     # ---------------------------------------------------------------------- --
 
@@ -444,7 +443,8 @@ def decrypt_pairing_response(enc_pairing_response):
 
     plaintext_min_length = 1
     if len(data) < plaintext_min_length:
-        raise ParameterError("Malformed pairing response")
+        msg = "Malformed pairing response"
+        raise ParameterError(msg)
 
     # ---------------------------------------------------------------------- --
 
@@ -460,10 +460,8 @@ def decrypt_pairing_response(enc_pairing_response):
     token_type = int(plaintext[0])
 
     if token_type not in SUPPORTED_TOKEN_TYPES:
-        raise ValueError(
-            "unsupported token type %d, supported types "
-            "are %s" % (token_type, SUPPORTED_TOKEN_TYPES)
-        )
+        msg = f"unsupported token type {token_type}, supported types are {SUPPORTED_TOKEN_TYPES}"
+        raise ValueError(msg)
 
     # ---------------------------------------------------------------------- --
 
@@ -478,12 +476,12 @@ def decrypt_pairing_response(enc_pairing_response):
 
     try:
         token_type_as_str = INV_TOKEN_TYPES[token_type]
-    except KeyError:
+    except KeyError as exx:
+        msg = "token_type %d is in SUPPORTED_TOKEN_TYPES"
         raise ProgrammingError(
-            "token_type %d is in SUPPORTED_TOKEN_TYPES",
-            "however an appropriate mapping entry in "
-            "TOKEN_TYPES is missing" % token_type,
-        )
+            msg,
+            "however an appropriate mapping entry in TOKEN_TYPES is missing",
+        ) from exx
 
     return PairingResponse(token_type_as_str, pairing_data)
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -29,7 +28,6 @@
 
 import logging
 import re
-from typing import Dict, List
 
 from flask import g
 from flask_babel import gettext as _
@@ -167,8 +165,8 @@ def checkAuthorisation(scope, method):
 
 
 def _checkAdminPolicyPost(
-    method: str, param: Dict[str, str] = None, user: User = None
-) -> Dict:
+    method: str, param: dict[str, str] | None = None, user: User = None
+) -> dict:
     """Check post conditions for admin operations.
 
     :param method: the scope of the calling
@@ -219,7 +217,7 @@ def _checkAdminPolicyPost(
             serials: set[str] = set()
             if isinstance(serial_param, str):
                 serials.add(serial_param)
-            elif isinstance(serial_param, (list, set)):
+            elif isinstance(serial_param, list | set):
                 serials.update(serial_param)
 
             ret["new_pins"] = []
@@ -243,27 +241,27 @@ def _checkAdminPolicyPost(
 
     # check the enrollment.tokencount policy compliance
 
-    if method in ["assign", "init", "enable"]:
-        if not _check_token_count(realm=user.realm, post_check=True):
-            admin = _getAuthenticatedUser()
+    if method in ["assign", "init", "enable"] and (
+        not _check_token_count(realm=user.realm, post_check=True)
+    ):
+        admin = _getAuthenticatedUser()
 
-            log.warning(
-                "the admin >%r< is not allowed to enroll any more "
-                "tokens for the realm %r",
-                admin,
-                user.realm,
-            )
+        log.warning(
+            "the admin >%r< is not allowed to enroll any more tokens for the realm %r",
+            admin,
+            user.realm,
+        )
 
-            raise PolicyException(
-                _(
-                    "The maximum allowed number of tokens "
-                    "for the realm %r was reached. You can"
-                    " not init any more tokens. Check the "
-                    "policies scope=enrollment, "
-                    "action=tokencount."
-                )
-                % user.realm
+        raise PolicyException(
+            _(
+                "The maximum allowed number of tokens "
+                "for the realm %r was reached. You can"
+                " not init any more tokens. Check the "
+                "policies scope=enrollment, "
+                "action=tokencount."
             )
+            % user.realm
+        )
 
     # ---------------------------------------------------------------------- --
 
@@ -315,16 +313,16 @@ def _checkAdminPolicyPost(
 
     # enforce license restrictions
 
-    if method in ["assign", "init", "enable", "loadtokens"]:
-        if linotp.lib.support.check_license_restrictions():
-            log.warning(
-                "The maximum allowed number of tokens for your license is reached"
-            )
-            linotp.lib.support.check_license_restrictions()
+    if (
+        method in ["assign", "init", "enable", "loadtokens"]
+        and linotp.lib.support.check_license_restrictions()
+    ):
+        log.warning("The maximum allowed number of tokens for your license is reached")
+        linotp.lib.support.check_license_restrictions()
 
-            raise linotp.lib.support.LicenseException(
-                _("No more tokens can be enrolled due to license restrictions")
-            )
+        raise linotp.lib.support.LicenseException(
+            _("No more tokens can be enrolled due to license restrictions")
+        )
 
     return ret
 
@@ -419,11 +417,10 @@ def _checkSelfservicePolicyPost(method, param=None, user=None):
     # for selfservice "enroll" we check the license limits
     # - this hook covers 'enroll' userservice
 
-    if method == "enroll":
-        if linotp.lib.support.check_license_restrictions():
-            raise linotp.lib.support.LicenseException(
-                _("No more tokens can be enrolled due to license restrictions")
-            )
+    if method == "enroll" and linotp.lib.support.check_license_restrictions():
+        raise linotp.lib.support.LicenseException(
+            _("No more tokens can be enrolled due to license restrictions")
+        )
 
     return ret
 
@@ -740,7 +737,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
 
             for tt in token_type_list:
                 if tt.lower() == ttype.lower():
-                    policies = getAdminPolicies("init%s" % tt.upper())
+                    policies = getAdminPolicies(f"init{tt.upper()}")
                     token_type_found = True
                     break
 
@@ -799,22 +796,25 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         # this is a new token, we do not need to check this.
         log.debug("checking for token existens")
 
-        if policies["active"] and linotp.lib.token.tokenExist(serial):
-            if not checkAdminAuthorization(policies, serial, ""):
-                log.warning(
-                    "the admin >%s< is not allowed to enroll token %s of type %s.",
-                    policies["admin"],
-                    serial,
-                    ttype,
-                )
+        if (
+            policies["active"]
+            and linotp.lib.token.tokenExist(serial)
+            and not checkAdminAuthorization(policies, serial, "")
+        ):
+            log.warning(
+                "the admin >%s< is not allowed to enroll token %s of type %s.",
+                policies["admin"],
+                serial,
+                ttype,
+            )
 
-                raise PolicyException(
-                    _(
-                        "You do not have the administrative "
-                        "right to init token %s of type %s."
-                    )
-                    % (serial, ttype)
+            raise PolicyException(
+                _(
+                    "You do not have the administrative "
+                    "right to init token %s of type %s."
                 )
+                % (serial, ttype)
+            )
 
         log.debug("checking tokens in realm for user %r", user)
         if user and not _check_token_count(user=user):
@@ -1042,7 +1042,7 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
                 policies["admin"],
                 realm,
             )
-            admin_user = policies["admin"]
+            _admin_user = policies["admin"]
 
             raise PolicyException(
                 _("You do not have the administrative right to list users in realm %r.")
@@ -1210,24 +1210,24 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
         tokenrealm = param.get("tokenrealm")
         policies = getAdminPolicies("import")
 
-        if policies["active"]:
-            if not ("*" in policies["realms"] or tokenrealm in policies["realms"]):
-                log.warning(
-                    "the admin >%r< is not allowed to "
-                    "import token files to realm %r: %r",
-                    policies["admin"],
-                    tokenrealm,
-                    policies,
-                )
+        if policies["active"] and (
+            not ("*" in policies["realms"] or tokenrealm in policies["realms"])
+        ):
+            log.warning(
+                "the admin >%r< is not allowed to import token files to realm %r: %r",
+                policies["admin"],
+                tokenrealm,
+                policies,
+            )
 
-                raise PolicyException(
-                    _(
-                        "You do not have the administrative "
-                        "right to import token files to realm %r"
-                        ". Check the policies."
-                    )
-                    % tokenrealm
+            raise PolicyException(
+                _(
+                    "You do not have the administrative "
+                    "right to import token files to realm %r"
+                    ". Check the policies."
                 )
+                % tokenrealm
+            )
 
         if linotp.lib.support.check_license_restrictions():
             raise linotp.lib.support.LicenseException(
@@ -2144,7 +2144,7 @@ def get_auto_enrollment(user):
 
     token_types = [x.strip() for x in t_typ.lower().split()]
 
-    if token_types and set(token_types).issubset(set(["sms", "email", "*"])):
+    if token_types and set(token_types).issubset({"sms", "email", "*"}):
         log.info("token type for auto enrollment: %r", t_typ)
         return True, token_types
 
@@ -2394,11 +2394,8 @@ def _getOTPPINPolicies(user, scope="selfservice"):
 
         # find the minimum length
         log.debug("find the minimum length for OTP_PINs")
-        if not n_min == -1:
-            if ret["min"] == -1:
-                ret["min"] = n_min
-            elif n_min < ret["min"]:
-                ret["min"] = n_min
+        if n_min != -1 and (ret["min"] == -1 or n_min < ret["min"]):
+            ret["min"] = n_min
 
         # find all contents
         log.debug("find the allowed contents for OTP PINs")
@@ -2427,30 +2424,27 @@ def checkOTPPINPolicy(pin, user):
 
     pol = _getOTPPINPolicies(user)
     log.debug("checking for otp_pin_minlength")
-    if pol["min"] != -1:
-        if pol["min"] > len(pin):
-            return {
-                "success": False,
-                "error": _(
-                    "The provided PIN is too short. It should be "
-                    "at least %i characters."
-                )
-                % pol["min"],
-            }
+    if pol["min"] != -1 and pol["min"] > len(pin):
+        return {
+            "success": False,
+            "error": _(
+                "The provided PIN is too short. It should be at least %i characters."
+            )
+            % pol["min"],
+        }
 
     log.debug("checking for otp_pin_maxlength")
-    if pol["max"] != -1:
-        if pol["max"] < len(pin):
-            return {
-                "success": False,
-                "error": (
-                    _(
-                        "The provided PIN is too long. It should not "
-                        "be longer than %i characters."
-                    )
-                    % pol["max"]
-                ),
-            }
+    if pol["max"] != -1 and pol["max"] < len(pin):
+        return {
+            "success": False,
+            "error": (
+                _(
+                    "The provided PIN is too long. It should not "
+                    "be longer than %i characters."
+                )
+                % pol["max"]
+            ),
+        }
 
     log.debug("checking for otp_pin_contents")
     if pol["contents"]:
@@ -2818,9 +2812,8 @@ def check_user_authorization(login, realm, exception=False):
         res = True
 
     if res is False and exception:
-        raise AuthorizeException(
-            "Authorization on client %s failed for %s@%s." % (client, login, realm)
-        )
+        msg = f"Authorization on client {client} failed for {login}@{realm}."
+        raise AuthorizeException(msg)
 
     return res
 
@@ -3230,10 +3223,11 @@ def check_auth_tokentype(serial, exception=False, user=None):
     if res is False and exception:
         g.audit["action_detail"] = "failed due to authorization/tokentype policy"
 
-        raise AuthorizeException(
-            "Authorization for token %s with type %s "
-            "failed on client %s" % (serial, tokentype, client)
+        msg = (
+            f"Authorization for token {serial} with type {tokentype} "
+            f"failed on client {client}"
         )
+        raise AuthorizeException(msg)
 
     return res
 
@@ -3302,9 +3296,8 @@ def check_auth_serial(serial, exception=False, user=None):
 
     if res is False and exception:
         g.audit["action_detail"] = "failed due to authorization/serial policy"
-        raise AuthorizeException(
-            "Authorization for token %s failed on client %s" % (serial, client)
-        )
+        msg = f"Authorization for token {serial} failed on client {client}"
+        raise AuthorizeException(msg)
 
     return res
 
@@ -3384,11 +3377,12 @@ def get_pin_policies(user):
     if len(pin_policies) > 1:
         msg = (
             "conflicting authentication polices. "
-            "Check scope=authentication. policies: %r" % pin_policies
+            f"Check scope=authentication. policies: {pin_policies!r}"
         )
 
         log.error("[__checkToken] %r", msg)
-        raise Exception("multiple pin policies found")
+        msg = "multiple pin policies found"
+        raise Exception(msg)
 
     return pin_policies
 
@@ -3406,7 +3400,7 @@ def get_active_token_statuses_for_reporting(realm):
     report_policies = getPolicy({"scope": "reporting", "realm": realm})
     unique_statuses = set()
 
-    for polname, policy in sorted(report_policies.items()):
+    for _polname, policy in sorted(report_policies.items()):
         actions = str(policy.get("action", "")).split(",")
 
         for act in actions:
@@ -3501,10 +3495,11 @@ def get_partition(realms, user):
         return 0
 
     if len(action_values) > 1:
-        raise Exception(
-            "conflicting policy values %r found for "
-            "realm set: %r" % (action_values, realms)
+        msg = (
+            f"conflicting policy values {action_values!r} found for "
+            f"realm set: {realms!r}"
         )
+        raise Exception(msg)
 
     return action_values.pop()
 
@@ -3553,15 +3548,16 @@ def get_single_auth_policy(policy_name, user=None, realms=None):
         return None
 
     if len(action_values) > 1:
-        raise Exception(
-            "conflicting policy values %r found for "
-            "realm set: %r" % (action_values, realms)
+        msg = (
+            f"conflicting policy values {action_values!r} found for "
+            f"realm set: {realms!r}"
         )
+        raise Exception(msg)
 
     return action_values.pop()
 
 
-def match_allowed_realms(scope: str, action: str, requested_realms: List[str]):
+def match_allowed_realms(scope: str, action: str, requested_realms: list[str]):
     """Returns a list of realm names the user is allowed to access for given scope.action.
 
     Args:

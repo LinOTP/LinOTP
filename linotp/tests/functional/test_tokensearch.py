@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -54,7 +53,6 @@ class TestTokensearch(TestController):
         self.delete_all_realms()
         self.delete_all_resolvers()
         TestController.tearDown(self)
-        return
 
     def remove_tokens(self):
         """
@@ -68,7 +66,7 @@ class TestTokensearch(TestController):
 
         response = self.make_api_v2_request("/tokens/")
         token_list = response.json["result"]["value"]["pageRecords"]
-        assert [] == token_list
+        assert token_list == []
 
     def _cache_splitAtSign(self):
         response = self.make_system_request("getConfig", params={"key": "splitAtSign"})
@@ -83,13 +81,13 @@ class TestTokensearch(TestController):
     def restore_splitAtSign(self):
         try:
             splitAtSig = self.splitAtSig
-        except:
+        except Exception:
             pass
         else:
             if splitAtSig:
                 self.set_splitAtSign(splitAtSig)
             else:
-                response = self.make_system_request(
+                _response = self.make_system_request(
                     "delConfig", params={"key": "splitAtSign"}
                 )
 
@@ -129,8 +127,6 @@ class TestTokensearch(TestController):
         params = {"user": "pass*thru@example.com"}
         response = self.make_admin_request("show", params=params)
         assert serial in response
-
-        return
 
     def test_search_token_with_params(self):
         self.set_splitAtSign(False)
@@ -233,7 +229,7 @@ class TestTokensearch(TestController):
         params = {"sortBy": "CreationDate"}
         response = self.make_api_v2_request("/tokens/", params=params)
         result = response.json["result"]
-        assert result["status"] == False
+        assert result["status"] is False
         assert result["error"]
 
     def test_search_token_with_no_realm(self):

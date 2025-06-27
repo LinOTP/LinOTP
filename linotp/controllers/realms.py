@@ -36,9 +36,7 @@ class RealmsController(BaseController):
     """
 
     def __init__(self, name, install_name="", **kwargs):
-        super(RealmsController, self).__init__(
-            name, install_name=install_name, **kwargs
-        )
+        super().__init__(name, install_name=install_name, **kwargs)
 
         self.add_url_rule("/", "realms", self.get_realms, methods=["GET"])
 
@@ -105,17 +103,17 @@ class RealmsController(BaseController):
         """
 
         try:
-            res = checkPolicyPre("system", "getRealms")
+            _res = checkPolicyPre("system", "getRealms")
 
         except PolicyException as pe:
-            log.error("[get_realms] policy failed: {}".format(pe))
+            log.error("[get_realms] policy failed: %r", pe)
             db.session.rollback()
             error = sendError(pe.message)
             error.status_code = 403
             return error
 
         try:
-            log.debug("[get_realms] with params".format(self.request_params))
+            log.debug("[get_realms] with params")
 
             g.audit["success"] = True
 
@@ -135,7 +133,7 @@ class RealmsController(BaseController):
             return sendResult(formatted_realms)
 
         except Exception as e:
-            log.error("[get_realms] failed: {}".format(e))
+            log.error("[get_realms] failed: %r", e)
             db.session.rollback()
             return sendError(e.message)
 
@@ -192,10 +190,10 @@ class RealmsController(BaseController):
         realm_user = RealmUser(realm=realm_name)
         try:
             policy_params = {"realm": realm_name}
-            res = checkPolicyPre(
+            _res = checkPolicyPre(
                 "admin", "userlist", param=policy_params, user=realm_user
             )
-        except PolicyException as exception:
+        except PolicyException:
             log.error(
                 "[realms.get_users] admin_user is not allowed to list users in realm %s",
                 realm_name,
@@ -220,7 +218,7 @@ class RealmsController(BaseController):
         users_iters = getUserListIterators(searchDict, realm_user)
 
         g.audit["success"] = True
-        g.audit["info"] = "realm: %s" % realm_name
+        g.audit["info"] = f"realm: {realm_name}"
 
         # default of rp=16 is set in sendResultIterator
         rp = int(param.get("rp")) if param.get("rp") else None

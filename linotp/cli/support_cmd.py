@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -193,7 +192,7 @@ def is_support_valid(filename):
         sys.exit(2)
 
     if not valid or not isinstance(valid, tuple):
-        current_app.echo("Validating support error: %r" % valid)
+        current_app.echo(f"Validating support error: {valid!r}")
         sys.exit(2)
 
     print(valid[0])

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -173,7 +172,7 @@ class HmacOtp:
         return sotp
 
 
-class TotpToken(object):
+class TotpToken:
     def __init__(
         self,
         key=None,
@@ -206,8 +205,6 @@ class TotpToken(object):
         self.digits = digits
 
         self.hmacOtp = HmacOtp(self.key, digits=self.digits, hashfunc=algo)
-
-        return
 
     def getOtp(self, counter: int = -1, offset=0, jitter=0, seconds=None):
         """
@@ -295,19 +292,17 @@ class TestTotpController(TestController):
         if isinstance(curTime, datetime.datetime):
             dt = curTime
         elif isinstance(curTime, str):
-            if "." in curTime:
-                tFormat = "%Y-%m-%d %H:%M:%S.%f"
-            else:
-                tFormat = "%Y-%m-%d %H:%M:%S"
+            tFormat = "%Y-%m-%d %H:%M:%S.%f" if "." in curTime else "%Y-%m-%d %H:%M:%S"
             try:
                 dt = datetime.datetime.strptime(curTime, tFormat)
-            except Exception as e:
-                raise Exception(e)
+            except Exception:
+                raise
         else:
-            raise Exception(
-                "[time2float] invalid curTime: %s. You need"
-                " to specify a datetime.datetime" % type(curTime)
+            msg = (
+                f"[time2float] invalid curTime: {type(curTime)}. You need"
+                " to specify a datetime.datetime"
             )
+            raise Exception(msg)
 
         td = dt - datetime.datetime(1970, 1, 1)
         tCounter = (
@@ -744,10 +739,7 @@ class TestTotpController(TestController):
 
                 # start resync
                 res = self.checkOtp(user, otp)
-                assert '"value": false' in res.body, "%s: %s" % (
-                    offset,
-                    res.body,
-                )
+                assert '"value": false' in res.body, f"{offset}: {res.body}"
 
                 # finish resync
                 res = self.checkOtp(user, otp)
@@ -810,7 +802,7 @@ class TestTotpController(TestController):
         timeWindow = 180
         syncTimeout = 240
         step = 30
-        params = {"AutoResyncTimeout": "%s" % syncTimeout, "AutoResync": True}
+        params = {"AutoResyncTimeout": f"{syncTimeout}", "AutoResync": True}
 
         response = self.make_system_request("setConfig", params=params)
         assert "false" not in response.body
@@ -916,7 +908,7 @@ class TestTotpController(TestController):
             otps = tokData.get("otps")
             for o in otps:
                 tCounter = o[0]
-                counter = int(((tCounter) / step))
+                counter = int((tCounter) / step)
                 otp = o[1]
                 curTime = o[2]
 

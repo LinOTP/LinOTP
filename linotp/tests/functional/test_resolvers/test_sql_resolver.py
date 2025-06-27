@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -47,8 +46,6 @@ class SQLResolverTest(SQLTestController):
         self.delete_all_policies()
         SQLTestController.setUp(self)
         self.setUpSQL()
-
-        return
 
     def tearDown(self):
         """drop the users and the user table"""
@@ -163,8 +160,6 @@ class SQLResolverTest(SQLTestController):
         token_info = jresp.get("result", {}).get("value", {}).get("data", [{}])[0]
         assert token_info.get("LinOtp.FailCount", -1) == 0
 
-        return
-
     def test_user_of_SQL_resolver(self):
         username = "hey1"
         realm = "mySQLrealm"
@@ -274,7 +269,7 @@ class SQLResolverTest(SQLTestController):
         assert username_list == [username]
 
     def test_user_of_SQL_resolver_with_searchTerm_and_wildcard(self):
-        username = "hey1"
+        _username = "hey1"
         realm = "mySQLrealm"
         resolver = "mySQLresolver"
 

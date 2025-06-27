@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -61,7 +60,7 @@ def token_reporting(event, tokenrealms):
     realms = tokenrealms
     if not tokenrealms or len(tokenrealms) == 0:
         realms = ["/:no realm:/"]
-    elif not isinstance(tokenrealms, (list, tuple, set)):
+    elif not isinstance(tokenrealms, list | tuple | set):
         realms = [tokenrealms]
 
     for realm in realms:
@@ -91,7 +90,8 @@ def get_max_token_count_in_period(realm, start=None, end=None, status="active"):
     :return: maximum: number of reported tokens with given status in realm
     """
     if status not in STATI:
-        raise Exception("unsupported status: %r" % status)
+        msg = f"unsupported status: {status!r}"
+        raise Exception(msg)
 
     token_max_count = (
         db.session.query(func.max(Reporting.count))
@@ -128,7 +128,8 @@ def get_last_token_count_before_date(realm, before_date=None, status="active"):
             realm or None
     """
     if status not in STATI:
-        raise Exception("unsupported status: %r" % status)
+        msg = f"unsupported status: {status!r}"
+        raise Exception(msg)
 
     last_token_count_event = (
         db.session.query(Reporting)
@@ -162,7 +163,7 @@ def delete(realms, status, date=None):
     :return: number of deleted rows
     """
 
-    if not isinstance(realms, (list, tuple)):
+    if not isinstance(realms, list | tuple):
         realms = realms.split(",")
 
     realm_cond = or_(*(Reporting.realm == realm for realm in realms))
@@ -177,7 +178,7 @@ def delete(realms, status, date=None):
     return row_num
 
 
-class ReportingIterator(object):
+class ReportingIterator:
     """
     support a smooth iterating through lines in reporting table
     """
@@ -215,25 +216,25 @@ class ReportingIterator(object):
         """
         self.page = 1
         self.pages = 1
-        if not isinstance(realms, (list, tuple)):
+        if not isinstance(realms, list | tuple):
             realms = realms.split(",")
         if "*" in realms:
             realms = []
 
-        if not isinstance(status, (list, tuple)):
+        if not isinstance(status, list | tuple):
             status = status.split(",")
         if "*" in status:
             status = []
 
-        realm_cond = tuple()
+        realm_cond = ()
         for realm in realms:
             realm_cond += (or_(func.lower(Reporting.realm) == func.lower(realm)),)
 
-        status_cond = tuple()
+        status_cond = ()
         for stat in status:
             status_cond += (or_(Reporting.parameter == stat),)
 
-        date_cond = tuple()
+        date_cond = ()
         if date:
             date_cond += (and_(Reporting.timestamp >= date),)
 
@@ -303,8 +304,7 @@ class ReportingIterator(object):
                 )
                 the_page = 0
 
-            if the_page < 0:
-                the_page = 0
+            the_page = max(the_page, 0)
 
             start = the_page * pagesize
             stop = (the_page + 1) * pagesize

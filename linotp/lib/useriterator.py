@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -56,13 +55,11 @@ def iterate_users(user_iterators):
                     )
                 else:
                     yield json.dumps({**user_data, "resolver": resolver})
-        except StopIteration as exx:
+        except StopIteration:
             # pass on to next iterator
             pass
         except Exception as exx:
             log.error("Problem during iteration of userlist iterators: %r", exx)
-
-    return
 
 
 def iterate_resolverusers(user_iterators):
@@ -93,10 +90,8 @@ def iterate_resolverusers(user_iterators):
                         resolver.name, resolver.type, user_data
                     ).as_dict()
                     yield json.dumps(user)
-        except StopIteration as exx:
+        except StopIteration:
             # pass on to next iterator
             pass
         except Exception as exx:
             log.error("Problem during iteration of userlist iterators: %r", exx)
-
-    return

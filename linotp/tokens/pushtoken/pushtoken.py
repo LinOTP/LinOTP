@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -43,7 +42,6 @@ from pysodium import crypto_sign_verify_detached as verify_sig
 from linotp.flap import config
 from linotp.lib.challenges import Challenges, transaction_id_to_u64
 from linotp.lib.config import getFromConfig
-from linotp.lib.context import request_context as context
 from linotp.lib.crypto.utils import (
     decode_base64_urlsafe,
     dsa_to_dh_public,
@@ -111,10 +109,9 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         # (both with active flag 0)
 
         is_completely_finished = TokenClass.isActive(self)
-        return (
-            is_completely_finished
-            or self.current_state == "pairing_response_received"
-            or self.current_state == "pairing_challenge_sent"
+        return is_completely_finished or (
+            self.current_state
+            in {"pairing_response_received", "pairing_challenge_sent"}
         )
 
     # --------------------------------------------------------------------------- --
@@ -284,7 +281,8 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             current_gda = self.getFromTokenInfo("gda")
 
             if current_gda and gda != current_gda:
-                raise ValueError("spoofing detected - aborted!")
+                msg = "spoofing detected - aborted!"
+                raise ValueError(msg)
 
         # ------------------------------------------------------------------ --
 
@@ -324,7 +322,8 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             current_user_dsa_public_key = b64decode(current_b64_key)
 
             if user_dsa_public_key != current_user_dsa_public_key:
-                raise ValueError("re-pairing: public keys don't match")
+                msg = "re-pairing: public keys don't match"
+                raise ValueError(msg)
 
             self.addToTokenInfo("gda", gda)
 
@@ -418,8 +417,9 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
                 content_type = int(content_type_as_str)
 
-            except BaseException:
-                raise ValueError("Unrecognized content type: %s" % content_type_as_str)
+            except BaseException as exx:
+                msg = f"Unrecognized content type: {content_type_as_str}"
+                raise ValueError(msg) from exx
 
             # --------------------------------------------------------------- --
 
@@ -444,7 +444,8 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
                 )
 
             else:
-                raise ValueError("Unrecognized content type: %s" % content_type)
+                msg = f"Unrecognized content type: {content_type}"
+                raise ValueError(msg)
 
         # ------------------------------------------------------------------- --
 
@@ -460,7 +461,8 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         )
 
         if not success:
-            raise Exception("push mechanism failed. response was %r" % response)
+            msg = f"push mechanism failed. response was {response!r}"
+            raise Exception(msg)
 
         # ------------------------------------------------------------------- --
 
@@ -513,17 +515,19 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             signature_accept = passwd.get("accept", None)
             signature_reject = passwd.get("reject", None)
 
-        except AttributeError:  # will be raised with a get() on a str object
-            raise Exception(
-                'Pushtoken version %r requires "accept" or'
-                ' "reject" as parameter' % CHALLENGE_URL_VERSION
+        except AttributeError as exx:  # will be raised with a get() on a str object
+            msg = (
+                f'Pushtoken version {CHALLENGE_URL_VERSION!r} requires "accept" or'
+                ' "reject" as parameter'
             )
+            raise Exception(msg) from exx
 
         if signature_accept is not None and signature_reject is not None:
-            raise Exception(
-                'Pushtoken version %r requires "accept" or'
-                ' "reject" as parameter' % CHALLENGE_URL_VERSION
+            msg = (
+                f'Pushtoken version {CHALLENGE_URL_VERSION!r} requires "accept" or'
+                ' "reject" as parameter'
             )
+            raise Exception(msg)
 
         # ------------------------------------------------------------------ --
 
@@ -571,9 +575,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
                 # or a challenge, that already received a number of wrong
                 # TANs but still has tries left (second case).
 
-                if not received_tan:
-                    filtered_challenges.append(challenge)
-                elif not tan_is_valid and fail_counter <= max_fail:
+                if not received_tan or (not tan_is_valid and fail_counter <= max_fail):
                     filtered_challenges.append(challenge)
 
         # ------------------------------------------------------------------ --
@@ -686,22 +688,20 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         """
 
         param_keys = set(params.keys())
-        init_rollout_state_keys = set(
-            [
-                "type",
-                "serial",
-                "::scope::",
-                "user.login",
-                "description",
-                "user.realm",
-                "session",
-                "key_size",
-                "resConf",
-                "user",
-                "realm",
-                "pin",
-            ]
-        )
+        init_rollout_state_keys = {
+            "type",
+            "serial",
+            "::scope::",
+            "user.login",
+            "description",
+            "user.realm",
+            "session",
+            "key_size",
+            "resConf",
+            "user",
+            "realm",
+            "pin",
+        }
 
         # ------------------------------------------------------------------- --
 
@@ -709,7 +709,8 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             # make sure the call aborts, if request
             # type wasn't recognized
 
-            raise Exception("Unknown request type for token type pushtoken")
+            msg = "Unknown request type for token type pushtoken"
+            raise Exception(msg)
 
         # if param keys are in above set, the token is
         # initialized for the first time. this is e.g. done on the
@@ -890,8 +891,9 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             CONTENT_TYPE_PAIRING,
             CONTENT_TYPE_LOGIN,
         ]:
+            msg = "content_type"
             raise InvalidFunctionParameter(
-                "content_type",
+                msg,
                 "content_type must "
                 "be CONTENT_TYPE_SIGNREQ, "
                 "CONTENT_TYPE_PAIRING or "
@@ -960,8 +962,9 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         # enforce max url length as specified in protocol
 
         if len(utf8_callback_url) > 511:
+            msg = "callback_url"
             raise InvalidFunctionParameter(
-                "callback_url",
+                msg,
                 "max string length (encoded as utf8) is 511",
             )
 
@@ -981,9 +984,8 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             utf8_serial = serial.encode("utf8")
 
             if len(utf8_serial) > 63:
-                raise ValueError(
-                    "serial (encoded as utf8) can only be 63 characters long"
-                )
+                msg = "serial (encoded as utf8) can only be 63 characters long"
+                raise ValueError(msg)
 
             plaintext += utf8_serial + b"\00" + utf8_callback_url + b"\00"
 
@@ -991,8 +993,9 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         if content_type == CONTENT_TYPE_SIGNREQ:
             if message is None:
+                msg = "message"
                 raise InvalidFunctionParameter(
-                    "message",
+                    msg,
                     "message must be supplied for content type SIGNREQ",
                 )
 
@@ -1007,8 +1010,9 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             # enforce max sizes specified by protocol
 
             if len(utf8_message) > 511:
+                msg = "message"
                 raise InvalidFunctionParameter(
-                    "message",
+                    msg,
                     "max string length (encoded as utf8) is 511",
                 )
 
@@ -1018,13 +1022,15 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
 
         if content_type == CONTENT_TYPE_LOGIN:
             if login is None:
+                msg = "login"
                 raise InvalidFunctionParameter(
-                    "login",
+                    msg,
                     "login must be supplied for content type LOGIN",
                 )
             if host is None:
+                msg = "host"
                 raise InvalidFunctionParameter(
-                    "host",
+                    msg,
                     "host must be supplied for content type LOGIN",
                 )
 
@@ -1040,12 +1046,14 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
             # enforce max sizes specified by protocol
 
             if len(utf8_login) > 127:
+                msg = "login"
                 raise InvalidFunctionParameter(
-                    "login", "max string length (encoded as utf8) is 127"
+                    msg, "max string length (encoded as utf8) is 127"
                 )
             if len(utf8_host) > 255:
+                msg = "host"
                 raise InvalidFunctionParameter(
-                    "host", "max string length (encoded as utf8) is 255"
+                    msg, "max string length (encoded as utf8) is 255"
                 )
 
             plaintext += utf8_login + b"\00"

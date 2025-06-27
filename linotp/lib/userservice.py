@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -31,7 +30,6 @@ import datetime
 import json
 import logging
 import secrets
-from typing import Dict, List, Union
 
 # for the temporary rendering context, we use 'c'
 from linotp.flap import render_mako as render
@@ -80,7 +78,7 @@ def getTokenForUser(user, active=None, exclude_rollout=True):
             # skip the rollout tokens from the selfservice token list
 
             path = token_info.get("scope", {}).get("path", [])
-            if set(path) & set(["userservice", "validate"]) and exclude_rollout:
+            if set(path) & {"userservice", "validate"} and exclude_rollout:
                 continue
 
             tok["LinOtp.TokenInfo"] = token_info
@@ -191,8 +189,7 @@ def remove_auth_cookie(cookie):
     :return: boolean
     """
 
-    if cookie in Cookie_Cache:
-        del Cookie_Cache[cookie]
+    Cookie_Cache.pop(cookie, None)
 
 
 def check_auth_cookie(cookie, user, client):
@@ -330,7 +327,7 @@ def get_pre_context(client):
 
 # This is the type of the dict for token-type specific limits
 # in the userservice context
-ContextTokenTypeLimit = Dict[str, Union[str, int]]
+ContextTokenTypeLimit = dict[str, str | int]
 
 
 def get_context(config, user: User, client: str):
@@ -356,7 +353,7 @@ def get_context(config, user: User, client: str):
         token_access = True
     context["settings"]["last_access"] = token_access
 
-    context["actions"] = list()
+    context["actions"] = []
     for action_name, action_value in get_selfservice_actions(user).items():
         if action_value is True:
             context["actions"].append(action_name)
@@ -366,7 +363,7 @@ def get_context(config, user: User, client: str):
     # Token limits
     all_token_limit = get_maxtoken_for_user(user)
 
-    token_types_limits: List[ContextTokenTypeLimit] = []
+    token_types_limits: list[ContextTokenTypeLimit] = []
     for token_type in get_token_type_list():
         token_limit = get_maxtoken_for_user_by_type(user, token_type)
         if token_limit is not None:
@@ -493,10 +490,7 @@ def get_transaction_detail(transactionid):
     challenge = challenges[0]
 
     challenge_session = challenge.getSession()
-    if challenge_session:
-        challenge_session = json.loads(challenge_session)
-    else:
-        challenge_session = {}
+    challenge_session = json.loads(challenge_session) if challenge_session else {}
 
     details = {
         "received_count": challenge.received_count,

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -37,8 +36,7 @@ test the administrative handling of providers:
 import json
 import logging
 import os
-
-from mock import patch
+from unittest.mock import patch
 
 import linotp.provider.smsprovider.FileSMSProvider
 import linotp.provider.voiceprovider.custom_voice_provider
@@ -76,7 +74,7 @@ class TestProviderController(TestController):
     def setUp(self):
         self.removeProviderConfig()
 
-        super(TestProviderController, self).setUp()
+        super().setUp()
         self.create_common_resolvers()
         self.create_common_realms()
 
@@ -88,7 +86,7 @@ class TestProviderController(TestController):
         self.delete_all_resolvers()
         self.delete_all_policies()
 
-        super(TestProviderController, self).tearDown()
+        super().tearDown()
 
     def create_sms_token(self, serial=None, token_params=None):
         params = {
@@ -160,7 +158,8 @@ class TestProviderController(TestController):
         """Wrapper function to create provider and check success"""
         response = self.define_new_provider(provider_params)
         if '"value": true' not in response:
-            raise ProviderCreationError(f"Provider creation failed: {response}")
+            msg = f"Provider creation failed: {response}"
+            raise ProviderCreationError(msg)
         return response
 
     def define_new_provider(self, provider_params=None):
@@ -648,8 +647,6 @@ class TestProviderController(TestController):
 
 class ProviderCreationError(Exception):
     """Exception raised when provider creation fails."""
-
-    pass
 
 
 # eof #####################################################################

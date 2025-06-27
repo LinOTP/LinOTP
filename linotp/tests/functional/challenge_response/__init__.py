@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -42,16 +41,10 @@ import binascii
 import json
 import logging
 import re
-import smtplib
 import time
 import urllib.parse
 
-import httplib2
-from mock import patch
-
-import linotp.provider.smsprovider.HttpSMSProvider
 from linotp.lib.HMAC import HmacOtp
-from linotp.tests import url
 from linotp.tests.functional.challenge_response.testing_controller import (
     TestingChallengeResponseController,
 )
@@ -198,10 +191,10 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         self.create_common_realms()
 
         if hasattr(self, "policies") is False:
-            setattr(self, "policies", [])
+            self.policies = []
 
         if hasattr(self, "serials") is False:
-            setattr(self, "serials", [])
+            self.serials = []
 
         self.patch_smtp = None
         self.patch_sms = None
@@ -209,10 +202,9 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         self.delete_all_token()
         self.delete_all_policies()
 
-        self.remote_url = "http://127.0.0.1:%s" % self.paster_port
-        self.sms_url = "http://localhost:%s/testing/http2sms" % self.paster_port
-        self.radius_url = ("localhost:%s" % self.radius_authport,)
-        return
+        self.remote_url = f"http://127.0.0.1:{self.paster_port}"
+        self.sms_url = f"http://localhost:{self.paster_port}/testing/http2sms"
+        self.radius_url = (f"localhost:{self.radius_authport}",)
 
     def tearDown(self):
         if self.patch_smtp is not None:
@@ -302,7 +294,7 @@ class TestChallengeResponseController(TestingChallengeResponseController):
         }
         cookies = {"admin_session": self.session}
 
-        r_url = "%s/%s" % (url, "system/delPolicy")
+        r_url = "{}/{}".format(url, "system/delPolicy")
         response = self.do_http_request(r_url, params=params, cookies=cookies)
         return response
 

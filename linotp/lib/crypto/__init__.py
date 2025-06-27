@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -24,12 +23,6 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 #
-from linotp.lib.crypto.utils import compare
-
-"""
-Declare the SecretObject to encapsulate security aspects
-"""
-
 import binascii
 import logging
 
@@ -37,11 +30,15 @@ from Cryptodome.Cipher import AES
 from pysodium import crypto_scalarmult_curve25519 as calc_dh
 
 from linotp.lib.crypto import utils
+from linotp.lib.crypto.utils import compare
 
+"""
+Declare the SecretObject to encapsulate security aspects
+"""
 log = logging.getLogger(__name__)
 
 
-class SecretObj(object):
+class SecretObj:
     """
     High level interface to security operations
 
@@ -201,10 +198,7 @@ class SecretObj(object):
         hash_pin = utils.hash_digest(pin.encode("utf-8"), iv)
 
         # TODO: position independend compare
-        if hashed_pin == hash_pin:
-            return True
-
-        return False
+        return hashed_pin == hash_pin
 
     @staticmethod
     def encrypt_pin(pin: str):
@@ -234,10 +228,7 @@ class SecretObj(object):
         crypted_pin = utils.encryptPin(pin.encode("utf-8"), iv)
 
         # TODO: position independend compare
-        if encrypted_pin == crypted_pin.encode("utf-8"):
-            return True
-
-        return False
+        return encrypted_pin == crypted_pin.encode("utf-8")
 
     @staticmethod
     def decrypt_pin(pin, hsm=None):

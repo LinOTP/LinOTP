@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -113,7 +112,7 @@ class TestInactivePolicy(TestController):
         p_loaded = (
             jresp.get("result", {})
             .get("value", {})
-            .get("setPolicy %s" % policy.get("name"))
+            .get("setPolicy {}".format(policy.get("name")))
         )
         assert p_loaded is not None, response
 
@@ -149,7 +148,7 @@ class TestInactivePolicy(TestController):
         p_loaded = (
             jresp.get("result", {})
             .get("value", {})
-            .get("setPolicy %s" % policy.get("name"))
+            .get("setPolicy {}".format(policy.get("name")))
         )
         assert p_loaded is not None, response
 
@@ -176,8 +175,6 @@ class TestInactivePolicy(TestController):
         jresp = json.loads(response.body)
         value = jresp.get("result", {}).get("value")
         assert value, response
-
-        return
 
 
 # eof #

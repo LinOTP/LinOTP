@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -30,9 +29,9 @@ import fnmatch
 import logging
 import re
 from difflib import get_close_matches
+from typing import TYPE_CHECKING
 
-from flask_sqlalchemy.pagination import Pagination
-from sqlalchemy import and_, not_, or_, true
+from sqlalchemy import and_, or_, true
 
 from linotp.lib.config import getFromConfig
 from linotp.lib.error import UserError
@@ -49,6 +48,9 @@ from linotp.model.realm import Realm
 from linotp.model.token import Token
 from linotp.model.tokenRealm import TokenRealm
 
+if TYPE_CHECKING:
+    from flask_sqlalchemy.pagination import Pagination
+
 ENCODING = "utf-8"
 
 
@@ -62,7 +64,7 @@ def _compile_regex(search_text):
     """
 
     searcH_regex = re.compile(
-        "^%s$" % search_text.replace(".", r"\.").replace("*", ".*")
+        "^{}$".format(search_text.replace(".", r"\.").replace("*", ".*"))
     )
 
     return searcH_regex
@@ -113,7 +115,7 @@ def _user_expression_match(login_user, token_owner_iterator):
     return serials
 
 
-class TokenIterator(object):
+class TokenIterator:
     """
     TokenIterator class - support a smooth iterating through the tokens
     """
@@ -240,8 +242,7 @@ class TokenIterator(object):
             requested_page = int(page)
         except BaseException:
             requested_page = 1
-        if requested_page < 1:
-            requested_page = 1
+        requested_page = max(requested_page, 1)
 
         paginated_tokens: Pagination = (
             Token.query.filter(condition)
@@ -310,13 +311,12 @@ class TokenIterator(object):
 
         searchType = "any"
         # search for a 'blank' user
-        if len(loginUser) == 0 and len(user.login) > 0:
+        if (len(loginUser) == 0 and len(user.login) > 0) or loginUser in {
+            "/:no user:/",
+            "/:none:/",
+        }:
             searchType = "blank"
-        elif loginUser == "/:no user:/" or loginUser == "/:none:/":
-            searchType = "blank"
-        elif loginUser == "/:no user info:/":
-            searchType = "wildcard"
-        elif "*" in loginUser:
+        elif loginUser == "/:no user info:/" or "*" in loginUser:
             searchType = "wildcard"
         else:
             # no blank and no wildcard search
@@ -326,7 +326,7 @@ class TokenIterator(object):
             ucondition = and_(
                 or_(
                     Token.LinOtpUserid == "",
-                    Token.LinOtpUserid == None,
+                    Token.LinOtpUserid == None,  # noqa: E711
                 )
             )
         elif searchType == "exact":
@@ -360,7 +360,7 @@ class TokenIterator(object):
                             usr.realm = realm
                             try:
                                 (_uid, _resolver, _resolverClass) = getUserId(usr)
-                            except UserError as exx:
+                            except UserError:
                                 log.info("User %r not found in realm %r", usr, realm)
                                 continue
                             userlist.extend(usr.getUserPerConf())
@@ -403,7 +403,7 @@ class TokenIterator(object):
         return ucondition
 
     def _get_filter_condition(self, filter):
-        conditon = None
+        _conditon = None
 
         if filter is None:
             condition = None
@@ -413,14 +413,14 @@ class TokenIterator(object):
             "/:token is active:/",
             "/:token is enabled:/",
         ]:
-            condition = and_(Token.LinOtpIsactive == True)
+            condition = and_(Token.LinOtpIsactive == True)  # noqa: E712
         elif filter in [
             "/:inactive:/",
             "/:disabled:/",
             "/:token is inactive:/",
             "/:token is disabled:/",
         ]:
-            condition = and_(Token.LinOtpIsactive == False)
+            condition = and_(Token.LinOtpIsactive == False)  # noqa: E712
         else:
             # search in other colums
             condition = or_(
@@ -460,7 +460,7 @@ class TokenIterator(object):
                 "[TokenIterator::init] search for all tokens, which are in no realm"
             )
 
-            return and_(Token.realms == None)
+            return and_(Token.realms == None)  # noqa: E711
 
         if filterRealm:
             # get all matching realms
@@ -544,12 +544,12 @@ class TokenIterator(object):
         }
         try:
             return mapping[sort_param]
-        except KeyError:
+        except KeyError as exx:
             error_msg = f"Tokens can't be sorted by {sort_param}."
             potential_sort_params = get_close_matches(sort_param, mapping.keys())
             if potential_sort_params:
                 error_msg += f" Did you mean any of {potential_sort_params}?"
-            raise KeyError(error_msg)
+            raise KeyError(error_msg) from exx
 
     def getResultSetInfo(self):
         resSet = {
@@ -568,7 +568,7 @@ class TokenIterator(object):
             "User.username": "",
         }
         for field in self.user_fields:
-            userInfo["User.%s" % field] = ""
+            userInfo[f"User.{field}"] = ""
 
         if tok.LinOtpUserid:
             # userInfo["User.description"]    = u'/:no user info:/'
@@ -602,7 +602,7 @@ class TokenIterator(object):
 
                 for field in self.user_fields:
                     fieldvalue = uInfo.get(field, "")
-                    userInfo["User.%s" % field] = fieldvalue
+                    userInfo[f"User.{field}"] = fieldvalue
 
         return (userInfo, uInfo)
 

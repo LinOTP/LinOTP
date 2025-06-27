@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -31,10 +30,8 @@ sql resolver tests
 
 import json
 import logging
+from unittest.mock import patch
 
-from mock import patch
-
-from linotp.lib.user import lookup_user_in_resolver
 from linotp.tests import TestController
 from linotp.useridresolver.LDAPIdResolver import IdResolver as ldap_resolver
 from linotp.useridresolver.UserIdResolver import ResolverNotAvailable
@@ -78,13 +75,15 @@ def mock_getUserId_func(*args, **_kwargs):
         return login + "_id"
 
     if raise_exception:
-        raise ResolverNotAvailable("unable to bind")
+        msg = "unable to bind"
+        raise ResolverNotAvailable(msg)
 
     return None
 
 
 def mock_getUserId_exc_func(*args, **_kwargs):
-    raise ResolverNotAvailable("unable to bind")
+    msg = "unable to bind"
+    raise ResolverNotAvailable(msg)
 
 
 class LdapResolverTest(TestController):
@@ -223,37 +222,35 @@ class LdapResolverTest(TestController):
 
         self.setup_ldap_resolver()
 
-        with patch.object(
-            ldap_resolver, "getUserInfo", autospec=True
-        ) as mocked_getUserInfo:
-            with patch.object(
-                ldap_resolver, "getUserId", autospec=True
-            ) as mocked_getUserId:
-                mocked_getUserId.side_effect = mock_getUserId_func
-                mocked_getUserInfo.side_effect = mock_getUserInfo_func
+        with (
+            patch.object(
+                ldap_resolver, "getUserInfo", autospec=True
+            ) as mocked_getUserInfo,
+            patch.object(ldap_resolver, "getUserId", autospec=True) as mocked_getUserId,
+        ):
+            mocked_getUserId.side_effect = mock_getUserId_func
+            mocked_getUserInfo.side_effect = mock_getUserInfo_func
 
-                params = {"user": "bach@black", "pass": "1234"}
+            params = {"user": "bach@black", "pass": "1234"}
 
-                getUserId_call_count = 0
+            getUserId_call_count = 0
 
-                self.make_validate_request("check", params=params)
+            self.make_validate_request("check", params=params)
 
-                # one for the lookup, one for the existance check
-                assert mocked_getUserInfo.call_count == 2
+            # one for the lookup, one for the existance check
+            assert mocked_getUserInfo.call_count == 2
 
-                # for each resolver once
-                assert mocked_getUserId.call_count == 3
+            # for each resolver once
+            assert mocked_getUserId.call_count == 3
 
-                getUserId_call_count = 0
+            getUserId_call_count = 0
 
-                self.make_validate_request("check", params=params)
+            self.make_validate_request("check", params=params)
 
-                # one more for the existance check
-                assert mocked_getUserInfo.call_count == 3
+            # one more for the existance check
+            assert mocked_getUserInfo.call_count == 3
 
-                assert mocked_getUserId.call_count == 4
-
-        return
+            assert mocked_getUserId.call_count == 4
 
     def test_cache_with_exception(self):
         """
@@ -291,8 +288,6 @@ class LdapResolverTest(TestController):
 
             assert mocked_getUserId.call_count >= 2 * old_count
 
-        return
-
     def test_multiple_resolvers(self):
         """
         verify that all resolvers are queried and the user is stored
@@ -306,39 +301,39 @@ class LdapResolverTest(TestController):
 
         self.setup_ldap_resolver()
 
-        with patch.object(ldap_resolver, "getUserId") as mocked_getUserId:
-            with patch.object(ldap_resolver, "getUserInfo") as mocked_getUserInfo:
-                mocked_getUserInfo.side_effect = mock_getUserInfo_func
-                mocked_getUserId.side_effect = mock_getUserId_func
+        with (
+            patch.object(ldap_resolver, "getUserId") as mocked_getUserId,
+            patch.object(ldap_resolver, "getUserInfo") as mocked_getUserInfo,
+        ):
+            mocked_getUserInfo.side_effect = mock_getUserInfo_func
+            mocked_getUserId.side_effect = mock_getUserId_func
 
-                getUserId_call_count = 0
+            getUserId_call_count = 0
 
-                params = {"user": "marvell", "pass": "1234"}
+            params = {"user": "marvell", "pass": "1234"}
 
-                self.make_validate_request("check", params=params)
+            self.make_validate_request("check", params=params)
 
-                # getUserId is called for each resolver
-                assert mocked_getUserId.call_count == 3
+            # getUserId is called for each resolver
+            assert mocked_getUserId.call_count == 3
 
-                # the one which verifies the existance
-                assert mocked_getUserInfo.call_count == 2
+            # the one which verifies the existance
+            assert mocked_getUserInfo.call_count == 2
 
-                # second call
+            # second call
 
-                getUserId_call_count = 0
+            getUserId_call_count = 0
 
-                self.make_validate_request("check", params=params)
+            self.make_validate_request("check", params=params)
 
-                # the resolvers ar not called anymore as the info is in the
-                # cache |(user, realm) -> resolver|
-                # only the existance check is done which does one more call
+            # the resolvers ar not called anymore as the info is in the
+            # cache |(user, realm) -> resolver|
+            # only the existance check is done which does one more call
 
-                assert mocked_getUserId.call_count == 4
+            assert mocked_getUserId.call_count == 4
 
-                # and the getUserInfo is fully in the cache
-                assert mocked_getUserInfo.call_count == 3
-
-        return
+            # and the getUserInfo is fully in the cache
+            assert mocked_getUserInfo.call_count == 3
 
     def test_multiple_resolvers_with_not_avaialable(self):
         """
@@ -353,39 +348,39 @@ class LdapResolverTest(TestController):
 
         self.setup_ldap_resolver()
 
-        with patch.object(ldap_resolver, "getUserId") as mocked_getUserId:
-            with patch.object(ldap_resolver, "getUserInfo") as mocked_getUserInfo:
-                mocked_getUserInfo.side_effect = mock_getUserInfo_func
-                mocked_getUserId.side_effect = mock_getUserId_func
+        with (
+            patch.object(ldap_resolver, "getUserId") as mocked_getUserId,
+            patch.object(ldap_resolver, "getUserInfo") as mocked_getUserInfo,
+        ):
+            mocked_getUserInfo.side_effect = mock_getUserInfo_func
+            mocked_getUserId.side_effect = mock_getUserId_func
 
-                getUserId_call_count = 0
+            getUserId_call_count = 0
 
-                params = {"user": "marvell", "pass": "1234"}
+            params = {"user": "marvell", "pass": "1234"}
 
-                self.make_validate_request("check", params=params)
+            self.make_validate_request("check", params=params)
 
-                # getUserId is called for each resolver
-                assert mocked_getUserId.call_count == 3
+            # getUserId is called for each resolver
+            assert mocked_getUserId.call_count == 3
 
-                # + the one which verifies the existance
-                assert mocked_getUserInfo.call_count == 2
+            # + the one which verifies the existance
+            assert mocked_getUserInfo.call_count == 2
 
-                # second call
+            # second call
 
-                getUserId_call_count = 0
+            getUserId_call_count = 0
 
-                self.make_validate_request("check", params=params)
+            self.make_validate_request("check", params=params)
 
-                # the resolvers ar not called anymore as the info is in the
-                # cache |(user, realm) -> resolver|
-                assert mocked_getUserId.call_count == 4
+            # the resolvers ar not called anymore as the info is in the
+            # cache |(user, realm) -> resolver|
+            assert mocked_getUserId.call_count == 4
 
-                # only the existance check is done which does one more call
-                assert mocked_getUserInfo.call_count == 3
+            # only the existance check is done which does one more call
+            assert mocked_getUserInfo.call_count == 3
 
         raise_exception = False
-
-        return
 
 
 # eof

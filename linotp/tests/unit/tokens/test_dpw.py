@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -36,7 +35,7 @@ class TestDPWToken(unittest.TestCase):
     """
 
     def test_tagepassword_algorithm(self):
-        class mockSecObj(object):
+        class mockSecObj:
             def getKey(self):
                 return b"1234567890123456789012345678901234567890"
 

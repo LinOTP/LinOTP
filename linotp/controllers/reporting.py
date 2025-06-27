@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -33,7 +32,6 @@ reporting controller - interfaces for Reporting
 
 import logging
 from datetime import datetime, timedelta
-from typing import List
 
 from flask import Response, current_app, g, stream_with_context
 from werkzeug.datastructures import Headers
@@ -114,7 +112,7 @@ class ReportingController(BaseController):
             return sendError(exx)
 
     @staticmethod
-    def _match_allowed_realms(requested_realms: List[str]):
+    def _match_allowed_realms(requested_realms: list[str]):
         """Returns a list of realm names the user is allowed to access for given scope.action.
 
         Args:

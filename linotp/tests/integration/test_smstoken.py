@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -29,7 +28,6 @@ from subprocess import check_output
 
 import integration_data as data
 import pytest
-from linotp_selenium_helper import TestCase
 from linotp_selenium_helper.helper import get_from_tconfig
 from linotp_selenium_helper.smtp_server import SMSProviderServer
 from linotp_selenium_helper.validate import Validate
@@ -88,7 +86,7 @@ class TestSmsToken:
                 "Testconfig option radius.disable is set to True. Skipping RADIUS test!"
             )
         else:
-            call_array = "linotp-auth-radius -f ../../../test.ini".split()
+            call_array = ["linotp-auth-radius", "-f", "../../../test.ini"]
             call_array.extend(
                 [
                     "-u",
@@ -105,13 +103,13 @@ class TestSmsToken:
                 rad1 = check_output(call_array)
                 m = re.search(r"State:\['(\d+)'\]", rad1)
                 assert m is not None, (
-                    "'State' not found in linotp-auth-radius output. %r" % rad1
+                    f"'State' not found in linotp-auth-radius output. {rad1!r}"
                 )
                 state = m.group(1)
-                print("State: %s" % state)
+                print(f"State: {state}")
                 otp = smtpsvc.get_otp()
 
-            call_array = "linotp-auth-radius -f ../../../test.ini".split()
+            call_array = ["linotp-auth-radius", "-f", "../../../test.ini"]
             call_array.extend(
                 [
                     "-u",
@@ -128,7 +126,7 @@ class TestSmsToken:
             )
             rad2 = check_output(call_array)
             assert "Access granted to user " + username in rad2, (
-                "Access not granted to user. %r" % rad2
+                f"Access not granted to user. {rad2!r}"
             )
 
         # Authenticate over Web API
@@ -149,19 +147,19 @@ class TestSmsToken:
             )
             try:
                 message = validate_resp["detail"]["message"]
-            except KeyError as e:
+            except KeyError as exx:
                 raise KeyError(
-                    e.message + "| detail.message should be present %r" % validate_resp
-                )
+                    exx.message
+                    + f"| detail.message should be present {validate_resp!r}"
+                ) from exx
             assert message == "sms submitted", (
-                "Wrong validate response %r" % validate_resp
+                f"Wrong validate response {validate_resp!r}"
             )
             otp = smtpsvc.get_otp()
 
         access_granted, validate_resp = validate.validate(
             user=username + "@" + realm_name, password=sms_token_pin + otp
         )
-        assert access_granted, "Could not authenticate user %s %r" % (
-            username,
-            validate_resp,
+        assert access_granted, (
+            f"Could not authenticate user {username} {validate_resp!r}"
         )

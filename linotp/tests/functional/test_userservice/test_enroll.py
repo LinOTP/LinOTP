@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -107,8 +106,8 @@ class TestUserserviceEnrollment(TestController):
             },
         )
         resp_json = response.json
-        assert resp_json["result"]["status"] == True
-        assert resp_json["result"]["value"] == True
+        assert resp_json["result"]["status"] is True
+        assert resp_json["result"]["value"] is True
 
     def _assert_enrollment(self, params: EnrollmentTestParams):
         self.setUp()

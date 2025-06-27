@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -25,14 +24,16 @@
 #    Support: www.linotp.de
 
 
-from typing import Any, Dict, List
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import orm
-from sqlalchemy.orm import Session
 
 from linotp.lib.crypto import utils as cryptutils
 from linotp.model import db
 from linotp.model.schema import ImportedUserSchema
+
+if TYPE_CHECKING:
+    from sqlalchemy.orm import Session
 
 
 class NoSuchUserError(Exception):
@@ -45,7 +46,7 @@ class ImportedUser(ImportedUserSchema):
     user_entries = [name.name for name in ImportedUserSchema.__table__.c]
 
     @orm.reconstructor
-    def __init__(self, resolver_name: str = None):
+    def __init__(self, resolver_name: str | None = None):
         self._pw_gen = False
         self.user_class = ImportedUserSchema
         self.session: Session = db.session()
@@ -58,7 +59,7 @@ class ImportedUser(ImportedUserSchema):
             raise NoSuchUserError(username)
         return user
 
-    def _get_keys_of_table(self) -> List[str]:
+    def _get_keys_of_table(self) -> list[str]:
         tablename = self.user_class.__tablename__
         return self.user_class.metadata.tables[tablename].c.keys()
 
@@ -88,7 +89,7 @@ class ImportedUser(ImportedUserSchema):
         """
         return cryptutils.crypt_password(plain_password)
 
-    def list_users(self) -> List[Dict[str, str]]:
+    def list_users(self) -> list[dict[str, str]]:
         """list all users of an ImportedUser instance
 
         Returns:

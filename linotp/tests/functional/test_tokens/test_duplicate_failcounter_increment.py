@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -29,7 +28,6 @@
 """verify that the failcounter is not incremented twice"""
 
 import json
-from datetime import datetime
 
 from linotp.tests import TestController
 
@@ -120,4 +118,3 @@ class TestDuplicateFailcounterIncrement(TestController):
         assert fail_counts[0] == fail_counts[1]
 
         self.delete_all_token()
-        return

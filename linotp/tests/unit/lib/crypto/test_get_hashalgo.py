@@ -68,7 +68,5 @@ class TestGetHashAlgoFromDescription(unittest.TestCase):
             hash_algo = get_hashalgo_from_description(description)
             assert hash_algo == hash_function
 
-        return
-
 
 # eof #

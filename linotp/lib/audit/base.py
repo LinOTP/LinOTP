@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -50,7 +49,7 @@ def getAudit():
         )
         audit = AuditBase()
     else:
-        from . import SQLAudit
+        from . import SQLAudit  # noqa: PLC0415
 
         audit = SQLAudit.Audit()
 
@@ -70,10 +69,10 @@ def get_token_num_info():
     if get_license_type() == "user-num":
         token_count_type = "token users"
 
-    return "%s = %d" % (token_count_type, tokens)
+    return f"{token_count_type} = {tokens}"
 
 
-class AuditBase(object):
+class AuditBase:
     name = "AuditBase"
 
     def __init__(self):
@@ -121,7 +120,7 @@ class AuditBase(object):
         self.createKeys()
 
         try:
-            with open(self.privateKeyFilename, "r") as f:
+            with open(self.privateKeyFilename) as f:
                 self.private = f.read()
         except Exception as exx:
             log.error(
@@ -131,7 +130,7 @@ class AuditBase(object):
             )
 
         try:
-            with open(self.publicKeyFilename, "r") as f:
+            with open(self.publicKeyFilename) as f:
                 self.public = f.read()
         except Exception as exx:
             log.error(
@@ -139,8 +138,6 @@ class AuditBase(object):
                 self.publicKeyFilename,
                 exx,
             )
-
-        return
 
     def getTotal(self, param, AND=True, display_error=True):
         """
@@ -153,7 +150,6 @@ class AuditBase(object):
         This method is used to log the data.
         It should hash the data and do a hash chain and sign the data
         """
-        pass
 
     def initialize_log(self, param):
         """
@@ -161,14 +157,12 @@ class AuditBase(object):
         The fact, that the log state was initialized, also needs to be logged.
         Therefor the same params are passed as i the log method.
         """
-        pass
 
     def set(self):
         """
         This function could be used to set certain things like the signing key.
         But maybe it should only be read from linotp.cfg?
         """
-        pass
 
     def search(self, param, AND=True, display_error=True, rp_dict=None):
         """
@@ -202,7 +196,7 @@ def search(param, user=None, columns=None):
     search_dict = {}
 
     if "query" in param:
-        if "extsearch" == param["qtype"]:
+        if param["qtype"] == "extsearch":
             # search patterns are delimitered with ;
             search_list = param["query"].split(";")
             for s in search_list:
@@ -214,7 +208,7 @@ def search(param, user=None, columns=None):
         else:
             search_dict[param["qtype"]] = param["query"]
     else:
-        search_dict = {k: v for k, v in param.items()}
+        search_dict = dict(param.items())
 
     rp_dict = {
         k: v

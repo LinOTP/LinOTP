@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,19 +26,16 @@
 
 """test for json body as request parameters"""
 
-import copy
-import unittest
+from unittest import mock
 
-import flask
 import pytest
-from mock import mock
 from werkzeug.datastructures import CombinedMultiDict, MultiDict
 
 from linotp.controllers.base import BaseController
 
 
 @pytest.mark.usefixtures("app")
-class TestBaseController(object):
+class TestBaseController:
     """
     test for request parameter handling to support parameters from json body
     """

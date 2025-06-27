@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -26,8 +25,7 @@
 #
 
 import unittest
-
-from mock import patch
+from unittest.mock import patch
 
 from linotp.tokens.emailtoken import EmailTokenClass
 from linotp.tokens.hmactoken import HmacTokenClass
@@ -39,7 +37,7 @@ from linotp.tokens.yubikeytoken import YubikeyTokenClass
 # ---------------------------------------------------------------------------- -
 
 
-class FakeTokenModel(object):
+class FakeTokenModel:
     def __init__(self):
         self.LinOtpOtpLen = 8
         # emailtoken needs LinOtpCount variable to function correctly
@@ -116,8 +114,6 @@ class TestChallengePrompt(unittest.TestCase):
 
         assert message == prompt
 
-        return
-
     @patch("linotp.tokens.base.getFromConfig", mock_getFromConfig)
     @patch("linotp.tokens.hmactoken.getFromConfig", mock_getFromConfig)
     def tests_password_token_challenge_prompt(self):
@@ -131,8 +127,6 @@ class TestChallengePrompt(unittest.TestCase):
 
         assert message == prompt
 
-        return
-
     @patch("linotp.tokens.base.getFromConfig", mock_getFromConfig)
     def tests_yubikey_token_challenge_prompt(self):
         prompt = Config_dict.get("YUBIKEY_CHALLENGE_PROMPT")
@@ -144,8 +138,6 @@ class TestChallengePrompt(unittest.TestCase):
         )
 
         assert message == prompt
-
-        return
 
     @patch("linotp.tokens.base.getFromConfig", mock_getFromConfig)
     @patch("linotp.tokens.hmactoken.getFromConfig", mock_getFromConfig)
@@ -159,8 +151,6 @@ class TestChallengePrompt(unittest.TestCase):
         )
 
         assert message == prompt
-
-        return
 
     @patch("linotp.tokens.base.getFromConfig", mock_getFromConfig)
     @patch("linotp.tokens.totptoken.getFromConfig", mock_getFromConfig)
@@ -176,8 +166,6 @@ class TestChallengePrompt(unittest.TestCase):
 
         assert message == prompt
 
-        return
-
     @patch("linotp.tokens.emailtoken.EmailTokenClass._sendEmail", mock_send_email)
     @patch("linotp.tokens.hmactoken.getFromConfig", mock_getFromConfig)
     @patch("linotp.tokens.base.getFromConfig", mock_getFromConfig)
@@ -192,8 +180,6 @@ class TestChallengePrompt(unittest.TestCase):
         )
 
         assert message == prompt
-
-        return
 
     @patch(
         "linotp.tokens.emailtoken.EmailTokenClass._sendEmail",
@@ -217,5 +203,3 @@ class TestChallengePrompt(unittest.TestCase):
         )
 
         assert message == prompt
-
-        return

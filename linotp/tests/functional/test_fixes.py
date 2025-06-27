@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -75,7 +74,6 @@ def test_ticket_425(app, adminclient):
             """start the thread"""
             response = self.client.post("/system/setConfig", json=self.params)
             self.response = response.json
-            return
 
         def status(self):
             """
@@ -107,8 +105,8 @@ def test_ticket_425(app, adminclient):
     for tid in range(numthreads):
         param = {}
         for kid in range(numkeys):
-            key = "key_%d" % (kid)
-            val = "val_%d" % (tid)
+            key = f"key_{kid}"
+            val = f"val_{tid}"
             param[key] = val
         params[tid] = param
 
@@ -155,14 +153,13 @@ class TestFixesController(TestController):
         """make the dishes"""
 
         for kid in range(200):
-            key = "key_%d" % (kid)
+            key = f"key_{kid}"
             self.make_system_request("delConfig", params={"key": key})
 
         self.remove_tokens()
         self.delete_all_realms()
         self.delete_all_resolvers()
         TestController.tearDown(self)
-        return
 
     def remove_tokens(self):
         """
@@ -172,7 +169,6 @@ class TestFixesController(TestController):
         """
         for serial in self.serials:
             self.del_token(serial)
-        return
 
     def del_token(self, serial):
         """
@@ -285,8 +281,6 @@ class TestFixesController(TestController):
 
         self.del_token("troot")
 
-        return
-
     def test_ticket_12018(self):
         """
         #12018: OTPLen of /admin/init is not ignored
@@ -304,8 +298,6 @@ class TestFixesController(TestController):
         res = self.del_token(serial)
         assert '"status": true,' in res
         assert '"value": 1' in res
-
-        return
 
 
 # eof###########################################################################

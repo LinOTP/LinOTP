@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,8 +26,7 @@
 
 
 import unittest
-
-from mock import patch
+from unittest.mock import patch
 
 from linotp.lib.user import lookup_user_in_resolver
 
@@ -77,7 +75,7 @@ class MockedLogging:
             self.log_data.append(arg)
 
         for key, val in list(kwargs.items()):
-            self.log_data.append("[%s] %r:%r" % (mode, key, val))
+            self.log_data.append(f"[{mode}] {key!r}:{val!r}")
 
 
 mocked_logging = MockedLogging()
@@ -213,5 +211,3 @@ class TestLoggingUserInResolver(unittest.TestCase):
 
         for log_data in mocked_logging.log_data:
             assert user_info["password"] not in log_data
-
-        return

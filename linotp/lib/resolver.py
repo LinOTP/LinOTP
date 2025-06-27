@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -68,7 +67,7 @@ def parse_resolver(composite_key, value):
     cls_identifiers = get_resolver_types()  # ldapresolver, passwdresolver, etc
 
     for cls_identifier in cls_identifiers:
-        if composite_key.startswith("linotp.%s." % cls_identifier):
+        if composite_key.startswith(f"linotp.{cls_identifier}."):
             break
     else:
         raise ConfigNotRecognized(composite_key)
@@ -101,14 +100,14 @@ ConfigTree.add_parser("resolvers", parse_resolver)
 # -------------------------------------------------------------------------- --
 
 __all__ = [
+    "closeResolvers",
     "defineResolver",
-    "parse_resolver_spec",
-    "getResolverList",
-    "getResolverInfo",
     "deleteResolver",
+    "getResolverInfo",
+    "getResolverList",
     "getResolverObject",
     "initResolvers",
-    "closeResolvers",
+    "parse_resolver_spec",
     "setupResolvers",
 ]
 
@@ -175,16 +174,20 @@ def defineResolver(params):
     conf = params["name"]
 
     if not resolver_name_pattern.match(conf):
-        raise Exception(
+        msg = (
             "Resolver name is invalid. It may contain characters, "
-            "numbers, underscore (_), hyphen (-)! %r",
+            "numbers, underscore (_), hyphen (-)! %r"
+        )
+        raise Exception(
+            msg,
             conf,
         )
 
     resolver_cls = get_resolver_class(typ)
 
     if not resolver_cls:
-        raise Exception("no such resolver type '%r' defined!" % typ)
+        msg = f"no such resolver type '{typ!r}' defined!"
+        raise Exception(msg)
 
     # ---------------------------------------------------------------------- --
 
@@ -224,11 +227,7 @@ def defineResolver(params):
 
     save_resolver_config(resolver, p_config, prefix="linotp." + typ, name=conf)
 
-    resolver_spec = "%s.%s.%s" % (
-        resolver.__module__,
-        resolver.__class__.__name__,
-        conf,
-    )
+    resolver_spec = f"{resolver.__module__}.{resolver.__class__.__name__}.{conf}"
 
     _flush_user_resolver_cache(resolver_spec)
 
@@ -376,7 +375,8 @@ def getResolverInfo(resolvername, passwords=False):
     resolver_cls = get_resolver_class(resolver_type)
 
     if resolver_cls is None:
-        raise Exception("no such resolver type '%r' defined!" % resolver_type)
+        msg = f"no such resolver type '{resolver_type!r}' defined!"
+        raise Exception(msg)
 
     result["spec"] = resolver_cls.db_prefix + "." + resolvername
 
@@ -396,7 +396,8 @@ def getResolverInfo(resolvername, passwords=False):
             # we have to be sure that we only have encrypted data objects for
             # secret data
             if not isinstance(value, EncryptedData):
-                raise Exception("Encrypted Data Object expected")
+                msg = "Encrypted Data Object expected"
+                raise Exception(msg)
 
             # if parameter password is True, we need to unencrypt
             if passwords:
@@ -407,7 +408,7 @@ def getResolverInfo(resolvername, passwords=False):
         # the string representation
 
         if not isinstance(value, str):
-            res_conf[key] = "%r" % value
+            res_conf[key] = f"{value!r}"
 
     if "readonly" in res_conf:
         try:
@@ -441,9 +442,8 @@ def deleteResolver(resolvername):
     """
 
     if resolvername == current_app.config["ADMIN_RESOLVER_NAME"]:
-        raise DeleteForbiddenError(
-            f"default admin resolver {resolvername} is not allowed to be removed!"
-        )
+        msg = f"default admin resolver {resolvername} is not allowed to be removed!"
+        raise DeleteForbiddenError(msg)
 
     resolvertypes = get_resolver_types()
     conf = context.get("Config")
@@ -497,9 +497,9 @@ def getResolverDictByName(resolver_name):
     resolvers_dict = getResolverList()
     try:
         return resolvers_dict[resolver_name]
-    except KeyError:
+    except KeyError as exx:
         message = f"Could not find a resolver with this name: {resolver_name}"
-        raise linotp.lib.user.NoResolverFound(message)
+        raise linotp.lib.user.NoResolverFound(message) from exx
 
 
 # external in token.py user.py validate.py
@@ -617,8 +617,6 @@ def _check_for_resolver_cache_flush(resolver_spec, config_identifier):
         _delete_from_resolver_config_cache(resolver_spec)
         _lookup_resolver_config(resolver_spec, resolver_config)
 
-    return
-
 
 def _flush_user_resolver_cache(resolver_spec):
     """
@@ -630,7 +628,7 @@ def _flush_user_resolver_cache(resolver_spec):
     :return: - nothing -
     """
 
-    from linotp.lib.user import (
+    from linotp.lib.user import (  # noqa: PLC0415
         delete_realm_resolver_cache,
         delete_resolver_user_cache,
     )
@@ -657,7 +655,7 @@ def _get_resolver_config(resolver_config_identifier):
 
     # identify the fully qualified resolver spec by all possible resolver
     # prefixes, which are taken from the resolver_classes list
-    lookup_keys = [f"linotp.{entry}" for entry in resolver_registry.keys()]
+    lookup_keys = [f"linotp.{entry}" for entry in resolver_registry]
 
     # we got the resolver prefix, now we can search in the config for
     # all resolver configuration entries
@@ -772,7 +770,7 @@ def setupResolvers(config=None, cache_dir="/tmp"):
 
         try:
             resolver_cls.setup(config=config, cache_dir=cache_dir)
-            setattr(resolver_cls, "_setup_done", True)
+            resolver_cls._setup_done = True
         except Exception as exx:
             log.error(
                 "Resolver setup: Failed to call setup of %r. Exception was %r",
@@ -809,7 +807,6 @@ def closeResolvers():
                 resolver.close()
     except Exception as exx:
         log.error("Failed to close resolver in context. Error was %r", exx)
-    return
 
 
 def getResolverClassName(cls_identifier, resolver_name):
@@ -829,7 +826,7 @@ def getResolverClassName(cls_identifier, resolver_name):
     if db_prefix is None:
         return ""
 
-    return "%s.%s" % (db_prefix, resolver_name)
+    return f"{db_prefix}.{resolver_name}"
 
 
 def get_resolver_db_prefix(cls_identifier):
@@ -926,7 +923,8 @@ def prepare_resolver_parameter(new_resolver_name, param, previous_name=None):
     resolver_cls = get_resolver_class(param["type"])
 
     if resolver_cls is None:
-        raise Exception("no such resolver type '%r' defined!" % param["type"])
+        msg = "no such resolver type '{!r}' defined!".format(param["type"])
+        raise Exception(msg)
 
     # for rename and update, we support the merge with previous parameters
     if previous_name:
@@ -963,7 +961,8 @@ def prepare_resolver_parameter(new_resolver_name, param, previous_name=None):
                 if key == "readonly":
                     param["readonly"] = boolean(p_value)
                 elif p_value != param.get(key, ""):
-                    raise Exception("Readonly Resolver Change not allowed!")
+                    msg = "Readonly Resolver Change not allowed!"
+                    raise Exception(msg)
 
         # check if the primary key changed - if so, we need
         # to migrate the resolver

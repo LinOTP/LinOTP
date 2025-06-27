@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -104,11 +103,12 @@ class MaintenanceController(BaseController):
 
             # ----------------------------------------------------------------
 
+            level = self.request_params.get("level", 0)
             try:
-                level = self.request_params.get("level", 0)
                 level = int(level)
-            except ValueError as e:
-                raise Exception("debug level {} contains nondigits!".format(level))
+            except ValueError as exx:
+                msg = f"debug level {level} contains nondigits!"
+                raise Exception(msg) from exx
 
             # ----------------------------------------------------------------------
 
@@ -147,7 +147,7 @@ class MaintenanceController(BaseController):
         except Exception as exx:
             db.session.rollback()  # why?
             log.error(exx)
-            raise InternalServerError(str(exx))
+            raise InternalServerError(str(exx)) from exx
 
 
 # eof #

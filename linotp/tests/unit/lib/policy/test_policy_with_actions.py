@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -31,9 +30,9 @@ import copy
 import datetime
 import unittest
 from collections import namedtuple
+from unittest.mock import patch
 
 import pytest
-from mock import patch
 
 from linotp.lib.policy import (
     PolicyException,
@@ -109,7 +108,7 @@ class PolicyActionTest(unittest.TestCase):
     """
 
     @patch("linotp.lib.policy.util.context", new=fake_context)
-    @patch("linotp.lib.policy.maxtoken.context", new=fake_context)
+    @patch("linotp.lib.context.request_context", new=fake_context)
     @patch("linotp.lib.policy.action.get_policy_definitions")
     @patch("linotp.lib.policy.processing.get_policies")
     @patch("linotp.lib.policy.maxtoken._getUserRealms")
@@ -168,7 +167,7 @@ class PolicyActionTest(unittest.TestCase):
             )
 
     @patch("linotp.lib.policy.util.context", new=fake_context)
-    @patch("linotp.lib.policy.maxtoken.context", new=fake_context)
+    @patch("linotp.lib.context.request_context", new=fake_context)
     @patch("linotp.lib.policy.action.get_policy_definitions")
     @patch("linotp.lib.policy.processing.get_policies")
     @patch("linotp.lib.policy.maxtoken._getUserRealms")
@@ -432,7 +431,7 @@ class PolicyActionTest(unittest.TestCase):
         end_date = (datetime.date.today() + datetime.timedelta(days=2)).strftime(
             "%d/%m/%y"
         )
-        end_date = "%s 23:59" % end_date
+        end_date = f"{end_date} 23:59"
 
         th = TokenHandler()
         res = th.losttoken("mySerial", "mySerial_new")
@@ -454,7 +453,7 @@ class PolicyActionTest(unittest.TestCase):
         end_date = (datetime.date.today() + datetime.timedelta(days=1)).strftime(
             "%d/%m/%y"
         )
-        end_date = "%s 23:59" % end_date
+        end_date = f"{end_date} 23:59"
 
         th = TokenHandler()
         res = th.losttoken(serial="mySerial", new_serial="mySerial_new")

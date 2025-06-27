@@ -43,7 +43,7 @@ def mocked_translate(input_data=None):
 
 
 class TestActivationMako(unittest.TestCase):
-    class MyContext(object):
+    class MyContext:
         scope = "selfservice.activate"
         user = "me"
         realm = "home"
@@ -67,8 +67,6 @@ class TestActivationMako(unittest.TestCase):
         content = buf.getvalue()
         assert "params['user'] = 'me@home';" in content
 
-        return
-
     def test_pushtoken_activate(self):
         qrtemplate = Template(filename=self.lib_token_dir + "/pushtoken/pushtoken.mako")
 
@@ -77,5 +75,3 @@ class TestActivationMako(unittest.TestCase):
         _res = qrtemplate.render_context(ctx)
         content = buf.getvalue()
         assert "params['user'] = 'me@home';" in content
-
-        return

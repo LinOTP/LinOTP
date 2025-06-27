@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -56,7 +55,7 @@ def set_config(
     key: str,
     value: str,
     typ: str,
-    description: str = None,
+    description: str | None = None,
     update: bool = False,
 ) -> None:
     """

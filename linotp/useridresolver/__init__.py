@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 #
 #    LinOTP - the open source solution for two factor authentication
@@ -75,10 +74,7 @@ class ClassRegistry(dict):
             # _registry_key assignment is a workaround
             # for the missing nonlocal statement in python2.x
 
-            if registry_key is None:
-                _registry_key = cls_.__name__
-            else:
-                _registry_key = registry_key
+            _registry_key = cls_.__name__ if registry_key is None else registry_key
 
             self[_registry_key] = cls_
             return cls_
@@ -105,7 +101,7 @@ def reload_classes():
 
     for fn in files_in_ext_path:
         # filter python files
-        if fn.endswith(".py") and not fn == "__init__.py":
+        if fn.endswith(".py") and fn != "__init__.py":
             # translate them into module syntax
             # and import
             mod_rel = fn[0:-3]

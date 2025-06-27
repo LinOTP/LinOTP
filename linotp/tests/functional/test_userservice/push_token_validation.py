@@ -1,7 +1,5 @@
-import json
 import os
 import struct
-from typing import Dict, Tuple
 
 from Cryptodome.Cipher import AES
 from Cryptodome.Hash import SHA256
@@ -57,15 +55,15 @@ class Push_Token_Validation:
         if rest == 0:
             return str(before)
         else:
-            return "%d.%02d" % (before, rest)
+            return f"{before}.{rest:02d}"
 
     @staticmethod
-    def create_keys() -> Tuple[bytes, bytes]:
+    def create_keys() -> tuple[bytes, bytes]:
         """Create a public private key pair."""
         return gen_dsa_keypair()
 
     @staticmethod
-    def create_user_token_by_pairing_url(pairing_url: str, pin: str) -> Dict:
+    def create_user_token_by_pairing_url(pairing_url: str, pin: str) -> dict:
         """Parses the pairing url and return the extracted token data as dict.
 
         :param pairing_url: the pairing url received from the server
@@ -103,7 +101,8 @@ class Push_Token_Validation:
         if flags & FLAG_PAIR_CBURL:
             callback_url, __, custom_data = custom_data.partition(b"\x00")
         else:
-            raise NotImplementedError("Callback URL is mandatory for PushToken")
+            msg = "Callback URL is mandatory for PushToken"
+            raise NotImplementedError(msg)
 
         # ------------------------------------------------------------------- --
 
@@ -122,8 +121,8 @@ class Push_Token_Validation:
 
     @staticmethod
     def decrypt_and_verify_challenge(
-        challenge_url: str, token_info: Dict, secret_key: bytes, action: str
-    ) -> Tuple[Dict, str]:
+        challenge_url: str, token_info: dict, secret_key: bytes, action: str
+    ) -> tuple[dict, str]:
         """Decrypts the data packed in the challenge url, verifies the content.
 
         Returns the parsed data as a dictionary, calculates and returns the
@@ -298,7 +297,7 @@ class Push_Token_Validation:
     def create_pairing_response(
         public_key: bytes,
         secret_key: bytes,
-        token_info: Dict,
+        token_info: dict,
         gda: str = "DEADBEEF",
     ) -> str:
         """Creates a base64-encoded pairing response.

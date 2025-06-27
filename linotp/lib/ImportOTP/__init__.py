@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -39,7 +38,7 @@ class ImportException(Exception):
         self.description = description
 
     def __str__(self):
-        return "%s" % self.description
+        return f"{self.description}"
 
 
 def getTagName(elem):

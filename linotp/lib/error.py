@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -57,16 +56,12 @@ class LinotpError(Exception):
         # if we have here unicode, we might fail with conversion error
         try:
             res = pstr % (self.id, self.message)
-        except Exception as exx:
-            res = "ERR%d: %r" % (self.id, self.message)
+        except Exception:
+            res = f"ERR{self.id}: {self.message!r}"
         return res
 
     def __repr__(self):
-        ret = "%s(description=%r, id=%d)" % (
-            type(self).__name__,
-            self.message,
-            self.id,
-        )
+        ret = f"{type(self).__name__}(description={self.message!r}, id={self.id})"
         return ret
 
 
@@ -135,7 +130,7 @@ class InvalidFunctionParameter(Exception):
     def __init__(self, parameter_name, message):
         self.parameter_name = parameter_name
         self.message = message
-        Exception.__init__(self, "Parameter %s: %s" % (parameter_name, message))
+        Exception.__init__(self, f"Parameter {parameter_name}: {message}")
 
 
 class TokenStateError(UserError):

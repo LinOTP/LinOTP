@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -30,7 +29,6 @@
 Test user authorisation for actions in the "tools" scope.
 """
 
-import io
 import os
 
 from linotp.tests import TestController
@@ -69,7 +67,7 @@ class TestToolsAuthorisation(TestController):
 
         user_file = os.path.join(self.fixture_path, file_name)
 
-        with io.open(user_file, "r", encoding="utf-8") as f:
+        with open(user_file, encoding="utf-8") as f:
             content = f.read()
 
         upload_files = [("file", "user_list", content)]

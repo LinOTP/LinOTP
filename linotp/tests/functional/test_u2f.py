@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -37,7 +36,6 @@ import logging
 import sys
 from hashlib import sha256
 
-import pytest
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
@@ -259,7 +257,8 @@ class TestU2FController(TestController):
         elif typ == "authentication":
             typ_string = "navigator.id.getAssertion"
         else:
-            raise ValueError("Unknown typ")
+            msg = "Unknown typ"
+            raise ValueError(msg)
 
         client_data_object = {
             "typ": typ_string,
@@ -278,7 +277,8 @@ class TestU2FController(TestController):
         client_data = client_data.encode("utf-8")
 
         if not key_set:
-            raise ValueError("Unknown key number requested!")
+            msg = "Unknown key number requested!"
+            raise ValueError(msg)
         (key_handle_hex, ecc_key) = key_set
 
         #
@@ -356,7 +356,8 @@ class TestU2FController(TestController):
         """
         # get the correct token for creating the response message
         if not ecc_key:
-            raise ValueError("Unknown key handle received.")
+            msg = "Unknown key handle received."
+            raise ValueError(msg)
 
         client_data = client_data.encode("utf-8")
 
@@ -416,34 +417,34 @@ class TestU2FController(TestController):
 
         # check for status and value
         assert "result" in response_registration1, (
-            "Response: %r" % response_registration1
+            f"Response: {response_registration1!r}"
         )
         assert "status" in response_registration1["result"], (
-            "Response: %r" % response_registration1
+            f"Response: {response_registration1!r}"
         )
         assert response_registration1["result"]["status"]
         assert "value" in response_registration1["result"], (
-            "Response: %r" % response_registration1
+            f"Response: {response_registration1!r}"
         )
         assert response_registration1["result"]["value"]
 
         # check detail object containing serial and registerrequest
         assert "detail" in response_registration1, (
-            "Response: %r" % response_registration1
+            f"Response: {response_registration1!r}"
         )
 
         # check for correct serial
         assert "serial" in response_registration1["detail"], (
-            "Response: %r" % response_registration1
+            f"Response: {response_registration1!r}"
         )
         assert response_registration1["detail"]["serial"][:3] == "U2F"
 
         # check for correct registerrequest object
         assert "registerrequest" in response_registration1["detail"], (
-            "Response: %r" % response_registration1
+            f"Response: {response_registration1!r}"
         )
         assert "challenge" in response_registration1["detail"]["registerrequest"], (
-            "Response: %r" % response_registration1
+            f"Response: {response_registration1!r}"
         )
         # check for non-empty and correctly-padded challenge
         assert response_registration1["detail"]["registerrequest"]["challenge"] != ""
@@ -452,14 +453,14 @@ class TestU2FController(TestController):
             == 0
         )
         assert "version" in response_registration1["detail"]["registerrequest"], (
-            "Response: %r" % response_registration1
+            f"Response: {response_registration1!r}"
         )
         # only U2F_V2 is supported right now
         assert (
             response_registration1["detail"]["registerrequest"]["version"] == "U2F_V2"
         )
         assert "appId" in response_registration1["detail"]["registerrequest"], (
-            "Response: %r" % response_registration1
+            f"Response: {response_registration1!r}"
         )
         assert (
             response_registration1["detail"]["registerrequest"]["appId"] == self.origin
@@ -490,14 +491,14 @@ class TestU2FController(TestController):
 
         # check for status and value
         assert "result" in response_registration2, (
-            "Response: %r" % response_registration2
+            f"Response: {response_registration2!r}"
         )
         assert "status" in response_registration2["result"], (
-            "Response: %r" % response_registration2
+            f"Response: {response_registration2!r}"
         )
         if correct:
             assert "value" in response_registration2["result"], (
-                "Response: %r" % response_registration2
+                f"Response: {response_registration2!r}"
             )
             assert response_registration2["result"]["status"]
             assert response_registration2["result"]["value"]
@@ -506,8 +507,6 @@ class TestU2FController(TestController):
             # check explicitly, that no "value: true" is responded
             if "value" in response_registration2["result"]:
                 assert not response_registration2["result"]["value"]
-
-        return
 
     def _authentication_challenge(self, pin=None):
         """
@@ -518,24 +517,24 @@ class TestU2FController(TestController):
 
         # check for status and value
         assert "result" in response_authentication1, (
-            "Response: %r" % response_authentication1
+            f"Response: {response_authentication1!r}"
         )
         assert "status" in response_authentication1["result"], (
-            "Response: %r" % response_authentication1
+            f"Response: {response_authentication1!r}"
         )
         assert response_authentication1["result"]["status"]
         assert "value" in response_authentication1["result"], (
-            "Response: %r" % response_authentication1
+            f"Response: {response_authentication1!r}"
         )
         assert not response_authentication1["result"]["value"]
 
         assert "detail" in response_authentication1, (
-            "Response: %r" % response_authentication1
+            f"Response: {response_authentication1!r}"
         )
 
         # check for supported message
         assert "message" in response_authentication1["detail"], (
-            "Response: %r" % response_authentication1
+            f"Response: {response_authentication1!r}"
         )
         assert response_authentication1["detail"]["message"] in [
             "Multiple challenges submitted.",
@@ -547,40 +546,40 @@ class TestU2FController(TestController):
         reply = []
         if message == "Multiple challenges submitted.":
             assert "challenges" in response_authentication1["detail"], (
-                "Response: %r" % response_authentication1
+                f"Response: {response_authentication1!r}"
             )
             for challenge in list(
                 response_authentication1["detail"]["challenges"].values()
             ):
                 # check for non-empty transactionid
                 assert "transactionid" in challenge, (
-                    "Response: %r" % response_authentication1
+                    f"Response: {response_authentication1!r}"
                 )
                 assert challenge["transactionid"] != ""
 
                 # check for correct signrequest object
                 assert "signrequest" in challenge, (
-                    "Response: %r" % response_authentication1
+                    f"Response: {response_authentication1!r}"
                 )
                 assert "challenge" in challenge["signrequest"], (
-                    "Response: %r" % response_authentication1
+                    f"Response: {response_authentication1!r}"
                 )
                 # check for non-empty and correctly-padded challenge
                 assert challenge["signrequest"]["challenge"] != ""
                 assert len(challenge["signrequest"]["challenge"]) % 4 == 0
                 assert "version" in challenge["signrequest"], (
-                    "Response: %r" % response_authentication1
+                    f"Response: {response_authentication1!r}"
                 )
                 # only U2F_V2 is supported right now
                 assert challenge["signrequest"]["version"] == "U2F_V2"
                 assert "appId" in challenge["signrequest"], (
-                    "Response: %r" % response_authentication1
+                    f"Response: {response_authentication1!r}"
                 )
                 assert challenge["signrequest"]["appId"] == self.origin
 
                 # check for non-empty keyHandle
                 assert "keyHandle" in challenge["signrequest"], (
-                    "Response: %r" % response_authentication1
+                    f"Response: {response_authentication1!r}"
                 )
                 assert challenge["signrequest"]["keyHandle"] != ""
 
@@ -589,16 +588,16 @@ class TestU2FController(TestController):
         else:
             # check for non-empty transactionid
             assert "transactionid" in response_authentication1["detail"], (
-                "Response: %r" % response_authentication1
+                f"Response: {response_authentication1!r}"
             )
             assert response_authentication1["detail"]["transactionid"] != ""
 
             # check for correct signrequest object
             assert "signrequest" in response_authentication1["detail"], (
-                "Response: %r" % response_authentication1
+                f"Response: {response_authentication1!r}"
             )
             assert "challenge" in response_authentication1["detail"]["signrequest"], (
-                "Response: %r" % response_authentication1
+                f"Response: {response_authentication1!r}"
             )
             # check for non-empty and correctly-padded challenge
             assert response_authentication1["detail"]["signrequest"]["challenge"] != ""
@@ -607,14 +606,14 @@ class TestU2FController(TestController):
                 == 0
             )
             assert "version" in response_authentication1["detail"]["signrequest"], (
-                "Response: %r" % response_authentication1
+                f"Response: {response_authentication1!r}"
             )
             # only U2F_V2 is supported right now
             assert (
                 response_authentication1["detail"]["signrequest"]["version"] == "U2F_V2"
             )
             assert "appId" in response_authentication1["detail"]["signrequest"], (
-                "Response: %r" % response_authentication1
+                f"Response: {response_authentication1!r}"
             )
             assert (
                 response_authentication1["detail"]["signrequest"]["appId"]
@@ -623,7 +622,7 @@ class TestU2FController(TestController):
 
             # check for non-empty keyHandle
             assert "keyHandle" in response_authentication1["detail"]["signrequest"], (
-                "Response: %r" % response_authentication1
+                f"Response: {response_authentication1!r}"
             )
             assert response_authentication1["detail"]["signrequest"]["keyHandle"] != ""
             reply.append(response_authentication1["detail"])
@@ -647,7 +646,7 @@ class TestU2FController(TestController):
         assert binascii.hexlify(
             base64.urlsafe_b64decode(key_handle_authentication)
         ).decode("ascii") in [self.KEY_HANDLE_HEX1, self.KEY_HANDLE_HEX2], (
-            "signrequest: %r" % signrequest_authentication
+            f"signrequest: {signrequest_authentication!r}"
         )
 
         # Construct the registration response message
@@ -679,14 +678,14 @@ class TestU2FController(TestController):
 
         # check result object
         assert "result" in response_authentication2, (
-            "Response: %r" % response_authentication2
+            f"Response: {response_authentication2!r}"
         )
         assert "status" in response_authentication2["result"], (
-            "Response: %r" % response_authentication2
+            f"Response: {response_authentication2!r}"
         )
         assert response_authentication2["result"]["status"]
         assert "value" in response_authentication2["result"], (
-            "Response: %r" % response_authentication2
+            f"Response: {response_authentication2!r}"
         )
         if correct:
             assert response_authentication2["result"]["value"]
@@ -706,7 +705,6 @@ class TestU2FController(TestController):
         self._authentication_response(challenges[0])
         challenges = self._authentication_challenge()
         self._authentication_response(challenges[0])
-        return
 
     def test_u2f_multiple_registration_and_authentication_without_pin(self):
         """
@@ -725,7 +723,6 @@ class TestU2FController(TestController):
         self._authentication_response(challenges[0])
         challenges = self._authentication_challenge()
         self._authentication_response(challenges[0])
-        return
 
     def test_u2f_registration_and_wrong_authentication_without_pin(self):
         """
@@ -736,7 +733,6 @@ class TestU2FController(TestController):
         # Authenticate twice
         challenges = self._authentication_challenge()
         self._authentication_response(challenges[0], correct=False)
-        return
 
     def test_u2f_multiple_registration_and_wrong_authentication_without_pin(
         self,
@@ -753,7 +749,6 @@ class TestU2FController(TestController):
         self._authentication_response(challenges[0], correct=False)
         challenges = self._authentication_challenge()
         self._authentication_response(challenges[1], correct=False)
-        return
 
     def test_u2f_wrong_registration_without_pin(self):
         """
@@ -774,7 +769,6 @@ class TestU2FController(TestController):
         self._authentication_response(challenges[0])
         challenges = self._authentication_challenge(pin)
         self._authentication_response(challenges[0])
-        return
 
     def test_u2f_multiple_registration_and_authentication_with_pin(self):
         """
@@ -794,7 +788,6 @@ class TestU2FController(TestController):
         self._authentication_response(challenges[0])
         challenges = self._authentication_challenge(pin)
         self._authentication_response(challenges[0])
-        return
 
     def test_u2f_registration_and_wrong_authentication_with_pin(self):
         """
@@ -805,7 +798,6 @@ class TestU2FController(TestController):
         self._registration(pin)
         challenges = self._authentication_challenge(pin)
         self._authentication_response(challenges[0], correct=False)
-        return
 
     def test_u2f_multiple_registration_and_wrong_authentication_with_pin(self):
         """
@@ -821,7 +813,6 @@ class TestU2FController(TestController):
         self._authentication_response(challenges[0], correct=False)
         challenges = self._authentication_challenge(pin)
         self._authentication_response(challenges[1], correct=False)
-        return
 
     def test_u2f_wrong_registration_with_pin(self):
         """

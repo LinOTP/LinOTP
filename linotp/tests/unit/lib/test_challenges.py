@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -30,9 +29,9 @@ Test lib challenge methods
 """
 
 import unittest
+from unittest.mock import patch
 
 import pytest
-from mock import patch
 
 from linotp.lib.challenges import Challenges
 
@@ -54,8 +53,7 @@ class TestChallengesTransactionidLength(unittest.TestCase):
             too_short_length = 7
 
             wrong_range_message = (
-                "TransactionIdLength must be between 12 and 17, "
-                "was %d" % too_short_length
+                f"TransactionIdLength must be between 12 and 17, was {too_short_length}"
             )
             mock_context.get.return_value = {"TransactionIdLength": too_short_length}
             with pytest.raises(Exception) as wrong_range:

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -236,11 +235,13 @@ class MonitoringController(BaseController):
         """
         try:
             if hasattr(c, "hsm") is False or isinstance(c.hsm, dict) is False:
-                raise HSMException("no hsm defined in execution context!")
+                msg = "no hsm defined in execution context!"
+                raise HSMException(msg)
 
             hsm = c.hsm.get("obj")
             if hsm is None or hsm.isReady() is False:
-                raise HSMException("hsm not ready!")
+                msg = "hsm not ready!"
+                raise HSMException(msg)
 
             hsm_class = str(type(hsm))
             enc_type = hsm_class.split(".")[-1]
@@ -278,7 +279,7 @@ class MonitoringController(BaseController):
             except InvalidLicenseException as err:
                 if err.type != "UNLICENSED":
                     raise err
-                opt = {"valid": False, "message": "%r" % err}
+                opt = {"valid": False, "message": f"{err!r}"}
                 return sendResult({}, 1, opt=opt)
 
             # Add Extra info
@@ -288,8 +289,6 @@ class MonitoringController(BaseController):
             if not license_ok:
                 res = {"valid": license_ok, "message": license_msg}
                 return sendResult(res, 1)
-
-            details = {"valid": license_ok}
 
             if "user-num" in license_info:
                 res["user-num"] = int(license_info.get("user-num", 0))

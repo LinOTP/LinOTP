@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -80,7 +79,7 @@ def u64_to_transaction_id(u64_int):
     if rest == 0:
         return str(before)
     else:
-        return "%d.%02d" % (before, rest)
+        return f"{before}.{rest:02d}"
 
 
 class TestQRToken(TestController):
@@ -240,7 +239,7 @@ class TestQRToken(TestController):
         self.delete_all_realms()
         self.delete_all_resolvers()
 
-        super(TestQRToken, self).setUp()
+        super().setUp()
         self.create_common_resolvers()
         self.create_common_realms()
         self.create_dummy_cb_policies()
@@ -255,7 +254,7 @@ class TestQRToken(TestController):
         self.delete_all_realms()
         self.delete_all_resolvers()
         self.delete_all_token()
-        super(TestQRToken, self).tearDown()
+        super().tearDown()
 
     # --------------------------------------------------------------------------- --
 
@@ -695,9 +694,8 @@ class TestQRToken(TestController):
         if flags & FLAG_PAIR_CBURL:
             callback_url, __, custom_data = custom_data.partition(b"\x00")
         else:
-            raise NotImplementedError(
-                "SMS is not implemented. Callback URLis mandatory."
-            )
+            msg = "SMS is not implemented. Callback URLis mandatory."
+            raise NotImplementedError(msg)
 
         callback_sms = None
         if flags & FLAG_PAIR_CBSMS:
@@ -975,9 +973,9 @@ class TestQRToken(TestController):
             )
 
             assert response.json["result"]["status"], response
-            assert response.json["result"]["value"]["setPolicy %s" % pol["name"]], (
-                response
-            )
+            assert response.json["result"]["value"][
+                "setPolicy {}".format(pol["name"])
+            ], response
 
     def remove_detail_policies(self):
         for policy_name in ["detail_on_success", "detail_on_fail"]:
@@ -1050,8 +1048,6 @@ class TestQRToken(TestController):
 
         self.execute_correct_pairing()
 
-        return
-
     # --------------------------------------------------------------------------- --
 
     def test_pairing_sig_with_user(self):
@@ -1059,16 +1055,12 @@ class TestQRToken(TestController):
 
         self.execute_correct_pairing(user="def")
 
-        return
-
     # --------------------------------------------------------------------------- --
 
     def test_pairing_sig_with_fquser(self):
         """QRTOKEN: check if pairing mechanism works correctly (sig based)"""
 
         self.execute_correct_pairing(user="def@mymixrealm")
-
-        return
 
     # --------------------------------------------------------------------------- --
 
@@ -1102,7 +1094,7 @@ class TestQRToken(TestController):
         assert "status" in result
 
         status = result.get("status")
-        assert status == False
+        assert status is False
 
         # FIXME: removed since the new interface doesn't
         # propagate error messages (should be fixed in
@@ -1135,7 +1127,7 @@ class TestQRToken(TestController):
         assert "status" in result
 
         status = result.get("status")
-        assert status == False
+        assert status is False
 
         # FIXME: removed since the new interface doesn't
         # propagate error messages (should be fixed in
@@ -1198,7 +1190,7 @@ class TestQRToken(TestController):
         assert status
 
         value = result.get("value")
-        assert value == False
+        assert value is False
 
     # --------------------------------------------------------------------------- --
 
@@ -1269,7 +1261,7 @@ class TestQRToken(TestController):
 
         assert "status" in result
         status = result.get("status")
-        assert status == False
+        assert status is False
 
         # FIXME: removed since the new interface doesn't
         # propagate error messages (should be fixed in
@@ -1356,7 +1348,7 @@ class TestQRToken(TestController):
 
         assert "status" in result
         status = result.get("status")
-        assert status == False
+        assert status is False
 
         # FIXME: removed since the new interface doesn't
         # propagate error messages (should be fixed in
@@ -1449,7 +1441,7 @@ class TestQRToken(TestController):
 
         assert "status" in result
         status = result.get("status")
-        assert status == False
+        assert status is False
 
         # FIXME: removed since the new interface doesn't
         # propagate error messages (should be fixed in
@@ -1536,7 +1528,7 @@ class TestQRToken(TestController):
 
         assert "status" in result
         status = result.get("status")
-        assert status == False
+        assert status is False
 
         # FIXME: removed since the new interface doesn't
         # propagate error messages (should be fixed in
@@ -1593,7 +1585,7 @@ class TestQRToken(TestController):
         assert "status" in result
 
         status = result.get("status")
-        assert status == False
+        assert status is False
 
         # FIXME: removed since the new interface doesn't
         # propagate error messages (should be fixed in
@@ -1672,7 +1664,7 @@ class TestQRToken(TestController):
         assert status
 
         value = result.get("value")
-        assert value == False
+        assert value is False
 
     # --------------------------------------------------------------------------- --
 
@@ -1745,7 +1737,7 @@ class TestQRToken(TestController):
         assert status, response
 
         value = result.get("value")
-        assert value == False, response
+        assert value is False, response
 
     # --------------------------------------------------------------------------- --
 
@@ -2103,7 +2095,7 @@ class TestQRToken(TestController):
             response_dict = self.create_multiple_challenges("root", "1234")
             challenges = response_dict["detail"]["challenges"]
 
-            serial = list(challenges.keys())[0]
+            serial = next(iter(challenges.keys()))
             challenge_url = challenges[serial]["message"]
 
             challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
@@ -2141,7 +2133,7 @@ class TestQRToken(TestController):
                 == "root"
             ) == use_detail_policy, response
             assert (
-                response.json.get("detail", {}).get("is_linotp_admin") == False
+                response.json.get("detail", {}).get("is_linotp_admin") is False
             ) == use_detail_policy, response
             assert (
                 response.json.get("detail", {}).get("tokentype") == "qr"
@@ -2170,7 +2162,7 @@ class TestQRToken(TestController):
         response_dict = self.create_multiple_challenges("root", "1234")
         challenges = response_dict["detail"]["challenges"]
 
-        serial = list(challenges.keys())[0]
+        serial = next(iter(challenges.keys()))
         challenge_url = challenges[serial]["message"]
 
         challenge, sig, tan = self.decrypt_and_verify_challenge(challenge_url)
@@ -2566,8 +2558,6 @@ class TestQRToken(TestController):
             value = result.get("value")
 
         assert leading_zero_test
-
-        return
 
     # ----------------------------------------------------------------------- --
 

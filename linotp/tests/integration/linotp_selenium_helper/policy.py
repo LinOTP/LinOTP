@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,11 +26,9 @@
 """Contains Policy class"""
 
 from selenium.common.exceptions import (
-    NoSuchElementException,
     StaleElementReferenceException,
 )
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from .helper import fill_form_element, select
@@ -134,7 +131,7 @@ class PolicyManager(ManageTab):
         self.wait_for_waiting_finished()
 
 
-class Policy(object):
+class Policy:
     """Creates a LinOTP Policy"""
 
     def __init__(self, manage_ui, name, scope, action, realm, user="*"):

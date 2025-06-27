@@ -24,21 +24,20 @@
 #    Support: www.linotp.de
 #
 
-import json
-import os
+
+from unittest.mock import patch
 
 import flask
 import pytest
-from mock import patch
 from sqlalchemy.exc import OperationalError
 from werkzeug.exceptions import Unauthorized
 
 from linotp.flap import config
-from linotp.model import Config, LoggingConfig, db
+from linotp.model import LoggingConfig, db
 
 
 @pytest.mark.usefixtures("app")
-class TestMaintenance(object):
+class TestMaintenance:
     @patch("linotp.model.db.session")
     def test_check_status_ok(self, mock_session, adminclient):
         """
@@ -64,24 +63,19 @@ class TestMaintenance(object):
 
         assert response.status_code == 500
 
-        return
-
     def test_set_loglevel(self, app, adminclient):
         name = "linotp.lib.user"
         config_entry = db.session.get(LoggingConfig, name)
         assert not config_entry
 
-        params = dict(
-            loggerName=name,
-            level=10,
-        )
+        params = {"loggerName": name, "level": 10}
         adminclient.post("/maintenance/setLogLevel", json=params)
 
         config_entry = db.session.get(LoggingConfig, name)
         assert config_entry.level == 10
 
 
-class TestMaintCertificateHandling(object):
+class TestMaintCertificateHandling:
     maint = None
 
     @pytest.fixture(autouse=True)

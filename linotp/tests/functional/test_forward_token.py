@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -119,8 +118,6 @@ class TestForwardToken(TestController):
         response = self.make_validate_request("check_s", params=parameters)
         assert '"value": true' in response, response
 
-        return
-
     def test_check_s_challenge_response(self):
         """
         Checking auth forwarding with check_s and challenge response
@@ -167,8 +164,6 @@ class TestForwardToken(TestController):
         response = self.make_validate_request("check_s", params=parameters)
         assert '"value": true' in response, response
 
-        return
-
     def test_tokencounter_forwarding(self):
         """
         Checking auth forwarding with check_s and fail counter forwarding
@@ -184,7 +179,7 @@ class TestForwardToken(TestController):
         for i in [2, 3, 4, 5]:
             parameters = {
                 "serial": forward_serial,
-                "pass": "123!" + "12378%d" % i,
+                "pass": "123!" + f"12378{i}",
             }
             response = self.make_validate_request("check_s", params=parameters)
             assert '"value": false' in response, response
@@ -238,7 +233,7 @@ class TestForwardToken(TestController):
         for i in [2, 3, 4, 5]:
             parameters = {
                 "serial": forward_serial,
-                "pass": "123!" + "12378%d" % i,
+                "pass": "123!" + f"12378{i}",
             }
             response = self.make_validate_request("check_s", params=parameters)
             assert '"value": false' in response, response
@@ -292,8 +287,6 @@ class TestForwardToken(TestController):
         response = self.make_validate_request("check", params=parameters)
         assert '"value": true' in response, response
 
-        return
-
     def test_check_owner_otppin(self):
         """
         Checking auth forwarding with user check and otppin policy
@@ -326,8 +319,6 @@ class TestForwardToken(TestController):
         parameters = {"user": "passthru_user1", "pass": "geheim1" + otps[2]}
         response = self.make_validate_request("check", params=parameters)
         assert '"value": true' in response, response
-
-        return
 
     def test_multiple_challenges(self):
         """

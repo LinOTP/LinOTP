@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -63,10 +62,7 @@ class HttpSMSProvider(ISMSProvider, ConfigParsingMixin):
 
         method = self.config.get("HTTP_Method", "POST").upper()
         if method not in ["GET", "POST"]:
-            msg = (
-                "Method for HttpSmsProvider method must be GET or POST - unsupported method: %s"
-                % method
-            )
+            msg = f"Method for HttpSmsProvider method must be GET or POST - unsupported method: {method}"
             log.error(msg)
             raise Exception(msg)
 
@@ -148,15 +144,15 @@ class HttpSMSProvider(ISMSProvider, ConfigParsingMixin):
                     "Reply does not match the RETURN_SUCCESS_REGEX "
                     "definition"
                 )
-                raise Exception(
-                    "We received a none success reply from the SMS Gateway."
-                )
+                msg = "We received a none success reply from the SMS Gateway."
+                raise Exception(msg)
 
         elif "RETURN_FAIL_REGEX" in self.config:
             ret = re.search(self.config["RETURN_FAIL_REGEX"], reply)
             if ret is not None:
                 log.warning("[_check_success] sending SMS fail")
-                raise Exception("We received a predefined error from the SMS Gateway.")
+                msg = "We received a predefined error from the SMS Gateway."
+                raise Exception(msg)
             else:
                 log.debug(
                     "[_check_success] sending sms success full. "
@@ -174,16 +170,16 @@ class HttpSMSProvider(ISMSProvider, ConfigParsingMixin):
                     "[_check_success] failed to send SMS. Reply does "
                     "not match the RETURN_SUCCESS definition"
                 )
-                raise Exception(
-                    "We received a none success reply from the SMS Gateway."
-                )
+                msg = "We received a none success reply from the SMS Gateway."
+                raise Exception(msg)
 
         elif "RETURN_FAIL" in self.config:
             fail = self.config.get("RETURN_FAIL")
             log.debug("[_check_success] fail: %r", fail)
             if reply[: len(fail)] == fail:
                 log.warning("[_check_success] sending SMS fail")
-                raise Exception("We received a predefined error from the SMS Gateway.")
+                msg = "We received a predefined error from the SMS Gateway."
+                raise Exception(msg)
             else:
                 log.debug(
                     "[_check_success] sending sms success full. "
@@ -197,10 +193,10 @@ class HttpSMSProvider(ISMSProvider, ConfigParsingMixin):
             pparams = {}
 
             pparams["timeout"] = HttpSMSProvider.DEFAULT_TIMEOUT
-            if "timeout" in self.config and self.config["timeout"]:
+            if self.config.get("timeout"):
                 pparams["timeout"] = parse_timeout(self.config["timeout"])
 
-            if "PROXY" in self.config and self.config["PROXY"]:
+            if self.config.get("PROXY"):
                 if isinstance(self.config["PROXY"], str):
                     proxy_defintion = {
                         "http": self.config["PROXY"],
@@ -239,7 +235,7 @@ class HttpSMSProvider(ISMSProvider, ConfigParsingMixin):
             if server_certificate:
                 pparams["verify"] = server_certificate
 
-            if "HEADERS" in self.config and self.config["HEADERS"]:
+            if self.config.get("HEADERS"):
                 pparams["headers"] = self.config["HEADERS"]
 
             # ------------------------------------------------------ --
@@ -262,19 +258,22 @@ class HttpSMSProvider(ISMSProvider, ConfigParsingMixin):
             requests.exceptions.Timeout,
             requests.exceptions.ReadTimeout,
             requests.exceptions.TooManyRedirects,
-        ) as exc:
+        ) as exx:
             log.error("HttpSMSProvider timed out")
-            raise ProviderNotAvailable("Failed to send SMS - timed out %r" % exc)
+            msg = f"Failed to send SMS - timed out {exx!r}"
+            raise ProviderNotAvailable(msg) from exx
 
-        except Exception as exc:
-            log.error("HttpSMSProvider %r", exc)
-            raise Exception("Failed to send SMS. %r" % exc)
+        except Exception as exx:
+            log.error("HttpSMSProvider %r", exx)
+            msg = f"Failed to send SMS. {exx!r}"
+            raise Exception(msg) from exx
 
         return ret
 
     def loadConfig(self, configDict):
         if not configDict:
-            raise Exception("missing configuration")
+            msg = "missing configuration"
+            raise Exception(msg)
 
         self.config = configDict
 

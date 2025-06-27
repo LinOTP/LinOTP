@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -24,17 +23,20 @@
 #    Contact: www.linotp.org
 #    Support: www.linotp.de
 
-from typing import Dict, List
+
+from typing import TYPE_CHECKING
 
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
 
 from linotp.app import LinOTPApp, create_app
 from linotp.lib.config import getFromConfig
 from linotp.lib.crypto.utils import crypt_password
-from linotp.model import db, setup_db
+from linotp.model import db
 from linotp.model.config import set_config
 from linotp.model.imported_user import ImportedUserSchema
+
+if TYPE_CHECKING:
+    from sqlalchemy.orm import Session
 
 
 class DuplicateUserError(Exception):
@@ -113,8 +115,8 @@ class LocalAdminResolver:
         try:
             self.session.add(user)
             self.session.commit()
-        except IntegrityError:
-            raise DuplicateUserError(username)
+        except IntegrityError as exx:
+            raise DuplicateUserError(username) from exx
 
     def update_user(
         self,
@@ -194,7 +196,7 @@ class LocalAdminResolver:
         self.session.delete(user)
         self.session.commit()
 
-    def list_users(self) -> List[Dict[str, str]]:
+    def list_users(self) -> list[dict[str, str]]:
         """list all local admin users
 
         Returns:
@@ -216,7 +218,7 @@ class LocalAdminResolver:
 
         return result
 
-    def get_user_info(self, username: str) -> Dict[str, str]:
+    def get_user_info(self, username: str) -> dict[str, str]:
         user = self._get_user(username)
         return {
             attr: getattr(user, attr)
@@ -244,7 +246,7 @@ class LocalAdminResolver:
     def _encrypt_password(self, password: str) -> str:
         return crypt_password(password)
 
-    def _get_keys_of_table(self) -> List[str]:
+    def _get_keys_of_table(self) -> list[str]:
         tablename = self.user_class.__tablename__
         return self.user_class.metadata.tables[tablename].c.keys()
 

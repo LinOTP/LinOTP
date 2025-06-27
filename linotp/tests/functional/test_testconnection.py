@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -35,9 +34,9 @@ is already known in LinOTP
 
 import json
 import logging
+from unittest.mock import patch
 
 import pytest
-from mock import patch
 
 from linotp.tests import TestController
 from linotp.tests.functional.test_orphaned import OrphandTestHelpers

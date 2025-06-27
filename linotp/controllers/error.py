@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -58,11 +57,11 @@ class ErrorController(BaseController):
 
         code = request.GET.get("code", request.POST.get("code", str(resp.status_int)))
 
-        page = error_document_template % dict(
-            prefix=request.environ.get("SCRIPT_NAME", ""),
-            code=escape(code),
-            message=content,
-        )
+        page = error_document_template % {
+            "prefix": request.environ.get("SCRIPT_NAME", ""),
+            "code": escape(code),
+            "message": content,
+        }
         return page
 
     @deprecated_methods(["POST"])
@@ -79,7 +78,7 @@ class ErrorController(BaseController):
         """Call Paste's FileApp (a WSGI application) to serve the file
         at the specified path
         """
-        request.environ["PATH_INFO"] = "/%s" % path
+        request.environ["PATH_INFO"] = f"/{path}"
         return (
             "<html><body>"
             "<p>Failed to forward to WSGI application (Pylons "

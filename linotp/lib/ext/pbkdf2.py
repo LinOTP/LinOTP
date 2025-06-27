@@ -50,9 +50,9 @@
 ###########################################################################
 
 
+import builtins
 import hmac
 import secrets
-import sys
 from base64 import b64encode as _b64encode
 from binascii import b2a_hex as _b2a_hex
 from hashlib import sha1
@@ -78,7 +78,7 @@ def isinteger(n):
 
 
 def callable(obj):
-    return hasattr(obj, "__call__")
+    return builtins.callable(obj)
 
 
 def b(s):
@@ -86,7 +86,7 @@ def b(s):
 
 
 def binxor(a, b):
-    return bytes([x ^ y for (x, y) in zip(a, b)])
+    return bytes([x ^ y for (x, y) in zip(a, b, strict=True)])
 
 
 def b64encode(data, chars="+/"):
@@ -100,7 +100,7 @@ def b2a_hex(s):
     return _b2a_hex(s).decode("us-ascii")
 
 
-class PBKDF2(object):
+class PBKDF2:
     """PBKDF2.py : PKCS#5 v2.0 Password-Based Key Derivation
 
     This implementation takes a passphrase and a salt (and optionally an
@@ -141,7 +141,8 @@ class PBKDF2(object):
     def read(self, _bytes):
         """Read the specified number of key bytes."""
         if self.closed:
-            raise ValueError("file-like object is closed")
+            msg = "file-like object is closed"
+            raise ValueError(msg)
 
         size = len(self.__buf)
         blocks = [self.__buf]
@@ -150,7 +151,8 @@ class PBKDF2(object):
             i += 1
             if i > _0xffffffffL or i < 1:
                 # We could return "" here, but
-                raise OverflowError("derived key too long")
+                msg = "derived key too long"
+                raise OverflowError(msg)
             block = self.__f(i)
             blocks.append(block)
             size += len(block)
@@ -178,21 +180,26 @@ class PBKDF2(object):
         if isunicode(passphrase):
             passphrase = passphrase.encode("UTF-8")
         elif not isbytes(passphrase):
-            raise TypeError("passphrase must be str or unicode")
+            msg = "passphrase must be str or unicode"
+            raise TypeError(msg)
         if isunicode(salt):
             salt = salt.encode("UTF-8")
         elif not isbytes(salt):
-            raise TypeError("salt must be str or unicode")
+            msg = "salt must be str or unicode"
+            raise TypeError(msg)
 
         # iterations must be an integer >= 1
         if not isinteger(iterations):
-            raise TypeError("iterations must be an integer")
+            msg = "iterations must be an integer"
+            raise TypeError(msg)
         if iterations < 1:
-            raise ValueError("iterations must be at least 1")
+            msg = "iterations must be at least 1"
+            raise ValueError(msg)
 
         # prf must be callable
         if not callable(prf):
-            raise TypeError("prf must be callable")
+            msg = "prf must be callable"
+            raise TypeError(msg)
 
         self.__passphrase = passphrase
         self.__salt = salt
@@ -233,14 +240,16 @@ def crypt(word, salt=None, iterations=None):
     elif isbytes(salt):
         salt = salt.decode("us-ascii")
     else:
-        raise TypeError("salt must be a string")
+        msg = "salt must be a string"
+        raise TypeError(msg)
 
     # word must be a string or unicode (in the latter case, we convert to
     # UTF-8)
     if isunicode(word):
         word = word.encode("UTF-8")
     elif not isbytes(word):
-        raise TypeError("word must be a string or unicode")
+        msg = "word must be a string or unicode"
+        raise TypeError(msg)
 
     # Try to extract the real salt and iteration count from the salt
     if salt.startswith("$p5k2$"):
@@ -249,23 +258,26 @@ def crypt(word, salt=None, iterations=None):
             iterations = 400
         else:
             converted = int(iterations, 16)
-            if iterations != "%x" % converted:  # lowercase hex, minimum digits
-                raise ValueError("Invalid salt")
+            if iterations != f"{converted:x}":  # lowercase hex, minimum digits
+                msg = "Invalid salt"
+                raise ValueError(msg)
             iterations = converted
             if not (iterations >= 1):
-                raise ValueError("Invalid salt")
+                msg = "Invalid salt"
+                raise ValueError(msg)
 
     # Make sure the salt matches the allowed character set
     allowed = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789./"
     for ch in salt:
         if ch not in allowed:
-            raise ValueError("Illegal character %r in salt" % (ch,))
+            msg = f"Illegal character {ch!r} in salt"
+            raise ValueError(msg)
 
     if iterations is None:
         iterations = 400
         salt = "$p5k2$$" + salt
     else:
-        salt = "$p5k2$%x$%s" % (iterations, salt)
+        salt = f"$p5k2${iterations:x}${salt}"
     rawhash = PBKDF2(word, salt, iterations).read(24)
     return salt + "$" + b64encode(rawhash, "./")
 

@@ -1,8 +1,10 @@
+import builtins
 import json
 import os
 import textwrap
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Callable, Type
+from typing import Any
 
 import click
 from flask import current_app
@@ -39,13 +41,9 @@ VALID_LOG_LEVELS = {"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"}
 class LinOTPConfigKeyError(KeyError):
     """Used for LinOTP configuration items with invalid names."""
 
-    pass
-
 
 class LinOTPConfigValueError(ValueError):
     """Used for out-of-range errors etc. with LinOTP configuration items."""
-
-    pass
 
 
 def check_int_in_range(min=None, max=None):
@@ -58,11 +56,11 @@ def check_int_in_range(min=None, max=None):
     def f(key, value):
         result = int(value)  # Raises an exception if `value` is not an `int`
         if min is not None and result < min:
-            raise LinOTPConfigValueError(
-                f"{key} is {result} but must be at least {min}"
-            )
+            msg = f"{key} is {result} but must be at least {min}"
+            raise LinOTPConfigValueError(msg)
         if max is not None and result > max:
-            raise LinOTPConfigValueError(f"{key} is {result} but must be at most {max}")
+            msg = f"{key} is {result} but must be at most {max}"
+            raise LinOTPConfigValueError(msg)
 
     if min is None and max is not None:
         f.__doc__ = f"value <= {max}"
@@ -73,10 +71,12 @@ def check_int_in_range(min=None, max=None):
     return f
 
 
-def check_json_schema(schema={}):
+def check_json_schema(schema: dict | None = None):
     """Factory function that will return a function that ensures that
     `value` agrees to the schema
     """
+    if schema is None:
+        schema = {}
     Draft4Validator.check_schema(schema)
 
     def f(key, value):
@@ -84,25 +84,25 @@ def check_json_schema(schema={}):
         if Draft4Validator(schema).is_valid(value):
             print("value agrees with schema")
         else:
-            raise LinOTPConfigValueError(
-                f"{value} does not agree with schema {schema}."
-            )
+            msg = f"{value} does not agree with schema {schema}."
+            raise LinOTPConfigValueError(msg)
 
     f.__doc__ = f"value should apply {schema}"
     return f
 
 
-def check_membership(allowed={}):
+def check_membership(allowed: dict | None = None):
     """Factory function that will return a function that ensures that
     `value` is contained in `allowed` (the set of allowed values).
     """
+    if allowed is None:
+        allowed = {}
     allowed_values = ", ".join(repr(s) for s in sorted(allowed))
 
     def f(key, value):
         if value not in allowed:
-            raise LinOTPConfigValueError(
-                f"{key} is {value} but must be one of {allowed_values}."
-            )
+            msg = f"{key} is {value} but must be one of {allowed_values}."
+            raise LinOTPConfigValueError(msg)
 
     f.__doc__ = f"value in {{{allowed_values}}}"
     return f
@@ -115,11 +115,10 @@ def check_absolute_pathname():
 
     def f(key, value):
         if not value or value[0] != "/":
-            raise LinOTPConfigValueError(
-                f"{key} must be an absolute path name but {value} is relative."
-            )
+            msg = f"{key} must be an absolute path name but {value} is relative."
+            raise LinOTPConfigValueError(msg)
 
-    f.__doc__ = f"value is an absolute path name"
+    f.__doc__ = "value is an absolute path name"
     return f
 
 
@@ -130,8 +129,8 @@ class ConfigItem:
     """
 
     name: str  # Name of the item
-    type: Type = str  # Type of the item
-    convert: Callable[[str], Type] = None  # Converts strings to type
+    type: type = str  # Type of the item
+    convert: Callable[[str], builtins.type] = None  # Converts strings to type
     validate: Callable[[str, Any], None] = None  # Checks if value is valid
     default: Any = None  # Default value of item
     help: str = ""  # Help message string
@@ -170,14 +169,15 @@ class ConfigSchema:
         item = self.schema.get(key, None)
         if item is None:
             if self.refuse_unknown:
-                raise LinOTPConfigKeyError(f"Unknown configuration item '{key}'")
+                msg = f"Unknown configuration item '{key}'"
+                raise LinOTPConfigKeyError(msg)
             return value
         # Make sure path-like items are strings, not `pathlib` paths.
         if key.endswith(("_DIR", "_FILE")):
             value = str(value)
         # If `value` is `str` but the schema wants non-`str`, do a
         # conversion, either using the function provided or the type itself.
-        if item.type != str and isinstance(value, str):
+        if item.type is not str and isinstance(value, str):
             value = (
                 item.convert(value) if item.convert is not None else item.type(value)
             )
@@ -191,7 +191,7 @@ class ConfigSchema:
         This is useful to populate the configuration with initial values
         without having to repeat any of the defaults.
         """
-        return dict((item.name, item.default) for item in self.schema.values())
+        return {item.name: item.default for item in self.schema.values()}
 
     def items(self):
         """Return the names and schema items of the schema as a dictionary
@@ -880,7 +880,7 @@ def _init_app(app):
 # schema-based setup outlined above. This helps us because (a) we know
 # what types our `ConfigItem` instances are supposed to have, so we can
 # specify everything as strings (e.g., in environment variables) and still
-# end up with `int`s in the actual settings (for an extreme – but cool –
+# end up with `int`s in the actual settings (for an extreme - but cool -
 # example, check out `LOG_CONFIG` above), and (b) it's a lot easier to
 # auto-generate commented sample configuration files from the schema than
 # it would be from Python code, so we save ourselves from getting into a

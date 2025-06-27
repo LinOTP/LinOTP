@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -32,9 +31,11 @@ Pytest fixtures for linotp tests
 
 import contextlib
 import copy
+import io
+import json
 import os
 import tempfile
-from typing import Callable, ContextManager, Iterator, List
+from collections.abc import Callable, Iterator
 from unittest.mock import patch
 
 import flask
@@ -42,7 +43,6 @@ import pytest
 from flask.globals import current_app
 from flask.testing import FlaskClient
 
-import linotp.app
 import linotp.controllers
 from linotp import app as app_py
 from linotp.app import LinOTPApp, create_app
@@ -50,6 +50,7 @@ from linotp.cli.init_cmd import create_audit_keys, create_secret_key
 from linotp.flap import setup_request_context
 from linotp.flap import tmpl_context as c
 from linotp.model import init_db_tables
+from linotp.model.local_admin_user import LocalAdminResolver
 
 from . import CompatibleTestResponse, TestController
 
@@ -101,10 +102,8 @@ def sqlalchemy_uri(request):
     uri = request.config.getoption("database_uri")
 
     # Prevent override through the environment
-    try:
+    with contextlib.suppress(KeyError):
         del os.environ["LINOTP_DATABASE_URI"]
-    except KeyError:
-        pass
     return uri
 
 
@@ -133,30 +132,31 @@ def base_app(tmp_path, request, sqlalchemy_uri, key_directory):
 
         # Skip test if incompatible with sqlite
 
-        if sqlalchemy_uri.startswith("sqlite:"):
-            if request.node.get_closest_marker("exclude_sqlite"):
-                pytest.skip("non sqlite database required for test")
+        if sqlalchemy_uri.startswith("sqlite:") and request.node.get_closest_marker(
+            "exclude_sqlite"
+        ):
+            pytest.skip("non sqlite database required for test")
 
         # ------------------------------------------------------------------ --
 
         # create the app with common test config
 
-        base_app_config = dict(
-            ENV="testing",  # doesn't make a huge difference for us
-            TESTING=True,
-            DATABASE_URI=sqlalchemy_uri,
-            AUDIT_DATABASE_URI="SHARED",
-            SQLALCHEMY_TRACK_MODIFICATIONS=False,
-            ROOT_DIR=tmp_path,
-            CACHE_DIR=tmp_path / "cache",
-            LOG_FILE_DIR=tmp_path / "logs",
-            AUDIT_PUBLIC_KEY_FILE=key_directory / "audit-public.pem",
-            AUDIT_PRIVATE_KEY_FILE=key_directory / "audit-private.pem",
-            SECRET_FILE=key_directory / "encKey",
-            LOG_LEVEL="DEBUG",
-            LOG_CONSOLE_LEVEL="DEBUG",
-            DISABLE_CONTROLLERS="",
-        )
+        base_app_config = {
+            "ENV": "testing",  # doesn't make a huge difference for us
+            "TESTING": True,
+            "DATABASE_URI": sqlalchemy_uri,
+            "AUDIT_DATABASE_URI": "SHARED",
+            "SQLALCHEMY_TRACK_MODIFICATIONS": False,
+            "ROOT_DIR": tmp_path,
+            "CACHE_DIR": tmp_path / "cache",
+            "LOG_FILE_DIR": tmp_path / "logs",
+            "AUDIT_PUBLIC_KEY_FILE": key_directory / "audit-public.pem",
+            "AUDIT_PRIVATE_KEY_FILE": key_directory / "audit-private.pem",
+            "SECRET_FILE": key_directory / "encKey",
+            "LOG_LEVEL": "DEBUG",
+            "LOG_CONSOLE_LEVEL": "DEBUG",
+            "DISABLE_CONTROLLERS": "",
+        }
 
         config = request.node.get_closest_marker("app_config")
         if config is not None:
@@ -295,7 +295,7 @@ def set_policy(adminclient):
 @pytest.fixture
 def scoped_authclient(
     client: FlaskClient,
-) -> Callable[[bool, str], ContextManager[FlaskClient]]:
+) -> Callable[[bool, str], contextlib.AbstractContextManager[FlaskClient]]:
     """This fixture returns a authentication client of type FlaskClient.
     With the parameter verify_jwt the jwt_check can be overwirtten, which will
     disable the validation of the request. The request will be done in the
@@ -384,7 +384,7 @@ class ResolverParams:
 
 def _create_realm(
     realm: str,
-    resolvers: List[str],
+    resolvers: list[str],
     adminclient: FlaskClient,
 ) -> CompatibleTestResponse:
     """
@@ -447,9 +447,6 @@ def _create_resolver(
 def create_managed_resolvers(
     scoped_authclient: Callable[..., FlaskClient],
 ) -> Callable:
-    import io
-    import json
-
     def inner_fucntion(
         file_name: str = "def-passwd-plain.csv",
         resolver_name: str = "managed_resolver",
@@ -459,7 +456,7 @@ def create_managed_resolvers(
 
         def_passwd_file = os.path.join(fixture_path, file_name)
 
-        with io.open(def_passwd_file, "r", encoding="utf-8") as f:
+        with open(def_passwd_file, encoding="utf-8") as f:
             content = f.read()
 
         params = {
@@ -523,8 +520,6 @@ def create_common_resolvers(
         for resolver_param in resolver_params:
             _create_resolver(resolver_params=resolver_param, adminclient=client)
 
-        from linotp.model.local_admin_user import LocalAdminResolver
-
         local_admin_resoler = LocalAdminResolver(current_app)
 
         local_admin_resoler.add_user("nimda", "Test123!")
@@ -584,7 +579,7 @@ def create_common_realms(scoped_authclient: Callable) -> None:
         assert response.json["result"]["status"] is True
         realms = response.json["result"]["value"]
 
-        lookup_realm = set(["def_realm", "dom_realm", "mixed_realm"])
+        lookup_realm = {"def_realm", "dom_realm", "mixed_realm"}
         assert lookup_realm == set(realms).intersection(lookup_realm)
         assert "def_realm" in realms
         assert "default" in realms["def_realm"]

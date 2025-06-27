@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -30,7 +29,6 @@
 Test reporting in userservice controller
 """
 
-from linotp.lib.user import User
 from linotp.model.reporting import Reporting
 from linotp.tests import TestController
 from linotp.tests.functional.test_reporting import DBSession
@@ -69,7 +67,7 @@ class TestUserserviceReporting(TestController):
         parameters = {"serial": serial, "type": "spass", "pin": pin}
         return self.init_token(parameters)
 
-    def create_reporting_policy(self, policy_params: dict = None):
+    def create_reporting_policy(self, policy_params: dict | None = None):
         policy_params = policy_params or {}
         params = {
             "name": policy_params.get("name", "reporting_policy"),
@@ -101,14 +99,14 @@ class TestUserserviceReporting(TestController):
             "delete",
             "finishocra2token",
         ]:
-            response = self.client.post(
+            _response = self.client.post(
                 f"/userservice/{action}", data={"serial": serial}
             )
 
             # verify no reporting was triggered
             with DBSession() as session:
                 entries = session.query(Reporting).all()
-                assert [] == entries, action
+                assert entries == [], action
 
     def test_authorized_request_does_trigger_reporting_userservice_controller(
         self,
@@ -138,18 +136,18 @@ class TestUserserviceReporting(TestController):
             "realm": "*",
             "active": True,
         }
-        response = self.make_system_request("setPolicy", params)
+        _response = self.make_system_request("setPolicy", params)
 
         # trigger action
         for action in actions_to_test:
-            response = self.make_userselfservice_request(
+            _response = self.make_userselfservice_request(
                 action, params={"serial": serial}, auth_user=auth_user
             )
 
             # verify no reporting was triggered
             with DBSession() as session:
                 entries = session.query(Reporting).all()
-                assert 5 == len(entries), action
+                assert len(entries) == 5, action
 
                 # Clean up reporting and Tokens
                 session.query(Reporting).delete()
@@ -177,11 +175,11 @@ class TestUserserviceReporting(TestController):
 
         # trigger action that would trigger reporting pre LINOTP-2084
         for action in actions_to_test:
-            response = self.make_userselfservice_request(
+            _response = self.make_userselfservice_request(
                 action, params={"serial": serial}, auth_user=auth_user
             )
 
             # verify no reporting was triggered
             with DBSession() as session:
                 entries = session.query(Reporting).all()
-                assert [] == entries, action
+                assert entries == [], action

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -31,11 +30,9 @@
 import json
 import logging
 import os
+from unittest.mock import patch
 
 import pytest
-import sqlalchemy
-from mock import patch
-from sqlalchemy import engine_from_config
 from sqlalchemy.engine import create_engine
 
 from linotp.flap import config
@@ -48,13 +45,11 @@ class TestResolver(TestController):
     def setUp(self):
         TestController.setUp(self)
         self.create_common_resolvers()
-        return
 
     def tearDown(self):
         TestController.tearDown(self)
         self.delete_all_realms()
         self.delete_all_resolvers()
-        return
 
     def define_ldap_resolver(self, name, params=None):
         """"""
@@ -102,7 +97,7 @@ class TestResolver(TestController):
 
         server = db_url.host
         if db_url.port:
-            server = "%s:%s" % (db_url.host, db_url.port)
+            server = f"{db_url.host}:{db_url.port}"
 
         if not user_mapping:
             user_mapping = {}
@@ -175,9 +170,7 @@ class TestResolver(TestController):
         # and check that it is not available
 
         response = self.make_system_request("getResolvers", params={})
-        assert not ("LDA2" in response), response
-
-        return
+        assert "LDA2" not in response, response
 
     def test_resolver_duplicate(self):
         """
@@ -211,8 +204,6 @@ class TestResolver(TestController):
         data = jresp.get("result", {}).get("value", {}).get("data", {})
         assert "fileName" in data, response
         assert "Server" not in data, response
-
-        return
 
     def test_rename_resolver(self):
         """
@@ -436,8 +427,6 @@ class TestResolver(TestController):
         params = {"resolver": "fake_ldap"}
         response = self.make_system_request("delResolver", params)
         assert '"value": true' in response.body
-
-        return
 
 
 # eof #

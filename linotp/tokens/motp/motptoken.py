@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -122,9 +121,8 @@ class MotpTokenClass(HmacTokenClass):
 
         if key and key in res:
             ret = res.get(key)
-        else:
-            if ret == "all":
-                ret = res
+        elif ret == "all":
+            ret = res
 
         return ret
 
@@ -137,8 +135,6 @@ class MotpTokenClass(HmacTokenClass):
         """
         HmacTokenClass.__init__(self, a_token)
         self.setType("mOTP")
-
-        return
 
     def update(self, param, reset_failcount=True):
         """
@@ -156,19 +152,19 @@ class MotpTokenClass(HmacTokenClass):
             param["otpkey"] = secrets.token_hex(MOTP_KEY_BYTES).upper()
 
         if "otpkey" not in param:
-            raise ParameterError("Missing parameter: 'otpkey'")
+            msg = "Missing parameter: 'otpkey'"
+            raise ParameterError(msg)
 
         # motp token specific
         try:
             otpPin = param["otppin"]
-        except KeyError:
-            raise ParameterError("Missing parameter: 'otppin'")
+        except KeyError as exx:
+            msg = "Missing parameter: 'otppin'"
+            raise ParameterError(msg) from exx
 
         self.setUserPin(otpPin)
 
         HmacTokenClass.update(self, param, reset_failcount)
-
-        return
 
     def checkOtp(self, anOtpVal, counter, window, options=None):
         """
@@ -206,10 +202,7 @@ class MotpTokenClass(HmacTokenClass):
 
         if res != -1:
             res = res - 1  # later on this will be incremented by 1
-        if res == -1:
-            msg = "verification failed"
-        else:
-            msg = "verifiction was successful"
+        msg = "verification failed" if res == -1 else "verifiction was successful"
 
         log.debug("[checkOtp] %s :res %r", msg, res)
         return res

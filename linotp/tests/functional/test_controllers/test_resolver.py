@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -52,7 +51,6 @@ class TestResolver(TestController):
         self.delete_all_realms()
         self.delete_all_resolvers()
         TestController.tearDown(self)
-        return
 
     def test_resolver_result(self):
         """verify that the response of resolvers e contains realms

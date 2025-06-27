@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -60,8 +59,6 @@ class TestUserSearchExpression(unittest.TestCase):
 
             assert "match" not in serials
 
-        return
-
     def test_matching_expressions(self):
         """test user search expression matching"""
 
@@ -79,5 +76,3 @@ class TestUserSearchExpression(unittest.TestCase):
             serials = _user_expression_match(user_search, list(token_user_dict.items()))
 
             assert "match" in serials, user_search
-
-        return

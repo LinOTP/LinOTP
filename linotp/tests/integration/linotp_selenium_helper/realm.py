@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,9 +26,6 @@
 """Contains Realm class"""
 
 import logging
-import re
-import time
-from typing import List, Union
 
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
@@ -55,7 +51,7 @@ class EditRealmDialog(ManageDialog):
     edit_save_button_id = "button_editrealms_save"
 
     def __init__(self, manage):
-        super(EditRealmDialog, self).__init__(manage, "dialog_edit_realms")
+        super().__init__(manage, "dialog_edit_realms")
 
     @property
     def realm_dialog(self):
@@ -187,7 +183,7 @@ class RealmManager(ManageDialog):
     def realm_names(self):
         return [r.name for r in self.realms]
 
-    def get_realms_list(self) -> List[str]:
+    def get_realms_list(self) -> list[str]:
         """Get a list of realm names defined using Selenium.
 
         If the dialog was already opened, it will be closed beforehand to
@@ -200,11 +196,11 @@ class RealmManager(ManageDialog):
 
         return self.realm_names
 
-    def get_realms_via_api(self) -> List[str]:
+    def get_realms_via_api(self) -> list[str]:
         """Get all realms via API call."""
 
         # Get the realms in json format
-        realms: List[str] = self.manage.admin_api_call("system/getRealms")
+        realms: list[str] = self.manage.admin_api_call("system/getRealms")
         return realms
 
     def delete_realm(self, name: str):
@@ -233,8 +229,7 @@ class RealmManager(ManageDialog):
         # Reload realms
         self.reparse()
         assert len(self.realms) == realm_count - 1, (
-            "The number of realms shown should decrease after deletion. Before: %s, after:%s"
-            % (realm_count, len(self.realms))
+            f"The number of realms shown should decrease after deletion. Before: {realm_count}, after:{len(self.realms)}"
         )
 
     def delete_realm_via_api(self, realm_name: str) -> None:
@@ -246,7 +241,8 @@ class RealmManager(ManageDialog):
 
         realms = self.get_realms_via_api()
         if realm_name.lower() not in realms:
-            raise RealmException("realm does not exist")
+            msg = "realm does not exist"
+            raise RealmException(msg)
 
         self.manage.admin_api_call("system/delRealm", {"realm": realm_name})
 
@@ -339,19 +335,20 @@ class RealmManager(ManageDialog):
                 ",".join(old_realms),
                 ".".join(new_realm_list),
             )
-            assert False, "Realm was not sucessfully created"
+            msg = "Realm was not sucessfully created"
+            raise AssertionError(msg)
 
     def set_default(self, name):
         self.open()
         self.reparse()
-        realms = self.get_realms_list()
+        _realms = self.get_realms_list()
 
         self.select_realm(name)
         self.find_by_id(self.set_default_button_id).click()
 
         self.manage.wait_for_waiting_finished()
 
-    def create_via_api(self, name: str, resolvers: Union[List[str], str]) -> None:
+    def create_via_api(self, name: str, resolvers: list[str] | str) -> None:
         """Create a new realm.
 
         :param name: - The name of the new realm to create
@@ -360,5 +357,5 @@ class RealmManager(ManageDialog):
         if isinstance(resolvers, list):
             resolvers = ",".join(resolvers)
 
-        params = dict(realm=name, resolvers=resolvers)
+        params = {"realm": name, "resolvers": resolvers}
         self.manage.admin_api_call("system/setRealm", params)

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -33,16 +32,14 @@ Test token import via UI
 
 import itertools
 import os
-from time import sleep
 
 import pytest
-from linotp_selenium_helper.manage_ui import AlertBoxHandler, ManageUi
+from linotp_selenium_helper.manage_ui import AlertBoxHandler
 from linotp_selenium_helper.token_import import (
     TokenImportAladdin,
     TokenImportError,
     TokenImportOATH,
 )
-from selenium.webdriver.common.by import By
 
 # All the tests in this file make use of the musicians realm as default
 pytestmark = pytest.mark.usefixtures("musicians_realm")
@@ -141,13 +138,13 @@ def test_token_import_oath_csv_invalid_seed(
     oath_csv_path = os.path.join(
         testcase.manage_ui.test_data_dir, "oath_tokens_bad_seed.csv"
     )
-    token_serials = (
+    _token_serials = (
         "tok1",
         "tok2",
         "tok3",
         "tok4",
     )
-    token_types = ["HMAC", "TOTP", "HMAC", "TOTP"]
+    _token_types = ["HMAC", "TOTP", "HMAC", "TOTP"]
     with pytest.raises(TokenImportError) as exc_info:
         oathcsv_importer.do_import(file_path=oath_csv_path)
 
@@ -165,15 +162,13 @@ def test_token_import_oath_csv_invalid_seed(
 
     # check that no token was imported
     tokens_after_import_attempt = testcase.manage_ui.token_view._get_token_list()
-    tokens_at_first == tokens_after_import_attempt
+    assert tokens_at_first == tokens_after_import_attempt
 
 
 def assert_tokens_are_in_grid(
     manage_ui,
     token_serials,
-    token_types=[
-        "HMAC",
-    ],
+    token_types: list | None = None,
 ):
     """
     Checks all the tokens in the list and their corresponding
@@ -184,10 +179,12 @@ def assert_tokens_are_in_grid(
     :param token_types: list of corresponding token types or only one token type for all cases
     """
 
+    if token_types is None:
+        token_types = ["HMAC"]
     if len(token_types) == 1 or isinstance(token_types, str):
         token_iterator = zip(token_serials, itertools.repeat(token_types))
     else:
-        token_iterator = zip(token_serials, token_types)
+        token_iterator = zip(token_serials, token_types, strict=True)
 
     tokenview = manage_ui.token_view
     grid = tokenview.get_grid_contents()

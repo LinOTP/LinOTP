@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -51,7 +50,7 @@ class dpwOtp:
         self.digits = digits
 
     def __enter__(self):
-        class dpwOtpImpl(object):
+        class dpwOtpImpl:
             """
             helper class for calculating day passwords. (Tagespasswort)
             """
@@ -71,7 +70,7 @@ class dpwOtp:
 
                 input_data = self.key + date_string.encode("utf-8")
 
-                md1 = md5(input_data).digest().hex()  # nosec B324
+                md1 = md5(input_data).hexdigest()  # nosec B324
                 md = md1[len(md1) - self.digits :]
                 otp = int(md, 16)
                 otp = str(otp)
@@ -188,16 +187,15 @@ class TagespasswortTokenClass(TokenClass):
 
         if key and key in res:
             ret = res.get(key)
-        else:
-            if ret == "all":
-                ret = res
+        elif ret == "all":
+            ret = res
         return ret
 
     def update(self, param):
         # check for the required parameters
-        if self.hKeyRequired is True:
-            if "otpkey" not in param:
-                raise ParameterError("Missing parameter: 'otpkey'", id=905)
+        if self.hKeyRequired is True and "otpkey" not in param:
+            msg = "Missing parameter: 'otpkey'"
+            raise ParameterError(msg, id=905)
 
         TokenClass.update(self, param)
 
@@ -248,10 +246,10 @@ class TagespasswortTokenClass(TokenClass):
             otpval = dpw.getOtp(date_string)
 
         pin = self.getPin()
-        combined = "%s%s" % (otpval, pin)
+        combined = f"{otpval}{pin}"
 
         if request_context["Config"].get("PrependPin") == "True":
-            combined = "%s%s" % (pin, otpval)
+            combined = f"{pin}{otpval}"
 
         return (1, pin, otpval, combined)
 
@@ -288,9 +286,12 @@ class TagespasswortTokenClass(TokenClass):
                 elif isinstance(curTime, str):
                     now = datetime.strptime(curTime, "%Y-%m-%d %H:%M:%S.%f")
                 else:
-                    raise TokenAdminError(
+                    msg = (
                         "[get_multi_otp] wrong curTime type:"
-                        " %s (%s)" % (type(curTime), curTime),
+                        f" {type(curTime)} ({curTime})"
+                    )
+                    raise TokenAdminError(
+                        msg,
                         id=2001,
                     )
 

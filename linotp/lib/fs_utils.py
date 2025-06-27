@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -63,7 +62,8 @@ def ensure_dir(
     """
 
     if (not conf_name.endswith("_DIR")) or (conf_name not in app.config):
-        raise KeyError(f"Invalid LinOTP configuration setting '{conf_name}'")
+        msg = f"Invalid LinOTP configuration setting '{conf_name}'"
+        raise KeyError(msg)
 
     base_name = app.config[conf_name]
     if not os.path.exists(base_name):
@@ -84,13 +84,13 @@ def ensure_dir(
         if not os.path.isdir(dir_name):
             try:
                 os.makedirs(dir_name, mode=mode, exist_ok=True)
-            except OSError as ex:
+            except OSError as exx:
                 raise OSError(
-                    ex.errno,
+                    exx.errno,
                     f"Error creating {what} directory '{dir_name}': "
-                    f"{ex.strerror} ({ex.errno})",
+                    f"{exx.strerror} ({exx.errno})",
                     dir_name,
-                )
+                ) from exx
         return dir_name
 
     return base_name

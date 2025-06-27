@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -32,8 +31,6 @@ import os
 import stat
 import subprocess
 from pathlib import Path
-from typing import List
-from unittest.mock import patch
 
 import click.termui
 import pytest
@@ -43,6 +40,7 @@ import linotp.cli.init_cmd as c
 from linotp import __version__
 from linotp.app import LinOTPApp
 from linotp.cli import Echo, get_backup_filename, main
+from linotp.lib.security.default import DefaultSecurityModule
 from linotp.model import db, init_db_tables, setup_db
 from linotp.model.config import Config
 from linotp.model.token import Token
@@ -171,14 +169,13 @@ def test_make_backup(
         assert (tmp_path / expected_name).exists()
         assert (tmp_path / expected_name).read_text() == data
         assert (
-            f"Moved existing test file to {str(tmp_path / expected_name)}"
+            f"Moved existing test file to {tmp_path / expected_name!s}"
         ) in captured.err
     else:  # expecting failure
         assert (tmp_path / filename).exists()
         assert not (tmp_path / expected_name).exists()
         assert (
-            f"Error moving test file to {str(tmp_path / expected_name)}: "
-            in captured.err
+            f"Error moving test file to {tmp_path / expected_name!s}: " in captured.err
         )
 
 
@@ -246,7 +243,8 @@ def init_db_tables_ok(app, erase_all_data):
 
 
 def init_db_tables_exception(app, erase_all_data):
-    raise Exception("Generic exception")
+    msg = "Generic exception"
+    raise Exception(msg)
 
 
 @pytest.mark.parametrize(
@@ -344,8 +342,6 @@ def test_padding_migration(app, base_app, engine):
     values should be the same
 
     """
-
-    from linotp.lib.security.default import DefaultSecurityModule
 
     class MockSecurityModule(DefaultSecurityModule):
         @staticmethod
@@ -569,11 +565,13 @@ def test_create_secret_key(monkeypatch, tmp_path, data, content):
 def create_secret_key_ok(filename, data=""):
     if not data:
         data = SECRET_KEY
-    open(filename, "wb").write(data)
+    with open(filename, "wb") as f:
+        f.write(data)
 
 
 def create_secret_key_exception(filename, data=""):
-    raise OSError("Generic OS-level exception")
+    msg = "Generic OS-level exception"
+    raise OSError(msg)
 
 
 # Replaces `test_enckey.test_file_not_exists()`,
@@ -682,14 +680,15 @@ def test_init_enc_key_cmd(
     if makes_file:
         assert secret_file_name.exists()
         assert secret_file_name.read_bytes() == SECRET_KEY
-    else:
-        if secret_file_name.exists() and secret_file_name.read_bytes() == SECRET_KEY:  # noqa: E129
-            assert False, "secret file was created but shouldn't have been"
-        elif has_file and secret_file_name.exists():
-            if secret_file_name.read_bytes() == ZERO_KEY:
-                pass  # still the old file, this is OK
-            else:
-                assert False, "shouldn't touch secret file but it was changed"
+    elif secret_file_name.exists() and secret_file_name.read_bytes() == SECRET_KEY:
+        msg = "secret file was created but shouldn't have been"
+        raise AssertionError(msg)
+    elif has_file and secret_file_name.exists():
+        if secret_file_name.read_bytes() == ZERO_KEY:
+            pass  # still the old file, this is OK
+        else:
+            msg = "shouldn't touch secret file but it was changed"
+            raise AssertionError(msg)
 
 
 def test_init_enc_key_cmd_failed_backup(app, tmp_path, runner):
@@ -836,7 +835,8 @@ def test_init_audit_keys_cmd_failed_backup(
     app, audit_keys: AuditKeys, runner, monkeypatch
 ):
     def os_replace_exception(src, dst, **kwargs):
-        raise OSError("Generic OS-level exception")
+        msg = "Generic OS-level exception"
+        raise OSError(msg)
 
     monkeypatch.setattr(os, "replace", os_replace_exception)
 
@@ -856,7 +856,7 @@ def test_init_audit_keys_cmd_failed_openssl(
 
         exit_code = 999
 
-    def mock_run_command(task: str, cmd: List[str], **kargs):
+    def mock_run_command(task: str, cmd: list[str], **kargs):
         assert cmd[0] == "openssl"
         return mock_exit()
 

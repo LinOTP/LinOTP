@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -30,10 +29,12 @@ manage controller - In provides the web gui management interface
 """
 
 import base64
+import contextlib
 import json
 import logging
 import os
 
+import flask
 from flask import current_app, g, request
 from flask_babel import gettext as _
 from mako.exceptions import CompileException
@@ -60,7 +61,6 @@ from linotp.lib.type_utils import boolean
 from linotp.lib.user import (
     User,
     get_userinfo,
-    getUserFromParam,
     getUserFromRequest,
     getUserList,
 )
@@ -226,9 +226,8 @@ class ManageController(BaseController):
         render the tokentype info mako
         """
         c.title = "TokenTypeInfo"
-        ttinfo = [tok for tok in tokenclass_registry.keys()]
-        for tok in tokenclass_registry:
-            tclass_object = tokenclass_registry.get(tok)
+        ttinfo = list(tokenclass_registry.keys())
+        for tclass_object in tokenclass_registry.values():
             if hasattr(tclass_object, "getClassType"):
                 ii = tclass_object.getClassType()
                 ttinfo.append(ii)
@@ -350,9 +349,8 @@ class ManageController(BaseController):
 
             # check if we only want to see ONE realm or see all realms we are
             # allowerd to see.
-            if filter_realm:
-                if filter_realm in filterRealm or "*" in filterRealm:
-                    filterRealm = [filter_realm]
+            if filter_realm and (filter_realm in filterRealm or "*" in filterRealm):
+                filterRealm = [filter_realm]
 
             log.debug(
                 "[tokenview_flexi] admin >%s< may display the following realms: %s",
@@ -516,14 +514,14 @@ class ManageController(BaseController):
                     {
                         "id": u["username"],
                         "cell": [
-                            (u["username"]) if "username" in u else (""),
+                            u.get("username", ""),
                             (resolver_display),
-                            (u["surname"]) if "surname" in u else (""),
-                            (u["givenname"]) if "givenname" in u else (""),
-                            (u["email"]) if "email" in u else (""),
-                            (u["mobile"]) if "mobile" in u else (""),
-                            (u["phone"]) if "phone" in u else (""),
-                            (u["userid"]) if "userid" in u else (""),
+                            u.get("surname", ""),
+                            u.get("givenname", ""),
+                            u.get("email", ""),
+                            u.get("mobile", ""),
+                            u.get("phone", ""),
+                            u.get("userid", ""),
                         ],
                     }
                 )
@@ -596,8 +594,9 @@ class ManageController(BaseController):
         try:
             try:
                 serial = param["serial"]
-            except KeyError:
-                raise ParameterError("Missing parameter: 'serial'")
+            except KeyError as exx:
+                msg = "Missing parameter: 'serial'"
+                raise ParameterError(msg) from exx
 
             filterRealm = ""
             # check admin authorization
@@ -622,14 +621,12 @@ class ManageController(BaseController):
             c.tokeninfo = token_info
 
             for k in c.tokeninfo:
-                if "LinOtp.TokenInfo" == k:
-                    try:
-                        # Try to convert string to Dictionary
+                if k == "LinOtp.TokenInfo":
+                    # Try to convert string to Dictionary
+                    with contextlib.suppress(BaseException):
                         c.tokeninfo["LinOtp.TokenInfo"] = json.loads(
                             c.tokeninfo["LinOtp.TokenInfo"]
                         )
-                    except BaseException:
-                        pass
 
             return render("/manage/tokeninfo.mako").decode("utf-8")
 
@@ -658,7 +655,6 @@ class ManageController(BaseController):
             directory = config.get("linotpManual.Directory", "/usr/share/doc/linotp")
             default_filename = config.get("linotpManual.File", "LinOTP_Manual-en.pdf")
             mimetype = "application/pdf"
-            headers = []
 
             # FIXME: Compression is better done using
             # `Content-Encoding` (ideally farther up the WSGI stack).
@@ -670,7 +666,7 @@ class ManageController(BaseController):
             id = id or default_filename
 
             r = flask.send_file(
-                "%s/%s" % (directory, id),
+                f"{directory}/{id}",
                 mimetype=mimetype,
                 as_attachment=True,
                 attachment_filename=default_filename,
@@ -771,13 +767,13 @@ def _getTokenTypeConfig(section="config"):
                 t_html = render(os.path.sep + tab.get("html")).decode("utf-8")
                 t_html = remove_empty_lines(t_html)
 
-            except CompileException as cex:
+            except CompileException as exx:
                 log.error(
                     "[_getTokenTypeConfig] compile error while processing %r.%r:",
                     tok,
                     section,
                 )
-                raise Exception(cex)
+                raise Exception(exx) from exx
 
             except Exception as exx:
                 log.debug("no config for token type %r (%r)", tok, exx)

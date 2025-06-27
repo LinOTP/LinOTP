@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -29,9 +28,7 @@ import hashlib
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest  # noqa: F401
-
-from linotp import __version__ as linotp_version
+import pytest
 
 # ----------------------------------------------------------------------
 # Tests for cookie settings.
@@ -76,7 +73,8 @@ def test_session_cookie_secure(base_app, client, secure_cookies, auth_type):
             assert cookie.secure is secure_cookies
             break
     else:
-        assert False, "no jwt access token cookie found"
+        msg = "no jwt access token cookie found"
+        raise AssertionError(msg)
 
 
 @pytest.mark.skip(reason="JWT_SECRET_KEY as configurable item is obsolete in LinOTP")

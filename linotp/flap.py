@@ -1,6 +1,5 @@
 # Pylons-to-Flask porting scaffold.
 
-# noqa pylint: disable=unused-import,invalid-name
 
 import logging
 import os.path
@@ -29,12 +28,12 @@ error_document_template = """
     """
 
 
-class RequestContextProxy(object):
+class RequestContextProxy:
     def __getattr__(self, name):
         try:
             return flask.g.request_context.__getitem__(name)
         except KeyError as exx:
-            raise AttributeError(exx)
+            raise AttributeError(exx) from exx
 
     def get(self, name, default=None):
         return flask.g.request_context.get(name, default)
@@ -57,8 +56,8 @@ class RequestContextProxy(object):
         return flask.g.request_context.items()
 
     def __repr__(self, *_args, **_kwargs):
-        repr_dict = {key: value for key, value in flask.g.request_context.items()}
-        return "%r" % repr_dict
+        repr_dict = dict(flask.g.request_context.items())
+        return f"{repr_dict!r}"
 
 
 tmpl_context = RequestContextProxy()

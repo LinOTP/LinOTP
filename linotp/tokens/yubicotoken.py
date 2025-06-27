@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -74,17 +73,14 @@ LINOTP_DOC_LINK = (
 
 YUBICO_GETAPI_LINK = "https://upgrade.yubico.com/getapikey/"
 
-APIKEY_UNCONFIGURED_ERROR = """
+APIKEY_UNCONFIGURED_ERROR = f"""
 You need to provide an API key and ID for Yubico support.
 Please register your own apiKey and apiId at the Yubico web site:"
-  %s
+  {YUBICO_GETAPI_LINK}
 Configure apiKey and apiId in the LinOTP token-config dialog.
 Have a look at:
-  %s"
-""" % (
-    YUBICO_GETAPI_LINK,
-    LINOTP_DOC_LINK,
-)
+  {LINOTP_DOC_LINK}
+"""
 
 
 class YubicoApikeyException(Exception):
@@ -175,21 +171,20 @@ class YubicoTokenClass(TokenClass):
 
         if key is not None and key in res:
             ret = res.get(key)
-        else:
-            if ret == "all":
-                ret = res
+        elif ret == "all":
+            ret = res
         return ret
 
     def update(self, param):
         try:
             tokenid = param["yubico.tokenid"]
-        except KeyError:
-            raise ParameterError("Missing parameter: 'yubico.tokenid'")
+        except KeyError as exx:
+            msg = "Missing parameter: 'yubico.tokenid'"
+            raise ParameterError(msg) from exx
 
         if len(tokenid) < YUBICO_LEN_ID:
-            raise Exception(
-                "The YubiKey token ID needs to be %i characters long!" % YUBICO_LEN_ID
-            )
+            msg = f"The YubiKey token ID needs to be {YUBICO_LEN_ID} characters long!"
+            raise Exception(msg)
 
         if len(tokenid) > YUBICO_LEN_ID:
             tokenid = tokenid[:YUBICO_LEN_ID]
@@ -201,13 +196,12 @@ class YubicoTokenClass(TokenClass):
 
         self.addToTokenInfo("yubico.tokenid", self.tokenid)
 
-        return
-
     def resync(self, otp1, otp2, options=None):
         """
         resync of yubico tokens - not supported!!
         """
-        raise Exception("YUBICO token resync is not managed by LinOTP.")
+        msg = "YUBICO token resync is not managed by LinOTP."
+        raise Exception(msg)
 
     def checkOtp(self, anOtpVal, counter, window, options=None):
         """
@@ -229,16 +223,16 @@ class YubicoTokenClass(TokenClass):
             third_feb_2019 = datetime.datetime(year=2019, month=2, day=3)
 
             if datetime.datetime.now() >= third_feb_2019:
-                raise Exception(
-                    "Usage of YUBICO_URL %r is deprecated!! " % DEPRECATED_YUBICO_URL
-                )
+                msg = f"Usage of YUBICO_URL {DEPRECATED_YUBICO_URL!r} is deprecated!! "
+                raise Exception(msg)
 
         apiId = getFromConfig("yubico.id")
         apiKey = getFromConfig("yubico.secret")
 
         if not apiKey or not apiId:
             log.error(APIKEY_UNCONFIGURED_ERROR)
-            raise YubicoApikeyException("Yubico apiKey or apiId not configured!")
+            msg = "Yubico apiKey or apiId not configured!"
+            raise YubicoApikeyException(msg)
 
         tokenid = self.getFromTokenInfo("yubico.tokenid")
         if len(anOtpVal) < 12:
@@ -266,7 +260,7 @@ class YubicoTokenClass(TokenClass):
 
         for uri in next(res_scheduler):
             try:
-                URL = "%s?%s" % (uri, p)
+                URL = f"{uri}?{p}"
 
                 response = requests.get(URL, **pparams)
 
@@ -285,7 +279,7 @@ class YubicoTokenClass(TokenClass):
                 ReadTimeout,
                 ConnectionError,
                 TooManyRedirects,
-            ) as exx:
+            ):
                 log.error("resource %r not available!", uri)
 
                 # mark the url as blocked
@@ -308,9 +302,8 @@ class YubicoTokenClass(TokenClass):
 
         log.error("non of the resources %r available!", yubico_urls)
 
-        raise AllResourcesUnavailable(
-            "non of the resources %r available!" % yubico_urls
-        )
+        msg = f"non of the resources {yubico_urls!r} available!"
+        raise AllResourcesUnavailable(msg)
 
     def _check_yubico_response(self, nonce, apiKey, rv):
         """

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -123,9 +122,8 @@ class PasswordTokenClass(HmacTokenClass):
 
         if key and key in res:
             ret = res.get(key)
-        else:
-            if ret == "all":
-                ret = res
+        elif ret == "all":
+            ret = res
         return ret
 
     def update(self, param):
@@ -141,7 +139,8 @@ class PasswordTokenClass(HmacTokenClass):
         """
 
         if "otpkey" not in param:
-            raise ParameterError("Missing Parameter 'otpkey'!")
+            msg = "Missing Parameter 'otpkey'!"
+            raise ParameterError(msg)
 
         # mark this pw token as usable exactly once
         if "onetime" in param:
@@ -175,7 +174,6 @@ class PasswordTokenClass(HmacTokenClass):
         :param seed: a string that should be checked for
         validity as a seed (aka otpkey)
         """
-        pass
 
     def checkOtp(self, anOtpVal, counter, window, options=None):
         """

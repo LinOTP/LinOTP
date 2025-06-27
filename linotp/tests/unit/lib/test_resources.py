@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #   LinOTP - the open source solution for two factor authentication
 #   Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -101,8 +100,6 @@ class TestResourceScheduler(unittest.TestCase):
             assert "uri://2" in uris
             assert "uri://3" in uris
 
-        return
-
     def test_uris_retry(self):
         """
         test all uris will be n-times tried
@@ -142,8 +139,6 @@ class TestResourceScheduler(unittest.TestCase):
             assert value is None
             assert b_ind == 0
             assert b_count == 0
-
-        return
 
     def test_blocking_one_uri(self):
         """
@@ -226,8 +221,6 @@ class TestResourceScheduler(unittest.TestCase):
                 value, _b_ind, _b_count = val
                 assert value is None
 
-        return
-
     def test_blocking_counter(self):
         """
         test that if for one entry the blocking counter increments at max of 8
@@ -271,7 +264,7 @@ class TestResourceScheduler(unittest.TestCase):
                 try:
                     for uri in next(res_sched):
                         if uri == the_blocked_one:
-                            raise DummyException()
+                            raise DummyException
 
                 except DummyException:
                     raise_counter += 1
@@ -292,8 +285,6 @@ class TestResourceScheduler(unittest.TestCase):
                 assert value is None
                 assert b_count == 0
                 assert b_ind == 0
-
-        return
 
 
 # eof #

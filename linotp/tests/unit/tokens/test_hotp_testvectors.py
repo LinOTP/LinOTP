@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -30,7 +29,6 @@ totp token - linotp hmac compliance test
 """
 
 import binascii
-from datetime import datetime
 from hashlib import sha1, sha256, sha512
 
 from linotp.lib.HMAC import HmacOtp

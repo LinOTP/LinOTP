@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -38,22 +37,17 @@ Engine = meta.engine
 """
 
 import csv
-import json
 import logging
 
-from linotp.lib.crypto.utils import compare_password
-from linotp.lib.tools.import_user.ImportHandler import ImportHandler
 from linotp.model.imported_user import ImportedUser
 
 log = logging.getLogger(__name__)
 
 
-class FormatReader(object):
+class FormatReader:
     """
     support for special csv formats
     """
-
-    pass
 
 
 class DefaultFormatReader(FormatReader):
@@ -83,7 +77,7 @@ class PasswdFormatReader(FormatReader):
             if len(attr) < 5:
                 attr.append("")
         else:
-            attr = ",,,,".split(",")
+            attr = ["", "", "", "", ""]
             attr[0] = row[4]
 
         # now split the name into surname and lastname
@@ -102,7 +96,7 @@ class PasswdFormatReader(FormatReader):
         return ext_row
 
 
-class UserImport(object):
+class UserImport:
     def __init__(self, ImportHandler):
         self.user_column_mapping = {}
         self.import_handler = ImportHandler
@@ -204,10 +198,11 @@ class UserImport(object):
                 if (user.userid in processed_users) or (
                     user.username in processed_users.values()
                 ):
-                    raise Exception(
+                    msg = (
                         "Violation of unique constraint - "
-                        "duplicate user in data: %r" % user
+                        f"duplicate user in data: {user!r}"
                     )
+                    raise Exception(msg)
                 else:
                     processed_users[user.userid] = user.username
 
@@ -271,7 +266,7 @@ class UserImport(object):
 
 
 def main():
-    from linotp.lib.tools.import_user.SQLImportHandler import (
+    from linotp.lib.tools.import_user.SQLImportHandler import (  # noqa: PLC0415
         Shell_DatabaseContext,
         SQLImportHandler,
     )
@@ -279,7 +274,7 @@ def main():
     # in the test main() we use a password file, which is prepared
     # for splitting the description fields into csv data
 
-    with open("/linotp/def-passwd", "r") as f:
+    with open("/linotp/def-passwd") as f:
         csv_data = f.read()
 
     user_column_map = {
@@ -309,8 +304,6 @@ def main():
     result = user_import.import_csv_users(csv_data, format_reader=PasswdFormatReader())
 
     print(result)
-
-    return
 
 
 if __name__ == "__main__":

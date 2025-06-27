@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -26,13 +25,11 @@
 #
 
 import unittest
+from unittest.mock import patch
 
 import pytest
-from flask import appcontext_pushed
-from mock import patch
 
 from linotp.controllers.system import SystemController
-from linotp.flap import tmpl_context as context
 from linotp.lib.security.provider import SecurityProvider
 from linotp.model import db
 
@@ -72,13 +69,15 @@ class TestSetResolver(unittest.TestCase):
             False,
         )
 
-        with patch("linotp.controllers.system.sendError") as mock_senderror:
-            with patch("linotp.controllers.system.sendResult") as mock_sendresult:
-                # sendError returns the exception
-                mock_senderror.side_effect = lambda exx: exx
-                mock_sendresult.side_effect = lambda obj, *args: obj
-                mock_request.json = params
-                ret = self.system.setResolver()
+        with (
+            patch("linotp.controllers.system.sendError") as mock_senderror,
+            patch("linotp.controllers.system.sendResult") as mock_sendresult,
+        ):
+            # sendError returns the exception
+            mock_senderror.side_effect = lambda exx: exx
+            mock_sendresult.side_effect = lambda obj, *args: obj
+            mock_request.json = params
+            ret = self.system.setResolver()
 
         return ret
 
@@ -92,8 +91,7 @@ class TestSetResolver(unittest.TestCase):
     def test_set_resolver_readonly_param_empty(self):
         ret = self.set_resolver({"readonly": ""})
         assert ret, (
-            "setResolver with empty readonly parameter should succeed. Returned:%s"
-            % ret
+            f"setResolver with empty readonly parameter should succeed. Returned:{ret}"
         )
 
 
@@ -104,7 +102,7 @@ def err_hsm(app, monkeypatch):
     """
 
     def getErrSecurityModule(s):
-        class ErrHSM(object):
+        class ErrHSM:
             def isReady(self):
                 return False
 
@@ -115,7 +113,7 @@ def err_hsm(app, monkeypatch):
 
 
 @pytest.mark.usefixtures("err_hsm")
-class TestHSMFail(object):
+class TestHSMFail:
     """
     Tests for #2909 to check behaviour with an HSM
     in error state
@@ -132,7 +130,7 @@ class TestHSMFail(object):
         assert response.status_code == 200
 
         result = response.json["result"]
-        assert result["status"] == False
+        assert result["status"] is False
         assert result["error"]["code"] == 707
         assert "hsm not ready" in result["error"]["message"]
 

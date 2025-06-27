@@ -1,5 +1,3 @@
-from typing import Dict, List
-
 from linotp.lib.policy.evaluate import PolicyEvaluator
 from linotp.lib.policy.util import get_policies
 from linotp.lib.realm import getRealms
@@ -74,8 +72,8 @@ class UserPermissions(dict):
     def _extend_permissions(
         self,
         scope: str,
-        actions: List[str] = [],
-        realms_to_extend: List[str] = [],
+        actions: list[str] | None = None,
+        realms_to_extend: list[str] | None = None,
     ):
         """adds actions to relevant PermissionDict
 
@@ -93,6 +91,10 @@ class UserPermissions(dict):
         """
         if not realms_to_extend:
             return
+        if realms_to_extend is None:
+            realms_to_extend = []
+        if actions is None:
+            actions = []
 
         if scope in REALMED_POLICY_SCOPES:
             if scope == "admin":
@@ -154,7 +156,7 @@ class UserPermissions(dict):
             }
         """
 
-        def _parse_scopes(scopes: List[Dict]):
+        def _parse_scopes(scopes: list[dict]):
             parsed_permissions = []
             for scope, actions in scopes.items():
                 permissions = [f"{scope}/{action}" for action in actions]

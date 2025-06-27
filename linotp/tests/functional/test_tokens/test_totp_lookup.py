@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -221,8 +220,6 @@ class TestTotpLookupController(TestController):
 
                 assert utc_seconds == detail["seconds"]
 
-        return
-
     def test_policy_bases_access(self):
         """
         verify that admin can only access the policy defined realms
@@ -330,8 +327,6 @@ class TestTotpLookupController(TestController):
         )
         assert '"status": true' in response.body, response
         assert '"value": true' in response.body, response
-
-        return
 
     def test_verify_window(self):
         """verify that the totp_lookup window is working

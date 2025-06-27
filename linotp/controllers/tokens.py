@@ -1,6 +1,6 @@
 import json
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from difflib import get_close_matches
 
 from flask import current_app, g
@@ -12,7 +12,7 @@ from linotp.lib.reply import sendError, sendResult
 from linotp.lib.tokeniterator import TokenIterator
 from linotp.lib.type_utils import DEFAULT_TIMEFORMAT
 from linotp.lib.user import User as RealmUser
-from linotp.lib.user import getUserFromParam, getUserFromRequest
+from linotp.lib.user import getUserFromRequest
 from linotp.model import db
 
 log = logging.getLogger(__name__)
@@ -71,9 +71,7 @@ class TokensController(BaseController):
     """
 
     def __init__(self, name, install_name="", **kwargs):
-        super(TokensController, self).__init__(
-            name, install_name=install_name, **kwargs
-        )
+        super().__init__(name, install_name=install_name, **kwargs)
 
         self.add_url_rule("/", "tokens", self.get_tokens, methods=["GET"])
         self.add_url_rule(
@@ -191,9 +189,9 @@ class TokensController(BaseController):
             )
 
             log.info(
-                "[get_tokens] admin {} may view tokens the following realms: {}".format(
-                    check_result["admin"], allowed_realms
-                )
+                "[get_tokens] admin %r may view tokens the following realms: %r",
+                check_result["admin"],
+                allowed_realms,
             )
 
             ### End permissions' check ###
@@ -213,14 +211,13 @@ class TokensController(BaseController):
             realm = param.get("realm", "*").lower()
             if "*" in allowed_realms:
                 realm_to_filter = [realm]
-            elif "*" == realm:
+            elif realm == "*":
                 realm_to_filter = allowed_realms
             elif realm in [realm.lower() for realm in allowed_realms]:
                 realm_to_filter = [realm]
             else:
-                raise PolicyException(
-                    "You dont have permissions on any of your requested realms."
-                )
+                msg = "You dont have permissions on any of your requested realms."
+                raise PolicyException(msg)
 
             if page_size == 0:
                 # Retrieve all available tokens
@@ -245,7 +242,7 @@ class TokensController(BaseController):
             )
 
             g.audit["success"] = True
-            g.audit["info"] = "realm: {}".format(allowed_realms)
+            g.audit["info"] = f"realm: {allowed_realms}"
 
             # put in the result
             result = {}
@@ -265,14 +262,14 @@ class TokensController(BaseController):
             return sendResult(result)
 
         except PolicyException as pe:
-            log.exception("[get_tokens] policy failed: {}".format(pe))
+            log.exception("[get_tokens] policy failed: %r", pe)
             db.session.rollback()
             error = sendError(pe)
             error.status_code = 403
             return error
 
         except Exception as e:
-            log.exception("[get_tokens] failed: {}".format(e))
+            log.exception("[get_tokens] failed: %r", e)
             db.session.rollback()
             return sendError(e)
 
@@ -294,14 +291,14 @@ class TokensController(BaseController):
         }
         try:
             return sortParameterNameMapping[sort_param]
-        except KeyError:
+        except KeyError as exx:
             error_msg = f"Tokens can't be sorted by {sort_param}."
             potential_sort_params = get_close_matches(
                 sort_param, sortParameterNameMapping.keys()
             )
             if potential_sort_params:
                 error_msg += f" Did you mean any of {potential_sort_params}?"
-            raise KeyError(error_msg)
+            raise KeyError(error_msg) from exx
 
     def get_token_by_serial(self, serial):
         """
@@ -349,7 +346,8 @@ class TokensController(BaseController):
             result_count = tokens.getResultSetInfo()["tokens"]
 
             if result_count > 1:
-                raise Exception("Multiple tokens found with serial {}".format(serial))
+                msg = f"Multiple tokens found with serial {serial}"
+                raise Exception(msg)
 
             formatted_token = {}
 
@@ -358,20 +356,20 @@ class TokensController(BaseController):
                 formatted_token = TokenAdapter(token).to_JSON_format()
 
             g.audit["success"] = True
-            g.audit["info"] = "realm: {}".format(filter_realm)
+            g.audit["info"] = f"realm: {filter_realm}"
 
             db.session.commit()
             return sendResult(formatted_token)
 
         except PolicyException as pe:
-            log.exception("[get_token_by_serial] policy failed: {}".format(pe))
+            log.exception("[get_token_by_serial] policy failed: %r", pe)
             db.session.rollback()
             error = sendError(pe)
             error.status_code = 403
             return error
 
         except Exception as e:
-            log.exception("[get_token_by_serial] failed: {}".format(e))
+            log.exception("[get_token_by_serial] failed: %r", e)
             db.session.rollback()
             return sendError(e)
 
@@ -452,7 +450,7 @@ class TokenAdapter:
         for field in ["validity_period_end", "validity_period_start"]:
             if field in self._token_info:
                 date = datetime.strptime(self._token_info[field], "%d/%m/%y %H:%M")
-                self._token_info[field] = date.replace(tzinfo=timezone.utc)
+                self._token_info[field] = date.replace(tzinfo=UTC)
 
         self.validity_start = self._token_info.get("validity_period_start", None)
         self.validity_end = self._token_info.get("validity_period_end", None)
@@ -527,7 +525,7 @@ def _parse_date_string(date_string):
     If the passed string is empty, return None.
     """
     return (
-        datetime.strptime(date_string, DEFAULT_TIMEFORMAT).replace(tzinfo=timezone.utc)
+        datetime.strptime(date_string, DEFAULT_TIMEFORMAT).replace(tzinfo=UTC)
         if date_string
         else None
     )

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -29,13 +28,8 @@
 totp token - timeshift unit tests
 """
 
-import binascii
-import json
-import logging
 import unittest
 from datetime import datetime, timedelta
-
-from mock import MagicMock, patch
 
 from linotp.tokens.totptoken import counter2time, time2counter
 
@@ -93,8 +87,6 @@ def range_tvector():
 
         yield seconds, t_time, counter, totp, hash_algo
 
-    return
-
 
 class TotpTestCase(unittest.TestCase):
     """
@@ -108,7 +100,7 @@ class TotpTestCase(unittest.TestCase):
 
     def test_counter2time(self):
         for t_step in (60, 30):
-            for counter in range(0, 10):
+            for counter in range(10):
                 l_seconds = timedelta(seconds=(counter - 1) * t_step).total_seconds()
                 h_seconds = timedelta(seconds=counter * t_step).total_seconds()
 
@@ -120,8 +112,6 @@ class TotpTestCase(unittest.TestCase):
                     t_seconds,
                     h_seconds,
                 )
-
-        return
 
     def test_time2counter(self):
         for t_step in (60, 30):
@@ -135,16 +125,12 @@ class TotpTestCase(unittest.TestCase):
                 # and check if they match
                 assert seconds == v_seconds, (seconds, v_seconds)
 
-        return
-
     def test_counter_time(self):
         for vector in range_tvector():
-            (seconds, token_time, counter, totp, hash_algo) = vector
+            (_seconds, _token_time, counter, _totp, _hash_algo) = vector
 
             t_seconds = counter2time(counter, timeStepping=30)
-            t_time = unix_start_time + timedelta(seconds=t_seconds)
+            _t_time = unix_start_time + timedelta(seconds=t_seconds)
             ccounter = time2counter(t_seconds, timeStepping=30)
 
             assert ccounter == counter
-
-        return

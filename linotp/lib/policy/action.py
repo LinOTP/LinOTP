@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,7 +26,7 @@
 """policy action processing"""
 
 import logging
-from typing import Any, Dict, Union
+from typing import Any
 from warnings import warn
 
 from linotp.lib.user import User
@@ -105,18 +104,17 @@ def get_selfservice_actions(user=None, action=None):
             elif action in actions:
                 all_actions[action] = pat.convert(scope, action, actions[action])
         except PolicyConversionError as err:
-            raise PolicyConversionError(
-                f"Could not parse selfservice-policy '{policy['name']}': {err}"
-            ) from err
+            msg = f"Could not parse selfservice-policy '{policy['name']}': {err}"
+            raise PolicyConversionError(msg) from err
 
     return all_actions
 
 
 def get_action_value(
-    policies: Dict,
+    policies: dict,
     scope: str,
     action: str,
-    subkey: str = None,
+    subkey: str | None = None,
     default: Any = None,
 ) -> Any:
     """Get the value of an action from a set of policies
@@ -135,7 +133,7 @@ def get_action_value(
     pat = PolicyActionTyping()
 
     if subkey:
-        action = "%s.%s" % (action, subkey)
+        action = f"{action}.{subkey}"
 
     all_actions = {}
     for policy in policies.values():
@@ -146,9 +144,8 @@ def get_action_value(
             try:
                 current.append(pat.convert(scope, action, actions[action]))
             except PolicyConversionError as err:
-                raise PolicyConversionError(
-                    f"Could not parse policy '{policy['name']}': {err}"
-                ) from err
+                msg = f"Could not parse policy '{policy['name']}': {err}"
+                raise PolicyConversionError(msg) from err
             all_actions[action] = current
 
     if action not in all_actions:
@@ -181,7 +178,7 @@ class PolicyActionTyping:
         self,
         scope: str,
         action_name: str,
-        action_value: Union[bool, int, str],
+        action_value: bool | int | str,
     ) -> Any:
         """Convert the action values according to the policy definitions.
 
@@ -204,10 +201,10 @@ class PolicyActionTyping:
                     return action_value
 
                 msg = (
-                    "%s:%s : action value %r is not compliant with "
-                    "action type 'bool'" % (scope, action_name, action_value)
+                    f"{scope}:{action_name} : action value {action_value!r} is not compliant with "
+                    "action type 'bool'"
                 )
-                warn(msg, DeprecationWarning)
+                warn(msg, DeprecationWarning, stacklevel=1)
 
                 if action_value in [-1, "-1"]:
                     return False
@@ -241,19 +238,19 @@ class PolicyActionTyping:
             elif typing in ["str", "string"]:
                 return str(action_value)
 
-            elif typing == "set":
+            elif typing == "set" and (
+                isinstance(action_value, str) and action_value.isdigit()
+            ):
                 # in case of a set, we try our best:
                 # if int() else return as is
-                if isinstance(action_value, str) and action_value.isdigit():
-                    return int(action_value)
+                return int(action_value)
 
             return action_value
         except Exception as err:
-            raise PolicyConversionError(
-                f"Could not convert value '{action_value}' of '{scope}:{action_name}': {err}"
-            ) from err
+            msg = f"Could not convert value '{action_value}' of '{scope}:{action_name}': {err}"
+            raise PolicyConversionError(msg) from err
 
-    def convert_actions(self, scope: str, actions: Dict) -> Dict:
+    def convert_actions(self, scope: str, actions: dict) -> dict:
         """type conversion of an action dict.
 
         utility to be used in the by functions like get_selfservice_actions

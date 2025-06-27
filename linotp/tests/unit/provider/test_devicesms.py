@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -30,8 +29,7 @@ import subprocess
 import sys
 import unittest
 from unittest import TestCase
-
-from mock import MagicMock, Mock, patch
+from unittest.mock import patch
 
 from linotp.provider.smsprovider.DeviceSMSProvider import DeviceSMSProvider
 
@@ -45,13 +43,14 @@ class BaseClass:
     class BaseTestDeviceSMS(TestCase):
         @classmethod
         def setUpClass(cls):
-            super(BaseClass.BaseTestDeviceSMS, cls).setUpClass()
-
+            super().setUpClass()
             cls.gnokii_available = False
-            FNULL = open(os.devnull, "w")
+
             try:
-                ret = subprocess.call(
-                    ["gnokii", "--version"], stdout=FNULL, stderr=FNULL
+                subprocess.run(
+                    ["gnokii", "--version"],
+                    capture_output=True,
+                    check=True,
                 )
                 cls.gnokii_available = True
             except Exception as e:
@@ -74,16 +73,13 @@ class BaseClass:
             sms.loadConfig(config)
             self.config = config
 
-            if self.gnokii_available:
-                wraps = subprocess.Popen
-            else:
-                wraps = None
+            wraps = subprocess.Popen if self.gnokii_available else None
 
             with patch("subprocess.Popen", wraps=wraps) as popen_mock:
                 if not self.gnokii_available:
                     popen_mock.return_value.communicate.return_value = (
                         "Mocked gnokii",
-                        "Status:%s" % expected_gnokii_status,
+                        f"Status:{expected_gnokii_status}",
                     )
                     popen_mock.return_value.returncode = expected_gnokii_status
                 self.return_code = sms.submitMessage(self.phone, self.message)
@@ -102,13 +98,13 @@ class BaseClass:
             )
 
             if expected_gnokii_call:
-                gnokki_cmd = "gnokii --config %s --sendsms %s" % (
+                gnokki_cmd = "gnokii --config {} --sendsms {}".format(
                     self.config["CONFIGFILE"],
                     self.phone,
                 )
 
                 if "SMSC" in self.config:
-                    gnokki_cmd += " --smsc %s" % self.config["SMSC"]
+                    gnokki_cmd += " --smsc {}".format(self.config["SMSC"])
 
                 assert " ".join(self.gnokii_args[0]) == gnokki_cmd
 
@@ -144,7 +140,8 @@ class TestWithGnokii(BaseClass.BaseTestDeviceSMS):
         BaseClass.BaseTestDeviceSMS.setUp(self)
 
         if not self.gnokii_available:
-            raise unittest.SkipTest("Gnokii is not available")
+            msg = "Gnokii is not available"
+            raise unittest.SkipTest(msg)
 
 
 def main():

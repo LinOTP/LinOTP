@@ -41,7 +41,7 @@ from linotp.lib.reply import (
 
 
 @pytest.mark.usefixtures("app")
-class TestReplyTestCase(object):
+class TestReplyTestCase:
     @pytest.mark.parametrize(
         "querystring,result",
         [
@@ -63,7 +63,7 @@ class TestReplyTestCase(object):
         Simulate request parameters returning a UnicodeDecodeError
         """
 
-        class fake_current_app(object):
+        class fake_current_app:
             def getRequestParams(self):
                 # Raise UnicodeDecodeError
                 b"\xc0".decode("utf-8")
@@ -84,9 +84,10 @@ class TestReplyTestCase(object):
             assert httperror == "777"
 
     def test_httperror_with_Exception(self, monkeypatch):
-        class fake_current_app(object):
+        class fake_current_app:
             def getRequestParams(self):
-                raise Exception("Random exception")
+                msg = "Random exception"
+                raise Exception(msg)
 
         monkeypatch.setattr(reply, "current_app", fake_current_app())
 
@@ -114,8 +115,9 @@ class TestReplyTestCase(object):
             res = sendResultIterator(
                 obj=request_context_test_iterator(), rp=None, page=None
             )
-        except ProgrammingError:
-            assert False, "request_context was used outside of request_context_safety"
+        except ProgrammingError as exx:
+            msg = "request_context was used outside of request_context_safety"
+            raise AssertionError(msg) from exx
 
         result = ""
         for chunk in res:
@@ -124,12 +126,13 @@ class TestReplyTestCase(object):
         result_dict = json.loads(result)
         value = result_dict.get("result", {}).get("value")
 
-        assert ["one", "two"] == value
+        assert value == ["one", "two"]
 
         try:
             res = sendResultIterator(obj=request_context_test_iterator(), rp=1, page=0)
-        except ProgrammingError:
-            assert False, "request_context was used outside of request_context_safety"
+        except ProgrammingError as exx:
+            msg = "request_context was used outside of request_context_safety"
+            raise AssertionError(msg) from exx
 
         result = ""
         for chunk in res:
@@ -138,4 +141,4 @@ class TestReplyTestCase(object):
         result_dict = json.loads(result)
         value = result_dict.get("result", {}).get("value")
 
-        assert ["one"] == value
+        assert value == ["one"]

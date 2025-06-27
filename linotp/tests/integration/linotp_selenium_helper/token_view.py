@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,7 +26,6 @@
 """Contains TokenView class"""
 
 import logging
-from typing import Dict, List, Optional
 
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -57,7 +55,7 @@ class TokenView(ManageTab):
     "Dialog box shown when tokens are deleted"
 
     def __init__(self, manage_ui):
-        super(TokenView, self).__init__(manage_ui)
+        super().__init__(manage_ui)
         self.delete_confirm_dialog = ManageDialog(manage_ui, "dialog_delete_token")
 
     def open(self):
@@ -113,7 +111,7 @@ class TokenView(ManageTab):
 
     def _delete_selected_tokens(self):
         tokens_before = [t.text for t in self._get_token_list()]
-        if not len(tokens_before):
+        if not tokens_before:
             return
 
         find_by_id(self.driver, self.delete_button_id).click()
@@ -134,17 +132,13 @@ class TokenView(ManageTab):
         tokens_after = [t.text for t in self._get_token_list()]
 
         if len(tokens_before) <= len(tokens_after):
-            logging.warn(
+            logging.warning(
                 "Number of tokens did not reduce as expected. from=%s to=%s",
                 tokens_before,
                 tokens_after,
             )
             assert len(tokens_before) > len(tokens_after), (
-                "The token list should be shorter. Before:%s After:%s"
-                % (
-                    len(tokens_before),
-                    len(tokens_after),
-                )
+                f"The token list should be shorter. Before:{len(tokens_before)} After:{len(tokens_after)}"
             )
 
     def clear_tokens_via_api(self):
@@ -169,7 +163,7 @@ class TokenView(ManageTab):
         self.select_all_tokens()
         self._delete_selected_tokens()
 
-    def get_selected_tokens(self) -> List[str]:
+    def get_selected_tokens(self) -> list[str]:
         """
         Retrieve a list of currently selected token serials in the UI
         """
@@ -260,7 +254,7 @@ class TokenView(ManageTab):
         self.driver.find_element(By.ID, "button_enable").click()
         self.wait_for_waiting_finished()
 
-    def get_token_line(self, token_serial: str) -> Dict:
+    def get_token_line(self, token_serial: str) -> dict:
         """
         Returns the contents of the flexigrid row for the given token
         """
@@ -268,7 +262,8 @@ class TokenView(ManageTab):
         for t in contents:
             if t["Serial Number"] == token_serial:
                 return t
-        raise RuntimeError("Token serial not found")
+        msg = "Token serial not found"
+        raise RuntimeError(msg)
 
     def get_token_info(self, token_serial):
         """

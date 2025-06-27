@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -29,22 +28,21 @@
 sql resolver tests
 """
 
+import contextlib
 import json
 import logging
 
-from passlib.hash import atlassian_pbkdf2_sha1
 from passlib.hash import bcrypt as passlib_bcrypt
-from passlib.hash import phpass as passlib_phpass
 
 from .sql_test_controller import SQLTestController
 
 PASSWORDS = [
     "#,`/^?/#)!'",
     '^.%{[(&}>#].)"#',
-    " #$%&@`/:;<=>?[\\]^{|}~“‘+",
+    " #$%&@`/:;<=>?[\\]^{|}~“‘+",  # noqa: RUF001
     "řƷ&ȧᚽÂᚯŚǡȒᛧƳ¢ȡǗǠȏȄ.ŁœňᛅȤ",
     "ȴĔⱫⱨǝțíǧIė06Ĵᚯ)ƻãĩƜǇǠŚƽĢ",
-    "ⱠᛝǾᛥĀ;ǢⱩùΊǎǸŊᛂãȌű¸óȟŗɇ!ĺ",
+    "ⱠᛝǾᛥĀ;ǢⱩùΊǎǸŊᛂãȌű¸óȟŗɇ!ĺ",  # noqa: RUF001
 ]
 
 log = logging.getLogger(__name__)
@@ -56,8 +54,6 @@ class SQLResolverSpecialPasswordTest(SQLTestController):
 
         SQLTestController.setUp(self)
         self.setUpSQL()
-
-        return
 
     def tearDown(self):
         """drop the users and the user table"""
@@ -159,8 +155,6 @@ class SQLResolverSpecialPasswordTest(SQLTestController):
         response = self.make_validate_request("check", params=params)
         assert '"value": false' in response
 
-        return
-
     def test_sqlresolver_random_passwords(self):
         """
         test that we can use pbkdf2 and bcrypt passwords with an sql resolver
@@ -184,24 +178,21 @@ class SQLResolverSpecialPasswordTest(SQLTestController):
 
         # ------------------------------------------------------------- --
 
-        i = 0
-
         # add users
-        for password in PASSWORDS:
-            i += 1
-            name = "bach%d" % i
+        for i, password in enumerate(PASSWORDS, 1):
+            name = f"bach{i}"
             bach_password = password
             bach_password_hash = passlib_bcrypt.hash(bach_password)
 
             users[name] = {
                 "login": name,
-                "uid": "%d" % i,
+                "uid": f"{i}",
                 "telephonenumber": "",
                 "mobile": bach_password,
-                "surname": "Bach%d" % i,
+                "surname": f"Bach{i}",
                 "givenname": "Johann Sebastian",
                 "password": bach_password_hash,
-                "mail": "j%d.s@bach.de" % i,
+                "mail": f"j{i}.s@bach.de",
             }
 
             assert passlib_bcrypt.verify(bach_password, bach_password_hash)
@@ -210,11 +201,8 @@ class SQLResolverSpecialPasswordTest(SQLTestController):
 
             user = users[name]["login"]
             password = users[name]["mobile"]
-            try:
+            with contextlib.suppress(Exception):
                 self.run_password_check(user, password, realm=realm)
-            except Exception as exx:
-                pass
-        return
 
 
 # eof

@@ -1,7 +1,6 @@
 import json
 import os
 import struct
-from base64 import b64encode
 
 from Cryptodome.Cipher import AES
 from Cryptodome.Hash import HMAC, SHA256
@@ -52,7 +51,7 @@ class QR_Token_Validation:
         if rest == 0:
             return str(before)
         else:
-            return "%d.%02d" % (before, rest)
+            return f"{before}.{rest:02d}"
 
     @staticmethod
     def create_keys():
@@ -107,9 +106,8 @@ class QR_Token_Validation:
         if flags & FLAG_PAIR_CBURL:
             callback_url, __, custom_data = custom_data.partition(b"\x00")
         else:
-            raise NotImplementedError(
-                "SMS is not implemented. Callback URLis mandatory."
-            )
+            msg = "SMS is not implemented. Callback URLis mandatory."
+            raise NotImplementedError(msg)
 
         callback_sms = None
         if flags & FLAG_PAIR_CBSMS:

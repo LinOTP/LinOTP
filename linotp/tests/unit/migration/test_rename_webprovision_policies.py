@@ -1,5 +1,3 @@
-import pytest
-
 from linotp.model.migrate import Migration_4_0_0_0
 
 

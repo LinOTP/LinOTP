@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -118,16 +117,16 @@ class RadiusTokenClass(RemoteTokenClass):
 
         if key is not None and key in res:
             ret = res.get(key)
-        else:
-            if ret == "all":
-                ret = res
+        elif ret == "all":
+            ret = res
         return ret
 
     def update(self, param):
         try:
             self.radiusServer = param["radius.server"]
-        except KeyError:
-            raise ParameterError("Missing parameter: 'radius.server'")
+        except KeyError as exx:
+            msg = "Missing parameter: 'radius.server'"
+            raise ParameterError(msg) from exx
 
         # if another OTP length would be specified in /admin/init this would
         # be overwritten by the parent class, which is ok.
@@ -139,13 +138,15 @@ class RadiusTokenClass(RemoteTokenClass):
 
         try:
             self.radiusUser = param["radius.user"]
-        except KeyError:
-            raise ParameterError("Missing parameter: 'radius.user'")
+        except KeyError as exx:
+            msg = "Missing parameter: 'radius.user'"
+            raise ParameterError(msg) from exx
 
         try:
             self.radiusSecret = param["radius.secret"]
-        except KeyError:
-            raise ParameterError("Missing parameter: 'radius.secret'")
+        except KeyError as exx:
+            msg = "Missing parameter: 'radius.secret'"
+            raise ParameterError(msg) from exx
 
         if self.radiusSecret == VOID_RADIUS_SECRET:
             log.warning("Usage of default radius secret is not recomended!!")
@@ -166,7 +167,7 @@ class RadiusTokenClass(RemoteTokenClass):
         """
         local_check = False
 
-        if 1 == int(self.getFromTokenInfo("radius.local_checkpin")):
+        if int(self.getFromTokenInfo("radius.local_checkpin")) == 1:
             local_check = True
 
         self.local_pin_check = local_check
@@ -198,7 +199,7 @@ class RadiusTokenClass(RemoteTokenClass):
         pin = ""
         otpval = ""
 
-        local_check = self.check_pin_local()
+        _local_check = self.check_pin_local()
 
         if self.check_pin_local():
             log.debug("[splitPinPass] [radiustoken] locally checked")

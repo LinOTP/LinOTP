@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -67,8 +66,9 @@ def list_cmd(format, long):
         user_info["name"] = f"{user_info['givenname']} {user_info['surname']}".strip()
         try:
             print(format.format_map(user_info))
-        except KeyError as ex:
-            raise click.ClickException(f"invalid key {ex!s} in template")
+        except KeyError as exx:
+            msg = f"invalid key {exx!s} in template"
+            raise click.ClickException(msg) from exx
 
 
 # ----------------------------------------------------------------------
@@ -101,8 +101,8 @@ def add_cmd(phone, mobile, email, surname, givenname, account_name):
             mobile=mobile,
             email=email,
         )
-    except DuplicateUserError as ex:
-        raise click.ClickException(ex)
+    except DuplicateUserError as exx:
+        raise click.ClickException(exx) from exx
 
 
 # ----------------------------------------------------------------------
@@ -125,20 +125,21 @@ def modify_cmd(phone, mobile, email, surname, givenname, account_name):
     res = LocalAdminResolver(current_app)
     try:
         user_info = res.get_user_info(account_name)
-    except NoSuchUserError as ex:
-        raise click.ClickException(ex)
+    except NoSuchUserError as exx:
+        raise click.ClickException(exx) from exx
 
     for k, v in zip(
         ("surname", "givenname", "phone", "mobile", "email"),
         (surname, givenname, phone, mobile, email),
+        strict=True,
     ):
         if v is not None:
             user_info[k] = v
 
     try:
         res.update_user(account_name, **user_info)
-    except NoSuchUserError as ex:  # possible race condition
-        raise click.ClickException(ex)
+    except NoSuchUserError as exx:  # possible race condition
+        raise click.ClickException(exx) from exx
 
 
 # ----------------------------------------------------------------------
@@ -160,8 +161,8 @@ def password_cmd(password, account_name):
     res = LocalAdminResolver(current_app)
     try:
         res.set_user_password(account_name, password)
-    except NoSuchUserError as ex:
-        raise click.ClickException(ex)
+    except NoSuchUserError as exx:
+        raise click.ClickException(exx) from exx
 
 
 # ----------------------------------------------------------------------
@@ -176,8 +177,8 @@ def remove_cmd(account_name):
     res = LocalAdminResolver(current_app)
     try:
         res.remove_user(account_name)
-    except NoSuchUserError as ex:
-        raise click.ClickException(ex)
+    except NoSuchUserError as exx:
+        raise click.ClickException(exx) from exx
 
 
 # ----------------------------------------------------------------------

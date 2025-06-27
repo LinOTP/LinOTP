@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -34,7 +33,6 @@ import datetime
 import json
 import logging
 
-import pytest
 from flask import g
 
 from linotp.tests import TestController
@@ -54,7 +52,6 @@ class TestCheckStatus(TestController):
         # create the common resolvers and realm
         self.create_common_resolvers()
         self.create_common_realms()
-        return
 
     def tearDown(self):
         TestController.tearDown(self)
@@ -142,9 +139,9 @@ class TestCheckStatus(TestController):
                 )
 
                 assert response.json["result"]["status"], response
-                assert response.json["result"]["value"]["setPolicy %s" % pol["name"]], (
-                    response
-                )
+                assert response.json["result"]["value"][
+                    "setPolicy {}".format(pol["name"])
+                ], response
 
             param = {"DefaultChallengeValidityTime": "120"}
             response = self.make_system_request("setConfig", params=param)
@@ -250,7 +247,7 @@ class TestCheckStatus(TestController):
                 == "passthru_user1"
             ) == use_detail_policy, response
             assert (
-                response.json.get("detail", {}).get("is_linotp_admin") == False
+                response.json.get("detail", {}).get("is_linotp_admin") is False
             ) == use_detail_policy, response
             assert (
                 response.json.get("detail", {}).get("tokentype") == "HMAC"
@@ -280,7 +277,7 @@ class TestCheckStatus(TestController):
 
                     now = datetime.datetime.now()
                     assert now < start + datetime.timedelta(seconds=3), (
-                        "challenge did not expire: %r" % response
+                        f"challenge did not expire: {response!r}"
                     )
 
             finally:
@@ -369,10 +366,10 @@ class TestCheckStatus(TestController):
 
         serials = g.audit["serial"].split(" ")
         assert serial in serials, (
-            "serial {} should have been written to audit log".format(serial)
+            f"serial {serial} should have been written to audit log"
         )
         assert serial2 in serials, (
-            "serial {} should have been written to audit log".format(serial2)
+            f"serial {serial2} should have been written to audit log"
         )
 
         # invalidate request
@@ -445,7 +442,7 @@ class TestCheckStatus(TestController):
 
                 now = datetime.datetime.now()
                 assert now < start + datetime.timedelta(seconds=3), (
-                    "challenge did not expire: %r" % response
+                    f"challenge did not expire: {response!r}"
                 )
 
         finally:
@@ -457,8 +454,6 @@ class TestCheckStatus(TestController):
         self.delete_token(serial)
         self.delete_token(serial2)
         self.delete_policy("hmac_challenge_response")
-
-        return
 
     def test_otppin_2(self):
         """
@@ -511,9 +506,9 @@ class TestCheckStatus(TestController):
         params = {"user": "passthru_user1", "transactionid": transid}
 
         response = self.make_validate_request("check_status", params)
-        assert not ('"received_tan": false' in response), response
-        assert not ('"valid_tan": false' in response), response
-        assert not ('"received_count": 0' in response), response
+        assert '"received_tan": false' not in response, response
+        assert '"valid_tan": false' not in response, response
+        assert '"received_count": 0' not in response, response
 
         # ----------------------------------------------------------------------
 
@@ -582,8 +577,6 @@ class TestCheckStatus(TestController):
         self.delete_policy("hmac_challenge_response")
         self.delete_policy("otppin_policy")
 
-        return
-
     def test_single_token_wo_pin(self):
         """
         test check_status does work without pin
@@ -638,8 +631,6 @@ class TestCheckStatus(TestController):
 
         self.delete_token(serial)
         self.delete_policy("hmac_challenge_response")
-
-        return
 
     def test_check_status_wo_username(self):
         """
@@ -728,8 +719,6 @@ class TestCheckStatus(TestController):
 
         self.delete_token(serial)
         self.delete_policy("hmac_challenge_response")
-
-        return
 
 
 # eof #########################################################################

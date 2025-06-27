@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #
 #   LinOTP - the open source solution for two factor authentication
 #   Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -24,7 +22,6 @@
 #   Contact: www.linotp.org
 #   Support: www.linotp.de
 
-from flask import g
 
 from linotp.lib.config import getFromConfig, refreshConfig
 from linotp.model import db

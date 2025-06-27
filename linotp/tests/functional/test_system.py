@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -31,10 +30,10 @@
 import json
 import logging
 import os
-from typing import Callable
+from collections.abc import Callable
+from unittest.mock import patch
 
 from flask.testing import FlaskClient
-from mock import patch
 
 from linotp.model.imported_user import ImportedUser
 from linotp.tests import TestController
@@ -96,14 +95,11 @@ class TestSystemController(TestController):
         self.delete_all_realms()
 
         params = {"username": "root"}
-        response = self.make_admin_request(action="userlist", params=params)
+        _response = self.make_admin_request(action="userlist", params=params)
 
-        pass
         params = {"username": "root", "realm": "myMixRealm"}
 
-        response = self.make_admin_request(action="userlist", params=params)
-
-        pass
+        _response = self.make_admin_request(action="userlist", params=params)
 
     def test_001_realms(self):
         """"""
@@ -326,7 +322,6 @@ class TestSystemController(TestController):
         response = self.make_system_request(
             action="delConfig", params={"key": "secretkey"}
         )
-        return
 
     def test_delResolver(self):
         """
@@ -407,8 +402,6 @@ class TestSystemController(TestController):
 
         self.delete_all_policies()
 
-        return
-
     def test_policy_wrong_action_value(self):
         """
         testing to set a policy with a wrong action value
@@ -474,9 +467,7 @@ scope = authentication
             action="getPolicy", method="POST", params={}, auth_user="superuser"
         )
 
-        assert not ("ded-ee" in response), response
-
-        return
+        assert "ded-ee" not in response, response
 
     def test_import_policy_empty_realm(self):
         """
@@ -489,7 +480,7 @@ scope = authentication
 
         file_name = os.path.join(self.fixture_path, policy_file)
 
-        with open(file_name, "r") as f:
+        with open(file_name) as f:
             policy_content = f.read()
 
         upload_files = [("file", policy_file, policy_content)]
@@ -506,9 +497,7 @@ scope = authentication
             action="getPolicy", method="POST", params={}, auth_user="superuser"
         )
 
-        assert not ("ded-ee" in response), response
-
-        return
+        assert "ded-ee" not in response, response
 
     def test_import_policy(self):
         policy_content = """[resovler_ss1]
@@ -650,8 +639,6 @@ scope = gettoken
         self.delete_policy("readsystem", auth_user="superuser")
         self.delete_policy("superuser", auth_user="superuser")
 
-        return
-
     def test_get_policy_def(self):
         """Just verify that the endpoint works"""
         response = self.make_system_request(action="getPolicyDef")
@@ -664,7 +651,7 @@ scope = gettoken
         """
         demo_license_file = os.path.join(self.fixture_path, license_filename)
 
-        with open(demo_license_file, "r") as license_file:
+        with open(demo_license_file) as license_file:
             demo_license = license_file.read()
         form_files = [("license", "demo-lic.pem", demo_license)]
 
@@ -683,7 +670,7 @@ scope = gettoken
         """
         demo_license_file = os.path.join(self.fixture_path, license_filename)
 
-        with open(demo_license_file, "r") as license_file:
+        with open(demo_license_file) as license_file:
             demo_license = license_file.read()
         params = {"license": demo_license}
 

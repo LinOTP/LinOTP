@@ -18,8 +18,7 @@ Tests the create of audit entries
 """
 
 import unittest
-
-from mock import patch
+from unittest.mock import patch
 
 from linotp.lib.auth.validate import ValidationHandler
 from linotp.lib.user import User
@@ -110,8 +109,6 @@ class TestCheckWithSerial(unittest.TestCase):
         call_args = mocked_checkTokenList.call_args
         token_list = call_args[0][0]
         assert len(token_list) > 1
-
-        return
 
 
 # eof #

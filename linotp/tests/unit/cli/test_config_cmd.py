@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -61,7 +60,7 @@ def runner(app):
 def test_config_show_single(app, runner, name, options, value, expected):
     if value is not None:
         app.config[name] = value
-    result = runner.invoke(cli_main, ["config", "show", name] + options)
+    result = runner.invoke(cli_main, ["config", "show", name, *options])
     assert result.exit_code == 0
     assert result.output == expected.replace("<>", str(app.config[name]))
 
@@ -105,7 +104,7 @@ def test_config_show_single(app, runner, name, options, value, expected):
 def test_config_show_multi(app, runner, names, options, values, expected):
     for key, value in values.items():
         app.config[key] = value
-    result = runner.invoke(cli_main, ["config", "show"] + names + options)
+    result = runner.invoke(cli_main, ["config", "show", *names, *options])
     assert result.exit_code == 0
     print(f"output:\n{result.output}")
     assert result.output == re.sub(
@@ -127,7 +126,7 @@ def test_config_show_all(app, runner):
     # is not as ridiculous as it seems; it has turned up one configuration
     # item that wasn't actually in the schema.)
 
-    assert [ln.split("=")[0] for ln in sorted(lines)] == list(sorted(app.config))
+    assert [ln.split("=")[0] for ln in sorted(lines)] == sorted(app.config)
 
 
 @pytest.mark.parametrize(
@@ -236,7 +235,7 @@ def test_config_show_all(app, runner):
 def test_config_explain_single(app, runner, name, options, value, expected):
     if value is not None:
         app.config[name] = value
-    result = runner.invoke(cli_main, ["config", "explain", name] + options)
+    result = runner.invoke(cli_main, ["config", "explain", name, *options])
     assert result.exit_code == 0
     assert result.output == expected
 

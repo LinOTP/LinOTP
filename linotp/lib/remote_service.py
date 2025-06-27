@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -37,7 +36,7 @@ def now():
     return datetime.now()
 
 
-class State(object):
+class State:
     """
     State of a Service
     """
@@ -54,8 +53,6 @@ class ServiceUnavailable(Exception):
     users.
     """
 
-    pass
-
 
 class AllServicesUnavailable(Exception):
     """
@@ -66,10 +63,8 @@ class AllServicesUnavailable(Exception):
     left.
     """
 
-    pass
 
-
-class RemoteService(object):
+class RemoteService:
     """
     A service that keeps track of it failures and marks itself as unavilable
     after an exceeding amount of configured (base) exceptions.
@@ -117,24 +112,24 @@ class RemoteService(object):
                     result = self.func(*args, **kwargs)
                     self.on_recovery()
                     return result
-                except self.expected_exception as e:
+                except self.expected_exception as exx:
                     self.on_failure()
-                    raise ServiceUnavailable(repr(e))
+                    raise ServiceUnavailable(repr(exx)) from exx
 
             else:
                 # recovery time is not over.
                 # simply raise exception
 
-                raise ServiceUnavailable()
+                raise ServiceUnavailable
 
         # service state is FUNCTIONAL
 
         try:
             result = self.func(*args, **kwargs)
             return result
-        except self.expected_exception as e:
+        except self.expected_exception as exx:
             self.on_failure()
-            raise ServiceUnavailable(repr(e))
+            raise ServiceUnavailable(repr(exx)) from exx
 
 
 class RemoteServiceList(list):
@@ -180,6 +175,5 @@ class RemoteServiceList(list):
             except ServiceUnavailable:
                 continue
 
-        else:
-            # no service in list succeeded
-            raise AllServicesUnavailable()
+        # no service in list succeeded
+        raise AllServicesUnavailable

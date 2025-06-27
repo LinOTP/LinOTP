@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -80,7 +79,7 @@ def parse_dat_data(data, d_string=None):
     :return: It returns a dictionary of serial : { /admin/init parameters }
     """
 
-    from linotp.lib.ImportOTP import ImportException
+    from linotp.lib.ImportOTP import ImportException  # noqa: PLC0415
 
     # the result set
     tokens = {}
@@ -117,13 +116,13 @@ def parse_dat_data(data, d_string=None):
                 tokens[serial] = token.get_initparams()
             del lines[:]
 
-    except Exception as err:
-        raise ImportException(err)
+    except Exception as exx:
+        raise ImportException(exx) from exx
 
     return tokens
 
 
-class DatToken(object):
+class DatToken:
     """
     eToken class which is equivalent to the token definition of the dat file
     """
@@ -164,7 +163,6 @@ class DatToken(object):
         generic setter, so that no attribute will get lost
         """
         setattr(self, key, val)
-        return
 
     def add_info(self, line):
         """
@@ -226,8 +224,6 @@ class DatToken(object):
             else:
                 self.set(key, val)
 
-        return
-
     # below: more or less generic setters
     def set_sccAuthenticatorId(self, value):
         """
@@ -238,7 +234,6 @@ class DatToken(object):
         """
         self.serial = value
         self.init_params["serial"] = value
-        return
 
     def set_sccTokenType(self, value):
         """
@@ -251,7 +246,6 @@ class DatToken(object):
         if "description" in self.init_params:
             value = self.init_params.get("description") + " " + value
         self.init_params["description"] = value
-        return
 
     def set_sccTick(self, value):
         """
@@ -263,7 +257,6 @@ class DatToken(object):
 
         self.timestep = int(value)
         self.init_params["timeStep"] = int(value)
-        return
 
     def set_sccPwLen(self, value):
         """
@@ -273,7 +266,6 @@ class DatToken(object):
         :return: - nothing -
         """
         self.init_params["otplen"] = int(value)
-        return
 
     def set_sccPrTime(self, value):
         """
@@ -296,7 +288,6 @@ class DatToken(object):
         if "description" in self.init_params:
             value = self.init_params.get("description") + " " + value
         self.init_params["description"] = value
-        return
 
     def set_sccMode(self, value):
         """
@@ -332,10 +323,9 @@ class DatToken(object):
         """
         if val == "HmacSHA256":
             self.init_params["hashlib"] = "sha256"
-        return
 
     def __repr__(self):
-        rep = "<eToken %s>" % self.init_params
+        rep = f"<eToken {self.init_params}>"
         return rep
 
 
@@ -378,7 +368,7 @@ def get_session(lino_url, user=None, pwd=None):
 
     if user is not None:
         url = lino_url + "admin/login"
-        body = json.dumps(dict(username=user, password=pwd))
+        body = json.dumps({"username": user, "password": pwd})
         resp, content = http.request(
             url,
             "POST",
@@ -400,7 +390,7 @@ def get_session(lino_url, user=None, pwd=None):
             raise exception
 
     # add headers, as they transfer the cookies
-    session = "access_token_cookie={}".format(access_token_cookie)
+    session = f"access_token_cookie={access_token_cookie}"
     headers = {"Cookie": session, "X-CSRF-TOKEN": csrf_token}
     return (session, headers)
 
@@ -433,7 +423,7 @@ def submit_tokens(lino_url, tokens, user=None, pwd=None):
             http.add_credentials(user, pwd)
             resp, content = http.request(url, headers=headers)
 
-        except urllib.error.HTTPError as http_error:
+        except urllib.error.HTTPError:
             break
 
         LOG.debug(content)
@@ -453,8 +443,6 @@ def submit_tokens(lino_url, tokens, user=None, pwd=None):
                 content,
             )
 
-    return
-
 
 def process_file(filename, startdate, lino_url=None, user=None, password=None):
     """
@@ -469,7 +457,7 @@ def process_file(filename, startdate, lino_url=None, user=None, password=None):
     tokens = []
     lines = []
 
-    with open(filename, "r") as fil:
+    with open(filename) as fil:
         for line in fil:
             line = line.strip()
 
@@ -497,8 +485,6 @@ def process_file(filename, startdate, lino_url=None, user=None, password=None):
     # finally create tokens in the LinOTP
     if lino_url is not None:
         submit_tokens(lino_url, tokens, user=user, pwd=password)
-
-    return
 
 
 def main():
@@ -558,8 +544,6 @@ def main():
         user=user,
         password=password,
     )
-
-    return
 
 
 def usage():

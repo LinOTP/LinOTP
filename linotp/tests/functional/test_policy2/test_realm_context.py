@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -32,8 +31,6 @@ on the 'realm context' during the request.
 """
 
 from collections import deque
-
-from flask import current_app
 
 from linotp.tests import TestController
 
@@ -455,16 +452,12 @@ class TestRealmContextController(TestController):
         elif action == "check_s":
             params["serial"] = user_or_serial
         else:
-            self.fail("Action %s not implemented" % action)
+            self.fail(f"Action {action} not implemented")
 
         response = self.make_validate_request(action, params=params)
         content = response.json
         if not err_msg:
-            err_msg = "validate/%s failed for %r. Response: %r" % (
-                action,
-                user_or_serial,
-                content,
-            )
+            err_msg = f"validate/{action} failed for {user_or_serial!r}. Response: {content!r}"
         if expected == "success":
             assert content["result"]["status"], err_msg
             assert content["result"]["value"], err_msg
@@ -478,7 +471,7 @@ class TestRealmContextController(TestController):
             assert not content["result"]["status"], err_msg
             assert not content["result"]["value"], err_msg
         else:
-            self.fail("Unknown 'expected' %s" % expected)
+            self.fail(f"Unknown 'expected' {expected}")
         return content
 
     def _assign(self, serial, user):

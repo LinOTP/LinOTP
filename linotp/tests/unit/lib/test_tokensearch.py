@@ -29,8 +29,7 @@ Tests the token search
 """
 
 import unittest
-
-from mock import patch
+from unittest.mock import patch
 
 from linotp.lib.tokeniterator import TokenIterator  # _get_user_condition
 from linotp.lib.user import User
@@ -77,8 +76,6 @@ class TestTokenSearch(unittest.TestCase):
 
         assert not mocked_token_owner_iterator.called
         assert mocked_get_raw_tokens.call_count == 1
-
-        return
 
 
 # eof #

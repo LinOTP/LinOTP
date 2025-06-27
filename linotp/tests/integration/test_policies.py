@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -33,9 +32,8 @@ import binascii
 
 import integration_data as data
 import pytest
-from linotp_selenium_helper import Policy, TestCase
+from linotp_selenium_helper import Policy
 from linotp_selenium_helper.token_import import TokenImportAladdin
-from linotp_selenium_helper.validate import Validate
 
 from linotp.lib.HMAC import HmacOtp
 

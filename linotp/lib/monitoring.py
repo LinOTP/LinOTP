@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -35,8 +34,7 @@ from sqlalchemy import and_, not_, or_
 from linotp.lib.config import LinOtpConfig, getFromConfig, storeConfig
 from linotp.lib.context import request_context as context
 from linotp.lib.resolver import parse_resolver_spec
-from linotp.lib.user import getUserFromParam, getUserList, getUserListIterators
-from linotp.lib.useriterator import iterate_users
+from linotp.lib.user import getUserFromParam, getUserList
 from linotp.model import db
 from linotp.model.config import Config as config_model
 from linotp.model.realm import Realm
@@ -44,7 +42,7 @@ from linotp.model.token import Token
 from linotp.model.tokenRealm import TokenRealm
 
 
-class MonitorHandler(object):
+class MonitorHandler:
     """
     provide functions for monitor controller
     """
@@ -61,7 +59,7 @@ class MonitorHandler(object):
             assigned, unassigned, total
         """
 
-        if not isinstance(realm_list, (list, tuple)):
+        if not isinstance(realm_list, list | tuple):
             realms = [realm_list]
         else:
             # copy realms so that we can delete items safely
@@ -71,7 +69,7 @@ class MonitorHandler(object):
             realms = ["/:no realm:/"]
 
         result = {}
-        cond = tuple()
+        cond = ()
 
         for realm in realms:
             realm = realm.strip().lower()
@@ -135,9 +133,10 @@ class MonitorHandler(object):
                 elif stati == "active":
                     conditions += (and_(Token.LinOtpIsactive),)
                 elif stati == "inactive":
-                    conditions += (and_(Token.LinOtpIsactive == False),)
+                    conditions += (and_(Token.LinOtpIsactive == False),)  # noqa: E712
                 else:
-                    raise ValueError("Unknown token_status %r" % stati)
+                    msg = f"Unknown token_status {stati!r}"
+                    raise ValueError(msg)
 
             #  create the final condition as AND of all conditions
             condition = and_(*conditions)
@@ -257,10 +256,7 @@ class MonitorHandler(object):
 
         # if new_value_enc != old_value: something new was written into db
         # if new_value_enc != new_value_plain: the new value got encrypted
-        if new_value_enc and new_value_plain != new_value_enc != old_value:
-            return True
-
-        return False
+        return bool(new_value_enc and new_value_plain != new_value_enc != old_value)
 
     def resolverinfo(self, realm):
         """
@@ -340,7 +336,7 @@ class MonitorHandler(object):
         :param realmlist: list of (existing and allowed) realms
         :return: number of users in allowed realms who own an active token
         """
-        realm_cond = tuple()
+        realm_cond = ()
         for realm in realmlist:
             realm_cond += (or_(Realm.name == realm),)
 

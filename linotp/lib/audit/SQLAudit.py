@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -56,9 +55,7 @@ def now() -> str:
     Returns an ISO datetime representation in UTC timezone with millisecond
     precision to fit in the AuditTable.timestamp column
     """
-    return datetime.datetime.now(datetime.timezone.utc).isoformat(
-        timespec="milliseconds"
-    )
+    return datetime.datetime.now(datetime.UTC).isoformat(timespec="milliseconds")
 
 
 ######################## MODEL ################################################
@@ -130,12 +127,13 @@ class AuditTable(db.Model):
         max_len = getattr(self.__class__, key).prop.columns[0].type.length
         if value and len(value) > max_len:
             if warn:
-                log.warning(f"truncating audit data: [audit.{key}] {value}")
+                log.warning("truncating audit data: [audit.%s] %s", key, value)
             if error:
-                raise ValueError(
+                msg = (
                     f"Audit data too long, not truncating [audit.{key}] {value}"
                     " because AUDIT_ERROR_ON_TRUNCATION is active."
                 )
+                raise ValueError(msg)
 
             value = value[: max_len - 1] + "…"
         return value
@@ -160,7 +158,7 @@ class Audit(AuditBase):
         :func:`~linotp.model.setup_db`.
         """
 
-        super(Audit, self).__init__()
+        super().__init__()
 
         # initialize signing keys
         self.readKeys()
@@ -191,7 +189,7 @@ class Audit(AuditBase):
         line["tokentype"] = audit_line.tokentype
         line["user"] = audit_line.user
         line["realm"] = audit_line.realm
-        line["administrator"] = "%r" % audit_line.administrator
+        line["administrator"] = f"{audit_line.administrator!r}"
         line["action_detail"] = audit_line.action_detail
         line["info"] = audit_line.info
         line["linotp_server"] = audit_line.linotp_server
@@ -247,8 +245,6 @@ class Audit(AuditBase):
             db.session.rollback()
             raise exx
 
-        return
-
     def log_entry(self, param):
         """
         This method is used to log the data.
@@ -283,14 +279,12 @@ class Audit(AuditBase):
         The fact, that the log state was initialized, also needs to be logged.
         Therefor the same params are passed as i the log method.
         """
-        pass
 
     def set(self):
         """
         This function could be used to set certain things like the signing key.
         But maybe it should only be read from linotp.cfg?
         """
-        pass
 
     def _buildCondition(self, param, AND):
         """
@@ -376,7 +370,7 @@ class Audit(AuditBase):
 
         # Map empty string to None
         audit_dict = {
-            k: v if v != "" and v != "''" else None for k, v in audit_dict.items()
+            k: v if v not in {"", "''"} else None for k, v in audit_dict.items()
         }
 
         return audit_dict
@@ -396,9 +390,8 @@ class Audit(AuditBase):
         if rp_dict is None:
             rp_dict = {}
 
-        if "or" in param:
-            if "true" == param["or"].lower():
-                AND = False
+        if "or" in param and param["or"].lower() == "true":
+            AND = False
 
         # build the condition / WHERE clause
         condition = self._buildCondition(param, AND)
@@ -406,35 +399,35 @@ class Audit(AuditBase):
         order = AuditTable.id
         if rp_dict.get("sortname"):
             sortn = rp_dict.get("sortname").lower()
-            if "serial" == sortn:
+            if sortn == "serial":
                 order = AuditTable.serial
-            elif "number" == sortn:
+            elif sortn == "number":
                 order = AuditTable.id
-            elif "user" == sortn:
+            elif sortn == "user":
                 order = AuditTable.user
-            elif "action" == sortn:
+            elif sortn == "action":
                 order = AuditTable.action
-            elif "action_detail" == sortn:
+            elif sortn == "action_detail":
                 order = AuditTable.action_detail
-            elif "realm" == sortn:
+            elif sortn == "realm":
                 order = AuditTable.realm
-            elif "date" == sortn:
+            elif sortn == "date":
                 order = AuditTable.timestamp
-            elif "administrator" == sortn:
+            elif sortn == "administrator":
                 order = AuditTable.administrator
-            elif "success" == sortn:
+            elif sortn == "success":
                 order = AuditTable.success
-            elif "tokentype" == sortn:
+            elif sortn == "tokentype":
                 order = AuditTable.tokentype
-            elif "info" == sortn:
+            elif sortn == "info":
                 order = AuditTable.info
-            elif "linotp_server" == sortn:
+            elif sortn == "linotp_server":
                 order = AuditTable.linotp_server
-            elif "client" == sortn:
+            elif sortn == "client":
                 order = AuditTable.client
-            elif "log_level" == sortn:
+            elif sortn == "log_level":
                 order = AuditTable.log_level
-            elif "clearance_level" == sortn:
+            elif sortn == "clearance_level":
                 order = AuditTable.clearance_level
 
         # build the ordering
@@ -442,7 +435,7 @@ class Audit(AuditBase):
 
         if rp_dict.get("sortorder"):
             sorto = rp_dict.get("sortorder").lower()
-            if "desc" == sorto:
+            if sorto == "desc":
                 order_dir = desc(order)
 
         if condition is None:
@@ -499,9 +492,9 @@ def getAsString(data):
     """
 
     s = (
-        "number=%s, date=%s, action=%s, %s, serial=%s, %s, user=%s, %s,"
-        " admin=%s, %s, %s, server=%s, %s, %s"
-    ) % (
+        "number={}, date={}, action={}, {}, serial={}, {}, user={}, {},"
+        " admin={}, {}, {}, server={}, {}, {}"
+    ).format(
         str(data.get("id")),
         str(data.get("timestamp")),
         data.get("action"),
@@ -519,7 +512,7 @@ def getAsString(data):
     )
 
     if "client" in data:
-        s += ", client=%s" % data.get("client")
+        s += ", client={}".format(data.get("client"))
     return s
 
 

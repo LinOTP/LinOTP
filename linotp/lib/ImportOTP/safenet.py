@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -49,7 +48,8 @@ def parseSafeNetXML(xml):
     elem_tokencontainer = etree.fromstring(xml)
 
     if getTagName(elem_tokencontainer) != "Tokens":
-        raise ImportException("No toplevel element Tokens")
+        msg = "No toplevel element Tokens"
+        raise ImportException(msg)
 
     for elem_token in list(elem_tokencontainer):
         SERIAL = None
@@ -61,37 +61,36 @@ def parseSafeNetXML(xml):
             log.debug("Found token with serial %r", SERIAL)
             for elem_tdata in list(elem_token):
                 tag = getTagName(elem_tdata)
-                if "ProductName" == tag:
+                if tag == "ProductName":
                     DESCRIPTION = elem_tdata.text
                     log.debug(
                         "The Token with the serial %s has the productname %s",
                         SERIAL,
                         DESCRIPTION,
                     )
-                if "Applications" == tag:
+                if tag == "Applications":
                     for elem_apps in elem_tdata:
                         if getTagName(elem_apps) == "Application":
                             for elem_app in elem_apps:
                                 tag = getTagName(elem_app)
-                                if "Seed" == tag:
+                                if tag == "Seed":
                                     HMAC = elem_app.text
-                                if "MovingFactor" == tag:
+                                if tag == "MovingFactor":
                                     COUNTER = elem_app.text
             if not SERIAL:
                 log.error("Found token without a serial")
-            else:
-                if HMAC:
-                    hashlib = "sha1"
-                    if len(HMAC) == 64:
-                        hashlib = "sha256"
+            elif HMAC:
+                hashlib = "sha1"
+                if len(HMAC) == 64:
+                    hashlib = "sha256"
 
-                    TOKENS[SERIAL] = {
-                        "hmac_key": HMAC,
-                        "counter": COUNTER,
-                        "type": "HMAC",
-                        "hashlib": hashlib,
-                    }
-                else:
-                    log.error("Found token %s without a element 'Seed'", SERIAL)
+                TOKENS[SERIAL] = {
+                    "hmac_key": HMAC,
+                    "counter": COUNTER,
+                    "type": "HMAC",
+                    "hashlib": hashlib,
+                }
+            else:
+                log.error("Found token %s without a element 'Seed'", SERIAL)
 
     return TOKENS

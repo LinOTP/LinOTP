@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -129,7 +128,8 @@ class ToolsController(BaseController):
             username = auth_user.login
 
             if not username:
-                raise Exception("Missing authenticated user!")
+                msg = "Missing authenticated user!"
+                raise Exception(msg)
 
             sql_url = db.engine.url
 
@@ -152,7 +152,7 @@ class ToolsController(BaseController):
 
             return sendResult(
                 obj=True,
-                opt={"detail": ("password updated for %r" % username)},
+                opt={"detail": (f"password updated for {username!r}")},
             )
 
         except Exception as exx:
@@ -178,7 +178,9 @@ class ToolsController(BaseController):
 
         """
 
-        from linotp.lib.tools.migrate_resolver import MigrateResolverHandler
+        from linotp.lib.tools.migrate_resolver import (  # noqa: PLC0415
+            MigrateResolverHandler,
+        )
 
         ret = {}
 
@@ -186,7 +188,7 @@ class ToolsController(BaseController):
             src = self.request_params["from"]
             target = self.request_params["to"]
 
-            from linotp.lib.resolver import getResolverList
+            from linotp.lib.resolver import getResolverList  # noqa: PLC0415
 
             resolvers = getResolverList()
 
@@ -194,7 +196,8 @@ class ToolsController(BaseController):
             target_resolver = resolvers.get(target, None)
 
             if not target_resolver or not src_resolver:
-                raise Exception("Src or Target resolver is undefined!")
+                msg = "Src or Target resolver is undefined!"
+                raise Exception(msg)
 
             mg = MigrateResolverHandler()
             ret = mg.migrate_resolver(src=src_resolver, target=target_resolver)
@@ -240,13 +243,15 @@ class ToolsController(BaseController):
 
             except KeyError as exx:
                 log.error("Missing parameter: %r", exx)
-                raise ParameterError("Missing parameter: %r" % exx)
+                msg = f"Missing parameter: {exx!r}"
+                raise ParameterError(msg) from exx
 
             if resolver_name == current_app.config["ADMIN_RESOLVER_NAME"]:
-                raise DeleteForbiddenError(
+                msg = (
                     f"default admin resolver {resolver_name} is not allowed "
                     "to be overwritten!"
                 )
+                raise DeleteForbiddenError(msg)
 
             groupid = resolver_name
 
@@ -317,7 +322,8 @@ class ToolsController(BaseController):
                 column_mapping = params.get("column_mapping", column_mapping)
 
             else:
-                raise Exception("unspecified file foramt")
+                msg = "unspecified file foramt"
+                raise Exception(msg)
 
             # we have to convert the column_mapping back into an dict
 
@@ -329,12 +335,14 @@ class ToolsController(BaseController):
             checkPolicyPre("system", "setResolver")
 
             resolvers = getResolverList()
-            if resolver_name in resolvers:
-                if not resolvers[resolver_name].get("readonly", False):
-                    raise Exception(
-                        "Unmanged resolver with same name: %r"
-                        " already exists!" % resolver_name
-                    )
+            if resolver_name in resolvers and (
+                not resolvers[resolver_name].get("readonly", False)
+            ):
+                msg = (
+                    f"Unmanged resolver with same name: {resolver_name!r}"
+                    " already exists!"
+                )
+                raise Exception(msg)
             # -------------------------------------------------------------- --
 
             # feed the engine :)
@@ -375,7 +383,7 @@ class ToolsController(BaseController):
 
             # create / extend target realm for the resolver
 
-            resolver_spec = import_handler.get_resolver_spec()
+            _resolver_spec = import_handler.get_resolver_spec()
 
             db.session.commit()
 
@@ -386,7 +394,7 @@ class ToolsController(BaseController):
 
             db.session.rollback()
 
-            return sendError("%r" % pexx, 1)
+            return sendError(f"{pexx!r}", 1)
 
         except Exception as exx:
             log.error("Error during user import: %r", exx)

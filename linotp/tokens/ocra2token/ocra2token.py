@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -105,6 +104,7 @@ instead of the dedicated ocra/request and ocra/check_t
 
 """
 
+import contextlib
 import datetime
 import logging
 import time
@@ -216,10 +216,11 @@ def get_qrtan_url(qrtan_policy_name, realms, callback_id=None):
     if len(urls) > 1:
         for url in urls:
             if url != url[0]:
-                raise Exception(
-                    "multiple enrollement urls %r found for "
-                    "realm set: %r" % (urls, realms)
+                msg = (
+                    f"multiple enrollement urls {urls!r} found for "
+                    f"realm set: {realms!r}"
                 )
+                raise Exception(msg)
 
     url = ""
     if urls:
@@ -320,9 +321,8 @@ class Ocra2TokenClass(TokenClass):
             genkey = None
             serial = getRolloutToken4User(user=user, serial=serial, tok_type=tok_type)
             if serial is None:
-                raise Exception(
-                    "no token found for user: %r or serial: %r" % (user, serial)
-                )
+                msg = f"no token found for user: {user!r} or serial: {serial!r}"
+                raise Exception(msg)
             helper_param["serial"] = serial
             helper_param["activationcode"] = normalize_activation_code(activationcode)
 
@@ -416,9 +416,8 @@ class Ocra2TokenClass(TokenClass):
 
         if key and key in res:
             ret = res.get(key)
-        else:
-            if ret == "all":
-                ret = res
+        elif ret == "all":
+            ret = res
 
         return ret
 
@@ -435,7 +434,6 @@ class Ocra2TokenClass(TokenClass):
         self.transId = 0
 
         self.mode = ["challenge"]
-        return
 
     def getInfo(self):
         """
@@ -471,7 +469,7 @@ class Ocra2TokenClass(TokenClass):
 
             self.addToTokenInfo("ocrasuite", self.ocraSuite)
 
-        if params.get("activationcode", None):
+        if params.get("activationcode", None):  # noqa: SIM102
             # due to changes in the tokenclass parameter handling
             # we have to add for compatibility a genkey parameter
             if "otpkey" not in params and "genkey" not in params:
@@ -496,8 +494,6 @@ class Ocra2TokenClass(TokenClass):
 
         self._rollout_1(params)
         self._rollout_2(params)
-
-        return
 
     def _rollout_1(self, params):
         """
@@ -552,13 +548,11 @@ class Ocra2TokenClass(TokenClass):
             # the info url must be provided in any case
             info["url"] = callback
 
-            info["app_import"] = "lseqr://init?%s" % (urllib.parse.urlencode(uInfo))
+            info["app_import"] = f"lseqr://init?{urllib.parse.urlencode(uInfo)}"
             del info["ocrasuite"]
             self.info = info
 
             self.token.LinOtpIsactive = False
-
-        return
 
     def get_enrollment_status(self):
         """
@@ -569,7 +563,7 @@ class Ocra2TokenClass(TokenClass):
         if "rollout" in info:
             return {
                 "status": "not completed",
-                "rollout": "%r" % info["rollout"],
+                "rollout": "{!r}".format(info["rollout"]),
             }
 
         if "ocrasuite" not in info:
@@ -655,10 +649,11 @@ class Ocra2TokenClass(TokenClass):
             # genkey might have created a new key, so we have to rely on
             encSharedSecret = self.getFromTokenInfo("sharedSecret", None)
             if encSharedSecret is None:
-                raise Exception(
+                msg = (
                     "missing shared secret of initialition for "
-                    "token %r" % (self.getSerial())
+                    f"token {self.getSerial()!r}"
                 )
+                raise Exception(msg)
 
             sharedSecret = SecretObj.decrypt_pin(encSharedSecret)
 
@@ -709,23 +704,18 @@ class Ocra2TokenClass(TokenClass):
                 uInfo["u"] = ustr[2:]
                 info["url"] = url
 
-            app_import = "lseqr://nonce?%s" % (urllib.parse.urlencode(uInfo))
+            app_import = f"lseqr://nonce?{urllib.parse.urlencode(uInfo)}"
 
             # add a signature of the url
             signature = {"si": self.signData(app_import)}
             info["signature"] = signature.get("si")
 
-            info["app_import"] = "%s&%s" % (
-                app_import,
-                urllib.parse.urlencode(signature),
-            )
+            info["app_import"] = f"{app_import}&{urllib.parse.urlencode(signature)}"
             self.info = info
 
             # setup new state
             self.addToTokenInfo("rollout", "2")
             self.enable(True)
-
-        return
 
     def getOcraSuiteSuite(self):
         """
@@ -857,7 +847,7 @@ class Ocra2TokenClass(TokenClass):
             challenge = ocraSuite.data2hashChallenge(input_data)
 
         store_data = {
-            "challenge": "%s" % (challenge),
+            "challenge": f"{challenge}",
             "serial": self.token.getSerial(),
             "input": "",
             "url": "",
@@ -920,12 +910,12 @@ class Ocra2TokenClass(TokenClass):
         }
 
         # create the app_url from the data
-        dataobj = "lseqr://req?%s" % urllib.parse.urlencode(uInfo)
+        dataobj = f"lseqr://req?{urllib.parse.urlencode(uInfo)}"
 
         # append the signature to the url
         signature = {"si": self.signData(dataobj)}
         uInfo["si"] = signature
-        dataobj = "%s&%s" % (dataobj, urllib.parse.urlencode(signature))
+        dataobj = f"{dataobj}&{urllib.parse.urlencode(signature)}"
 
         detail["data"] = dataobj
         detail["ocraurl"] = {
@@ -999,10 +989,9 @@ class Ocra2TokenClass(TokenClass):
             c_data = ocraSuite.combineData(**param)
             ocraSuite.compute(c_data)
 
-        except Exception as ex:
-            raise Exception(
-                "[Ocra2TokenClass] Failed to create ocrasuite challenge: %r" % (ex)
-            )
+        except Exception as exx:
+            msg = f"[Ocra2TokenClass] Failed to create ocrasuite challenge: {exx!r}"
+            raise Exception(msg) from exx
 
         # create a non exisiting challenge
         try:
@@ -1011,12 +1000,11 @@ class Ocra2TokenClass(TokenClass):
             transid = opt.get("transactionid")
             challenge = opt.get("challenge")
 
-        except Exception as ex:
+        except Exception as exx:
             # this might happen if we have a db problem or
             # the uniqnes constrain does not fit
-            raise Exception(
-                "[Ocra2TokenClass] Failed to create challenge object: %s" % (ex)
-            )
+            msg = f"[Ocra2TokenClass] Failed to create challenge object: {exx}"
+            raise Exception(msg) from exx
 
         tokenrealms = self.token.getRealms()
         realms = [realm.name for realm in tokenrealms]
@@ -1050,7 +1038,7 @@ class Ocra2TokenClass(TokenClass):
             if "data" in options or "challenge" in options:
                 request_is_valid = True
         else:
-            tok = super(Ocra2TokenClass, self)
+            tok = super()
             request_is_valid = tok.is_challenge_request(passw, user, options=options)
 
         return request_is_valid
@@ -1082,12 +1070,11 @@ class Ocra2TokenClass(TokenClass):
             if check_pin(self, passw, user, options=options):
                 return False
 
-            if challenges is not None and len(challenges) > 0:
-                challenge_response = True
-
-            # we might have a direct challenge:
-            # direct challenge comes along with a pin+otp and direct challenge
-            elif "challenge" in options or "data" in options:
+            if (
+                (challenges is not None and len(challenges) > 0)
+                or "challenge" in options
+                or "data" in options
+            ):
                 challenge_response = True
 
         elif "challenge" in options or "data" in options:
@@ -1119,22 +1106,20 @@ class Ocra2TokenClass(TokenClass):
 
         if options is not None:
             loptions.update(options)
-        if "session" in loptions:
-            del loptions["session"]
+        loptions.pop("session", None)
 
         (pin, otpval) = self.splitPinPass(passw)
         res = self.checkPin(pin)
 
-        if res is False:
-            if "transactionid" in options or "state" in options:
-                transactionid = options.get("state", options.get("transactionid"))
-                for challenge in challenges:
-                    transid = challenge.get("transid", None)
-                    if transid == transactionid:
-                        res = True
-                        pin = None
-                        otpval = passw
-                        break
+        if res is False and ("transactionid" in options or "state" in options):
+            transactionid = options.get("state", options.get("transactionid"))
+            for challenge in challenges:
+                transid = challenge.get("transid", None)
+                if transid == transactionid:
+                    res = True
+                    pin = None
+                    otpval = passw
+                    break
 
         if res is True:
             window = self.getCounterWindow()
@@ -1149,10 +1134,8 @@ class Ocra2TokenClass(TokenClass):
             for challenge in challenges:
                 # checkOtp recieve the challenge in the options
                 # as transcationid
-                try:
+                with contextlib.suppress(Exception):
                     transid = challenge.get("transid", None)
-                except Exception:
-                    pass
                 if transid is not None:
                     mids[transid] = challenge
 
@@ -1209,10 +1192,9 @@ class Ocra2TokenClass(TokenClass):
                     (rec_tan, rec_valid) = chall.getTanStatus()
                     if rec_tan is False:
                         challenges.append(chall)
-                    elif rec_valid is False:
+                    elif rec_valid is False and chall.getTanCount() <= maxRequests:
                         # # add all touched but failed challenges
-                        if chall.getTanCount() <= maxRequests:
-                            challenges.append(chall)
+                        challenges.append(chall)
 
         if "challenge" in options:
             # direct challenge - there might be addtionalget info like
@@ -1227,13 +1209,12 @@ class Ocra2TokenClass(TokenClass):
                     if rec_tan is False:
                         # # add all untouched challenges
                         challenges.append(chall)
-                    elif rec_valid is False:
+                    elif rec_valid is False and chall.getTanCount() <= maxRequests:
                         # add all touched but failed challenges
-                        if chall.getTanCount() <= maxRequests:
-                            challenges.append(chall)
+                        challenges.append(chall)
 
         if len(challenges) == 0:
-            err = "No open transaction found for token %s" % serial
+            err = f"No open transaction found for token {serial}"
             log.info(err)  # TODO should log and fail!!
             return -1
 
@@ -1284,9 +1265,8 @@ class Ocra2TokenClass(TokenClass):
                 challenge["challenge"] = ch.get("challenge")
 
             if challenge.get("challenge") is None:
-                raise Exception(
-                    "could not checkOtp due to missing challenge in request: %r" % ch
-                )
+                msg = f"could not checkOtp due to missing challenge in request: {ch!r}"
+                raise Exception(msg)
 
             ret = ocraSuite.checkOtp(
                 passw,
@@ -1304,14 +1284,13 @@ class Ocra2TokenClass(TokenClass):
 
             # we do not support retry checks anymore:
             # which means, that ret might be smaller than the actual counter
-            if ocraSuite.T is None:
-                if ret + retry_window < counter:
-                    ret = -1
+            if ocraSuite.T is None and ret + retry_window < counter:
+                ret = -1
 
             if ret != -1:
                 break
 
-        if -1 == ret:
+        if ret == -1:
             # autosync: test if two consecutive challenges + it's counter match
             ret = self.autosync(ocraSuite, passw, challenge)
 
@@ -1333,16 +1312,16 @@ class Ocra2TokenClass(TokenClass):
             setting = getFromConfig("AutoResync")
             if setting is None:
                 autosync = False
-            elif "true" == setting.lower():
+            elif setting.lower() == "true":
                 autosync = True
-            elif "false" == setting.lower():
+            elif setting.lower() == "false":
                 autosync = False
         except Exception as ex:
             log.error("autosync check undefined %r", ex)
             return res
 
-        " if autosync is not enabled: do nothing "
-        if False == autosync:
+        # if autosync is not enabled: do nothing
+        if not autosync:
             return res
 
         ##
@@ -1428,23 +1407,21 @@ class Ocra2TokenClass(TokenClass):
                 lChallange = tinfo.get("lChallenge")
                 count_0 = lChallange.get("otpc")
 
-                if ocraSuite.C is not None:
+                if ocraSuite.C is not None and count_1 - count_0 < 2:
                     # sync the counter based ocra token
-                    if count_1 - count_0 < 2:
-                        self.setOtpCount(count_1)
-                        res = count_1
+                    self.setOtpCount(count_1)
+                    res = count_1
 
-                if ocraSuite.T is not None:
+                if ocraSuite.T is not None and count_1 - count_0 < ocraSuite.T * 2:
                     # sync the timebased ocra token
-                    if count_1 - count_0 < ocraSuite.T * 2:
-                        # calc the new timeshift !
 
-                        currenttime = int(time.time())
-                        new_shift = count_1 - currenttime
+                    # calc the new timeshift !
+                    currenttime = int(time.time())
+                    new_shift = count_1 - currenttime
 
-                        tinfo["timeShift"] = new_shift
-                        self.setOtpCount(count_1)
-                        res = count_1
+                    tinfo["timeShift"] = new_shift
+                    self.setOtpCount(count_1)
+                    res = count_1
 
                 # if we came here, the old challenge is not required anymore
                 del tinfo["lChallenge"]
@@ -1493,14 +1470,14 @@ class Ocra2TokenClass(TokenClass):
 
                 log.info("rollout for token %r not completed", self.getSerial())
 
-        except Exception as ex:
+        except Exception as exx:
             log.error(
                 "[Ocra2TokenClass:statusValidationFail] Error during "
                 "validation finalisation for token %r :%r",
                 self.getSerial(),
-                ex,
+                exx,
             )
-            raise Exception(ex)
+            raise Exception(exx) from exx
 
         finally:
             if challenge is not None:
@@ -1537,7 +1514,8 @@ class Ocra2TokenClass(TokenClass):
             log.info("rollout for token %r completed", self.getSerial())
 
         elif rolloutState == "1":
-            raise Exception("unable to complete the rollout ")
+            msg = "unable to complete the rollout "
+            raise Exception(msg)
 
         return
 
@@ -1584,7 +1562,8 @@ class Ocra2TokenClass(TokenClass):
 
         if len(challenge1) == 0 or len(challenge2) == 0:
             error = "No challeges found!"
-            raise Exception("[Ocra2TokenClass:resync] %s" % (error))
+            msg = f"[Ocra2TokenClass:resync] {error}"
+            raise Exception(msg)
 
         secObj = self._get_secret_object()
         ocraSuite = OcraSuite(self.getOcraSuiteSuite(), secObj)
@@ -1633,28 +1612,27 @@ class Ocra2TokenClass(TokenClass):
                     log.info("[resync] lookup for second otp value failed!")
                     ret = False
                 else:
-                    if ocraSuite.C is not None:
-                        if count_1 + 1 == count_2:
-                            self.setOtpCount(count_2)
-                            ret = True
+                    if ocraSuite.C is not None and count_1 + 1 == count_2:
+                        self.setOtpCount(count_2)
+                        ret = True
 
-                    if ocraSuite.T is not None:
-                        if count_1 - count_2 <= ocraSuite.T * 2:
-                            # callculate the timeshift
-                            date = datetime.datetime.fromtimestamp(count_2)
-                            log.info(
-                                "[resync] syncing token to new timestamp: %r",
-                                date,
-                            )
+                    if ocraSuite.T is not None and count_1 - count_2 <= ocraSuite.T * 2:
+                        # callculate the timeshift
+                        date = datetime.datetime.fromtimestamp(count_2)
+                        log.info(
+                            "[resync] syncing token to new timestamp: %r",
+                            date,
+                        )
 
-                            now = datetime.datetime.utcnow()
-                            stime = now.strftime("%s")
-                            timeShift = count_2 - int(stime)
-                            self.addToTokenInfo("timeShift", timeShift)
-                            ret = True
+                        now = datetime.datetime.utcnow()
+                        stime = now.strftime("%s")
+                        timeShift = count_2 - int(stime)
+                        self.addToTokenInfo("timeShift", timeShift)
+                        ret = True
 
-        except Exception as ex:
-            raise Exception("[Ocra2TokenClass:resync] unknown error: %s" % (ex))
+        except Exception as exx:
+            msg = f"[Ocra2TokenClass:resync] unknown error: {exx}"
+            raise Exception(msg) from exx
 
         return ret
 
@@ -1712,7 +1690,7 @@ class Ocra2TokenClass(TokenClass):
             response_detail["otpkey"] = {
                 "order": "1",
                 "description": _("OTP seed"),
-                "value": "seed://%s" % otpkey,
+                "value": f"seed://{otpkey}",
                 "img": create_img(otpkey, width=200),
             }
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -201,4 +200,3 @@ class OcraTest(unittest.TestCase):
                 data = ocra.combineData(**params)
                 otp = ocra.compute(data, key)
                 assert otp == result
-        return

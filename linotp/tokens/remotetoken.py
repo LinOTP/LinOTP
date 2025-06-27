@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -145,9 +144,8 @@ class RemoteTokenClass(TokenClass):
 
         if key is not None and key in res:
             ret = res.get(key)
-        else:
-            if ret == "all":
-                ret = res
+        elif ret == "all":
+            ret = res
 
         return ret
 
@@ -161,8 +159,9 @@ class RemoteTokenClass(TokenClass):
 
         try:
             self.remoteServer = param["remote.server"]
-        except KeyError:
-            raise ParameterError("Missing parameter: 'remote.server'")
+        except KeyError as exx:
+            msg = "Missing parameter: 'remote.server'"
+            raise ParameterError(msg) from exx
 
         # if another OTP length would be specified in /admin/init this would
         # be overwritten by the parent class, which is ok.
@@ -197,8 +196,6 @@ class RemoteTokenClass(TokenClass):
         self.addToTokenInfo("remote.realm", self.remoteRealm)
         self.addToTokenInfo("remote.resConf", self.remoteResConf)
 
-        return
-
     def check_pin_local(self):
         """
         lookup if pin should be checked locally or on remote host
@@ -206,7 +203,7 @@ class RemoteTokenClass(TokenClass):
         :return: bool
         """
         local_check = False
-        if 1 == int(self.getFromTokenInfo("remote.local_checkpin")):
+        if int(self.getFromTokenInfo("remote.local_checkpin")) == 1:
             local_check = True
 
         # preserve this info for later uasge
@@ -323,14 +320,13 @@ class RemoteTokenClass(TokenClass):
             if len(remotePath) == 0:
                 remotePath = "/validate/check"
 
+        # There is no remote.serial and no remote.user, so we will
+        # try to pass the requesting user.
+        elif user is None:
+            log.warning("FIXME: We do not know the user at the moment!")
         else:
-            # There is no remote.serial and no remote.user, so we will
-            # try to pass the requesting user.
-            if user is None:
-                log.warning("FIXME: We do not know the user at the moment!")
-            else:
-                params["user"] = user.login
-                params["realm"] = user.realm
+            params["user"] = user.login
+            params["realm"] = user.realm
 
         params["pass"] = otpval
         if transactionid is not None:
@@ -338,10 +334,7 @@ class RemoteTokenClass(TokenClass):
 
         # use a POST request to check the token
         data = urllib.parse.urlencode(params)
-        request_url = "%s/%s" % (
-            remoteServer.rstrip("/"),
-            remotePath.lstrip("/"),
-        )
+        request_url = f"{remoteServer.rstrip('/')}/{remotePath.lstrip('/')}"
 
         reply = {}
         otp_count = -1
@@ -387,14 +380,13 @@ class RemoteTokenClass(TokenClass):
                     if auth_info and not self.local_pin_check:
                         self.auth_info["auth_info"] = auth_info
 
-                else:
-                    # if false and detail - this is a challenge response
-                    if "detail" in result:
-                        reply = copy.deepcopy(result["detail"])
-                        otp_count = -1
-                        res = False
-                        self.isRemoteChallengeRequest = True
-                        self.remote_challenge_response = reply
+                # if false and detail - this is a challenge response
+                elif "detail" in result:
+                    reply = copy.deepcopy(result["detail"])
+                    otp_count = -1
+                    res = False
+                    self.isRemoteChallengeRequest = True
+                    self.remote_challenge_response = reply
 
         except Exception as exx:
             log.error(

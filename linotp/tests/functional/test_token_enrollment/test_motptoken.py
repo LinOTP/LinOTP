@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -76,7 +75,8 @@ class TestMOTPTokenEnrollController(TestController):
         response = self.make_userservice_request("enroll", params, (self.user, self.pw))
         # Ensure that seed matches otpkey provided, or at least looks reasonable
         assert "otpkey" in response.json["detail"]
-        assert (value := response.json["detail"]["otpkey"].get("value")) is not None
+        value = response.json["detail"]["otpkey"].get("value")
+        assert value is not None
         assert value.startswith("seed://")
         seed = value[7:]
         if otpkey:

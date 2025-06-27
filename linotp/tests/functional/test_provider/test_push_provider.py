@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,10 +26,10 @@
 
 import logging
 import os
+from unittest.mock import patch
 
 import pytest
 import requests
-from mock import patch
 from requests.exceptions import ConnectionError
 
 from linotp.provider.pushprovider.default_push_provider import (
@@ -83,7 +82,7 @@ class TestPushProviderController(TestController):
 
     def tearDown(self):
         self.delete_all_resolvers()
-        super(TestPushProviderController, self).tearDown()
+        super().tearDown()
 
     def test_timeout_negative(self):
         """
@@ -92,7 +91,7 @@ class TestPushProviderController(TestController):
 
         push_prov = DefaultPushProvider()
         with pytest.raises(ValueError):
-            push_prov.loadConfig(dict(timeout="-1", push_url="https://x"))
+            push_prov.loadConfig({"timeout": "-1", "push_url": "https://x"})
 
     def test_timeout_invalid_tuple_size(self):
         """
@@ -101,16 +100,16 @@ class TestPushProviderController(TestController):
 
         push_prov = DefaultPushProvider()
         with pytest.raises(ValueError):
-            push_prov.loadConfig(dict(timeout="1,", push_url="https://x"))
+            push_prov.loadConfig({"timeout": "1,", "push_url": "https://x"})
 
         with pytest.raises(ValueError):
-            push_prov.loadConfig(dict(timeout="1,2,3", push_url="https://x"))
+            push_prov.loadConfig({"timeout": "1,2,3", "push_url": "https://x"})
 
         with pytest.raises(ValueError):
-            push_prov.loadConfig(dict(timeout="1,2,3,", push_url="https://x"))
+            push_prov.loadConfig({"timeout": "1,2,3,", "push_url": "https://x"})
 
         with pytest.raises(ValueError):
-            push_prov.loadConfig(dict(timeout="1,2,3,4", push_url="https://x"))
+            push_prov.loadConfig({"timeout": "1,2,3,4", "push_url": "https://x"})
 
     def test_timeout_doesnt_accept_strings(self):
         """
@@ -128,16 +127,18 @@ class TestPushProviderController(TestController):
         ]:
             v = str(s)
             with pytest.raises(ValueError):
-                push_prov.loadConfig(dict(timeout=v, push_url="https://x"))
+                push_prov.loadConfig({"timeout": v, "push_url": "https://x"})
 
         with pytest.raises(ValueError):
-            push_prov.loadConfig(dict(timeout="invalid,timeout", push_url="https://x"))
+            push_prov.loadConfig(
+                {"timeout": "invalid,timeout", "push_url": "https://x"}
+            )
 
         with pytest.raises(ValueError):
-            push_prov.loadConfig(dict(timeout="1,timeout", push_url="https://x"))
+            push_prov.loadConfig({"timeout": "1,timeout", "push_url": "https://x"})
 
         with pytest.raises(ValueError):
-            push_prov.loadConfig(dict(timeout="invalid,1", push_url="https://x"))
+            push_prov.loadConfig({"timeout": "invalid,1", "push_url": "https://x"})
 
     def test_read_config(self):
         """
@@ -271,8 +272,6 @@ class TestPushProviderController(TestController):
             configDict["server_certificate"] = server_cert_file_name
             push_prov.loadConfig(configDict)
 
-        return
-
     @patch.object(requests, "post", generate_mocked_http_response())
     def test_request(self):
         """
@@ -300,8 +299,6 @@ class TestPushProviderController(TestController):
         assert status
         assert response == VALID_REQUEST
 
-        return
-
 
 def cond_failing_http_response(*args, **kwargs):
     url = args[0]
@@ -311,7 +308,8 @@ def cond_failing_http_response(*args, **kwargs):
     if "success" in url:
         return generate_mocked_http_response()(*args, **kwargs)
 
-    raise requests.ConnectionError("this request should fail")
+    msg = "this request should fail"
+    raise requests.ConnectionError(msg)
 
 
 class TestPushProviderFailover(TestController):

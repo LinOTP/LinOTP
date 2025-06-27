@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -44,11 +43,11 @@ instance from MySQL to PostgreSQL (for example).
 import binascii
 import os
 import sys
+from io import StringIO
 
 import click
 from flask import current_app
 from flask.cli import AppGroup
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.ext.serializer import dumps, loads
 
 from linotp.lib.audit.SQLAudit import AuditTable
@@ -88,7 +87,7 @@ def create_command():
         backup_database_tables()
         current_app.echo("finished", v=1)
     except Exception as exx:
-        current_app.echo("Failed to backup: %r" % exx)
+        current_app.echo(f"Failed to backup: {exx!r}")
         sys.exit(1)
 
 
@@ -98,7 +97,7 @@ def create_command():
     "--date",
     help=(
         "Restore a snapshot from a given date. "
-        "'date' must be in format '%s'." % TIME_FORMAT
+        f"'date' must be in format '{TIME_FORMAT}'."
     ),
 )
 @click.option(
@@ -132,7 +131,7 @@ def list_command():
         for backup_date, backup_file in list_database_backups():
             current_app.echo(f"{backup_date} {backup_file}", err=False)
         current_app.echo("Finished", v=1)
-    except Exception as exx:
+    except Exception:
         current_app.echo("Failed to list snapshot files: {exx!r}")
         sys.exit(1)
 
@@ -162,8 +161,7 @@ def backup_database_tables() -> int:
         backup_classes["AuditTable"] = AuditTable
 
     app.echo(
-        "extracting data from: %r:%r"
-        % (db.engine.url.drivername, db.engine.url.database),
+        f"extracting data from: {db.engine.url.drivername!r}:{db.engine.url.database!r}",
         v=1,
     )
 
@@ -181,32 +179,31 @@ def backup_database_tables() -> int:
     filename = get_backup_filename(backup_filename_template)
     backup_filename = os.path.join(backup_dir, filename)
 
-    app.echo("Creating backup file: %s" % backup_filename, v=1)
+    app.echo(f"Creating backup file: {backup_filename}", v=1)
 
     with open(backup_filename, "w") as backup_file:
         for name, model_class in backup_classes.items():
-            app.echo("Saving %s" % name, v=1)
+            app.echo(f"Saving {name}", v=1)
 
-            backup_file.write("--- BEGIN %s\n" % name)
+            backup_file.write(f"--- BEGIN {name}\n")
 
             data_query = model_class.query
 
-            pb_file = (
-                None if app.echo.verbosity > 1 else open("/dev/null", "w")
-            )  # None => stdout
+            pb_file = None if app.echo.verbosity > 1 else StringIO()  # None => stdout
 
             with click.progressbar(
                 data_query.all(), label=name, file=pb_file
             ) as all_data:
-                for data in all_data:
-                    backup_file.write(binascii.hexlify(dumps(data)).decode("utf-8"))
+                backup_file.writelines(
+                    binascii.hexlify(dumps(data)).decode("utf-8") for data in all_data
+                )
 
                 app.echo(".", v=2, nl=False)
 
             # final newline for detail
             app.echo("", v=2)
 
-            backup_file.write("\n--- END %s\n" % name)
+            backup_file.write(f"\n--- END {name}\n")
 
 
 def list_database_backups() -> list:
@@ -226,7 +223,7 @@ def list_database_backups() -> list:
     backup_dir = app.config["BACKUP_DIR"]
 
     if not os.path.exists(backup_dir):
-        app.echo("no backup directory found: %s" % backup_dir, v=2)
+        app.echo(f"no backup directory found: {backup_dir}", v=2)
         return
 
     # ---------------------------------------------------------------------- --
@@ -248,8 +245,10 @@ def list_database_backups() -> list:
 
 
 def _get_restore_filename(
-    template: str, filename: str = None, date: str = None
-) -> str or None:
+    template: str,
+    filename: str | None = None,
+    date: str | None = None,
+) -> str:
     """
     helper for restore, to determin a filename from a given date or file name
 
@@ -280,24 +279,26 @@ def _get_restore_filename(
 
     if not filename and not date:
         app.echo("failed to restore - no date or file name parameter provided", v=1)
-        raise ValueError("no date or file name parameter provided!")
+        msg = "no date or file name parameter provided!"
+        raise ValueError(msg)
 
     # ---------------------------------------------------------------------- --
 
     # verify that the file to restore from exists
 
     if not os.path.isfile(backup_filename):
-        app.echo("Failed to restore %s - not found or not accessible" % backup_filename)
-        raise FileNotFoundError(
-            "failed to restore %s - not found or not accessible" % backup_filename
-        )
+        app.echo(f"Failed to restore {backup_filename} - not found or not accessible")
+        msg = f"failed to restore {backup_filename} - not found or not accessible"
+        raise FileNotFoundError(msg)
 
     return backup_filename
 
 
 def restore_database_tables(
-    filename: str = None, date: str = None, table: str = None
-) -> int:
+    filename: str | None = None,
+    date: str | None = None,
+    table: str | None = None,
+) -> None:
     """
     restore the database tables from a file or for a given date
        optionally restore only one table
@@ -335,9 +336,8 @@ def restore_database_tables(
                 f"selected table {table} is not in the set of supported tables",
                 v=1,
             )
-            raise ValueError(
-                f"selected table {table} is not in the set of supported tables"
-            )
+            msg = f"selected table {table} is not in the set of supported tables"
+            raise ValueError(msg)
 
     # ---------------------------------------------------------------------- --
 
@@ -349,7 +349,7 @@ def restore_database_tables(
 
     # restore the sqlalchemy dump from file
 
-    with open(backup_filename, "r") as backup_file:
+    with open(backup_filename) as backup_file:
         for line in backup_file:
             line = line.strip()
 
@@ -372,7 +372,7 @@ def restore_database_tables(
 
                 db.session.merge(restore_query)
 
-                app.echo("Restoring %r" % name, v=1)
+                app.echo(f"Restoring {name!r}", v=1)
 
     # finally commit all de-serialized objects
 

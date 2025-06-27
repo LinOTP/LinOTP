@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -148,4 +147,5 @@ class LicenseImport(ManageDialog):
         last_line = self.manage.alert_box_handler.last_line
 
         if last_line and last_line.type == "error":
-            raise FileUploadException("Import failure: %r" % last_line.text)
+            msg = f"Import failure: {last_line.text!r}"
+            raise FileUploadException(msg)

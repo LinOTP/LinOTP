@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -116,7 +115,7 @@ from linotp.lib.userservice import (
     getTokenForUser,
     remove_auth_cookie,
 )
-from linotp.lib.util import generate_otpkey, get_client
+from linotp.lib.util import get_client
 from linotp.model import db
 from linotp.tokens.forwardtoken import ForwardTokenClass
 
@@ -515,11 +514,13 @@ class UserserviceController(BaseController):
             user = self._identify_user(params=param)
             if not user:
                 log.info("User %r not found", param.get("login"))
-                g.audit["action_detail"] = "User %r not found" % param.get("login")
+                g.audit["action_detail"] = "User {!r} not found".format(
+                    param.get("login")
+                )
                 g.audit["success"] = False
                 return sendResult(False, 0)
 
-            uid = "%s@%s" % (user.login, user.realm)
+            uid = f"{user.login}@{user.realm}"
 
             g.authUser = user
 
@@ -529,9 +530,9 @@ class UserserviceController(BaseController):
 
             try:
                 password = param["password"]
-            except KeyError as exx:
+            except KeyError:
                 log.info("Missing password for user %r", uid)
-                g.audit["action_detail"] = "Missing password for user %r" % uid
+                g.audit["action_detail"] = f"Missing password for user {uid!r}"
                 g.audit["success"] = False
                 return sendResult(False, 0)
 
@@ -551,7 +552,7 @@ class UserserviceController(BaseController):
 
             if not res:
                 log.info("User %r failed to authenticate!", uid)
-                g.audit["action_detail"] = "User %r failed to authenticate!" % uid
+                g.audit["action_detail"] = f"User {uid!r} failed to authenticate!"
                 g.audit["success"] = False
                 return sendResult(False, 0)
 
@@ -568,14 +569,14 @@ class UserserviceController(BaseController):
                 expires=expires,
             )
 
-            g.audit["action_detail"] = "expires: %s " % expiration
+            g.audit["action_detail"] = f"expires: {expiration} "
             g.audit["success"] = True
 
             db.session.commit()
             return sendResult(True, 0)
 
         except Exception as exx:
-            g.audit["info"] = ("%r" % exx)[:80]
+            g.audit["info"] = (f"{exx!r}")[:80]
             g.audit["success"] = False
 
             db.session.rollback()
@@ -594,7 +595,8 @@ class UserserviceController(BaseController):
         user, _client, auth_state, _state_data = get_cookie_authinfo(cookie)
 
         if not user:
-            raise UserNotFound("no user info in authentication cache")
+            msg = "no user info in authentication cache"
+            raise UserNotFound(msg)
 
         g.authUser = user
         request_context["selfservice"] = {"state": auth_state, "user": user}
@@ -606,7 +608,8 @@ class UserserviceController(BaseController):
             return self._login_with_cookie_challenge(cookie, params)
 
         else:
-            raise NotImplementedError("unknown state %r" % auth_state)
+            msg = f"unknown state {auth_state!r}"
+            raise NotImplementedError(msg)
 
     def _login_with_cookie_credentials(self, cookie, params):
         """
@@ -628,7 +631,9 @@ class UserserviceController(BaseController):
 
         # in case of a challenge trigger, provide default qr and push settings
         if "data" not in params and "content_type" not in params:
-            params["data"] = _("Selfservice Login Request\nUser: {}".format(user.login))
+            params["data"] = _("Selfservice Login Request\nUser: %s") % (
+                user.login if user else ""
+            )
             params["content_type"] = 0
 
         vh = ValidationHandler()
@@ -655,7 +660,7 @@ class UserserviceController(BaseController):
             )
 
             g.audit["success"] = True
-            g.audit["info"] = "User %r authenticated from otp" % user
+            g.audit["info"] = f"User {user!r} authenticated from otp"
 
             db.session.commit()
             return sendResult(res, 0)
@@ -745,7 +750,8 @@ class UserserviceController(BaseController):
         user, _client, _auth_state, state_data = get_cookie_authinfo(cookie)
 
         if not state_data:
-            raise Exception("invalid state data")
+            msg = "invalid state data"
+            raise Exception(msg)
 
         # if there has been a challenge triggerd before, we can extract
         # the the transaction info from the cookie cached data
@@ -785,8 +791,8 @@ class UserserviceController(BaseController):
             )
 
             g.audit["success"] = True
-            g.audit["action_detail"] = "expires: %s " % expiration
-            g.audit["info"] = "%r logged in " % user
+            g.audit["action_detail"] = f"expires: {expiration} "
+            g.audit["info"] = f"{user!r} logged in "
 
         db.session.commit()
         return sendResult(res, 0)
@@ -824,8 +830,8 @@ class UserserviceController(BaseController):
             )
 
             g.audit["success"] = True
-            g.audit["action_detail"] = "expires: %s " % expiration
-            g.audit["info"] = "%r logged in " % user
+            g.audit["action_detail"] = f"expires: {expiration} "
+            g.audit["info"] = f"{user!r} logged in "
 
         detail = get_transaction_detail(transid)
 
@@ -843,7 +849,7 @@ class UserserviceController(BaseController):
 
         if not user.checkPass(passw):
             log.info("User %r failed to authenticate!", user)
-            g.audit["action_detail"] = "User %r failed to authenticate!" % user
+            g.audit["action_detail"] = f"User {user!r} failed to authenticate!"
             g.audit["success"] = False
 
             db.session.commit()
@@ -870,8 +876,8 @@ class UserserviceController(BaseController):
                     expires=expires,
                 )
 
-                g.audit["action_detail"] = "expires: %s " % expiration
-                g.audit["info"] = "%r logged in " % user
+                g.audit["action_detail"] = f"expires: {expiration} "
+                g.audit["info"] = f"{user!r} logged in "
 
             elif not res and reply:
                 log.error("challenge trigger though otp is provided")
@@ -905,8 +911,8 @@ class UserserviceController(BaseController):
             "tokenList": tokenList,
         }
 
-        g.audit["action_detail"] = "expires: %s " % expiration
-        g.audit["info"] = "%r credentials verified" % user
+        g.audit["action_detail"] = f"expires: {expiration} "
+        g.audit["info"] = f"{user!r} credentials verified"
 
         g.audit["success"] = True
         db.session.commit()
@@ -934,7 +940,7 @@ class UserserviceController(BaseController):
             )
 
         g.audit["success"] = res
-        g.audit["info"] = "%r logged in " % user
+        g.audit["info"] = f"{user!r} logged in "
 
         db.session.commit()
 
@@ -994,7 +1000,8 @@ class UserserviceController(BaseController):
 
             user = self._identify_user(params=param)
             if not user:
-                raise UserNotFound("user %r not found!" % param.get("login"))
+                msg = "user {!r} not found!".format(param.get("login"))
+                raise UserNotFound(msg)
 
             g.authUser = user
 
@@ -1030,7 +1037,7 @@ class UserserviceController(BaseController):
         except (Unauthorized, Forbidden) as exx:
             log.error("userservice login failed: %r", exx)
 
-            g.audit["info"] = ("%r" % exx)[:80]
+            g.audit["info"] = (f"{exx!r}")[:80]
             g.audit["success"] = False
 
             raise exx
@@ -1038,7 +1045,7 @@ class UserserviceController(BaseController):
         except Exception as exx:
             log.error("userservice login failed: %r", exx)
 
-            g.audit["info"] = ("%r" % exx)[:80]
+            g.audit["info"] = (f"{exx!r}")[:80]
             g.audit["success"] = False
 
             db.session.rollback()
@@ -1097,7 +1104,7 @@ class UserserviceController(BaseController):
                 elif g.autoenroll and not otp:
                     (auto_enroll_return, reply) = th.auto_enrollToken(password, user)
                     if auto_enroll_return is False:
-                        error = "autoenroll: %r" % reply.get("error", "")
+                        error = "autoenroll: {!r}".format(reply.get("error", ""))
                         raise Exception(error)
                     # we always have to return a false, as we have
                     # a challenge tiggered
@@ -1124,9 +1131,9 @@ class UserserviceController(BaseController):
         """
 
         try:
-            if self.request_params.get("active", "").lower() in ["true"]:
-                active = True
-            elif self.request_params.get("active", "").lower() in ["false"]:
+            if self.request_params.get("active", "").lower() in [
+                "true"
+            ] or self.request_params.get("active", "").lower() in ["false"]:
                 active = True
             else:
                 active = None
@@ -1164,9 +1171,9 @@ class UserserviceController(BaseController):
 
         except Exception as exx:
             db.session.rollback()
-            error = "error (%r) " % exx
+            error = f"error ({exx!r}) "
             log.error(error)
-            return "<pre>%s</pre>" % error
+            return f"<pre>{error}</pre>"
 
         finally:
             db.session.close()
@@ -1194,9 +1201,9 @@ class UserserviceController(BaseController):
 
         except Exception as exx:
             db.session.rollback()
-            error = "error (%r) " % exx
+            error = f"error ({exx!r}) "
             log.error(error)
-            return "<pre>%s</pre>" % error
+            return f"<pre>{error}</pre>"
 
         finally:
             log.debug("done")
@@ -1274,7 +1281,8 @@ class UserserviceController(BaseController):
             try:
                 serial = param["serial"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx)
+                msg = f"Missing parameter: '{exx}'"
+                raise ParameterError(msg) from exx
 
             # check selfservice authorization
             checkPolicyPre("selfservice", "userenable", param, authUser=g.authUser)
@@ -1335,7 +1343,8 @@ class UserserviceController(BaseController):
             try:
                 serial = param["serial"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx)
+                msg = f"Missing parameter: '{exx}'"
+                raise ParameterError(msg) from exx
 
             # check selfservice authorization
             checkPolicyPre("selfservice", "userdisable", param, authUser=g.authUser)
@@ -1392,7 +1401,8 @@ class UserserviceController(BaseController):
             try:
                 serial = param["serial"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx)
+                msg = f"Missing parameter: '{exx}'"
+                raise ParameterError(msg) from exx
 
             th = TokenHandler()
             if th.isTokenOwner(serial, g.authUser):
@@ -1448,10 +1458,11 @@ class UserserviceController(BaseController):
             try:
                 serial = param["serial"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx)
+                msg = f"Missing parameter: '{exx}'"
+                raise ParameterError(msg) from exx
 
             th = TokenHandler()
-            if True == th.isTokenOwner(serial, g.authUser):
+            if th.isTokenOwner(serial, g.authUser) is True:
                 log.info(
                     "[userreset] user %s@%s is resetting the failcounter"
                     " of his token with serial %s",
@@ -1503,12 +1514,13 @@ class UserserviceController(BaseController):
             try:
                 serial = param["serial"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx)
+                msg = f"Missing parameter: '{exx}'"
+                raise ParameterError(msg) from exx
 
             upin = param.get("pin", None)
 
             th = TokenHandler()
-            if True == th.isTokenOwner(serial, g.authUser):
+            if th.isTokenOwner(serial, g.authUser) is True:
                 log.info(
                     "user %s@%s is unassigning his token with serial %s.",
                     g.authUser.login,
@@ -1565,10 +1577,11 @@ class UserserviceController(BaseController):
                 userPin = param["userpin"]
                 serial = param["serial"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx)
+                msg = f"Missing parameter: '{exx}'"
+                raise ParameterError(msg) from exx
 
             th = TokenHandler()
-            if True == th.isTokenOwner(serial, g.authUser):
+            if th.isTokenOwner(serial, g.authUser) is True:
                 log.info(
                     "user %s@%s is setting the OTP PIN for token with serial %s",
                     g.authUser.login,
@@ -1588,7 +1601,7 @@ class UserserviceController(BaseController):
 
                     return sendError(_("Error: %s") % check_res["error"])
 
-                if 1 == getOTPPINEncrypt(serial=serial, user=g.authUser):
+                if getOTPPINEncrypt(serial=serial, user=g.authUser) == 1:
                     param["encryptpin"] = "True"
                 ret = setPin(userPin, None, serial, param)
                 res["set userpin"] = ret
@@ -1632,10 +1645,11 @@ class UserserviceController(BaseController):
                 pin = param["pin"]
                 serial = param["serial"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx)
+                msg = f"Missing parameter: '{exx}'"
+                raise ParameterError(msg) from exx
 
             th = TokenHandler()
-            if True == th.isTokenOwner(serial, g.authUser):
+            if th.isTokenOwner(serial, g.authUser) is True:
                 log.info(
                     "user %s@%s is setting the mOTP PIN for token with serial %s",
                     g.authUser.login,
@@ -1691,10 +1705,11 @@ class UserserviceController(BaseController):
                 otp1 = param["otp1"]
                 otp2 = param["otp2"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx)
+                msg = f"Missing parameter: '{exx}'"
+                raise ParameterError(msg) from exx
 
             th = TokenHandler()
-            if True == th.isTokenOwner(serial, g.authUser):
+            if th.isTokenOwner(serial, g.authUser) is True:
                 log.info(
                     "user %s@%s is resyncing his token with serial %s",
                     g.authUser.login,
@@ -1773,7 +1788,8 @@ class UserserviceController(BaseController):
             serial = params.get("serial")
 
             if not serial and not transaction_id:
-                raise ParameterError("Missing parameter: serial or transactionid")
+                msg = "Missing parameter: serial or transactionid"
+                raise ParameterError(msg)
 
             # -------------------------------------------------------------- --
 
@@ -1782,30 +1798,32 @@ class UserserviceController(BaseController):
             supported_params = ["serial", "transactionid", "otp", "session"]
             unknown_params = [p for p in params if p not in supported_params]
             if len(unknown_params) > 0:
-                raise ParameterError("unsupported parameters: %r" % unknown_params)
+                msg = f"unsupported parameters: {unknown_params!r}"
+                raise ParameterError(msg)
 
             # -------------------------------------------------------------- --
 
             # identify the affected tokens
-            challenge = None
-
             if transaction_id:
                 reply = Challenges.get_challenges(transid=transaction_id)
                 _expired_challenges, valid_challenges = reply
 
                 if _expired_challenges:
-                    raise Exception("challenge already expired!")
+                    msg = "challenge already expired!"
+                    raise Exception(msg)
 
                 if not valid_challenges:
-                    raise Exception("no valid challenge found!")
+                    msg = "no valid challenge found!"
+                    raise Exception(msg)
 
                 if len(valid_challenges) != 1:
-                    raise Exception(
+                    msg = (
                         "Could not uniquely identify challenge for "
-                        "transaction id {} ".format(transaction_id)
+                        f"transaction id {transaction_id} "
                     )
+                    raise Exception(msg)
 
-                challenge = valid_challenges[0]
+                _challenge = valid_challenges[0]
 
                 serials = {c.tokenserial for c in valid_challenges}
 
@@ -1823,16 +1841,19 @@ class UserserviceController(BaseController):
             # one token which belongs to the authenticated user
 
             if len(tokens) == 0:
-                raise Exception("no token found!")
+                msg = "no token found!"
+                raise Exception(msg)
 
             if len(tokens) > 1:
-                raise Exception("multiple tokens found!")
+                msg = "multiple tokens found!"
+                raise Exception(msg)
 
             token = tokens[0]
 
             th = TokenHandler()
             if not th.isTokenOwner(token.getSerial(), g.authUser):
-                raise Exception("User is not token owner")
+                msg = "User is not token owner"
+                raise Exception(msg)
 
             # -------------------------------------------------------------- --
 
@@ -1924,9 +1945,8 @@ class UserserviceController(BaseController):
 
                     res, reply = Challenges.create_challenge(token, options=options)
                     if not res:
-                        raise Exception(
-                            "failed to trigger challenge {:r}".format(reply)
-                        )
+                        msg = f"failed to trigger challenge {reply:r}"
+                        raise Exception(msg)
 
                     if used_token_type == "qr":
                         transaction_data = reply["message"]
@@ -1938,7 +1958,8 @@ class UserserviceController(BaseController):
                     transaction_id = reply["transactionid"]
 
                 else:
-                    raise Exception("unsupported token mode")
+                    msg = "unsupported token mode"
+                    raise Exception(msg)
 
                 # -------------------------------------------------- --
                 # create the challenge detail response
@@ -2004,14 +2025,15 @@ class UserserviceController(BaseController):
             try:
                 serial = param["serial"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx)
+                msg = f"Missing parameter: '{exx}'"
+                raise ParameterError(msg) from exx
 
             # check selfservice authorization
             checkPolicyPre("selfservice", "userassign", param, g.authUser)
 
             # check if token is in another realm
             source_realms = getTokenRealms(serial)
-            if not g.authUser.realm.lower() in source_realms and len(source_realms):
+            if g.authUser.realm.lower() not in source_realms and len(source_realms):
                 # if the token is assigned to realms, then the user must be in
                 # one of the realms, otherwise the token can not be assigned
                 raise Exception(
@@ -2048,8 +2070,9 @@ class UserserviceController(BaseController):
 
             g.audit["realm"] = g.authUser.realm
             source_realms_reporting = source_realms or ["/:no realm:/"]
-            g.reporting["realms"] = source_realms_reporting + [
-                g.authUser.realm or "/:no realm:/"
+            g.reporting["realms"] = [
+                *source_realms_reporting,
+                g.authUser.realm or "/:no realm:/",
             ]
             g.audit["success"] = ret_assign
 
@@ -2096,7 +2119,8 @@ class UserserviceController(BaseController):
             try:
                 otp = param["otp"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx)
+                msg = f"Missing parameter: '{exx}'"
+                raise ParameterError(msg) from exx
 
             ttype = param.get("type", None)
 
@@ -2157,7 +2181,8 @@ class UserserviceController(BaseController):
             try:
                 tok_type = param["type"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx)
+                msg = f"Missing parameter: '{exx}'"
+                raise ParameterError(msg) from exx
 
             # check selfservice authorization
             checkPolicyPre("selfservice", "userinit", param, g.authUser)
@@ -2200,9 +2225,8 @@ class UserserviceController(BaseController):
 
             # enrollment of hotp (hmac), totp, or motp token
 
-            if tok_type in ["hmac", "totp", "motp"]:
-                if "otpkey" not in param:
-                    param["genkey"] = param.get("genkey", "1")
+            if tok_type in ["hmac", "totp", "motp"] and "otpkey" not in param:
+                param["genkey"] = param.get("genkey", "1")
 
             if tok_type == "hmac":
                 # --------------------------------------------------------- --
@@ -2368,12 +2392,13 @@ class UserserviceController(BaseController):
                 serial = param["serial"]
                 count = int(param["count"])
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx)
+                msg = f"Missing parameter: '{exx}'"
+                raise ParameterError(msg) from exx
 
             curTime = param.get("curTime", None)
 
             th = TokenHandler()
-            if True != th.isTokenOwner(serial, g.authUser):
+            if th.isTokenOwner(serial, g.authUser) is False:
                 error = _("The serial %s does not belong to user %s@%s") % (
                     serial,
                     g.authUser.login,
@@ -2385,13 +2410,12 @@ class UserserviceController(BaseController):
             max_count = checkPolicyPre("selfservice", "max_count", param, g.authUser)
             log.debug("checkpolicypre returned %s", max_count)
 
-            if count > max_count:
-                count = max_count
+            count = min(count, max_count)
 
             log.debug("[usergetmultiotp] retrieving OTP value for token %s", serial)
             ret = get_multi_otp(serial, count=int(count), curTime=curTime)
             if ret["result"] is False and max_count == -1:
-                ret["error"] = "%s - %s" % (
+                ret["error"] = "{} - {}".format(
                     ret["error"],
                     _("see policy definition."),
                 )
@@ -2517,7 +2541,8 @@ class UserserviceController(BaseController):
             try:
                 typ = param["type"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx)
+                msg = f"Missing parameter: '{exx}'"
+                raise ParameterError(msg) from exx
 
             if typ and typ.lower() not in ["ocra2"]:
                 return sendError(
@@ -2529,7 +2554,8 @@ class UserserviceController(BaseController):
             try:
                 helper_param["serial"] = param["serial"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx)
+                msg = f"Missing parameter: '{exx}'"
+                raise ParameterError(msg) from exx
 
             acode = param["activationcode"]
             helper_param["activationcode"] = acode.upper()
@@ -2537,7 +2563,8 @@ class UserserviceController(BaseController):
             try:
                 helper_param["genkey"] = param["genkey"]
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx)
+                msg = f"Missing parameter: '{exx}'"
+                raise ParameterError(msg) from exx
 
             th = TokenHandler()
             (ret, tokenObj) = th.initToken(helper_param, g.authUser)
@@ -2548,7 +2575,8 @@ class UserserviceController(BaseController):
                 info = tokenObj.getInfo()
                 serial = tokenObj.getSerial()
             else:
-                raise Exception("Token not found!")
+                msg = "Token not found!"
+                raise Exception(msg)
 
             url = info.get("app_import")
             trans = info.get("transactionid")
@@ -2556,7 +2584,7 @@ class UserserviceController(BaseController):
             ret = {
                 "url": url,
                 "img": create_img(url, width=400, alt=url),
-                "label": "%s@%s" % (g.authUser.login, g.authUser.realm),
+                "label": f"{g.authUser.login}@{g.authUser.realm}",
                 "serial": serial,
                 "transaction": trans,
             }
@@ -2609,7 +2637,8 @@ class UserserviceController(BaseController):
         try:
             typ = param.get("type", None)
             if not typ:
-                raise ParameterError("Missing parameter: type")
+                msg = "Missing parameter: type"
+                raise ParameterError(msg)
 
             # check selfservice authorization
 
@@ -2617,11 +2646,13 @@ class UserserviceController(BaseController):
 
             passw = param.get("pass", None)
             if not passw:
-                raise ParameterError("Missing parameter: pass")
+                msg = "Missing parameter: pass"
+                raise ParameterError(msg)
 
             transid = param.get("state", param.get("transactionid", None))
             if not transid:
-                raise ParameterError("Missing parameter: state or transactionid!")
+                msg = "Missing parameter: state or transactionid!"
+                raise ParameterError(msg)
 
             vh = ValidationHandler()
             (ok, reply) = vh.check_by_transactionid(
@@ -2646,7 +2677,7 @@ class UserserviceController(BaseController):
             return sendError(pe, 1)
 
         except Exception as e:
-            error = "[userfinishocra2token] token initialization failed! %r" % e
+            error = f"[userfinishocra2token] token initialization failed! {e!r}"
             log.error(error)
             db.session.rollback()
             return sendError(error, 1)
@@ -2679,14 +2710,16 @@ class UserserviceController(BaseController):
                 description = param["description"]
 
             except KeyError as exx:
-                raise ParameterError("Missing parameter: '%s'" % exx)
+                msg = f"Missing parameter: '{exx}'"
+                raise ParameterError(msg) from exx
 
             checkPolicyPre("selfservice", "usersetdescription", param, g.authUser)
 
             th = TokenHandler()
 
             if not th.isTokenOwner(serial, g.authUser):
-                raise Exception("User %r is not owner of the token" % g.authUser.login)
+                msg = f"User {g.authUser.login!r} is not owner of the token"
+                raise Exception(msg)
 
             log.info(
                 "user %s@%s is changing description of token with serial %s.",

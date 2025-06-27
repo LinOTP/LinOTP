@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -43,6 +42,7 @@ import logging
 
 from flask_babel import gettext as _
 
+import linotp.lib.policy
 from linotp.lib.auth.validate import check_otp, check_pin, split_pin_otp
 from linotp.lib.config import getFromConfig
 from linotp.lib.context import request_context as context
@@ -105,14 +105,12 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         self.token.setType(typ)
 
     def pair(self, response_data):
-        raise NotImplementedError(
-            "token type %s doesn't support pairing " % self.getType()
-        )
+        msg = f"token type {self.getType()} doesn't support pairing "
+        raise NotImplementedError(msg)
 
     def unpair(self):
-        raise NotImplementedError(
-            "token type %s doesn't support unpairing " % self.getType()
-        )
+        msg = f"token type {self.getType()} doesn't support unpairing "
+        raise NotImplementedError(msg)
 
     def is_auth_only_token(self, user):
         """
@@ -127,8 +125,6 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         if len(self.mode) == 1 and "challenge" in self.mode:
             return False
-
-        import linotp.lib.policy
 
         support_challenge_response = linotp.lib.policy.get_auth_challenge_response(
             user, self.type
@@ -147,8 +143,6 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         if not ("authenticate" in self.mode and "challenge" in self.mode):
             return False
-
-        import linotp.lib.policy
 
         support_challenge_response = linotp.lib.policy.get_auth_challenge_response(
             user, self.type
@@ -218,7 +212,8 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
     def setInfo(self, info):
         if type(info) not in (dict):
-            raise Exception("Info setting: wron data type - msut be dict")
+            msg = "Info setting: wron data type - msut be dict"
+            raise Exception(msg)
         self.info = info
         return self.info
 
@@ -347,9 +342,8 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         request_is_valid = False
 
         pin_match = check_pin(self, passw, user=user, options=options)
-        if pin_match is True:
-            if "data" in options or "challenge" in options:
-                request_is_valid = True
+        if pin_match is True and ("data" in options or "challenge" in options):
+            request_is_valid = True
 
         return request_is_valid
 
@@ -758,7 +752,6 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
                 )
                 log.error(msg)
                 raise Exception(msg)
-        import linotp.lib.policy
 
         support_challenge_response = linotp.lib.policy.get_auth_challenge_response(
             user, self.getType()
@@ -785,18 +778,17 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
                 log.error(exx)
                 raise
 
-        if otp_count < 0 or pin_match is False:
-            if (
-                support_challenge_response is True
-                and self.isActive()
-                and self.is_challenge_request(passw, user, options=options)
-            ):
-                # we are in createChallenge mode
-                # fix for #12413:
-                # - moved the create_challenge call to the checkTokenList!
-                # after all tokens are processed and only one is challengeing
-                # (_res, reply) = create_challenge(self.token, options=options)
-                self.challenge_token.append(self)
+        if (otp_count < 0 or pin_match is False) and (
+            support_challenge_response is True
+            and self.isActive()
+            and self.is_challenge_request(passw, user, options=options)
+        ):
+            # we are in createChallenge mode
+            # fix for #12413:
+            # - moved the create_challenge call to the checkTokenList!
+            # after all tokens are processed and only one is challengeing
+            # (_res, reply) = create_challenge(self.token, options=options)
+            self.challenge_token.append(self)
 
         if len(self.challenge_token) == 0:
             if otp_count >= 0:
@@ -835,7 +827,6 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
     def flush(self):
         self.token.storeToken()
         db.session.commit()
-        return
 
     def update(self, param, reset_failcount=True):
         # key_size as parameter overrules a prevoiusly set
@@ -856,14 +847,15 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         genkey = int(param.get("genkey", 0))
 
         if genkey not in [0, 1]:
-            raise Exception(
-                "TokenClass supports only genkey in range [0,1] : %r" % genkey
-            )
+            msg = f"TokenClass supports only genkey in range [0,1] : {genkey!r}"
+            raise Exception(msg)
 
         if genkey == 1 and otpKey is not None:
+            msg = (
+                "[ParameterError] You may either specifygenkey or otpkey, but not both!"
+            )
             raise ParameterError(
-                "[ParameterError] You may either specify"
-                "genkey or otpkey, but not both!",
+                msg,
                 id=344,
             )
 
@@ -874,8 +866,9 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         if otpKey is None and self.hKeyRequired is True:
             try:
                 otpKey = param["otpkey"]
-            except KeyError:
-                raise ParameterError("Missing parameter: 'otpkey'")
+            except KeyError as exx:
+                msg = "Missing parameter: 'otpkey'"
+                raise ParameterError(msg) from exx
 
         if otpKey is not None:
             self.validate_seed(otpKey)
@@ -907,7 +900,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
             if not param.get("description"):
                 path = scope.get("path", [])
-                if set(path) & set(["userservice", "validate"]):
+                if set(path) & {"userservice", "validate"}:
                     param["description"] = "rollout token"
 
         if param.get("description"):
@@ -922,15 +915,13 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         self.resetTokenInfo()
 
-        return
-
     def resetTokenInfo(self):
         """
         base token api - could be overwritten per token
         """
         return
 
-    def _genOtpKey_(self, otpkeylen: int = None) -> str:
+    def _genOtpKey_(self, otpkeylen: int | None = None) -> str:
         """
         private method, to create an otpkey
 
@@ -938,10 +929,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         :return: token seed / secret
         """
         if otpkeylen is None:
-            if hasattr(self, "otpkeylen"):
-                otpkeylen = getattr(self, "otpkeylen")
-            else:
-                otpkeylen = 20
+            otpkeylen = self.otpkeylen if hasattr(self, "otpkeylen") else 20
         return generate_otpkey(otpkeylen)
 
     def validate_seed(self, seed):
@@ -953,7 +941,6 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         :param seed: a string that should be checked for
         validity as a seed (aka otpkey)
         """
-        pass
 
     def setDescription(self, description):
         """
@@ -961,7 +948,6 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         :param description: set the token description
         """
         self.token.setDescription("" + description)
-        return
 
     def getDescription(self):
         """
@@ -979,7 +965,6 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         self.token.LinOtpSyncWindow = int(getFromConfig("DefaultSyncWindow") or 1000)
 
         self.token.LinOtpTokenType = "" + self.type
-        return
 
     def setUser(self, user, report):
         """
@@ -1029,7 +1014,6 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         self.token.LinOtpIdResolver = uidResolver
         self.token.LinOtpIdResClass = uidResClass
         self.token.LinOtpUserid = uid
-        return
 
     def reset(self):
         """
@@ -1136,7 +1120,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         storeHashed = True
         enc = param.get("encryptpin", None)
-        if enc is not None and "true" == enc.lower():
+        if enc is not None and enc.lower() == "true":
             storeHashed = False
 
         if storeHashed is True:
@@ -1187,9 +1171,10 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         try:
             self.token.storeToken()
-        except BaseException:
+        except BaseException as exx:
             log.error("Token fail counter update failed")
-            raise TokenAdminError("Token Fail Counter update failed", id=1106)
+            msg = "Token Fail Counter update failed"
+            raise TokenAdminError(msg, id=1106) from exx
 
         return self.token.LinOtpFailCount
 
@@ -1237,23 +1222,22 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
 
         self.token.LinOtpCount = counter + 1
 
-        if reset is True:
-            if getFromConfig("DefaultResetFailCount") == "True":
-                resetCounter = True
+        if reset is True and getFromConfig("DefaultResetFailCount") == "True":
+            resetCounter = True
 
-        if resetCounter is True:
-            if (
-                self.token.LinOtpFailCount < self.token.LinOtpMaxFail
-                and self.token.LinOtpIsactive is True
-            ):
-                self.token.LinOtpFailCount = 0
+        if resetCounter is True and (
+            self.token.LinOtpFailCount < self.token.LinOtpMaxFail
+            and self.token.LinOtpIsactive is True
+        ):
+            self.token.LinOtpFailCount = 0
 
         try:
             self.token.storeToken()
 
-        except Exception as ex:
-            log.error("Token Counter update failed: %r", ex)
-            raise TokenAdminError("Token Counter update failed: %r" % (ex), id=1106)
+        except Exception as exx:
+            log.error("Token Counter update failed: %r", exx)
+            msg = f"Token Counter update failed: {exx!r}"
+            raise TokenAdminError(msg, id=1106) from exx
 
         return self.token.LinOtpCount
 
@@ -1341,10 +1325,10 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         """
         ldict = {}
         for attr in self.__dict__:
-            key = "%r" % attr
-            val = "%r" % getattr(self, attr)
+            key = f"{attr!r}"
+            val = f"{getattr(self, attr)!r}"
             ldict[key] = val
-        res = "<%r %r>" % (self.__class__, ldict)
+        res = f"<{self.__class__!r} {ldict!r}>"
         return res
 
     def get_vars(self, save=False):
@@ -1358,12 +1342,12 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
             if key == "context":
                 continue
             val = getattr(self, attr)
-            if isinstance(val, (list, dict, str, int, float, bool)):
+            if isinstance(val, list | dict | str | int | float | bool):
                 ldict[key] = val
             elif type(val).__name__.startswith("Token"):
                 ldict[key] = val.get_vars(save=save)
             else:
-                ldict[key] = "%r" % val
+                ldict[key] = f"{val!r}"
         return ldict
 
     def get_enrollment_status(self):
@@ -1395,7 +1379,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
             response_detail["otpkey"] = {
                 "order": "1",
                 "description": _("OTP seed"),
-                "value": "seed://%s" % otpkey,
+                "value": f"seed://{otpkey}",
                 "img": create_img(otpkey, width=200),
             }
 
@@ -1406,10 +1390,9 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         url = None
         hparam = {}
 
-        if response_detail is not None:
-            if "enrollment_url" in response_detail:
-                url = response_detail.get("enrollment_url")
-                hparam["alt"] = url
+        if response_detail is not None and "enrollment_url" in response_detail:
+            url = response_detail.get("enrollment_url")
+            hparam["alt"] = url
 
         return url, hparam
 

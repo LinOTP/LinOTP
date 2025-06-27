@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -40,10 +39,9 @@ connection = serial
 """
 
 import logging
-import string
 import subprocess
 
-from linotp.provider import ProviderNotAvailable, provider_registry
+from linotp.provider import provider_registry
 from linotp.provider.smsprovider import ISMSProvider, getSMSProviderClass
 
 log = logging.getLogger(__name__)
@@ -122,7 +120,7 @@ def main(phone, message):
     sms = getSMSProviderClass("DeviceSMSProvider", "DeviceSMSProvider")()
 
     sms.loadConfig(config)
-    ret = sms.submitMessage(phone, message)
+    _ret = sms.submitMessage(phone, message)
     print(sms)
 
 

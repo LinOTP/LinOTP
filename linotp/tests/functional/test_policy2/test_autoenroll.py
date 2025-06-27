@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2018 KeyIdentity GmbH
@@ -30,8 +29,7 @@ Test the autoassignment Policy.
 """
 
 import json
-
-from mock import patch
+from unittest.mock import patch
 
 import linotp.provider.emailprovider
 from linotp.tests import TestController
@@ -206,8 +204,6 @@ class TestAutoassignSMSController(TestController):
         assert "this is your otp" in REQUEST_BODY["text"], REQUEST_BODY
         assert "sms submitted" in response, response
 
-        return
-
     @patch.object(
         linotp.provider.emailprovider.SMTPEmailProvider,
         "submitMessage",
@@ -266,8 +262,6 @@ class TestAutoassignSMSController(TestController):
         response = self.make_validate_request("check", params)
         assert '"value": true' in response.body, response
 
-        return
-
     @patch("requests.Session.post", mocked_http_request)
     def test_autoenroll_wildcard(self):
         """
@@ -299,8 +293,6 @@ class TestAutoassignSMSController(TestController):
         assert '"value": false' in response.body, response
         assert '"linotp_tokentype": "sms"' in response.body, response
         assert "sms submitted" in response.body, response
-
-        return
 
     def test_no_autoenrollment(self):
         """Test for response with no auto enrollment"""
@@ -350,8 +342,6 @@ class TestAutoassignSMSController(TestController):
         assert '"value": false' in response.body, response
         assert '"linotp_tokentype": "email"' in response.body, response
 
-        return
-
     @patch("requests.Session.post", mocked_http_request)
     def test_autoenroll_only_mobil(self):
         """
@@ -382,8 +372,6 @@ class TestAutoassignSMSController(TestController):
         response = self.make_validate_request("check", params)
         assert '"value": false' in response.body, response
         assert '"linotp_tokentype": "sms"' in response.body, response
-
-        return
 
 
 # eof

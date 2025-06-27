@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -31,8 +30,7 @@ Test the passthrough Policy in combination with the passOnNoToken
 """
 
 import unittest
-
-from mock import patch
+from unittest.mock import patch
 
 import linotp.lib.policy
 from linotp.lib.policy import get_single_auth_policy
@@ -93,35 +91,30 @@ class TestGetClientPolicy(unittest.TestCase):
         mock_get_policy_definitions.return_value = {
             "authentication": {"qrtoken_pairing_callback_url": {"type": "str"}}
         }
-        with patch.object(
-            linotp.lib.policy, "_get_client", autospec=True
-        ) as mock_get_client:
-            # ------------------------------------------------------------------ --
-
-            # call the get_policies function which must be mocked
-
-            with patch.object(
+        with (
+            patch.object(
+                linotp.lib.policy, "_get_client", autospec=True
+            ) as mock_get_client,
+            patch.object(
                 linotp.lib.policy.processing, "get_policies", autospec=True
-            ) as mock_get_policies:
-                # ---------------------------------------------------------- --
+            ) as mock_get_policies,
+        ):
+            # setup the to be called  mocked functions
+            mock_get_policies.side_effect = m_get_policies
+            mock_get_client.side_effect = m_get_client_match
 
-                # setup the to be called  mocked functions
+            action_value = get_single_auth_policy(
+                "qrtoken_pairing_callback_url", realms=["*"]
+            )
 
-                mock_get_policies.side_effect = m_get_policies
-                mock_get_client.side_effect = m_get_client_match
+            assert "client" in action_value
 
-                action_value = get_single_auth_policy(
-                    "qrtoken_pairing_callback_url", realms=["*"]
-                )
+            mock_get_client.side_effect = m_get_client_no_match
+            action_value = get_single_auth_policy(
+                "qrtoken_pairing_callback_url", realms=["*"]
+            )
 
-                assert "client" in action_value
-
-                mock_get_client.side_effect = m_get_client_no_match
-                action_value = get_single_auth_policy(
-                    "qrtoken_pairing_callback_url", realms=["*"]
-                )
-
-                assert "client" not in action_value
+            assert "client" not in action_value
 
 
 # eof #

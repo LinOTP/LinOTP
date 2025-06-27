@@ -24,7 +24,6 @@ Usage Example:
 """
 
 import logging
-from typing import Set, Union
 
 from linotp.lib.type_utils import get_ip_address, get_ip_network
 from linotp.lib.util import is_addr_in_network
@@ -38,7 +37,7 @@ class TrustedProxyHandler:
     it matches the trusted proxies in the settings.
     """
 
-    def __init__(self, app, trusted_proxies: Union[list, set]):
+    def __init__(self, app, trusted_proxies: list | set):
         self.app = app
         self.trusted_proxies = set(trusted_proxies)
 
@@ -76,7 +75,7 @@ class TrustedProxyHandler:
                 return ip
         return None
 
-    def _resolve_proxies(self, proxies: Set[str]):
+    def _resolve_proxies(self, proxies: set[str]):
         """
         Resolve DNS hostnames in the list of proxies to IP addresses.
 
@@ -94,7 +93,9 @@ class TrustedProxyHandler:
                 resolved_proxies.add(ip_addr)
             else:
                 log.warning(
-                    f"Disregarding non-supported or bad proxy definition: '{proxy}'. This could also be due to a domain name that could not be resolved"
+                    "Disregarding non-supported or bad proxy definition: '%s'. "
+                    "This could also be due to a domain name that could not be resolved",
+                    proxy,
                 )
 
         return resolved_proxies

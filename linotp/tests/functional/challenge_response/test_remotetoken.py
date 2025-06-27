@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -30,20 +29,12 @@
 Test challenge response functionality for the remote token
 """
 
-import binascii
 import json
 import logging
-import re
-import smtplib
-import time
 import urllib.parse
+from unittest.mock import patch
 
 import httplib2
-from mock import patch
-
-import linotp.provider.smsprovider.HttpSMSProvider
-from linotp.lib.HMAC import HmacOtp
-from linotp.tests import url
 
 from . import TestChallengeResponseController, calcOTP
 
@@ -93,10 +84,10 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         self.create_common_realms()
 
         if hasattr(self, "policies") is False:
-            setattr(self, "policies", [])
+            self.policies = []
 
         if hasattr(self, "serials") is False:
-            setattr(self, "serials", [])
+            self.serials = []
 
         self.patch_smtp = None
         self.patch_sms = None
@@ -104,7 +95,7 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
         self.delete_all_token()
         self.delete_all_policies()
 
-        self.remote_url = "http://127.0.0.1:%s" % self.paster_port
+        self.remote_url = f"http://127.0.0.1:{self.paster_port}"
 
     def tearDown(self):
         self.delete_all_token()
@@ -346,8 +337,6 @@ class TestRemotetokenChallengeController(TestChallengeResponseController):
             self.delete_token(serial)
 
         self.delete_policy(name="ch_resp")
-
-        return
 
     @patch.object(httplib2.Http, "request", mocked_http_request)
     def test_local_challenge(self):

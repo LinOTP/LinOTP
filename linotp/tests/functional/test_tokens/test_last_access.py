@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -103,7 +102,6 @@ class TestLastAccess(TestController):
         )
 
         self.delete_all_token()
-        return
 
     def test_last_access_timeformat(self):
         """check that last_access does work with time format expressions"""
@@ -188,4 +186,3 @@ class TestLastAccess(TestController):
         assert created_date < invalid_access_date < valid_access_date
 
         self.delete_all_token()
-        return

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -43,7 +41,8 @@ Defines the rough interface for a UserId Resolver
 """
 
 import logging
-from typing import Any, Callable, Dict, List, Tuple, Union
+from collections.abc import Callable
+from typing import Any
 
 from linotp.lib.type_utils import boolean
 
@@ -58,12 +57,10 @@ class ResolverNotAvailable(Exception):
     pass
 
 
-ResParamsType = Dict[
-    str, Tuple[bool, Union[str, bool, int, None], Callable[[Any], Any]]
-]
+ResParamsType = dict[str, tuple[bool, str | bool | int | None, Callable[[Any], Any]]]
 
 
-class UserIdResolver(object):
+class UserIdResolver:
     fields = {
         "username": 1,
         "userid": 1,
@@ -78,8 +75,8 @@ class UserIdResolver(object):
     name = ""
     id = ""
 
-    critical_parameters: List[str] = []
-    crypted_parameters: List[str] = []
+    critical_parameters: list[str] = []
+    crypted_parameters: list[str] = []
     resolver_parameters: ResParamsType = {"readonly": (False, False, boolean)}
 
     def __init(self):
@@ -281,11 +278,7 @@ class UserIdResolver(object):
                 search_keys.append(ext_key)
 
             else:
-                ext_key = "linotp.%s.%s.%s" % (
-                    cls.getResolverClassType(),
-                    key,
-                    conf,
-                )
+                ext_key = f"linotp.{cls.getResolverClassType()}.{key}.{conf}"
 
                 search_keys.append(ext_key)
 
@@ -355,15 +348,8 @@ def getResolverClass(packageName, className):
             attribute = att
             getattr(klass, att)
         ret = klass
-    except BaseException:
-        raise NameError(
-            "IdResolver AttributeError: "
-            + packageName
-            + "."
-            + className
-            + " instance has no attribute '"
-            + attribute
-            + "'"
-        )
+    except BaseException as exx:
+        msg = f"IdResolver AttributeError: {packageName}.{className} instance has no attribute '{attribute}'"
+        raise NameError(msg) from exx
 
     return ret

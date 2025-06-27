@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -100,24 +99,24 @@ def parseYubicoCSV(csv):
 
     log.debug("[parseYubicoCSV] the file contains %i tokens.", len(csv_array))
     for line in csv_array:
-        l = line.split(",")
+        cells = line.split(",")
         serial = ""
         key = ""
         otplen = 32
         public_id = ""
         slot = ""
-        if len(l) >= 6:
-            first_column = l[0].strip()
+        if len(cells) >= 6:
+            first_column = cells[0].strip()
             if first_column.lower() in [
                 "yubico otp",
                 "oath-hotp",
                 "static password",
             ]:
                 # traditional format
-                typ = l[0].strip()
-                slot = l[2].strip()
-                public_id = l[3].strip()
-                key = l[5].strip()
+                typ = cells[0].strip()
+                slot = cells[2].strip()
+                public_id = cells[3].strip()
+                key = cells[5].strip()
 
                 if public_id == "":
                     log.warning("No public ID in line %r", line)
@@ -129,7 +128,7 @@ def parseYubicoCSV(csv):
                 if typ.lower() == "yubico otp":
                     ttype = "yubikey"
                     otplen = 32 + len(public_id)
-                    serial = "UBAM%08d_%s" % (serial_int, slot)
+                    serial = f"UBAM{serial_int:08d}_{slot}"
                     TOKENS[serial] = {
                         "type": ttype,
                         "hmac_key": key,
@@ -144,10 +143,10 @@ def parseYubicoCSV(csv):
                     """
                     ttype = "hmac"
                     otplen = 6
-                    if l and len(l) > 11 and l[11] and l[11].strip():
-                        otplen = int(l[11])
+                    if cells and len(cells) > 11 and cells[11] and cells[11].strip():
+                        otplen = int(cells[11])
 
-                    serial = "UBOM%08d_%s" % (serial_int, slot)
+                    serial = f"UBOM{serial_int:08d}_{slot}"
                     TOKENS[serial] = {
                         "type": ttype,
                         "hmac_key": key,
@@ -167,16 +166,16 @@ def parseYubicoCSV(csv):
                 serial = first_column
                 # the yubico format does not specify a slot
                 slot = "X"
-                key = l[3].strip()
-                if l[2].strip() == "0":
+                key = cells[3].strip()
+                if cells[2].strip() == "0":
                     # HOTP
                     typ = "hmac"
-                    serial = "UBOM%s_%s" % (serial, slot)
+                    serial = f"UBOM{serial}_{slot}"
                     otplen = 6
-                elif l[2].strip() == "":
+                elif cells[2].strip() == "":
                     # Static
                     typ = "pw"
-                    serial = "UBSM%s_%s" % (serial, slot)
+                    serial = f"UBSM{serial}_{slot}"
                     key = create_static_password(key)
                     otplen = len(key)
                     log.warning(
@@ -187,8 +186,8 @@ def parseYubicoCSV(csv):
                 else:
                     # Yubico
                     typ = "yubikey"
-                    serial = "UBAM%s_%s" % (serial, slot)
-                    public_id = l[1].strip()
+                    serial = f"UBAM{serial}_{slot}"
+                    public_id = cells[1].strip()
                     otplen = 32 + len(public_id)
                 TOKENS[serial] = {
                     "type": typ,

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -31,10 +30,8 @@ import logging
 import os
 from datetime import datetime
 
-import pytest
 from freezegun import freeze_time
 
-from linotp.flap import config
 from linotp.lib.support import (
     InvalidLicenseException,
     getSupportLicenseInfo,
@@ -50,10 +47,9 @@ log = logging.getLogger(__name__)
 
 class TestMonitoringController(TestController):
     def setUp(self):
-        super(TestMonitoringController, self).setUp()
+        super().setUp()
         self.create_common_resolvers()
         self.create_common_realms()
-        return
 
     def tearDown(self):
         self.delete_all_policies()
@@ -62,7 +58,7 @@ class TestMonitoringController(TestController):
         self.delete_all_resolvers()
         self.delete_license()
 
-        super(TestMonitoringController, self).tearDown()
+        super().tearDown()
 
     # helper functions
     def checkCurrentLicense(self):
@@ -146,8 +142,6 @@ class TestMonitoringController(TestController):
         assert values.get("passwdresolver") == 2, response
         # self.assertEqual(values.get('sync'), False, response)
 
-        return
-
     def test_token_realm_list(self):
         self.create_token(serial="0001")
         self.create_token(serial="0002", user="root")
@@ -160,7 +154,6 @@ class TestMonitoringController(TestController):
         values = resp.get("result").get("value")
         assert values.get("Realms").get("mydefrealm").get("total") == 2, response
         assert values.get("Summary").get("total") == 3, response
-        return
 
     def test_token_active(self):
         policy_params = {
@@ -214,8 +207,6 @@ class TestMonitoringController(TestController):
         assert s_values.get("total", -1) == 3, response
         assert s_values.get("total users", -1) == 1, response
         assert s_values.get("active", -1) == 2, response
-
-        return
 
     def test_token_status_combi(self):
         self.create_token(serial="0021")
@@ -310,9 +301,9 @@ class TestMonitoringController(TestController):
 
         resp = json.loads(response.body)
 
-        assert False == resp["result"]["status"], resp
+        assert resp["result"]["status"] is False, resp
         err_msg = resp["result"]["error"]["message"]
-        assert "Unknown token_status 'invalid_status'" == err_msg, resp
+        assert err_msg == "Unknown token_status 'invalid_status'", resp
 
     def test_token_in_multiple_realms(self):
         """
@@ -353,8 +344,6 @@ class TestMonitoringController(TestController):
         assert values.get("Realms").get("myotherrealm").get("total") == 2
         assert values.get("Summary").get("total") == 3, response.body
 
-        return
-
     def test_no_license(self):
         """Verify monitoring response if no license is installed."""
 
@@ -374,7 +363,7 @@ class TestMonitoringController(TestController):
         license_data = None
         license_file = os.path.join(self.fixture_path, "linotp2.token_user.pem")
 
-        with open(license_file, "r") as f:
+        with open(license_file) as f:
             license_data = f.read()
 
         # -------------------------------------------------------------- --
@@ -425,7 +414,7 @@ class TestMonitoringController(TestController):
         license_data = None
         license_file = os.path.join(self.fixture_path, "expired-lic.pem")
 
-        with open(license_file, "r") as f:
+        with open(license_file) as f:
             license_data = f.read()
 
         # -------------------------------------------------------------- --
@@ -515,8 +504,8 @@ class TestMonitoringController(TestController):
 
     def test_active_users(self):
         # mydefrealm = mydefresolver
-        self.create_token(serial="0051", user="aἰσχύλος")
-        self.create_token(serial="0052", user="aἰσχύλος")
+        self.create_token(serial="0051", user="aἰσχύλος")  # noqa: RUF001
+        self.create_token(serial="0052", user="aἰσχύλος")  # noqa: RUF001
         self.create_token(serial="0053", user="passthru_user1")
         self.create_token(serial="0054", user="root")
         self.create_token(serial="0055", user="susi")

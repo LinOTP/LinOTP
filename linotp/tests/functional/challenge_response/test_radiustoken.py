@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -29,23 +28,13 @@
 Test challenge response functionality for the radius token
 """
 
-import binascii
-import json
+import contextlib
 import logging
-import re
-import smtplib
-import time
-import urllib.parse
-
-import httplib2
-import pyrad.packet as packet
-from mock import patch
+from unittest.mock import patch
 
 # we need this for the radius token
 from pyrad.client import Client
 from pyrad.packet import AccessAccept, AccessChallenge, AccessReject
-
-from linotp.lib.HMAC import HmacOtp
 
 from . import TestChallengeResponseController
 
@@ -55,7 +44,7 @@ log = logging.getLogger(__name__)
 RADIUS_RESPONSE_FUNC = None
 
 
-class RadiusResponse(object):
+class RadiusResponse:
     def __init__(self, auth, reply=None):
         if auth is True:
             self.code = AccessAccept
@@ -92,10 +81,8 @@ def mocked_radius_SendPacket(Client, *argparams, **kwparams):
         # encrypted User-Password
         params["password"] = pkt.PwDecrypt(pkt[2][0])
 
-        try:
+        with contextlib.suppress(Exception):
             params["state"] = pkt["State"][0]
-        except Exception as exx:
-            pass
 
         if test_func:
             auth, reply = test_func(params)
@@ -115,10 +102,10 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
         self.create_common_realms()
 
         if hasattr(self, "policies") is False:
-            setattr(self, "policies", [])
+            self.policies = []
 
         if hasattr(self, "serials") is False:
-            setattr(self, "serials", [])
+            self.serials = []
 
         self.patch_smtp = None
         self.patch_sms = None
@@ -126,7 +113,7 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
         self.delete_all_token()
         self.delete_all_policies()
 
-        self.radius_url = "localhost:%s" % self.radius_authport
+        self.radius_url = f"localhost:{self.radius_authport}"
 
     def tearDown(self):
         self.delete_all_token()
@@ -153,7 +140,7 @@ class TestRadiusTokenChallengeController(TestChallengeResponseController):
             "active": active,
             "session": self.session,
         }
-        cookies = {"admin_session": self.session}
+        _cookies = {"admin_session": self.session}
 
         response = self.make_system_request("setPolicy", params=params)
         assert response.json["result"]["status"], response

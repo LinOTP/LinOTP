@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -45,8 +44,6 @@ class PushTokenPairingData(_PushTokenPairingData):
     gda (generic device address)
     """
 
-    pass
-
 
 def parse_and_verify_pushtoken_pairing_data(plaintext):
     """
@@ -69,7 +66,8 @@ def parse_and_verify_pushtoken_pairing_data(plaintext):
 
     plaintext_min_length = 1 + 4 + 32 + 1 + 1 + 1 + 64
     if len(plaintext) < plaintext_min_length:
-        raise ParameterError("Malformed pairing response for type PushToken")
+        msg = "Malformed pairing response for type PushToken"
+        raise ParameterError(msg)
 
     # ----------------------------------------------------------------------- --
 
@@ -113,8 +111,9 @@ def parse_and_verify_pushtoken_pairing_data(plaintext):
 
     # enforce format
 
-    if not len(str_parts) == 3 + 1:
-        raise ParameterError("Malformed pairing response for type PushToken")
+    if len(str_parts) != 3 + 1:
+        msg = "Malformed pairing response for type PushToken"
+        raise ParameterError(msg)
 
     serial = str_parts[0].decode("utf8")
     user_login = str_parts[1].decode("utf8")
@@ -129,9 +128,10 @@ def parse_and_verify_pushtoken_pairing_data(plaintext):
 
     try:
         crypto_sign_verify_detached(signature, message, user_public_key)
-    except ValueError:
+    except ValueError as exx:
         # original value error is too generic
-        raise ValueError("Invalid signature for pairing response data")
+        msg = "Invalid signature for pairing response data"
+        raise ValueError(msg) from exx
 
     # ----------------------------------------------------------------------- --
 

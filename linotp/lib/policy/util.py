@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -113,10 +112,7 @@ def are_the_same(dict1, dict2):
         return False
 
     unmatch = set(dict1.keys()) ^ set(dict2.keys())
-    if len(unmatch) != 0:
-        return False
-
-    return True
+    return len(unmatch) == 0
 
 
 def _tokenise_action(action_value, separators=None, escapes=None):
@@ -158,9 +154,8 @@ def _tokenise_action(action_value, separators=None, escapes=None):
         if character in escapes:
             if not escape_mode:
                 escape_mode.append(character)
-            else:
-                if character == escape_mode[-1]:
-                    escape_mode.pop()
+            elif character == escape_mode[-1]:
+                escape_mode.pop()
             continue
 
         if escape_mode:
@@ -194,7 +189,7 @@ def parse_action(action_value):
 
     action = []
 
-    for entry in _tokenise_action("%s," % action_value):
+    for entry in _tokenise_action(f"{action_value},"):
         if entry != ",":  # in case of an ',' the key=value is completed
             action.append(entry)
             continue
@@ -224,9 +219,8 @@ def parse_action(action_value):
         action = []
 
     if action:
-        raise Exception("non terminated action %r" % action)
-
-    return
+        msg = f"non terminated action {action!r}"
+        raise Exception(msg)
 
 
 def _strip_quotes(value):
@@ -240,18 +234,19 @@ def _strip_quotes(value):
     # make sure that if it starts with a quote and
     for quote in ["'", '"']:
         if (
-            value.startswith(quote)
-            and not value.endswith(quote)
-            or not value.startswith(quote)
-            and value.endswith(quote)
-        ):
-            if quote not in value[1:-1]:
-                raise Exception("non terminated string value entry %r" % value)
+            (value.startswith(quote) and not value.endswith(quote))
+            or (not value.startswith(quote) and value.endswith(quote))
+        ) and quote not in value[1:-1]:
+            msg = f"non terminated string value entry {value!r}"
+            raise Exception(msg)
 
     for quote in ["'", '"']:
-        if value.startswith(quote) and value.endswith(quote):
-            if quote not in value[1:-1]:
-                value = value.strip(quote)
+        if (
+            value.startswith(quote)
+            and value.endswith(quote)
+            and quote not in value[1:-1]
+        ):
+            value = value.strip(quote)
 
     return value
 
@@ -266,7 +261,8 @@ def parse_action_value(action_value):
 
     for key, value in parse_action(action_value):
         if key in params and params[key] != value:
-            raise Exception("duplicate key definition %r" % key)
+            msg = f"duplicate key definition {key!r}"
+            raise Exception(msg)
 
         params[key] = value
 
@@ -362,10 +358,8 @@ def parse_policies(lConfig):
 
                 # prepare the value to be at least an empty string
                 if (
-                    key in ("user", "client", "realm", "time")
-                    and value is None
-                    or value.strip() == "None"
-                ):
+                    key in ("user", "client", "realm", "time") and value is None
+                ) or value.strip() == "None":
                     value = ""
 
                 if key == "realm":
@@ -381,7 +375,7 @@ def parse_policies(lConfig):
     #  "empty values are treated as wildcards"
     # by replacing these empty values by '*'
 
-    for name, policy in sorted(list(Policies.items())):
+    for _name, policy in sorted(Policies.items()):
         # time has not been used before, so we can define the empty as wildcard
 
         if "time" in policy and policy["time"] == "":

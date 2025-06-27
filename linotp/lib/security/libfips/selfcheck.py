@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -47,45 +46,52 @@ Fips = FipsModule(Cryptolib)
 if Fips.hmac_sha1(20 * b"\x0b", b"Hi There") != unhexlify(
     "b617318655057264e28bc0b6fb378c8ef146be00"
 ):
-    raise Exception("HMAC-sha1 self check number 1 failed")
+    msg = "HMAC-sha1 self check number 1 failed"
+    raise Exception(msg)
 
 # test case 2
 if Fips.hmac_sha1(b"Jefe", b"what do ya want for nothing?") != unhexlify(
     "effcdf6ae5eb2fa2d27416d5f184df9c259a7c79"
 ):
-    raise Exception("HMAC-sha1 self check number 2 failed")
+    msg = "HMAC-sha1 self check number 2 failed"
+    raise Exception(msg)
 
 # test case 3
 if Fips.hmac_sha1(20 * b"\xaa", 50 * b"\xdd") != unhexlify(
     "125d7342b9ac11cd91a39af48aa17b4f63f175d3"
 ):
-    raise Exception("HMAC-sha1 self check number 3 failed")
+    msg = "HMAC-sha1 self check number 3 failed"
+    raise Exception(msg)
 
 # test case 4
 if Fips.hmac_sha1(
     unhexlify("0102030405060708090a0b0c0d0e0f10111213141516171819"),
     50 * b"\xcd",
 ) != unhexlify("4c9007f4026250c6bc8414f9bf50c86c2d7235da"):
-    raise Exception("HMAC-sha1 self check number 4 failed")
+    msg = "HMAC-sha1 self check number 4 failed"
+    raise Exception(msg)
 
 # test case 5
 if Fips.hmac_sha1(20 * b"\x0c", b"Test With Truncation") != unhexlify(
     "4c1a03424b55e07fe7f27be1d58bb9324a9a5a04"
 ):
-    raise Exception("HMAC-sha1 self check number 5 failed")
+    msg = "HMAC-sha1 self check number 5 failed"
+    raise Exception(msg)
 
 # test case 6
 if Fips.hmac_sha1(
     80 * b"\xaa", b"Test Using Larger Than Block-Size Key - Hash Key First"
 ) != unhexlify("aa4ae5e15272d00e95705637ce8a3b55ed402112"):
-    raise Exception("HMAC-sha1 self check number 6 failed")
+    msg = "HMAC-sha1 self check number 6 failed"
+    raise Exception(msg)
 
 # test case 7
 if Fips.hmac_sha1(
     80 * b"\xaa",
     b"Test Using Larger Than Block-Size Key and Larger Than One Block-Size Data",
 ) != unhexlify("e8e99d0f45237d786d6bbaa7965c7808bbff1a91"):
-    raise Exception("HMAC-sha1 self check number 7 failed")
+    msg = "HMAC-sha1 self check number 7 failed"
+    raise Exception(msg)
 
 
 #
@@ -95,7 +101,8 @@ if Fips.hmac_sha1(
 try:
     ripemd160 = Fips._libcrypto.EVP_ripemd160()
     Fips._HMAC(ripemd160, b"foo", b"bar")
-    raise Exception("HMAC with ripemd160 hash should be disabled by FIPS mode!")
+    msg = "HMAC with ripemd160 hash should be disabled by FIPS mode!"
+    raise Exception(msg)
 except SSLError:
     pass  # that is what we want
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -101,7 +100,7 @@ class TestRandompinController(TestController):
         case (because PIN has been set to an unknown value).
         """
         # Enroll token
-        user = "aἰσχύλος"  # realm myDefRealm
+        user = "aἰσχύλος"  # realm myDefRealm  # noqa: RUF001
         token = deepcopy(self.tokens[0])
         self._enroll_token(token, user=user)
 
@@ -129,7 +128,7 @@ class TestRandompinController(TestController):
         as in test_simple_enroll.
         """
         # Enroll token
-        user = "aἰσχύλος"  # realm myDefRealm
+        user = "aἰσχύλος"  # realm myDefRealm  # noqa: RUF001
         token = deepcopy(self.tokens[0])
         self._enroll_token(token)
 
@@ -150,7 +149,7 @@ class TestRandompinController(TestController):
         self._create_randompin_policy("myDefRealm")
 
         # Enroll token
-        user = "aἰσχύλος"  # realm myDefRealm
+        user = "aἰσχύλος"  # realm myDefRealm  # noqa: RUF001
         token2 = deepcopy(self.tokens[0])
         self._enroll_token(token2)
 
@@ -169,7 +168,7 @@ class TestRandompinController(TestController):
         Same as 'test_simple_assign' but with multiple tokens at once
         """
         # Enroll token
-        user = "aἰσχύλος"  # realm myDefRealm
+        user = "aἰσχύλος"  # realm myDefRealm  # noqa: RUF001
         token1 = deepcopy(self.tokens[0])
         token2 = deepcopy(self.tokens[0])
 
@@ -201,7 +200,7 @@ class TestRandompinController(TestController):
         self._create_selfservice_policy("myDefRealm")
 
         # Enroll token
-        user = "aἰσχύλος"  # realm myDefRealm
+        user = "aἰσχύλος"  # realm myDefRealm  # noqa: RUF001
         pwd = "Πέρσαι"
         token = deepcopy(self.tokens[0])
         self._enroll_token(token, user=user)
@@ -226,7 +225,7 @@ class TestRandompinController(TestController):
 
         self._create_selfservice_policy("myDefRealm")
 
-        user = "aἰσχύλος"  # realm myDefRealm
+        user = "aἰσχύλος"  # realm myDefRealm  # noqa: RUF001
         pwd = "Πέρσαι"
         token1 = deepcopy(self.tokens[0])
         token2 = deepcopy(self.tokens[0])
@@ -252,7 +251,7 @@ class TestRandompinController(TestController):
         userservice/assign is not affected by otp_pin_random
         """
 
-        user = "aἰσχύλος"  # realm myDefRealm
+        user = "aἰσχύλος"  # realm myDefRealm  # noqa: RUF001
         pwd = "Πέρσαι"
         token = deepcopy(self.tokens[0])
 
@@ -284,7 +283,7 @@ class TestRandompinController(TestController):
         self._create_selfservice_policy("myDefRealm")
 
         # Enroll token
-        user = "aἰσχύλος"  # realm myDefRealm
+        user = "aἰσχύλος"  # realm myDefRealm  # noqa: RUF001
         token = deepcopy(self.tokens[0])
         self._enroll_token(token, user=user)
 
@@ -333,7 +332,7 @@ class TestRandompinController(TestController):
         self._create_selfservice_policy("myDefRealm")
 
         # Enroll token
-        user = "aἰσχύλος"  # realm myDefRealm
+        user = "aἰσχύλος"  # realm myDefRealm  # noqa: RUF001
         token = deepcopy(self.tokens[0])
         self._enroll_token(token, user=user)
 
@@ -398,7 +397,7 @@ class TestRandompinController(TestController):
         self._set_token_realm(token["serial"], "myDefRealm")
 
         # autoassign the token
-        user = "aἰσχύλος"
+        user = "aἰσχύλος"  # noqa: RUF001
         pwd = "Πέρσαι"
         self._validate(
             user,
@@ -564,11 +563,7 @@ class TestRandompinController(TestController):
         response = self.make_validate_request(action, params=params)
         content = response.json
         if not err_msg:
-            err_msg = "validate/%s failed for %r. Response: %r" % (
-                action,
-                params,
-                content,
-            )
+            err_msg = f"validate/{action} failed for {params!r}. Response: {content!r}"
         if expected == "success":
             assert content["result"]["status"], err_msg
             assert content["result"]["value"], err_msg
@@ -582,7 +577,7 @@ class TestRandompinController(TestController):
             assert not content["result"]["status"], err_msg
             assert not content["result"]["value"], err_msg
         else:
-            self.fail("Unknown 'expected' %s" % expected)
+            self.fail(f"Unknown 'expected' {expected}")
         return content
 
     def _assign_in_selfservice(self, user, pwd, serial):
@@ -672,4 +667,4 @@ class TestRandompinController(TestController):
         response = self.make_admin_request("tokenrealm", params=params)
         content = response.json
         assert content["result"]["status"]
-        assert 1 == content["result"]["value"]
+        assert content["result"]["value"] == 1

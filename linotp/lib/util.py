@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -31,7 +30,7 @@ import logging
 import re
 import secrets
 import string
-from typing import Any, Dict
+from typing import Any
 
 from linotp import __api__ as linotp_api
 from linotp import __copyright__ as linotp_copyright
@@ -76,7 +75,7 @@ def get_version():
     This returns the version, that is displayed in the WebUI and
     self service portal.
     """
-    return "%s %s" % (linotp_product, linotp_version)
+    return f"{linotp_product} {linotp_version}"
 
 
 def get_copyright_info():
@@ -120,9 +119,9 @@ def getParam(param, which, optional=True):
 
     if which in param:
         ret = param[which]
-    else:
-        if optional is False:
-            raise ParameterError("Missing parameter: %r" % which, id=905)
+    elif optional is False:
+        msg = f"Missing parameter: {which!r}"
+        raise ParameterError(msg, id=905)
 
     return ret
 
@@ -275,7 +274,7 @@ def _get_client_from_request(request=None):
                             ipvalue = value.split(":")[0]
                         else:
                             ipvalue = value
-                        ipvalue = ipvalue.strip('""')
+                        ipvalue = ipvalue.strip('"')
                         break
 
                 if ipvalue is not None:
@@ -303,9 +302,7 @@ def is_x_forwarded_for_active():
 
 def is_TRUSTED_PROXIES_active():
     trusted_proxies_settings = config["TRUSTED_PROXIES"]
-    if trusted_proxies_settings:
-        return True
-    return False
+    return bool(trusted_proxies_settings)
 
 
 def get_client(request):
@@ -347,7 +344,8 @@ def get_client(request):
                 client = client_from_post
 
     if not is_ip_address_dotted_quad(client):
-        raise ValueError("client address is not a dotted quad: %r" % client)
+        msg = f"client address is not a dotted quad: {client!r}"
+        raise ValueError(msg)
 
     log.debug("get_client: client is %s", client)
     return client
@@ -407,8 +405,8 @@ def remove_empty_lines(doc):
 hexHexChars = "0123456789abcdef"
 modHexChars = "cbdefghijklnrtuv"
 
-hex2ModDict = dict(list(zip(hexHexChars, modHexChars)))
-mod2HexDict = dict(list(zip(modHexChars, hexHexChars)))
+hex2ModDict = dict(zip(hexHexChars, modHexChars, strict=True))
+mod2HexDict = dict(zip(modHexChars, hexHexChars, strict=True))
 
 
 def modhex_encode(s: str) -> str:
@@ -455,11 +453,12 @@ def str2unicode(input_str):
     for param in conversions:
         try:
             return str(input_str, **param)
-        except UnicodeDecodeError as exx:
+        except UnicodeDecodeError:
             pass
 
     log.error("No Unicode conversion found for %r", input_str)
-    raise UnicodeDecodeError("Unable to convert binary string to Unicode.")
+    msg = "Unable to convert binary string to Unicode."
+    raise UnicodeDecodeError(msg)
 
 
 def unicode_compare(x, y):
@@ -485,8 +484,8 @@ def dict_copy(dict_):
 
 # courtesies to pydantic:
 def deep_update(
-    mapping: Dict[str, Any], *updating_mappings: Dict[str, Any]
-) -> Dict[str, Any]:
+    mapping: dict[str, Any], *updating_mappings: dict[str, Any]
+) -> dict[str, Any]:
     updated_mapping = mapping.copy()
     for updating_mapping in updating_mappings:
         for k, v in updating_mapping.items():
@@ -511,9 +510,8 @@ def int_from_bytes(bytes_, byteorder="little"):
     """
 
     if byteorder not in ["little", "big"]:
-        raise InvalidFunctionParameter(
-            "byteorder", "byte order can only be 'little' or 'big'"
-        )
+        msg = "byteorder"
+        raise InvalidFunctionParameter(msg, "byte order can only be 'little' or 'big'")
 
     order = -1 if byteorder == "little" else 1
 

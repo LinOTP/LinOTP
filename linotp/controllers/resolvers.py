@@ -59,9 +59,7 @@ class ResolversController(BaseController):
     """
 
     def __init__(self, name, install_name="", **kwargs):
-        super(ResolversController, self).__init__(
-            name, install_name=install_name, **kwargs
-        )
+        super().__init__(name, install_name=install_name, **kwargs)
 
         self.add_url_rule("/", "resolvers", self.get_resolvers, methods=["GET"])
         self.add_url_rule(
@@ -252,7 +250,7 @@ class ResolversController(BaseController):
                 "userlist",
                 user=RealmUser(resolver_config_identifier=resolver.spec),
             )
-        except PolicyException as exception:
+        except PolicyException:
             log.error(
                 "[get_users] user is not allowed to list users in resolver %s",
                 resolver_name,
@@ -298,8 +296,9 @@ class ResolversController(BaseController):
                     key=lambda user_dict: user_dict[sort_key] or "",
                     reverse=reverse,
                 )
-            except KeyError:
-                raise KeyError(f"users can't be sorted by parameter {sort_key}")
+            except KeyError as exx:
+                msg = f"users can't be sorted by parameter {sort_key}"
+                raise KeyError(msg) from exx
             total_pages = 1
             total_records = len(users)
 
@@ -387,7 +386,8 @@ class ResolversController(BaseController):
             resolver: Resolver = get_resolver(resolver_name)
         except Exception as exception:
             log.error(
-                f"[get_user] cannot find resolver {resolver_name} to retrieve its users",
+                "[get_user] cannot find resolver %s to retrieve its users",
+                resolver_name,
             )
             db.session.rollback()
             error = sendError(exception)
@@ -400,9 +400,10 @@ class ResolversController(BaseController):
                 "userlist",
                 user=RealmUser(resolver_config_identifier=resolver.spec),
             )
-        except PolicyException as exception:
+        except PolicyException:
             log.error(
-                f"[get_user] user is not allowed to list users in resolver {resolver_name}"
+                "[get_user] user is not allowed to list users in resolver %s",
+                resolver_name,
             )
             exception_description = (
                 "Admin has no rights to list users in the requested resolver."
@@ -412,7 +413,7 @@ class ResolversController(BaseController):
             error.status_code = 403
             return error
         except Exception as exception:
-            log.error(f"[get_user] failed: {exception}")
+            log.error("[get_user] failed: %r", exception)
             db.session.rollback()
             error = sendError(exception)
             error.status_code = 500
@@ -432,14 +433,14 @@ class ResolversController(BaseController):
             return sendResult(result)
 
         except UserNotFoundException as user_not_found_exception:
-            log.error(f"[get_user] failed: {user_not_found_exception}")
+            log.error("[get_user] failed: %r", user_not_found_exception)
             db.session.rollback()
             error = sendError(user_not_found_exception)
             error.status_code = 404
             return error
 
         except Exception as exception:
-            log.error(f"[get_user] failed: {exception}")
+            log.error("[get_user] failed: %r", exception)
             db.session.rollback()
             error = sendError(exception)
             error.status_code = 500

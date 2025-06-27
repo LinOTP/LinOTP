@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -40,7 +39,7 @@ import subprocess
 import sys
 import tempfile
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any
 
 import click
 from flask import current_app
@@ -89,7 +88,7 @@ def _make_backup(what: str, filename: str) -> bool:
     return True
 
 
-def _run_command(task: str, cmd: List[str], **kwargs: Dict[str, Any]) -> bool:
+def _run_command(task: str, cmd: list[str], **kwargs: dict[str, Any]) -> bool:
     """Execute a shell command given as a list of strings, with
     error checking.
     """
@@ -102,7 +101,7 @@ def _run_command(task: str, cmd: List[str], **kwargs: Dict[str, Any]) -> bool:
 
     kwargs.update({"stdout": subprocess.PIPE, "stderr": subprocess.STDOUT})
     try:
-        result = subprocess.run(cmd, **kwargs)
+        result = subprocess.run(cmd, check=False, **kwargs)
     except OSError as ex:
         ret = CmdResult(True, None, str(ex))
     else:
@@ -132,15 +131,14 @@ init_cmds = AppGroup("init", help="Manage initialization of LinOTP")
 
 
 def erase_confirm(ctx, param, value):
-    if ctx.params["erase_all_data"]:
+    if ctx.params["erase_all_data"] and not value:
         # The user asked for data to be erased. We now look for a confirmation
         # or prompt the user
-        if not value:
-            prompt = click.prompt(
-                "Do you really want to erase the database?", type=click.BOOL
-            )
-            if not prompt:
-                sys.exit(0)
+        prompt = click.prompt(
+            "Do you really want to erase the database?", type=click.BOOL
+        )
+        if not prompt:
+            sys.exit(0)
 
 
 @init_cmds.command("database", help="Create tables in the database")
@@ -159,10 +157,7 @@ def init_db_command(erase_all_data):
     The database is initialized and optionally data is cleared.
     """
 
-    if erase_all_data:
-        info = "Recreating database"
-    else:
-        info = "Creating database"
+    info = "Recreating database" if erase_all_data else "Creating database"
 
     current_app.echo(info, v=1)
     try:
@@ -174,7 +169,7 @@ def init_db_command(erase_all_data):
         init_db_tables(current_app, erase_all_data)
     except Exception as exx:
         current_app.echo(f"Failed to create database: {exx!s}")
-        raise sys.exit(1)
+        raise sys.exit(1) from exx
     current_app.echo("Database created", v=1)
 
 
@@ -241,9 +236,8 @@ def init_enc_key_cmd(force, dump, keys):
     filename = current_app.config["SECRET_FILE"]
 
     if os.path.exists(filename):
-        if not force:
-            if not _overwrite_check("enc-key", filename):
-                sys.exit(0)
+        if not force and not _overwrite_check("enc-key", filename):
+            sys.exit(0)
         if not _make_backup("enc-key", filename):
             sys.exit(1)
 
@@ -297,9 +291,8 @@ def init_audit_keys_cmd(force):
     pubkey_filename = current_app.config["AUDIT_PUBLIC_KEY_FILE"]
 
     if os.path.exists(privkey_filename):
-        if not force:
-            if not _overwrite_check("private audit key", privkey_filename):
-                sys.exit(0)
+        if not force and not _overwrite_check("private audit key", privkey_filename):
+            sys.exit(0)
         if not _make_backup("private audit key", privkey_filename):
             sys.exit(1)
 

@@ -27,13 +27,12 @@
 
 import socket
 import unittest
+from unittest.mock import patch
 
 import netaddr
 import pytest
 from flask import current_app
-from mock import patch
 
-import linotp.lib.config
 from linotp.lib.type_utils import get_ip_address, get_ip_network
 from linotp.lib.util import (
     _get_client_from_request,
@@ -67,14 +66,16 @@ def mock_IPNet(address):
         "www.my.test.domain",
         "my.local.test.domain",
     ]:
-        raise netaddr.core.AddrFormatError("invalid IPNetwork %r" % address)
+        msg = f"invalid IPNetwork {address!r}"
+        raise netaddr.core.AddrFormatError(msg)
 
     return netw_dict.get(address)
 
 
 def mock_IPAddr(address):
     if address in ["www.my.test.domain"]:
-        raise netaddr.core.AddrFormatError("invalid IPNetwork %r" % address)
+        msg = f"invalid IPNetwork {address!r}"
+        raise netaddr.core.AddrFormatError(msg)
 
     return addr_dict.get(address)
 
@@ -88,7 +89,7 @@ def mocked_getFromConfig(key, default):
     return LinConfig.get(key, default)
 
 
-class Request(object):
+class Request:
     def __init__(self, environ, values=None):
         self.environ = environ
         self.values = values or {}
@@ -302,11 +303,11 @@ class TestGetClientCase(unittest.TestCase):
             ip_address = get_ip_address("www.my.test.domain")
 
             ip_tuple = ip_address.words
-            assert (91, 208, 83, 132) == ip_tuple
+            assert ip_tuple == (91, 208, 83, 132)
 
         ip_addr = get_ip_address("93.184.216.34")
         ip_tuple = ip_addr.words
-        assert (93, 184, 216, 34) == ip_tuple
+        assert ip_tuple == (93, 184, 216, 34)
 
         ip_addr = get_ip_address("93.184.216.34/32")
         assert ip_addr is None
@@ -317,8 +318,6 @@ class TestGetClientCase(unittest.TestCase):
         ip_addr = get_ip_address("  ")
         assert ip_addr is None
 
-        return
-
     @patch("linotp.lib.type_utils.netaddr.IPNetwork", mock_IPNet)
     @patch("linotp.lib.type_utils.netaddr.IPAddress", mock_IPAddr)
     def test_network_value(self):
@@ -327,7 +326,7 @@ class TestGetClientCase(unittest.TestCase):
         ip_network = get_ip_network("93.184.216.34/29")
         assert len(list(ip_network)) == 8
         ip_tuple = ip_network.network.words
-        assert (93, 184, 216, 32) == ip_tuple
+        assert ip_tuple == (93, 184, 216, 32)
 
         with patch("linotp.lib.type_utils.socket.gethostbyname") as mHostName:
             mHostName.return_value = "140.181.3.144"
@@ -335,7 +334,7 @@ class TestGetClientCase(unittest.TestCase):
             ip_network = get_ip_network("my.local.test.domain")
             ip_tuple = ip_network.network.words
             ip_range = (ip_tuple[0], ip_tuple[1], ip_tuple[2])
-            assert (140, 181, 3) == ip_range
+            assert ip_range == (140, 181, 3)
 
         with patch("linotp.lib.type_utils.socket.gethostbyname") as mHostName:
             mHostName.return_value = "136.243.104.66"
@@ -344,7 +343,7 @@ class TestGetClientCase(unittest.TestCase):
             assert len(list(ip_network)) == 8
             ip_tuple = ip_network.network.words
             ip_range = (ip_tuple[0], ip_tuple[1], ip_tuple[2])
-            assert (136, 243, 104) == ip_range
+            assert ip_range == (136, 243, 104)
 
         with patch("linotp.lib.type_utils.socket.gethostbyname") as mHostName:
             mHostName.side_effect = socket.gaierror(
@@ -387,8 +386,6 @@ class TestGetClientCase(unittest.TestCase):
 
             in_network = is_addr_in_network("140.181.3.121", "www.my.test.domain ")
             assert in_network is False
-
-        return
 
 
 # Test (deprecated) `client=ADDR` POST parameter feature, including

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -28,11 +27,8 @@
 
 import logging
 from typing import Any
-from urllib.parse import urlparse
 
-import requests
 from pytest_testconfig import config, load_ini
-from requests.auth import HTTPDigestAuth
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -116,7 +112,7 @@ def fill_element_from_dict(driver, element_id, name, data_dict):
     Verify that we have the named element in dict. Then clear the element
     and fill with the value in the data dict
     """
-    assert name in data_dict, "Data dict needs element %s" % name
+    assert name in data_dict, f"Data dict needs element {name}"
     return fill_form_element(driver, element_id, data_dict[name])
 
 
@@ -166,17 +162,18 @@ def get_from_tconfig(key_array, default=None, required=False):
     current_config = config
 
     if required and not len(current_config):
-        raise Exception("Testconfig is empty. See Readme for details (--tc-file)")
+        msg = "Testconfig is empty. See Readme for details (--tc-file)"
+        raise Exception(msg)
 
     try:
         for key in key_array:
             current_config = current_config[key]
         return current_config
-    except KeyError:
+    except KeyError as exx:
         if not required:
             return default
-        else:
-            raise Exception("Testconfig entry %s is required" % ".".join(key_array))
+        msg = "Testconfig entry {} is required".format(".".join(key_array))
+        raise Exception(msg) from exx
 
 
 # Helper for skipping tests if there is no radius server

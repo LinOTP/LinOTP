@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -43,7 +42,7 @@ try:
     NO_LDAP_AVAILABLE = ""
 
 except ImportError as exx:
-    NO_LDAP_AVAILABLE = "%r" % exx
+    NO_LDAP_AVAILABLE = f"{exx!r}"
 
 
 class TestResolverTestCase(unittest.TestCase):
@@ -63,7 +62,7 @@ class TestResolverTestCase(unittest.TestCase):
         """
 
         if NO_LDAP_AVAILABLE:
-            self.skipTest("skipping test: %s" % NO_LDAP_AVAILABLE)
+            self.skipTest(f"skipping test: {NO_LDAP_AVAILABLE}")
 
         ldap_cls = ldap_resolver
 
@@ -80,8 +79,6 @@ class TestResolverTestCase(unittest.TestCase):
 
         assert not res
 
-        return
-
     def test_detect_sql_primary_change(self):
         """
         unit test for sql primary key change
@@ -90,7 +87,7 @@ class TestResolverTestCase(unittest.TestCase):
         """
 
         if NO_LDAP_AVAILABLE:
-            self.skipTest("skipping test: %s" % NO_LDAP_AVAILABLE)
+            self.skipTest(f"skipping test: {NO_LDAP_AVAILABLE}")
 
         sql_cls = sql_resolver
 
@@ -107,5 +104,3 @@ class TestResolverTestCase(unittest.TestCase):
         res = sql_cls.primary_key_changed({"Map": u_map_1}, {"Map": u_map_1})
 
         assert not res
-
-        return

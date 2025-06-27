@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -45,15 +44,14 @@ import socket
 import sys
 from getopt import GetoptError, getopt
 
-import pyrad.packet as packet
 from pyrad.dictionary import Dictionary
 from pyrad.packet import AccessAccept, AccessChallenge, AccessReject
-from pyrad.server import RemoteHost, ServerPacketError
+from pyrad.server import RemoteHost
 from pyrad.server import Server as RadiusServer
 
 try:
     myIP = socket.gethostbyname(socket.gethostname())
-except socket.gaierror as exx:
+except socket.gaierror:
     myIP = "127.0.0.1"
 
 state_id = "11321312313213132"
@@ -81,10 +79,7 @@ def checkUser(username, password, state):
 
     # handle a state request
     if state is not None and state == state_id:
-        if password in list(users.values()):
-            auth = True
-        else:
-            auth = False
+        auth = password in list(users.values())
 
     return auth
 
@@ -108,7 +103,7 @@ class myRadiusServer(RadiusServer):
         state = None
         try:
             state = pkt["State"][0]
-        except Exception as exx:
+        except Exception:
             state = None
 
         # print password
@@ -144,16 +139,15 @@ def usage(prog):
     Print usage information and exit
     """
     print(
-        """
+        f"""
 Usage:
-        %s [--dict=###] [--authport=###] [--acctport=###] [--help]
+        {prog} [--dict=###] [--authport=###] [--acctport=###] [--help]
 
         --dict=, -d         The path to a dictionary file (default is /etc/linotp/dictionary)
         --authport=, -t     Port used for RADIUS authentication packets (default is 18012)
         --acctport=, -c     Port used for RADIUS accounting packets (default is 18013)
         --help, -h          Show this message and exit
 """
-        % prog
     )
 
 
@@ -162,9 +156,9 @@ def main():
     main worker:
     * gather the input
     """
-    param = {}
-    user = "tester"
-    password = "password"
+    _param = {}
+    _user = "tester"
+    _password = "password"
 
     client1 = RemoteHost(myIP, "testing123", "lselap")
     client2 = RemoteHost("127.0.0.1", "testing123", "localhost")
@@ -201,13 +195,13 @@ def main():
             if os.path.isfile(arg):
                 r_dict = arg
             else:
-                print(("radius dictionary file  <%r> not found!" % arg))
+                print(f"radius dictionary file  <{arg!r}> not found!")
         elif opt in ("-t", "--authport"):
             authport = int(arg)
         elif opt in ("-c", "--acctport"):
             acctport = int(arg)
         else:
-            print("Unknown option %s" % opt)
+            print(f"Unknown option {opt}")
 
     ips = set()
     ips.add("127.0.0.1")

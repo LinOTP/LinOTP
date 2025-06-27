@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -36,6 +35,7 @@ The TestSpecialController gathers some of these common methods.
 
 import logging
 import os
+import subprocess
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -55,7 +55,7 @@ DEFAULT_NOSE_CONFIG = {
 }
 try:
     from testconfig import config as nose_config
-except ImportError as exc:
+except ImportError:
     print("You need to install nose-testconfig. Will use default values.")
     nose_config = None
 
@@ -87,7 +87,7 @@ class TestingChallengeResponseController(TestController):
     def do_http_request(
         remoteServer, params=None, headers=None, cookies=None, method="POST"
     ):
-        request_url = "%s" % (remoteServer)
+        request_url = f"{remoteServer}"
 
         if not params:
             params = {}
@@ -104,7 +104,7 @@ class TestingChallengeResponseController(TestController):
         if cookies:
             cooking = []
             for key, value in list(cookies.items()):
-                cooking.append("%s=%s" % (key, value))
+                cooking.append(f"{key}={value}")
             r_headers["Cookie"] = ";".join(cooking)
 
         # submit the request
@@ -120,7 +120,6 @@ class TestingChallengeResponseController(TestController):
         simple, limited check for an service
         """
         result = False
-        import subprocess
 
         p = subprocess.Popen(["ps", "-a"], stdout=subprocess.PIPE)
         out, _err = p.communicate()
@@ -134,9 +133,8 @@ class TestingChallengeResponseController(TestController):
         check for a service behind a port
         """
         result = False
-        import subprocess
 
-        p = subprocess.Popen(["lsof", "-t", "-i:%s" % port], stdout=subprocess.PIPE)
+        p = subprocess.Popen(["lsof", "-t", f"-i:{port}"], stdout=subprocess.PIPE)
         out, _err = p.communicate()
         if len(out) > 0:
             result = True
@@ -151,7 +149,6 @@ class TestingChallengeResponseController(TestController):
         instantiates a new TestClass and thus the radius server process will
         not be accessable outside of a test anymore
         """
-        import subprocess
 
         try:
             radius_server_file = os.path.join(
@@ -194,5 +191,3 @@ class TestingChallengeResponseController(TestController):
         if proc:
             r = proc.kill()
             log.debug(r)
-
-        return

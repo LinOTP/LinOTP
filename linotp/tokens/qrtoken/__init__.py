@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -42,8 +41,6 @@ class QRTokenPairingData(_QRTokenPairingData):
     namely user_public_key, user_token_id, serial and user_login
     """
 
-    pass
-
 
 # --------------------------------------------------------------------------- --
 
@@ -66,7 +63,8 @@ def parse_qrtoken_pairing_data(plaintext):
 
     plaintext_min_length = 1 + 4 + 32 + 1 + 1
     if len(plaintext) < plaintext_min_length:
-        raise ParameterError("Malformed pairing response for type QrToken")
+        msg = "Malformed pairing response for type QrToken"
+        raise ParameterError(msg)
 
     # ----------------------------------------------------------------------- --
 
@@ -115,14 +113,12 @@ def parse_qrtoken_pairing_data(plaintext):
     # check serial / user login max length
 
     if len(serial) > 63:
-        raise ParameterError(
-            "Malformed pairing response for type QrToken:Serial too long"
-        )
+        msg = "Malformed pairing response for type QrToken:Serial too long"
+        raise ParameterError(msg)
 
     if len(user_login) > 255:
-        raise ParameterError(
-            "Malformed pairing response for type QrToken:User login too long"
-        )
+        msg = "Malformed pairing response for type QrToken:User login too long"
+        raise ParameterError(msg)
 
     # ----------------------------------------------------------------------- --
 

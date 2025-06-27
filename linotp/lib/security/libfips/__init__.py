@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -35,7 +34,7 @@ Interface for OpenSSL in FIPS mode
 import ctypes
 from ctypes import CDLL, c_char_p, c_int, c_void_p
 
-__all__ = ["FipsModule", "SSLError", "ParameterError"]
+__all__ = ["FipsModule", "ParameterError", "SSLError"]
 
 
 # exceptions we will raise
@@ -47,7 +46,7 @@ class SSLError(Exception):
     pass
 
 
-class FipsModule(object):
+class FipsModule:
     def __init__(self, library):
         # this will raise an OSError exception, in case of an error.
         _libcrypto = CDLL(library)
@@ -101,9 +100,9 @@ class FipsModule(object):
         #
         # activate FIPS mode
         #
-        if _libcrypto.FIPS_mode() != 1:
-            if _libcrypto.FIPS_mode_set(1) == 0:
-                raise SSLError("can't enable OpenSSL FIPS mode")
+        if _libcrypto.FIPS_mode() != 1 and _libcrypto.FIPS_mode_set(1) == 0:
+            msg = "can't enable OpenSSL FIPS mode"
+            raise SSLError(msg)
 
         self._libcrypto = _libcrypto
 
@@ -140,10 +139,12 @@ class FipsModule(object):
         what you are doing.
         """
         if not isinstance(key, bytes):
-            raise ParameterError("key must be a byte array")
+            msg = "key must be a byte array"
+            raise ParameterError(msg)
 
         if not isinstance(msg, bytes):
-            raise ParameterError("msg must be a byte array")
+            msg = "msg must be a byte array"
+            raise ParameterError(msg)
 
         # create memory to store digest in
         digest = ctypes.create_string_buffer(self._libcrypto.EVP_MD_size(md))
@@ -153,7 +154,8 @@ class FipsModule(object):
 
         # OpenSSL will return NULL (None for us) to indicate an error
         if res is None:
-            raise SSLError("HMAC failed")
+            msg = "HMAC failed"
+            raise SSLError(msg)
 
         return digest.raw
 

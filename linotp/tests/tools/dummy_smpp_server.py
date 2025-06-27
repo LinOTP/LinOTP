@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2021 KeyIdentity GmbH
@@ -141,31 +140,31 @@ class DummySMPPServer:
 
         try:
             pdu_bytes = sock.recv(4)
-        except socket.timeout:
+        except TimeoutError:
             raise
-        except socket.error as e:
-            self.logger.warning(e)
-            raise exceptions.ConnectionError()
+        except OSError as exx:
+            self.logger.warning(exx)
+            raise exceptions.ConnectionError from exx
         if not pdu_bytes:
-            raise exceptions.ConnectionError()
+            raise exceptions.ConnectionError
 
         try:
             length = struct.unpack(">L", pdu_bytes)[0]
-        except struct.error:
+        except struct.error as exx:
             bad_pdu_msg = "Bad PDU: %r"
             self.logger.warning(bad_pdu_msg, pdu_bytes)
-            raise exceptions.PDUError(bad_pdu_msg.format(pdu_bytes))
+            raise exceptions.PDUError(bad_pdu_msg.format(pdu_bytes)) from exx
 
         while len(pdu_bytes) < length:
             try:
                 more_bytes = sock.recv(length - len(pdu_bytes))
-            except socket.timeout:
+            except TimeoutError:
                 raise
-            except socket.error as e:
-                self.logger.warning(e)
-                raise exceptions.ConnectionError()
+            except OSError as exx:
+                self.logger.warning(exx)
+                raise exceptions.ConnectionError from exx
             if not pdu_bytes:
-                raise exceptions.ConnectionError()
+                raise exceptions.ConnectionError
             pdu_bytes += more_bytes
         # self.logger.debug(f'>> {pdu_bytes.hex(" ", -4)}')  # Python >=3.8
         self.logger.debug(">> %s", pdu_bytes.hex())
@@ -186,8 +185,8 @@ class DummySMPPServer:
             sock, address = self._sock.accept()
             done = False
             while not done:
-                # Note how we're leveraging `smpplib` to avoid the –
-                # considerable – inconvenience of parsing (and
+                # Note how we're leveraging `smpplib` to avoid the -
+                # considerable - inconvenience of parsing (and
                 # generating) SMPP PDUs ourselves.
 
                 try:
@@ -205,12 +204,11 @@ class DummySMPPServer:
                 print(f"> {pdu.command}", end="")
                 if pdu.command == "bind_transceiver":
                     status = consts.SMPP_ESME_ROK
-                    if self.password is not None:
-                        if (
-                            pdu.system_id.decode() != self.system_id
-                            or pdu.password.decode() != self.password
-                        ):
-                            status = consts.SMPP_ESME_RBINDFAIL
+                    if self.password is not None and (
+                        pdu.system_id.decode() != self.system_id
+                        or pdu.password.decode() != self.password
+                    ):
+                        status = consts.SMPP_ESME_RBINDFAIL
 
                     res_pdu = smpp.make_pdu(
                         "bind_transceiver_resp",
@@ -267,7 +265,8 @@ class DummySMPPServer:
                     done = True
                     print("\n< OK")
                 else:
-                    raise ValueError(f"Unsupported SMPP command {pdu.command}")
+                    msg = f"Unsupported SMPP command {pdu.command}"
+                    raise ValueError(msg)
                 self.pdus.append(res_pdu)
                 response = res_pdu.generate()
                 # self.logger.debug(f'<< {response.hex(" ", -4)}')  # Python 3.8

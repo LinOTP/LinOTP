@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -105,7 +104,7 @@ class DefaultPushProvider(IPushProvider, ConfigParsingMixin):
             #
             push_server_urls = []
             push_url = configDict["push_url"]
-            if isinstance(push_url, (list, tuple)):
+            if isinstance(push_url, list | tuple):
                 # verify the url scheme of all entries
                 for url in configDict["push_url"]:
                     self._validate_url(url)
@@ -124,10 +123,11 @@ class DefaultPushProvider(IPushProvider, ConfigParsingMixin):
             self.client_cert = configDict.get("access_certificate")
 
             if self.client_cert and not os.path.isfile(self.client_cert):
-                raise IOError(
+                msg = (
                     "required authenticating client"
-                    " cert could not be found %r" % self.client_cert
+                    f" cert could not be found {self.client_cert!r}"
                 )
+                raise OSError(msg)
 
             # server cert can be a string (file location, cert dir)
             # None or not present (cert gets fetched from local trust
@@ -205,13 +205,16 @@ class DefaultPushProvider(IPushProvider, ConfigParsingMixin):
         """
 
         if not self.push_server_urls:
-            raise Exception("Missing Server Push Url configurations!")
+            msg = "Missing Server Push Url configurations!"
+            raise Exception(msg)
 
         if not challenge:
-            raise Exception("No challenge to submit!")
+            msg = "No challenge to submit!"
+            raise Exception(msg)
 
         if not gda:
-            raise Exception("Missing target description!")
+            msg = "Missing target description!"
+            raise Exception(msg)
 
         (success, result_message) = self._http_push(challenge, gda, transactionId)
 
@@ -313,10 +316,7 @@ class DefaultPushProvider(IPushProvider, ConfigParsingMixin):
                     uri, json=json_challenge, headers=headers, **pparams
                 )
 
-                if not response.ok:
-                    result = response.reason
-                else:
-                    result = response.content
+                result = response.reason if not response.ok else response.content
 
                 return response.ok, result
 
@@ -348,9 +348,8 @@ class DefaultPushProvider(IPushProvider, ConfigParsingMixin):
             log.error("Last Exception was %r", last_exception)
             raise last_exception
 
-        raise AllResourcesUnavailable(
-            "non of the resources %r available!" % self.push_server_urls
-        )
+        msg = f"non of the resources {self.push_server_urls!r} available!"
+        raise AllResourcesUnavailable(msg)
 
 
 def main():
@@ -359,7 +358,7 @@ def main():
     main here - for the interactive test :-)
 
     """
-    import argparse
+    import argparse  # noqa: PLC0415
 
     usage = "Interactive test for the pushtoken provider"
 
@@ -415,8 +414,8 @@ def main():
         push_provider = DefaultPushProvider()
         push_provider.loadConfig(configDict)
         res, resp = push_provider.push_notification(message=message, gda=gda)
-        print("Result: %r" % res)
-        print("Response: %r" % resp)
+        print(f"Result: {res!r}")
+        print(f"Response: {resp!r}")
 
     except Exception as exx:
         log.error("Failed to push the notification (%r): %r", exx, configDict)

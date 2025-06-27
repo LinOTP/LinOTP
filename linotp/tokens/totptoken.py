@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -29,12 +28,11 @@
 import datetime
 import logging
 import time
-from typing import Union
 
 from linotp.lib.config import getFromConfig
 from linotp.lib.error import ParameterError
 from linotp.lib.HMAC import HmacOtp
-from linotp.lib.type_utils import boolean
+from linotp.lib.type_utils import boolean, parse_duration
 from linotp.lib.util import generate_otpkey
 from linotp.tokens import tokenclass_registry
 from linotp.tokens.base import TokenClass
@@ -87,7 +85,7 @@ Internet-Draft                HOTPTimeBased               September 2010
 """
 
 
-def time2counter(T0: Union[float, int], timeStepping: int) -> int:
+def time2counter(T0: float | int, timeStepping: int) -> int:
     counter = int(T0 // timeStepping)
     return counter
 
@@ -160,8 +158,6 @@ class TimeHmacTokenClass(HmacTokenClass):
                 self.window,
                 self.shift,
             )
-
-        return
 
     @classmethod
     def getClassType(cls):
@@ -258,9 +254,8 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         if key is not None and key in res:
             ret = res.get(key)
-        else:
-            if ret == "all":
-                ret = res
+        elif ret == "all":
+            ret = res
         return ret
 
     def update(self, param):
@@ -284,7 +279,7 @@ class TimeHmacTokenClass(HmacTokenClass):
 
         if self.hKeyRequired is True:
             genkey = int(param.get("genkey", 0))
-            if 1 == genkey:
+            if genkey == 1:
                 # if hashlibStr not in keylen dict, this will raise an
                 # Exception
                 otpKey = generate_otpkey(keylen.get(self.hashlibStr))
@@ -294,8 +289,9 @@ class TimeHmacTokenClass(HmacTokenClass):
                 # this will raise an exception if otpkey is not present
                 try:
                     otpKey = param["otpkey"]
-                except KeyError:
-                    raise ParameterError("Missing parameter: 'serial'")
+                except KeyError as exx:
+                    msg = "Missing parameter: 'serial'"
+                    raise ParameterError(msg) from exx
 
         # finally set the values for the update
 
@@ -330,8 +326,6 @@ class TimeHmacTokenClass(HmacTokenClass):
             self.addToTokenInfo("timeStep", self._timeStep)
         if self.hashlibStr:
             self.addToTokenInfo("hashlib", self.hashlibStr)
-
-        return
 
     def check_otp_exist(self, otp, window=10, user=None, autoassign=False):
         """
@@ -384,20 +378,15 @@ class TimeHmacTokenClass(HmacTokenClass):
         if isinstance(curTime, datetime.datetime):
             dt = curTime
         elif isinstance(curTime, str):
-            if "." in curTime:
-                tFormat = "%Y-%m-%d %H:%M:%S.%f"
-            else:
-                tFormat = "%Y-%m-%d %H:%M:%S"
+            tFormat = "%Y-%m-%d %H:%M:%S.%f" if "." in curTime else "%Y-%m-%d %H:%M:%S"
             try:
                 dt = datetime.datetime.strptime(curTime, tFormat)
             except Exception as ex:
                 log.error("[time2float] Error during conversion of datetime: %r", ex)
                 raise
         else:
-            raise Exception(
-                "[time2float] invalid curTime: %s. You need to specify a datetime.datetime"
-                % type(curTime)
-            )
+            msg = f"[time2float] invalid curTime: {type(curTime)}. You need to specify a datetime.datetime"
+            raise Exception(msg)
 
         td = dt - datetime.datetime(1970, 1, 1)
         # for python 2.6 compatibility, we have to implement 2.7 .total_seconds()::
@@ -497,7 +486,8 @@ class TimeHmacTokenClass(HmacTokenClass):
         :param value: the new timeStep value
         """
         if value not in [60, 30]:
-            raise ValueError("timeStep for totp token must be either 30 or 60!")
+            msg = "timeStep for totp token must be either 30 or 60!"
+            raise ValueError(msg)
 
         new_time_count = self.getOtpCount() * self.timeStepping // value
         self.setOtpCount(int(new_time_count))
@@ -746,10 +736,7 @@ class TimeHmacTokenClass(HmacTokenClass):
 
             ret = True
 
-        if ret is True:
-            msg = "resync was successful"
-        else:
-            msg = "resync was not successful"
+        msg = "resync was successful" if ret is True else "resync was not successful"
 
         log.debug(msg)
         return ret
@@ -773,7 +760,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         :rtype: string
         """
 
-        res = (-1, 0, 0, 0)
+        _res = (-1, 0, 0, 0)
 
         otplen = int(self.token.LinOtpOtpLen)
         secObj = self._get_secret_object()
@@ -797,9 +784,9 @@ class TimeHmacTokenClass(HmacTokenClass):
         otpval = hmac2Otp.generate(counter=counter, inc_counter=False)
 
         pin = self.getPin()
-        combined = "%s%s" % (otpval, pin)
+        combined = f"{otpval}{pin}"
         if getFromConfig("PrependPin") == "True":
-            combined = "%s%s" % (pin, otpval)
+            combined = f"{pin}{otpval}"
 
         return (1, pin, otpval, combined)
 
@@ -844,7 +831,7 @@ class TimeHmacTokenClass(HmacTokenClass):
         otp_dict["timeStepping"] = timeStepping
 
         if count > 0:
-            for i in range(0, count):
+            for i in range(count):
                 otpval = hmac2Otp.generate(counter=counter + i, inc_counter=False)
                 timeCounter = ((counter + i) * timeStepping) + shift
                 otp_dict["otp"][counter + i] = {
@@ -864,8 +851,6 @@ class TimeHmacTokenClass(HmacTokenClass):
         :param otp: the otp for which the timestamp is searched
         :param window: string, in human readable '2h' or iso8601 format 'PT2H'
         """
-
-        from linotp.lib.type_utils import parse_duration
 
         window = parse_duration(window).total_seconds()
 

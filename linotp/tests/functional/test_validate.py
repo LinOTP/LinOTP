@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -29,15 +28,16 @@
 """"""
 
 import binascii
+import contextlib
 import hashlib
 import json
 import time
 from datetime import datetime
+from unittest.mock import patch
 
 import freezegun
 import httplib2
 import pytest
-from mock import patch
 
 # we need this for the radius token
 from pyrad.client import Client
@@ -47,7 +47,7 @@ from linotp.lib.HMAC import HmacOtp as LinHmac
 from linotp.tests import TestController
 
 
-class Response(object):
+class Response:
     code = AccessAccept
 
 
@@ -94,20 +94,14 @@ class HmacOtp(LinHmac):
 
         hashlibStr = hLibStr.lower()
 
-        if hashlibStr == "md5":
-            return hashlib.md5
-        elif hashlibStr == "sha1":
-            return hashlib.sha1
-        elif hashlibStr == "sha224":
-            return hashlib.sha224
-        elif hashlibStr == "sha256":
-            return hashlib.sha256
-        elif hashlibStr == "sha384":
-            return hashlib.sha384
-        elif hashlibStr == "sha512":
-            return hashlib.sha512
-        else:
-            return hashlib.sha1
+        return {
+            "md5": hashlib.md5,
+            "sha1": hashlib.sha1,
+            "sha224": hashlib.sha224,
+            "sha256": hashlib.sha256,
+            "sha384": hashlib.sha384,
+            "sha512": hashlib.sha512,
+        }.get(hashlibStr, hashlib.sha1)
 
 
 @pytest.mark.usefixtures("client_class")
@@ -407,7 +401,7 @@ class TestValidateController(TestController):
         use_public_id=False,
         user="root",
     ):
-        serial = "UBAM%s_%s" % (serialnum, yubi_slot)
+        serial = f"UBAM{serialnum}_{yubi_slot}"
 
         valid_otps = [
             public_uid + "fcniufvgvjturjgvinhebbbertjnihit",
@@ -439,7 +433,7 @@ class TestValidateController(TestController):
             params["public_uid"] = public_uid
 
         response = self.make_admin_request("init", params=params)
-        assert '"value": true' in response, "Response: %r" % response
+        assert '"value": true' in response, f"Response: {response!r}"
 
         # test initial assign
         params = {
@@ -448,7 +442,7 @@ class TestValidateController(TestController):
         }
         response = self.make_admin_request("assign", params=params)
         # Test response...
-        assert '"value": true' in response, "Response: %r" % response
+        assert '"value": true' in response, f"Response: {response!r}"
 
         return (serial, valid_otps)
 
@@ -473,7 +467,7 @@ class TestValidateController(TestController):
         :return: the serial number of the remote token
         """
 
-        serial = "LSRE%s" % target_serial
+        serial = f"LSRE{target_serial}"
         params = {
             "serial": serial,
             "type": "remote",
@@ -488,7 +482,7 @@ class TestValidateController(TestController):
         }
 
         response = self.make_admin_request("init", params=params)
-        assert '"value": true' in response, "Response: %r" % response
+        assert '"value": true' in response, f"Response: {response!r}"
 
         return serial
 
@@ -537,8 +531,6 @@ class TestValidateController(TestController):
 
         for serial in serials:
             self.delete_token(serial)
-
-        return
 
     #
     #    Use case:
@@ -927,9 +919,9 @@ class TestValidateController(TestController):
         msg = '"linotp_tokendescription": "TestToken1"'
         assert msg in response, response
         msg = '"linotp_tokentype": "pw"'
-        assert not (msg in response), response
+        assert msg not in response, response
         msg = '"linotp_tokendescription": "token_description"'
-        assert not (msg in response), response
+        assert msg not in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -940,9 +932,9 @@ class TestValidateController(TestController):
         response = self.make_validate_request("check_s", params=parameters)
 
         msg = '"linotp_tokentype": "HMAC"'
-        assert not (msg in response), response
+        assert msg not in response, response
         msg = '"linotp_tokendescription": "TestToken1"'
-        assert not (msg in response), response
+        assert msg not in response, response
         msg = '"linotp_tokentype": "pw"'
         assert msg in response, response
         msg = '"linotp_tokendescription": "token_description"'
@@ -996,9 +988,9 @@ class TestValidateController(TestController):
         msg = '"linotp_tokendescription": "TestToken1"'
         assert msg in response, response
         msg = '"linotp_tokentype": "pw"'
-        assert not (msg in response), response
+        assert msg not in response, response
         msg = '"linotp_tokendescription": "token_description"'
-        assert not (msg in response), response
+        assert msg not in response, response
 
         # ------------------------------------------------------------------ --
 
@@ -1009,9 +1001,9 @@ class TestValidateController(TestController):
         response = self.make_validate_request("check", params=parameters)
 
         msg = '"linotp_tokentype": "HMAC"'
-        assert not (msg in response), response
+        assert msg not in response, response
         msg = '"linotp_tokendescription": "TestToken1"'
-        assert not (msg in response), response
+        assert msg not in response, response
         msg = '"linotp_tokentype": "pw"'
         assert msg in response, response
         msg = '"linotp_tokendescription": "token_description"'
@@ -1433,7 +1425,7 @@ class TestValidateController(TestController):
             for tupp in arry:
                 (T0, otp) = tupp
                 val = self.createTOtpValue(totp, T0)
-                assert otp == val, "otp verification failed %r " % tupp
+                assert otp == val, f"otp verification failed {tupp!r} "
 
     def test_checkTOtp(self):
         self.createTOtpToken("SHA1")
@@ -1527,10 +1519,8 @@ class TestValidateController(TestController):
     def test_totp_resync(self):
         # delete the 'TOTP' token if it exists
 
-        try:
+        with contextlib.suppress(AssertionError):
             self.delete_token("TOTP")
-        except AssertionError as _exx:
-            pass
 
         totp = self.createTOtpToken("SHA1")
 
@@ -1601,10 +1591,8 @@ class TestValidateController(TestController):
         assert 'setConfig AutoResync:true": true' in response, response
 
         # delete 'TOTP' token if it exists
-        try:
+        with contextlib.suppress(AssertionError):
             self.delete_token("TOTP")
-        except AssertionError as _exx:
-            pass
 
         totp = self.createTOtpToken("SHA512")
 
@@ -1643,7 +1631,7 @@ class TestValidateController(TestController):
 
         # Test if FailCount increments and in case of a valid OTP is resetted
 
-        for _i in range(0, 14):
+        for _i in range(14):
             parameters = {"user": "root", "pass": "pin123456"}
             response = self.make_validate_request("check", params=parameters)
             assert '"value": false' in response, response
@@ -1669,7 +1657,7 @@ class TestValidateController(TestController):
         # Test if FailCount increments and in case of a maxFailCount
         # could not be reseted by a valid OTP
 
-        for _i in range(0, 15):
+        for _i in range(15):
             parameters = {"user": "root", "pass": "pin123456"}
             response = self.make_validate_request("check", params=parameters)
             assert '"value": false' in response, response

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -26,8 +25,7 @@
 #
 
 import json
-
-from mock import patch
+from unittest.mock import patch
 
 from linotp.tests import TestController
 
@@ -38,7 +36,7 @@ class TestVoiceToken(TestController):
         self.delete_all_token()
         self.delete_all_realms()
         self.delete_all_resolvers()
-        super(TestVoiceToken, self).setUp()
+        super().setUp()
         self.create_common_resolvers()
         self.create_common_realms()
         self.create_voice_provider()
@@ -49,7 +47,7 @@ class TestVoiceToken(TestController):
         self.delete_all_realms()
         self.delete_all_resolvers()
         self.delete_all_token()
-        super(TestVoiceToken, self).tearDown()
+        super().tearDown()
 
     def create_voice_provider(self):
         """

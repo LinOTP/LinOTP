@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -48,7 +47,7 @@ from pyrad.dictionary import Dictionary
 log = logging.getLogger(__name__)
 
 
-class RemoteRequest(object):
+class RemoteRequest:
     """
     Request is the class to handle the forwarding of request
     to external, remote sources and servers. Supported is currently either
@@ -164,7 +163,7 @@ class HttpRequest(RemoteRequest):
 
         try:
             # prepare the url
-            request_url = "%(scheme)s://%(netloc)s%(path)s" % server_config
+            request_url = "{scheme}://{netloc}{path}".format(**server_config)
 
             # prepare the submit and receive headers
             headers = {
@@ -196,14 +195,16 @@ class HttpRequest(RemoteRequest):
                 request_url, method="POST", body=data, headers=headers
             )
             if resp.status not in [200]:
-                raise Exception("Http Status not ok (%s)", resp.status)
+                msg = "Http Status not ok (%s)"
+                raise Exception(msg, resp.status)
 
             result = json.loads(content)
             status = result.get("result", {}).get("status", False)
 
-            if status is True:
-                if result.get("result", {}).get("value", False) is True:
-                    res = True
+            if status is True and (
+                result.get("result", {}).get("value", False) is True
+            ):
+                res = True
 
             # in case of a remote challenge respone transaction
             if "detail" in result:

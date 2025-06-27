@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -29,8 +28,6 @@
 """
 Test the autoassignment Policy.
 """
-
-from copy import deepcopy
 
 from linotp.tests import TestController
 
@@ -129,8 +126,6 @@ class TestAdminShowController(TestController):
 
         assert serial in response, response
 
-        return
-
     def test_manage_tokeninfo(self):
         """
         by default, there should be no restriction to show an token
@@ -178,5 +173,3 @@ class TestAdminShowController(TestController):
         response = self.make_manage_request("tokeninfo", params=params)
 
         assert serial in response, response
-
-        return

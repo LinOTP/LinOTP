@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -86,9 +85,8 @@ def notify_user(user, action, info, required=False):
     log.info("Failed to notify user %r", user)
 
     if required:
-        raise NotificationException(
-            "No notification has been sent - %r provider defined?" % action
-        )
+        msg = f"No notification has been sent - {action!r} provider defined?"
+        raise NotificationException(msg)
 
     return False
 
@@ -110,9 +108,8 @@ def notify_user_by_email(provider_name, user, action, info):
 
     user_email = user_detail.get("email")
     if not user_email:
-        raise NotificationException(
-            "Unable to notify user via email - user has no email address"
-        )
+        msg = "Unable to notify user via email - user has no email address"
+        raise NotificationException(msg)
 
     replacements = {}
     replacements.update(info)
@@ -124,7 +121,7 @@ def notify_user_by_email(provider_name, user, action, info):
     # during a dynamic module which is detected as a recursive load and
     # therefore gives an error on server start
 
-    from . import loadProvider
+    from . import loadProvider  # noqa: PLC0415
 
     try:
         provider = loadProvider("email", provider_name=provider_name)
@@ -138,9 +135,8 @@ def notify_user_by_email(provider_name, user, action, info):
 
     except Exception as exx:
         log.error("Failed to notify user %r by email", user_email)
-        raise NotificationException(
-            "Failed to notify user %r by email:%r" % (user_email, exx)
-        )
+        msg = f"Failed to notify user {user_email!r} by email:{exx!r}"
+        raise NotificationException(msg) from exx
 
 
 # eof

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -41,7 +40,6 @@ from pysodium import crypto_scalarmult_curve25519_base as calc_dh_base
 from linotp.flap import config
 from linotp.lib.challenges import Challenges, transaction_id_to_u64
 from linotp.lib.config import getFromConfig
-from linotp.lib.context import request_context as context
 from linotp.lib.crypto.utils import (
     decode_base64_urlsafe,
     encode_base64_urlsafe,
@@ -96,10 +94,12 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         # flag is 1) and pairing_challenge_sent (active flag is 0)
 
         is_completely_finished = TokenClass.isActive(self)
-        return (
-            is_completely_finished
-            or self.current_state == "pairing_response_received"
-            or self.current_state == "pairing_challenge_sent"
+        return is_completely_finished or (
+            self.current_state
+            in {
+                "pairing_response_received",
+                "pairing_challenge_sent",
+            }
         )
 
     # --------------------------------------------------------------------------- --
@@ -293,8 +293,9 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             CONTENT_TYPE_AUTH,
             CONTENT_TYPE_FREE,
         ]:
+            msg = "content_type"
             raise InvalidFunctionParameter(
-                "content_type",
+                msg,
                 "content_type must "
                 "be CONTENT_TYPE_PAIRING, "
                 "CONTENT_TYPE_AUTH or "
@@ -302,16 +303,17 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             )
 
         if content_type == CONTENT_TYPE_PAIRING and message != serial:
+            msg = "message"
             raise InvalidFunctionParameter(
-                "message", "message must be equal to serial in pairing mode"
+                msg, "message must be equal to serial in pairing mode"
             )
 
-        if content_type == CONTENT_TYPE_AUTH:
-            if "@" not in message:
-                raise InvalidFunctionParameter(
-                    "message",
-                    "For content type auth, message must have format <login>@<server>",
-                )
+        if content_type == CONTENT_TYPE_AUTH and "@" not in message:
+            msg = "message"
+            raise InvalidFunctionParameter(
+                msg,
+                "For content type auth, message must have format <login>@<server>",
+            )
 
         # ------------------------------------------------------------------- --
 
@@ -410,19 +412,20 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         # enforce max sizes specified by protocol
 
         if content_type == CONTENT_TYPE_FREE and len(utf8_message) > 511:
-            raise ParameterError(
-                "message (encoded as utf8) can only be 511 characters long"
-            )
+            msg = "message (encoded as utf8) can only be 511 characters long"
+            raise ParameterError(msg)
 
         elif content_type == CONTENT_TYPE_PAIRING and len(utf8_message) > 63:
+            msg = "message"
             raise InvalidFunctionParameter(
-                "message",
+                msg,
                 "max string length (encoded as utf8) is 511 for content type PAIRING",
             )
 
         elif content_type == CONTENT_TYPE_AUTH and len(utf8_message) > 511:
+            msg = "message"
             raise InvalidFunctionParameter(
-                "message",
+                msg,
                 "max string length (encoded as utf8) is 511 for content type AUTH",
             )
 
@@ -447,8 +450,9 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             # enforce max url length as specified in protocol
 
             if len(utf8_callback_url) > 511:
+                msg = "callback_url"
                 raise InvalidFunctionParameter(
-                    "callback_url",
+                    msg,
                     "max string length (encoded as utf8) is 511",
                 )
 
@@ -460,8 +464,9 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             utf8_callback_sms_number = callback_sms_number.encode("utf8")
 
             if len(utf8_callback_sms_number) > 31:
+                msg = "callback_sms_number"
                 raise InvalidFunctionParameter(
-                    "callback_sms_number",
+                    msg,
                     "max string length (encoded as utf8) is 31",
                 )
 
@@ -529,25 +534,23 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
 
     def update(self, params):
         param_keys = set(params.keys())
-        init_rollout_state_keys = set(
-            [
-                "type",
-                "hashlib",
-                "serial",
-                "::scope::",
-                "key_size",
-                "user.login",
-                "description",
-                "user.realm",
-                "session",
-                "otplen",
-                "resConf",
-                "user",
-                "realm",
-                "qr",
-                "pin",
-            ]
-        )
+        init_rollout_state_keys = {
+            "type",
+            "hashlib",
+            "serial",
+            "::scope::",
+            "key_size",
+            "user.login",
+            "description",
+            "user.realm",
+            "session",
+            "otplen",
+            "resConf",
+            "user",
+            "realm",
+            "qr",
+            "pin",
+        }
 
         # ------------------------------------------------------------------- --
 
@@ -555,7 +558,8 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             # make sure the call aborts, if request
             # type wasn't recognized
 
-            raise Exception("Unknown request type for token type qr")
+            msg = "Unknown request type for token type qr"
+            raise Exception(msg)
 
         # if param keys are in {'type', 'hashlib'} the token is
         # initialized for the first time. this is e.g. done on the
@@ -633,25 +637,23 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         response_detail = {}
 
         param_keys = set(params.keys())
-        init_rollout_state_keys = set(
-            [
-                "type",
-                "hashlib",
-                "serial",
-                "::scope::",
-                "key_size",
-                "user.login",
-                "description",
-                "user.realm",
-                "session",
-                "otplen",
-                "pin",
-                "resConf",
-                "user",
-                "realm",
-                "qr",
-            ]
-        )
+        init_rollout_state_keys = {
+            "type",
+            "hashlib",
+            "serial",
+            "::scope::",
+            "key_size",
+            "user.login",
+            "description",
+            "user.realm",
+            "session",
+            "otplen",
+            "pin",
+            "resConf",
+            "user",
+            "realm",
+            "qr",
+        }
 
         # ------------------------------------------------------------------- --
 
@@ -666,7 +668,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             owner = get_token_owner(self)
             if owner and owner.login and owner.realm:
                 realms = [owner.realm]
-                user = owner
+                _user = owner
             else:
                 realms = self.getRealms()
 
@@ -729,7 +731,8 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
             # make sure the call aborts, if request
             # type wasn't recognized
 
-            raise Exception("Unknown request type for token type qr")
+            msg = "Unknown request type for token type qr"
+            raise Exception(msg)
 
         # ------------------------------------------------------------------- --
 
@@ -792,9 +795,7 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
                 # or a challenge, that already received a number of wrong
                 # TANs but still has tries left (second case).
 
-                if not received_tan:
-                    filtered_challenges.append(challenge)
-                elif not tan_is_valid and fail_counter <= max_fail:
+                if not received_tan or (not tan_is_valid and fail_counter <= max_fail):
                     filtered_challenges.append(challenge)
 
             # --------------------------------------------------------------- --
@@ -878,10 +879,9 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
                     # pylons silently converts all ints in json
                     # to unicode :(
                     content_type = int(content_type_as_str)
-                except BaseException:
-                    raise ValueError(
-                        "Unrecognized content type: %s" % content_type_as_str
-                    )
+                except BaseException as exx:
+                    msg = f"Unrecognized content type: {content_type_as_str}"
+                    raise ValueError(msg) from exx
 
         # ------------------------------------------------------------------- --
 
@@ -939,10 +939,9 @@ class QrTokenClass(TokenClass, StatefulTokenMixin):
         url = None
         hparam = {}
 
-        if response_detail is not None:
-            if "pairing_url" in response_detail:
-                url = response_detail.get("pairing_url")
-                hparam["alt"] = url
+        if response_detail is not None and "pairing_url" in response_detail:
+            url = response_detail.get("pairing_url")
+            hparam["alt"] = url
 
         return url, hparam
 

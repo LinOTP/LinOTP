@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -37,7 +36,6 @@ from flask import g
 from flask_babel import gettext as _
 from sqlalchemy import and_
 
-from linotp.lib.context import request_context as context
 from linotp.lib.resolver import getResolverClassName, getResolverObject
 from linotp.lib.tools import ToolsHandler
 from linotp.lib.user import getUserInfo
@@ -63,12 +61,13 @@ class MigrateResolverHandler(ToolsHandler):
         ret = {}
 
         if not src or not target:
-            raise Exception("Missing src or target resolver defintion!")
+            msg = "Missing src or target resolver defintion!"
+            raise Exception(msg)
 
         now = datetime.now()
         stime = now.strftime("%s")
 
-        g.audit["action_detail"] = "migration from %s to %s" % (
+        g.audit["action_detail"] = "migration from {} to {}".format(
             src["resolvername"],
             target["resolvername"],
         )
@@ -127,7 +126,7 @@ class MigrateResolverHandler(ToolsHandler):
             num_migration,
             len(tokens),
         )
-        g.audit["info"] = "[%s] %s" % (stime, ret["message"])
+        g.audit["info"] = "[{}] {}".format(stime, ret["message"])
         g.audit["serial"] = ",".join(list(serials))
         g.audit["success"] = True
 

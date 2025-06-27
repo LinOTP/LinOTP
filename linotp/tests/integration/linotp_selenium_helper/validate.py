@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -73,10 +72,8 @@ class Validate:
         if r.status_code != 200:
             return False
         return_json = r.json()
-        assert return_json is not None, (
-            "Json response may not be empty %s" % return_json
-        )
-        assert "result" in return_json, "Missing result in Json %s" % return_json
+        assert return_json is not None, f"Json response may not be empty {return_json}"
+        assert "result" in return_json, f"Missing result in Json {return_json}"
 
         return return_json
 
@@ -108,6 +105,6 @@ class Validate:
             return False, return_json
 
         logger.debug("validate (user=%s), result: %s", user, result)
-        assert "value" in result, "Missing value in result %s" % (result)
+        assert "value" in result, f"Missing value in result {result}"
         access_granted = result["value"]
         return access_granted, return_json

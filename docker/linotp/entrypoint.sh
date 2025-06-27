@@ -55,11 +55,13 @@ start_linotp() {
         # due to its jwt and cookie handling.
         # Once supported, set `--workers="${WORKER_PROCESSES:-1}"`
         log "Starting gunicorn on $SERVICE ..."
-	if [ "${WORKER_THREADS:-auto}" = "auto" ]; then
-	    # Set number of threads to twice number of CPU cores plus 1
-	    # (common practice for I/O-bound applications)
-	    WORKER_THREADS=$((2*$(nproc)+1))
-	fi
+
+        if [ "${WORKER_THREADS:-auto}" = "auto" ]; then
+            # Set number of threads to twice number of CPU cores plus 1
+            # (common practice for I/O-bound applications)
+            WORKER_THREADS=$((2 * $(nproc) + 1))
+        fi
+
         gunicorn \
             --bind "$SERVICE" --worker-tmp-dir=/dev/shm \
             --workers=1 --threads="${WORKER_THREADS}" \

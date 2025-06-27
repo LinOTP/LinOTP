@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -30,9 +29,10 @@ These tests are far from complete and can not be the only point of
 reliance for changes in the code base
 """
 
+from unittest.mock import patch
+
 import flask
 import pytest
-from mock import patch
 
 from linotp.lib.security.provider import SecurityProvider
 
@@ -62,7 +62,7 @@ def test_create_hsm_pool(mock_init, mock_get_hsm_pool, mock_load_security_module
 
     assert len(created_pool) == poolsize
     # test the content of one of the connections
-    assert created_pool[0]["obj"] == None
+    assert created_pool[0]["obj"] is None
     assert (
         created_pool[0]["error"]
         == "'default': " + mock_load_security_module.side_effect.__repr__()
@@ -70,7 +70,7 @@ def test_create_hsm_pool(mock_init, mock_get_hsm_pool, mock_load_security_module
 
     # check that all elements are the same:
     first_elem = created_pool[0]
-    assert all([elem == first_elem for elem in created_pool])
+    assert all(elem == first_elem for elem in created_pool)
 
 
 def test_hsm_functionality(app):

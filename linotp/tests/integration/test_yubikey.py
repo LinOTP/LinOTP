@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -28,7 +27,6 @@
 import integration_data as data
 import pytest
 import requests
-from linotp_selenium_helper import TestCase
 from linotp_selenium_helper.validate import Validate
 from requests.auth import HTTPDigestAuth
 
@@ -66,11 +64,11 @@ class TestYubikey:
         """
         url = self.testcase.http_host
         if self.testcase.http_port:
-            url = "%s:%s" % (self.testcase.http_host, self.testcase.http_port)
+            url = f"{self.testcase.http_host}:{self.testcase.http_port}"
         # Enroll Yubikey
         serialnum = "01382015"
         yubi_slot = 1
-        serial = "UBAM%s_%s" % (serialnum, yubi_slot)
+        serial = f"UBAM{serialnum}_{yubi_slot}"
         otpkey = "9163508031b20d2fbb1868954e041729"
         yubi_otplen = 48
         description = "Enrolled by TestYubikey"
@@ -144,15 +142,15 @@ class TestYubikey:
             auth=cy_auth,
             verify=False,
         )
-        assert response.status_code == 200, "Invalid response %r" % response
+        assert response.status_code == 200, f"Invalid response {response!r}"
         return_json = response.json()
-        assert return_json["result"]["status"], "Invalid return value: %r" % return_json
-        assert return_json["result"]["value"], "Invalid return value: %r" % return_json
+        assert return_json["result"]["status"], f"Invalid return value: {return_json!r}"
+        assert return_json["result"]["value"], f"Invalid return value: {return_json!r}"
         assert return_json["detail"]["user"] == self.user_name, (
-            "Invalid return value: %r" % return_json
+            f"Invalid return value: {return_json!r}"
         )
         assert return_json["detail"]["realm"] == self.realm_name, (
-            "Invalid return value: %r" % return_json
+            f"Invalid return value: {return_json!r}"
         )
 
         # Repeat an old (therefore invalid) OTP value
@@ -181,24 +179,24 @@ class TestYubikey:
             auth=cy_auth,
             verify=False,
         )
-        assert response.status_code == 200, "Invalid response %r" % response
+        assert response.status_code == 200, f"Invalid response {response!r}"
         return_json = response.json()
-        assert return_json["result"]["status"], "Invalid return value: %r" % return_json
+        assert return_json["result"]["status"], f"Invalid return value: {return_json!r}"
         assert not return_json["result"]["value"], (
-            "Invalid return value: %r" % return_json
+            f"Invalid return value: {return_json!r}"
         )
 
         assert "user" not in return_json, (
-            "Response should not contain user %r" % return_json
+            f"Response should not contain user {return_json!r}"
         )
         assert "realm" not in return_json, (
-            "Response should not contain realm %r" % return_json
+            f"Response should not contain realm {return_json!r}"
         )
 
         if "detail" in return_json:
             assert "user" not in return_json["detail"], (
-                "Response should not contain detail.user %r" % return_json
+                f"Response should not contain detail.user {return_json!r}"
             )
             assert "realm" not in return_json["detail"], (
-                "Response should not contain detail.realm %r" % return_json
+                f"Response should not contain detail.realm {return_json!r}"
             )

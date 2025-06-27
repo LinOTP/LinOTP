@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -26,20 +25,18 @@
 #
 
 import unittest
+from unittest.mock import ANY, patch
 
 import pytest
-from flask import g
-from mock import ANY, patch
 
 from linotp.lib import resolver
-from linotp.lib.config import getFromConfig, getLinotpConfig
 
 
 @pytest.mark.usefixtures("app")
 class TestGetResolverList(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        super(TestGetResolverList, cls).setUpClass()
+        super().setUpClass()
 
     @patch("linotp.lib.resolver.get_admin_resolvers", return_value=[])
     @patch("linotp.lib.resolver.get_resolver_types", return_value=["sqlresolver"])

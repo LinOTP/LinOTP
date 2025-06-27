@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -93,7 +92,8 @@ class MigrateController(BaseController):
                 backupid = self.request_params["backupid"]
                 passphrase = self.request_params["pass"]
             except KeyError as exx:
-                raise Exception("missing Parameter:%r" % exx)
+                msg = f"missing Parameter:{exx!r}"
+                raise Exception(msg) from exx
 
             backup_data = {}
 
@@ -102,7 +102,7 @@ class MigrateController(BaseController):
 
             # create the backup file
             b_name = hashlib.sha256(backupid).digest()[:16]
-            b_name = "%s.hbak" % binascii.hexlify(b_name)
+            b_name = f"{binascii.hexlify(b_name)}.hbak"
 
             with open(b_name, "w") as f:
                 f.write(json.dumps({"Salt": binascii.hexlify(salt)}))
@@ -178,25 +178,27 @@ class MigrateController(BaseController):
                 )
             except KeyError as exx:
                 missing_param = True
-                raise Exception("missing Parameter:%r" % exx)
+                msg = f"missing Parameter:{exx!r}"
+                raise Exception(msg) from exx
 
             mig = None
 
             # get the backup file
             backup_file = hashlib.sha256(backupid).digest()[:16]
-            backup_file = "%s.hbak" % binascii.hexlify(backup_file)
+            backup_file = f"{binascii.hexlify(backup_file)}.hbak"
 
             if not os.path.isfile(backup_file):
-                raise Exception("No restore file found for backupid=%s" % backupid)
+                msg = f"No restore file found for backupid={backupid}"
+                raise Exception(msg)
 
             counters = {}
             counter_check_done = False
-            with open(backup_file, "r") as f:
-                for data in f.readlines():
-                    if not data.strip():  # skip empty lines
+            with open(backup_file) as f:
+                for line in f:
+                    if not line.strip():  # skip empty lines
                         continue
 
-                    restore_data = json.loads(data)
+                    restore_data = json.loads(line)
 
                     if not mig and "Salt" in restore_data:
                         salt = restore_data["Salt"]
@@ -223,29 +225,33 @@ class MigrateController(BaseController):
 
                         mac = mig.calculate_mac(json.dumps(backup_data))
                         if binascii.hexlify(mac) != restore_data["mac"]:
-                            raise Exception("Restore Lines mismatch")
+                            msg = "Restore Lines mismatch"
+                            raise Exception(msg)
 
                         if restore_data["Counter"].get("Token") != counters.get(
                             "Token", 0
                         ):
-                            raise Exception("Restore Token mismatch")
+                            msg = "Restore Token mismatch"
+                            raise Exception(msg)
 
                         if restore_data["Counter"].get("Config") != counters.get(
                             "Config", 0
                         ):
-                            raise Exception("Restore Config mismatch")
+                            msg = "Restore Config mismatch"
+                            raise Exception(msg)
 
                         counter_check_done = True
 
+                    elif not mig:
+                        msg = "MigrationHandler not initialized!"
+                        raise Exception(msg)
                     else:
-                        if not mig:
-                            raise Exception("MigrationHandler not initialized!")
-                        else:
-                            log.info("unknown entry")
+                        log.info("unknown entry")
 
             # if somebody removed the last line, we cry for it
             if not counter_check_done:
-                raise Exception("incomplete migration file!")
+                msg = "incomplete migration file!"
+                raise Exception(msg)
 
             db.session.commit()
             log.debug("[restore] success")
@@ -267,10 +273,13 @@ class MigrateController(BaseController):
             return sendError(err)
 
         finally:
-            if remove_backup_file and os.path.isfile(backup_file):
-                if not missing_param and not decryption_error:
-                    os.remove(backup_file)
-                    log.debug("removed backup file %r", backup_file)
+            if (
+                remove_backup_file
+                and os.path.isfile(backup_file)
+                and (not missing_param and not decryption_error)
+            ):
+                os.remove(backup_file)
+                log.debug("removed backup file %r", backup_file)
 
 
 # eof #########################################################################

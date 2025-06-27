@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -37,7 +36,7 @@ in case of an error.
 
 import logging
 
-from linotp.tests import TestController, url
+from linotp.tests import TestController
 
 log = logging.getLogger(__name__)
 
@@ -353,5 +352,5 @@ class TestHTTPError(TestController):
         assert "status" in content["result"]
         assert content["result"]["status"]
         assert "value" in content["result"]
-        assert "setConfig errors:%s" % errors in content["result"]["value"]
-        assert content["result"]["value"]["setConfig errors:%s" % errors]
+        assert f"setConfig errors:{errors}" in content["result"]["value"]
+        assert content["result"]["value"][f"setConfig errors:{errors}"]

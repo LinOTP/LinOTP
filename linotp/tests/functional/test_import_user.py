@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -49,11 +48,10 @@ the check is made by a dryrun
 
 """
 
-import io
 import json
 import logging
 import os
-from typing import Callable
+from collections.abc import Callable
 
 from flask import current_app
 from sqlalchemy import sql
@@ -131,7 +129,7 @@ class TestImportUser(TestController):
         # 2- import a file with hashed passwords
         def_passwd_file = os.path.join(self.fixture_path, "def-passwd")
 
-        with io.open(def_passwd_file, "r", encoding="utf-8") as f:
+        with open(def_passwd_file, encoding="utf-8") as f:
             content = f.read()
 
         upload_files = [("file", "user_list", content)]
@@ -156,7 +154,7 @@ class TestImportUser(TestController):
         # and 1 user's password has changed --> 1 user will be modified
         def_passwd_changed_file = os.path.join(self.fixture_path, "def-passwd-changed")
 
-        with io.open(def_passwd_changed_file, "r", encoding="utf-8") as f:
+        with open(def_passwd_changed_file, encoding="utf-8") as f:
             content = f.read()
 
         upload_files = [("file", "user_list", content)]
@@ -170,8 +168,6 @@ class TestImportUser(TestController):
         assert len(jresp["result"]["value"]["deleted"]) == 4, response
         assert len(jresp["result"]["value"]["updated"]) == 22, response
         assert '"created": {}' in response, response
-
-        return
 
     def test_import_user_into_local_admin_resolver(self):
         """Very that it's not possible to overwrite the local admin resolver."""
@@ -216,7 +212,7 @@ class TestImportUser(TestController):
 
         def_passwd_file = os.path.join(self.fixture_path, "def-passwd")
 
-        with io.open(def_passwd_file, "r", encoding="utf-8") as f:
+        with open(def_passwd_file, encoding="utf-8") as f:
             content = f.read()
 
         upload_files = [("file", "user_list", content)]
@@ -281,7 +277,7 @@ class TestImportUser(TestController):
 
         def_passwd_file = os.path.join(self.fixture_path, "def-passwd.csv")
 
-        with io.open(def_passwd_file, "r", encoding="utf-8") as f:
+        with open(def_passwd_file, encoding="utf-8") as f:
             content = f.read()
 
         upload_files = [("file", "user_list", content)]
@@ -382,8 +378,6 @@ class TestImportUser(TestController):
         img = jresp.get("detail", {}).get("googleurl", {}).get("img", "")
         assert "data:image" in img, response
 
-        return
-
     def test_import_user_policy(self):
         """
         check that import users is policy protected
@@ -431,11 +425,9 @@ class TestImportUser(TestController):
             auth_user="hans",
         )
 
-        assert not (msg in response), response
+        assert msg not in response, response
         assert '"updated": {}' in response, response
         assert '"created": {}' in response, response
-
-        return
 
     def test_imported_with_plain_passwords(self):
         """
@@ -448,7 +440,7 @@ class TestImportUser(TestController):
 
         def_passwd_file = os.path.join(self.fixture_path, "def-passwd-plain.csv")
 
-        with io.open(def_passwd_file, "r", encoding="utf-8") as f:
+        with open(def_passwd_file, encoding="utf-8") as f:
             content = f.read()
 
         upload_files = [("file", "user_list", content)]
@@ -506,7 +498,7 @@ class TestImportUser(TestController):
             self.fixture_path, "def-passwd-plain-changed.csv"
         )
 
-        with io.open(def_passwd_changed_file, "r", encoding="utf-8") as f:
+        with open(def_passwd_changed_file, encoding="utf-8") as f:
             content_changed = f.read()
         upload_files = [("file", "user_list", content_changed)]
 
@@ -549,8 +541,6 @@ class TestImportUser(TestController):
         # test for deprecated googleurl
         img = jresp.get("detail", {}).get("googleurl", {}).get("img", "")
         assert "data:image" in img, response
-
-        return
 
     def test_import_user_requires_system_write(self):
         """Verify that we require system:write permission to import users."""
@@ -603,7 +593,7 @@ class TestImportUser(TestController):
         try:
             def_passwd_file = os.path.join(self.fixture_path, "def-passwd")
 
-            with open(def_passwd_file, "r") as f:
+            with open(def_passwd_file) as f:
                 content = f.read()
 
             upload_files = [("file", "user_list", content)]

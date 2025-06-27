@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -32,9 +31,9 @@ Test the Challenge Prompt
 import binascii
 import json
 import time
+from unittest.mock import patch
 
 import pytest
-from mock import patch
 
 import linotp.provider.smsprovider.HttpSMSProvider
 from linotp.lib.HMAC import HmacOtp
@@ -84,7 +83,7 @@ class TestChallengePrompt(TestController):
     being done in the test_email_token
     """
 
-    sms_url = "http://localhost:%d/testing/http2sms" % 5001
+    sms_url = "http://localhost:5001/testing/http2sms"
 
     def setUp(self):
         TestController.setUp(self)
@@ -107,7 +106,6 @@ class TestChallengePrompt(TestController):
             public_uid + "ljlhjbkejkctubnejrhuvljkvglvvlbk",
             public_uid + "eihtnehtetluntirtirrvblfkttbjuih",
         ]
-        return
 
     def init_yubikey_token(
         self,
@@ -118,7 +116,7 @@ class TestChallengePrompt(TestController):
         use_public_id=False,
         user=None,
     ):
-        serial = "UBAM%s_%s" % (serialnum, yubi_slot)
+        serial = f"UBAM{serialnum}_{yubi_slot}"
 
         params = {
             "type": "yubikey",
@@ -136,7 +134,7 @@ class TestChallengePrompt(TestController):
             params["user"] = user
 
         response = self.make_admin_request("init", params=params)
-        assert '"value": true' in response, "Response: %r" % response
+        assert '"value": true' in response, f"Response: {response!r}"
 
         # setup the otp values, that we check against
         self.init_yubikey_otps(public_uid)
@@ -204,8 +202,6 @@ class TestChallengePrompt(TestController):
 
         self.delete_all_token()
         self.delete_policy("ch_resp")
-
-        return
 
     def test_hmac_challenge_prompt(self):
         """
@@ -324,8 +320,6 @@ class TestChallengePrompt(TestController):
 
         self.delete_policy(name="ch_resp")
 
-        return
-
     @patch.object(
         linotp.provider.smsprovider.HttpSMSProvider.HttpSMSProvider,
         "submitMessage",
@@ -359,7 +353,7 @@ class TestChallengePrompt(TestController):
         params = {"name": "imported_default", "type": "sms"}
         response = self.make_system_request("setDefaultProvider", params=params)
 
-        counter = 0
+        _counter = 0
         serial = "SMS_TOKEN_01"
         otpkey = "AD8EABE235FC57C815B26CEF3709075580B44738"
         params = {
@@ -404,7 +398,6 @@ class TestChallengePrompt(TestController):
         # --------------------------------------------------------------- --
 
         self.delete_token(serial)
-        return
 
     def tests_password_token(self):
         """
@@ -441,11 +434,10 @@ class TestChallengePrompt(TestController):
         # create the password token
         params = {
             "serial": "TPW",
-            "user": "root",
+            "user": "passthru_user1",
             "pin": "pin",
             "otpkey": "123456",
             "type": "pw",
-            "user": "passthru_user1",
         }
 
         response = self.make_admin_request("init", params=params)
@@ -473,5 +465,3 @@ class TestChallengePrompt(TestController):
 
         self.delete_all_token()
         self.delete_policy(name="ch_resp")
-
-        return

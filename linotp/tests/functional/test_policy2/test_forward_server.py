@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -29,17 +28,16 @@
 """used to do functional testing of the server forwarding"""
 
 import logging
+from unittest.mock import patch
 
 import pytest
-from flask import g
-from mock import patch
 
 from linotp.tests import TestController
 
 Rad_Serv = None
 
 
-class MockForwardServerPolicy(object):
+class MockForwardServerPolicy:
     @staticmethod
     def do_request(servers, env, user, passw, options):
         global Rad_Serv
@@ -135,8 +133,6 @@ class TestForwardServer(TestController):
 
         assert "127.0.0.1" not in Rad_Serv, Rad_Serv
 
-        return
-
     @patch("linotp.lib.auth.validate.ForwardServerPolicy", MockForwardServerPolicy)
     def test_server_forwarding2(self):
         """
@@ -162,8 +158,6 @@ class TestForwardServer(TestController):
         _response = self.make_validate_request(action="check", params=params)
 
         assert "127.0.0.1" not in Rad_Serv, Rad_Serv
-
-        return
 
     @patch("linotp.lib.auth.validate.ForwardServerPolicy", MockForwardServerPolicy)
     def test_server_forwarding_with_no_token_0(self):

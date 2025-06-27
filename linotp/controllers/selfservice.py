@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -148,7 +147,8 @@ class SelfserviceController(BaseController):
                     return redirect(url_for(".login"))
 
                 else:
-                    raise Unauthorized("No valid session")
+                    msg = "No valid session"
+                    raise Unauthorized(msg)
 
             # -------------------------------------------------------------- --
 
@@ -177,7 +177,8 @@ class SelfserviceController(BaseController):
             # futher processing with the authenticated user
 
             if auth_state != "authenticated":
-                raise Unauthorized("No valid session")
+                msg = "No valid session"
+                raise Unauthorized(msg)
 
             c.user = auth_user.login
             c.realm = auth_user.realm
@@ -187,17 +188,19 @@ class SelfserviceController(BaseController):
 
             # authenticated session verification
 
-            if auth_type == "user_selfservice":
+            if auth_type == "user_selfservice" and (
+                action not in self.form_access_methods
+            ):
                 # checking the session only for not_form_access actions
-                if action not in self.form_access_methods:
-                    valid_session = check_session(request, auth_user, g.client)
+                valid_session = check_session(request, auth_user, g.client)
 
-                    if not valid_session:
-                        g.audit["action"] = request.path[1:]
-                        g.audit["info"] = "session expired"
-                        current_app.audit_obj.log(g.audit)
+                if not valid_session:
+                    g.audit["action"] = request.path[1:]
+                    g.audit["info"] = "session expired"
+                    current_app.audit_obj.log(g.audit)
 
-                        raise Unauthorized("No valid session")
+                    msg = "No valid session"
+                    raise Unauthorized(msg)
 
             # -------------------------------------------------------------- --
 
@@ -334,8 +337,9 @@ class SelfserviceController(BaseController):
         try:
             try:
                 act = self.request_params["type"]
-            except KeyError:
-                raise ParameterError("Missing parameter: 'type'", id=905)
+            except KeyError as exx:
+                msg = "Missing parameter: 'type'"
+                raise ParameterError(msg, id=905) from exx
 
             try:
                 (tok, section, scope) = act.split(".")
@@ -374,8 +378,8 @@ class SelfserviceController(BaseController):
         except Exception as exx:
             db.session.rollback()
             error = (
-                "error (%r) accessing form data for: tok:%r, scope:%r"
-                ", section:%r" % (exx, tok, scope, section)
+                f"error ({exx!r}) accessing form data for: tok:{tok!r}, scope:{scope!r}"
+                f", section:{section!r}"
             )
             log.error(error)
             return "<h1>{}</h1><pre>{} {}</pre>".format(

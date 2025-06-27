@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -28,9 +27,6 @@
 
 """ """
 
-import json
-from wsgiref import headers
-
 from linotp.tests import TestController
 
 
@@ -55,7 +51,6 @@ class TestTokens(TestController):
         self.delete_all_realms()
         self.delete_all_resolvers()
         TestController.tearDown(self)
-        return
 
     def _create_pw_tokens(
         self, username="horst", realm="mydefrealm", amount_of_users=1

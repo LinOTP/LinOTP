@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -58,7 +57,7 @@ class TestCacheActivation(unittest.TestCase):
 
         file_name = self._get_file_name(data_file)
 
-        with open(file_name, "r") as data_file:
+        with open(file_name) as data_file:
             data = data_file.read()
 
             return data
@@ -77,8 +76,6 @@ class TestCacheActivation(unittest.TestCase):
 
         assert TOKENS["tok3"].get("otplen") == 8, TOKENS
 
-        return
-
     def test_parse_OATH_256(self):
         """
         Test the OATH csv import for sha256 tokens
@@ -92,8 +89,6 @@ class TestCacheActivation(unittest.TestCase):
         for serial, token in list(tokens.items()):
             if "sha256" in serial:
                 assert token["hashlib"] == "sha256", token
-
-        return
 
 
 # eof #

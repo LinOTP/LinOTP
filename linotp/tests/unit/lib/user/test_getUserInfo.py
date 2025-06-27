@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,10 +26,9 @@
 
 
 import unittest
+from unittest.mock import patch
 
-from mock import patch
-
-from linotp.lib.user import User, getUserInfo
+from linotp.lib.user import getUserInfo
 
 
 class TestGetUserInfo(unittest.TestCase):
@@ -44,8 +42,8 @@ class TestGetUserInfo(unittest.TestCase):
 
         mock_lookup_user_in_resolver.return_value = None, None, None
 
-        assert {} == getUserInfo("userId", "resolver", "resolver_conf")
-        assert {} == getUserInfo(None, "resolver", "resolver_conf")
+        assert getUserInfo("userId", "resolver", "resolver_conf") == {}
+        assert getUserInfo(None, "resolver", "resolver_conf") == {}
 
     @patch("linotp.lib.user.lookup_user_in_resolver")
     def test_getUserInfo_good(self, mock_lookup_user_in_resolver):
@@ -62,8 +60,6 @@ class TestGetUserInfo(unittest.TestCase):
         userInfo = getUserInfo("userId", "resolver", "resolver_conf")
 
         assert userInfo["login"] == "heinz"
-
-        return
 
 
 # eof #

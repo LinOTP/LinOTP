@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -37,7 +36,7 @@ from datetime import datetime, timedelta
 from urllib.parse import parse_qs, urlparse
 
 import pytest
-from Cryptodome.Hash import SHA256 as SHA256
+from Cryptodome.Hash import SHA256
 
 from linotp.lib.crypto.utils import check, createActivationCode, kdf2
 from linotp.lib.ext.pbkdf2 import PBKDF2
@@ -363,10 +362,9 @@ class OcraTest(TestController):
         }
         params["action"] = (
             "qrtanurl.one=https://<user>:<password>@my.one.de/callback/<serial>/<transactionid>/, "
-            "qrtanurl=%s, "
+            f"qrtanurl={check_url!s}, "
             "qrtanurl_init=https://<user>:<password>@my.default.de/ini/callback/<serial>/,"
             "qrtanurl_init.one=https://<user>:<password>@my.one.de/ini/callback/<serial>/,"
-            % (str(check_url))
         )
 
         response = self.make_system_request("setPolicy", params=params)
@@ -520,12 +518,9 @@ class OcraTest(TestController):
 
         self.removeTokens(serial=ocra.serial)
 
-        f = open("/tmp/challengeTestSet", "w+")
-        testStr = json.dumps(tt, indent=4)
-        f.write(testStr)
-        f.close()
-
-        return
+        with open("/tmp/challengeTestSet", "w+", encoding="utf-8") as f:
+            testStr = json.dumps(tt, indent=4)
+            f.write(testStr)
 
     def randOTP(self, otp):
         """randomly change the chars in an otp - to gen a wrong otp"""
@@ -686,7 +681,7 @@ class OcraTest(TestController):
             data = ocra.combineData(**params)
             otp = ocra.compute(data, binascii.unhexlify(key))
             if otp == result:
-                print((" time for otp %s : %s" % (result, str(nowtime))))
+                print(f" time for otp {result} : {nowtime!s}")
                 break
 
         # -1- create an ocra token
@@ -1116,7 +1111,7 @@ class OcraTest(TestController):
             # -3.b- verify the otp value
             parameters = {"transactionid": transid, "pass": "pin" + otp}
             response = self.make_validate_request("check_t", params=parameters)
-            assert '"value": true' in response, "Response 3.b\n%s" % response
+            assert '"value": true' in response, f"Response 3.b\n{response}"
 
         # -remove the ocra token
         parameters = {
@@ -1359,9 +1354,7 @@ class OcraTest(TestController):
                 - check OCRA Token with user pin
         """
         ocrasuite = "OCRA-1:HOTP-SHA256-8:QA64"
-        t_count = 0
-        for test in self.tests[0:1]:
-            t_count += 1
+        for t_count, test in enumerate(self.tests[0:1], 1):
             ocrasuite = test["ocrasuite"]
 
             key = test["keyh"]
@@ -1369,7 +1362,7 @@ class OcraTest(TestController):
 
             log.info("##################### %s", ocrasuite)
             ocrapin = "myocrapin"
-            serial = "OCRA_TOKEN_%d" % (t_count)
+            serial = f"OCRA_TOKEN_{t_count}"
 
             # -1- create an ocra token
             parameters = {
@@ -1386,7 +1379,7 @@ class OcraTest(TestController):
             response = self.make_admin_request("init", params=parameters)
             assert '"value": true' in response, response
 
-            for count in range(0, CHALLLENGE_RUNS):
+            for count in range(CHALLLENGE_RUNS):
                 # -2- fetch the challenge
                 p = {
                     "serial": serial,
@@ -1452,8 +1445,6 @@ class OcraTest(TestController):
             response = self.make_admin_request("remove", params=parameters)
             assert '"value": 1' in response, response
 
-        return
-
     def test_OCRA_token_validate_check(self):
         """
         test_OCRA_token_validate_check: verify the OCRA token from the challenge with the standard check
@@ -1489,7 +1480,7 @@ class OcraTest(TestController):
             response = self.make_admin_request("init", params=parameters)
             assert '"value": true' in response, response
 
-            for count in range(0, 3):
+            for count in range(3):
                 log.error("fetching challenge %d for %s ", count, ocrasuite)
                 # -2- fetch the challenge
                 p = {
@@ -1534,11 +1525,7 @@ class OcraTest(TestController):
                     "pass": "pin" + otp,
                 }
                 response = self.make_validate_request("check", params=parameters)
-                assert '"value": true' in response, "%s %d \n %r" % (
-                    ocrasuite,
-                    count,
-                    response,
-                )
+                assert '"value": true' in response, f"{ocrasuite} {count} \n {response}"
 
                 # -4- check the transaction status
                 #
@@ -1577,8 +1564,6 @@ class OcraTest(TestController):
             parameters = {"serial": serial}
             response = self.make_admin_request("remove", params=parameters)
             assert '"value": 1' in response, response
-
-        return
 
     def test_OCRA_token_falseResponse(self):
         """
@@ -1629,7 +1614,7 @@ class OcraTest(TestController):
             response = self.make_admin_request("init", params=parameters)
             assert '"value": true' in response, response
 
-            for count in range(0, 3):
+            for count in range(3):
                 # -2- fetch the challenge
                 p = {
                     "serial": serial,
@@ -1713,8 +1698,6 @@ class OcraTest(TestController):
             response = self.make_admin_request("remove", params=parameters)
             assert '"value": 1' in response, response
 
-        return
-
     def test_OCRA_token_failcounterInc(self):
         """
         test_OCRA_token_failcounterInc: failcounter increment
@@ -1755,7 +1738,7 @@ class OcraTest(TestController):
             assert '"value": true' in response, response
 
             fcount = 0
-            for _count in range(0, CHALLLENGE_RUNS):
+            for _count in range(CHALLLENGE_RUNS):
                 # -2- fetch the challenge
                 p = {
                     "serial": serial,
@@ -1801,7 +1784,7 @@ class OcraTest(TestController):
                 response = self.make_admin_request("checkstatus", params=parameters)
 
                 assert '"status": true' in response, response
-                assstring = '"LinOtp.FailCount": %d,' % (fcount)
+                assstring = f'"LinOtp.FailCount": {fcount},'
                 assert assstring in response, response
 
             # -remove the ocra token
@@ -1845,7 +1828,7 @@ class OcraTest(TestController):
             response = self.make_admin_request("init", params=parameters)
             assert '"value": true' in response, response
 
-            for count in range(0, CHALLLENGE_RUNS):
+            for count in range(CHALLLENGE_RUNS):
                 # -2a- fetch the challenge
                 p = {
                     "serial": serial,
@@ -1977,7 +1960,7 @@ class OcraTest(TestController):
             response = self.make_admin_request("init", params=parameters)
             assert '"value": true' in response, response
 
-            for count in range(0, CHALLLENGE_RUNS):
+            for count in range(CHALLLENGE_RUNS):
                 # -2a- fetch the challenge
                 p = {
                     "serial": serial,
@@ -2088,7 +2071,7 @@ class OcraTest(TestController):
     ):
         p = {
             "serial": serial,
-            "challenge": ("0105037311 Konto 50150850 BLZ 1752,03 Eur %d" % count),
+            "challenge": f"0105037311 Konto 50150850 BLZ 1752,03 Eur {count}",
         }
         if data is not None:
             p["data"] = data
@@ -2314,8 +2297,6 @@ class OcraTest(TestController):
         parameters = {"key": "AutoResync"}
         response = self.make_system_request("delConfig", params=parameters)
 
-        return
-
     @pytest.mark.xfail(reason="Currently not working in CI")
     def test_OCRA_resync_Time(self):
         """
@@ -2444,7 +2425,6 @@ class OcraTest(TestController):
 
         except Exception as e:
             log.debug("%r", e)
-        return
 
     def test_ERROR_771_(self):
         """
@@ -2598,8 +2578,6 @@ class OcraTest(TestController):
 
         assert '"value": 1' in response, response
 
-        return
-
     def test_wrong_transid(self):
         """
         test_sign_data: test with wrong transaction id
@@ -2632,7 +2610,6 @@ class OcraTest(TestController):
         log.debug(response)
 
         self.removeTokens(serial=ocra.serial)
-        return
 
     def test_genkey_w_users_fail(self):
         """
@@ -2725,7 +2702,6 @@ class OcraTest(TestController):
         log.debug(response)
 
         self.removeTokens(serial=ocra.serial)
-        return
 
     def test_short_message_rollout(self):
         """
@@ -2753,7 +2729,6 @@ class OcraTest(TestController):
         log.debug(response)
 
         self.removeTokens(serial=ocra.serial)
-        return
 
     def test_broken_enrollment_activation(self):
         """
@@ -2801,7 +2776,6 @@ class OcraTest(TestController):
         log.debug(response)
 
         self.removeTokens(serial=ocra.serial)
-        return
 
     def test_QR_rollout_w_3_fails(self):
         """
@@ -2862,8 +2836,6 @@ class OcraTest(TestController):
         assert '"value": true' in response, response
 
         self.removeTokens(serial=ocra.serial)
-
-        return
 
     def test_QR_rollout_w_long_message(self):
         """
@@ -2926,8 +2898,6 @@ class OcraTest(TestController):
 
         self.removeTokens(serial=ocra.serial)
 
-        return
-
     def test_QR_rollout_w_2_retries(self):
         """
         test_QR_rollout_w_2_retries: rollout a QRToken with 2 fails for OTP before final rollout is done
@@ -2970,8 +2940,6 @@ class OcraTest(TestController):
             assert '"value": true' in response, response
 
         self.removeTokens(serial=ocra.serial)
-
-        return
 
     def test_QR_rollout_wrong_activation(self):
         """
@@ -3046,14 +3014,9 @@ class OcraTest(TestController):
             (response, challenge, transid) = self.get_challenge(ocra.serial)
             otp = ocra.callcOtp(challenge)
             response = self.check_otp(transid, otp)
-            assert '"value": true' in response, " count: %d \n %r" % (
-                i,
-                response,
-            )
+            assert '"value": true' in response, f" count: {i} \n {response}"
 
         self.removeTokens(serial=ocra.serial)
-
-        return
 
     def test_QR_rollout_responses(self):
         """
@@ -3102,7 +3065,6 @@ class OcraTest(TestController):
         assert '"value": true' in response, response
 
         self.removeTokens(serial=ocra.serial)
-        return
 
     def test_QR_rollout_w_new_challenge(self):
         """
@@ -3135,7 +3097,6 @@ class OcraTest(TestController):
         assert '"value": true' in response, response
 
         self.removeTokens(serial=ocra.serial)
-        return
 
     def test_QRchallenge_w_umlaute(self):
         """
@@ -3169,7 +3130,6 @@ class OcraTest(TestController):
         assert '"value": true' in response, response
 
         self.removeTokens(serial=ocra.serial)
-        return
 
     def test_Activationcode_switch(self):
         """
@@ -3206,7 +3166,6 @@ class OcraTest(TestController):
         otp = ocra2.callcOtp(challenge)
         response = self.check_otp(transid, otp)
         assert '"value": true' in response, response
-        return
 
     def test_QRchallenge_w_wrong_serial(self):
         """
@@ -3308,8 +3267,6 @@ class OcraTest(TestController):
         self.removeTokens(serial=ocra.serial)
         self.removeTokens(serial=ocra2.serial)
 
-        return
-
     def test_sign_data(self):
         """
         test_sign_data: test signing data with the ocra token
@@ -3400,7 +3357,7 @@ class OcraTest(TestController):
                 url = v.get("url").encode("utf-8")
                 sig = v.get("signature").encode("utf-8")
                 res = ocra.signData(url, key)
-                assert res == sig, "%r != %r" % (res, sig)
+                assert res == sig, f"{res!r} != {sig!r}"
 
     def test_ocra_autosync_event(self):
         """
@@ -3438,8 +3395,6 @@ class OcraTest(TestController):
 
         self.removeTokens(serial=ocra.serial)
 
-        return
-
     def test_ocra_challenge_check(self):
         """
         Test support for challenges in validate/check
@@ -3472,8 +3427,6 @@ class OcraTest(TestController):
         assert '"value": true' in response, response
 
         self.removeTokens(serial=ocra.serial)
-
-        return
 
     def test_ocra_challenge_check_s(self):
         """
@@ -3511,8 +3464,6 @@ class OcraTest(TestController):
         assert '"value": true' in response, response
 
         self.removeTokens(serial=ocra.serial)
-
-        return
 
     def test_serial_based_w_callbackid(self):
         """
@@ -3580,7 +3531,7 @@ class OcraTest(TestController):
         assert '"value": true' in response, response
 
         for i in range(1, 5):
-            message = "Veränderung %d am System durchgeführt! Bitte bestätigen!" % i
+            message = f"Veränderung {i} am System durchgeführt! Bitte bestätigen!"
 
             if i == 3:
                 enroll_param["no_callback"] = True
@@ -3618,7 +3569,6 @@ class OcraTest(TestController):
             assert '"value": true' in response, response
 
         self.removeTokens(serial=ocra.serial)
-        return
 
     def createSpassToken(self, serial=None, user="root", pin="spass"):
         if serial is None:
@@ -3703,7 +3653,7 @@ class OcraTest(TestController):
         # standard ocra test
         for i in range(1, 10):
             (response, challenge, transid) = self.get_challenge(
-                ocra.serial, challenge_data="challenge %d" % (i)
+                ocra.serial, challenge_data=f"challenge {i}"
             )
             ocra.counter = ocra.counter + 1
             otp = ocra.callcOtp(challenge)
@@ -3723,7 +3673,6 @@ class OcraTest(TestController):
 
         self.removeTokens(serial=ocra.serial)
         self.removeTokens(serial=spassSerial)
-        return
 
     def test_ocra(self):
         """
@@ -3746,7 +3695,7 @@ class OcraTest(TestController):
         # standard ocra test
         for i in range(1, 3):
             (response, challenge, transid) = self.get_challenge(
-                ocra.serial, challenge_data="challenge %d" % (i)
+                ocra.serial, challenge_data=f"challenge {i}"
             )
             ocra.counter = ocra.counter + 1
             otp = ocra.callcOtp(challenge)
@@ -3755,7 +3704,7 @@ class OcraTest(TestController):
             parameters = {
                 "user": "root",
                 "pass": "pin",
-                "challenge": "challenge %d" % (i),
+                "challenge": f"challenge {i}",
             }
             response2 = self.make_validate_request("check", params=parameters)
             # extract the stat(=transactionIs) + challenge(=message)
@@ -3783,7 +3732,7 @@ class OcraTest(TestController):
         parameters = {
             "user": "root",
             "pass": "pin",
-            "challenge": "challenge %d" % (99),
+            "challenge": "challenge 99",
         }
         response2 = self.make_validate_request("check", params=parameters)
         # extract the stat(=transactionIds) + challenge(=message)
@@ -3799,7 +3748,6 @@ class OcraTest(TestController):
 
         # to be tested: checkStatus, resync, challenge as parameter
         self.removeTokens(serial=ocra.serial)
-        return
 
     def setupPolicies2(self):
         self.delete_all_policies()
@@ -3911,7 +3859,7 @@ class OcraTest(TestController):
         assert '"value": true' in response, response
 
         for i in range(1, 5):
-            message = "Veränderung %d am System durchgeführt! Bitte bestätigen!" % i
+            message = f"Veränderung {i} am System durchgeführt! Bitte bestätigen!"
 
             if i == 3:
                 enroll_param["no_callback"] = True
@@ -3952,7 +3900,6 @@ class OcraTest(TestController):
             assert '"value": true' in response, response
 
         self.removeTokens(serial=ocra.serial)
-        return
 
     def test_qr_code(self):
         """
@@ -4034,7 +3981,7 @@ class OcraTest(TestController):
         assert '"value": true' in response, response
 
         for i in range(1, 5):
-            message = "Veränderung %d am System durchgeführt! Bitte bestätigen!" % i
+            message = f"Veränderung {i} am System durchgeführt! Bitte bestätigen!"
 
             if i == 3:
                 enroll_param["no_callback"] = True
@@ -4080,7 +4027,6 @@ class OcraTest(TestController):
             assert '"value": true' in response, response
 
         self.removeTokens(serial=ocra.serial)
-        return
 
 
 ##eof##########################################################################

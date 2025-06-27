@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,8 +26,7 @@
 
 import os
 from unittest import TestCase
-
-from mock import patch
+from unittest.mock import patch
 
 from linotp.provider.emailprovider import EMAIL_PROVIDER_TEMPLATE_KEY
 from linotp.provider.emailprovider import SMTPEmailProvider as EMailProvider
@@ -326,7 +324,7 @@ class TestEMailTemplate(TestCase):
                 email_to, email_from, subject, template_message, replacements
             )
 
-        ex_msg = "%r" % exx.exception
+        ex_msg = f"{exx.exception!r}"
         assert "not in email provider template root" in ex_msg
 
 

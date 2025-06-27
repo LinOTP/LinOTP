@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -115,8 +114,6 @@ class TestPolicyPassthrough(TestController):
         response = self.make_validate_request("check", params, client="192.168.13.14")
 
         assert '"value": true' in response, response
-
-        return
 
 
 # eof ##

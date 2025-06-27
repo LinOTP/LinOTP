@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any
 from unittest.mock import Mock, patch
 
 import pytest
@@ -10,19 +10,19 @@ from linotp.lib.tools.import_user.SQLImportHandler import (
 
 
 class FakeSession:
-    def __init__(self, all_values: List[str]):
+    def __init__(self, all_values: list[str]):
         self.all_values = all_values
 
-    def query(self, *args: Any, **kwargs: Dict) -> Any:
+    def query(self, *args: Any, **kwargs: dict) -> Any:
         return self
 
-    def filter(self, *args: Any, **kwargs: Dict) -> Any:
+    def filter(self, *args: Any, **kwargs: dict) -> Any:
         return self
 
-    def delete(self, *args: Any, **kwargs: Dict) -> Any:
+    def delete(self, *args: Any, **kwargs: dict) -> Any:
         return self
 
-    def all(self, *args: Any, **kwargs: Dict) -> List[str]:
+    def all(self, *args: Any, **kwargs: dict) -> list[str]:
         return self.all_values
 
 

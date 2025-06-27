@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -80,7 +79,6 @@ from linotp.lib.type_utils import boolean
 from linotp.lib.user import (
     User,
     getSearchFields,
-    getUserFromParam,
     getUserFromRequest,
     getUserListIterators,
 )
@@ -214,10 +212,7 @@ class AdminController(BaseController, JWTMixin):
 
         token_info = tok["LinOtp.TokenInfo"]
 
-        if token_info:
-            info = json.loads(token_info)
-        else:
-            info = {}
+        info = json.loads(token_info) if token_info else {}
 
         for field in ["validity_period_end", "validity_period_start"]:
             if field in info:
@@ -310,7 +305,7 @@ class AdminController(BaseController, JWTMixin):
             )
 
             g.audit["success"] = True
-            g.audit["info"] = "realm: %s, filter: %r" % (filterRealm, filter)
+            g.audit["info"] = f"realm: {filterRealm}, filter: {filter!r}"
 
             # put in the result
             result = {}
@@ -372,7 +367,8 @@ class AdminController(BaseController, JWTMixin):
             user = request_context["RequestUser"]
 
             if not serials and not user:
-                raise ParameterError("missing parameter user or serial!")
+                msg = "missing parameter user or serial!"
+                raise ParameterError(msg)
 
             if user:
                 tokens = get_tokens(user)
@@ -384,7 +380,7 @@ class AdminController(BaseController, JWTMixin):
                 realm for serial in set(serials) for realm in getTokenRealms(serial)
             }
 
-            g.audit["realm"] = "%r" % realms
+            g.audit["realm"] = f"{realms!r}"
 
             log.info(
                 "[remove] removing token with serial %r for user %r",
@@ -424,9 +420,9 @@ class AdminController(BaseController, JWTMixin):
             # if not token could be removed, create a response detailed
             if ret == 0:
                 msg = (
-                    "No tokens for this user %r" % user.login
+                    f"No tokens for this user {user.login!r}"
                     if user
-                    else "No token with serials %r" % serials
+                    else f"No token with serials {serials!r}"
                 )
 
                 opt_result_dict["message"] = msg
@@ -505,7 +501,7 @@ class AdminController(BaseController, JWTMixin):
 
             opt_result_dict = {}
             if ret == 0 and serial:
-                opt_result_dict["message"] = "No token with serial %s" % serial
+                opt_result_dict["message"] = f"No token with serial {serial}"
             elif ret == 0 and user:
                 opt_result_dict["message"] = "No tokens for this user"
 
@@ -551,8 +547,9 @@ class AdminController(BaseController, JWTMixin):
         try:
             try:
                 otp = param["otp"]
-            except KeyError:
-                raise ParameterError("Missing parameter: 'otp'")
+            except KeyError as exx:
+                msg = "Missing parameter: 'otp'"
+                raise ParameterError(msg) from exx
 
             typ = param.get("type")
             realm = param.get("realm")
@@ -569,7 +566,7 @@ class AdminController(BaseController, JWTMixin):
             )
             log.debug("[getSerialByOtp] found %s with user %s", serial, username)
 
-            if "" != serial:
+            if serial != "":
                 checkPolicyPost("admin", "getserial", {"serial": serial})
 
             g.audit["success"] = 0
@@ -661,7 +658,7 @@ class AdminController(BaseController, JWTMixin):
 
             opt_result_dict = {}
             if ret == 0 and serial:
-                opt_result_dict["message"] = "No token with serial %s" % serial
+                opt_result_dict["message"] = f"No token with serial {serial}"
             elif ret == 0 and user:
                 opt_result_dict["message"] = "No tokens for this user"
 
@@ -702,15 +699,16 @@ class AdminController(BaseController, JWTMixin):
             try:
                 serial = self.request_params["serial"]
                 g.audit["serial"] = serial
-            except KeyError:
-                raise ParameterError("Missing parameter: 'serial'")
+            except KeyError as exx:
+                msg = "Missing parameter: 'serial'"
+                raise ParameterError(msg) from exx
 
             log.info("[check_serial] checking serial %s", serial)
             th = TokenHandler()
             (unique, new_serial) = th.check_serial(serial)
 
             g.audit["success"] = True
-            g.audit["action_detail"] = "%r - %r" % (unique, new_serial)
+            g.audit["action_detail"] = f"{unique!r} - {new_serial!r}"
 
             db.session.commit()
             return sendResult({"unique": unique, "new_serial": new_serial}, 1)
@@ -873,8 +871,9 @@ class AdminController(BaseController, JWTMixin):
             lower_alias = token_cls_alias.lower()
 
             if lower_alias not in tokenclass_registry:
+                msg = f"admin/init failed: unknown token type {token_cls_alias!r}"
                 raise TokenAdminError(
-                    "admin/init failed: unknown token type %r" % token_cls_alias,
+                    msg,
                     id=1610,
                 )
 
@@ -1006,8 +1005,9 @@ class AdminController(BaseController, JWTMixin):
         try:
             try:
                 serial = param["serial"]
-            except KeyError:
-                raise ParameterError("Missing parameter: 'serial'")
+            except KeyError as exx:
+                msg = "Missing parameter: 'serial'"
+                raise ParameterError(msg) from exx
 
             user = request_context["RequestUser"]
 
@@ -1035,7 +1035,7 @@ class AdminController(BaseController, JWTMixin):
 
             opt_result_dict = {}
             if ret == 0 and serial:
-                opt_result_dict["message"] = "No token with serial %s" % serial
+                opt_result_dict["message"] = f"No token with serial {serial}"
             elif ret == 0 and user:
                 opt_result_dict["message"] = "No tokens for this user"
 
@@ -1175,8 +1175,9 @@ class AdminController(BaseController, JWTMixin):
             try:
                 serial = param["serial"]
                 g.audit["serial"] = serial
-            except KeyError:
-                raise ParameterError("Missing parameter: 'serial'")
+            except KeyError as exx:
+                msg = "Missing parameter: 'serial'"
+                raise ParameterError(msg) from exx
 
             token = get_token(serial)
             g.audit["token_type"] = token.type
@@ -1188,8 +1189,9 @@ class AdminController(BaseController, JWTMixin):
                 msg = "setting userPin failed"
                 try:
                     userPin = param["userpin"]
-                except KeyError:
-                    raise ParameterError("Missing parameter: 'userpin'")
+                except KeyError as exx:
+                    msg = "Missing parameter: 'userpin'"
+                    raise ParameterError(msg) from exx
 
                 # check admin authorization
                 checkPolicyPre("admin", "setPin", param)
@@ -1204,8 +1206,9 @@ class AdminController(BaseController, JWTMixin):
                 msg = "setting soPin failed"
                 try:
                     soPin = param["sopin"]
-                except KeyError:
-                    raise ParameterError("Missing parameter: 'userpin'")
+                except KeyError as exx:
+                    msg = "Missing parameter: 'userpin'"
+                    raise ParameterError(msg) from exx
 
                 # check admin authorization
                 checkPolicyPre("admin", "setPin", param)
@@ -1218,7 +1221,7 @@ class AdminController(BaseController, JWTMixin):
 
             if count == 0:
                 db.session.rollback()
-                return sendError(ParameterError("Usage: %s" % description, id=77))
+                return sendError(ParameterError(f"Usage: {description}", id=77))
 
             g.audit["success"] = count
             token = get_token(serial)
@@ -1309,8 +1312,9 @@ class AdminController(BaseController, JWTMixin):
             try:
                 serials = self.request_params["tokens"]
                 g.audit["serial"] = " ".join(serials)
-            except KeyError:
-                raise ParameterError("missing parameter: tokens[]")
+            except KeyError as exx:
+                msg = "missing parameter: tokens[]"
+                raise ParameterError(msg) from exx
 
             tokens = [
                 token for serial in serials for token in get_tokens(serial=serial)
@@ -1323,7 +1327,7 @@ class AdminController(BaseController, JWTMixin):
             users = set()
             realms = set()
             token_types = set()
-            th = TokenHandler()
+
             for token in tokens:
                 # ---------------------------------------------------------- --
 
@@ -1376,7 +1380,7 @@ class AdminController(BaseController, JWTMixin):
             g.audit["token_type"] = ", ".join(token_types)
             g.audit["user"] = ", ".join(users)
             g.audit["realm"] = ", ".join(realms)
-            g.audit["action_detail"] = ("%r " % serials)[:80]
+            g.audit["action_detail"] = (f"{serials!r} ")[:80]
 
             db.session.commit()
             return sendResult(serials, 1)
@@ -1467,7 +1471,7 @@ class AdminController(BaseController, JWTMixin):
                 msg = "[set] setting pin failed"
                 upin = param["pin"]
                 log.info("[set] setting pin for token with serial %r", serial)
-                if 1 == getOTPPINEncrypt(serial=serial, user=user):
+                if getOTPPINEncrypt(serial=serial, user=user) == 1:
                     param["encryptpin"] = "True"
                 ret = setPin(upin, user, serial, param)
                 res["set pin"] = ret
@@ -1485,7 +1489,7 @@ class AdminController(BaseController, JWTMixin):
                 ret = th.setMaxFailCount(maxFail, user, serial)
                 res["set MaxFailCount"] = ret
                 count = count + 1
-                g.audit["action_detail"] += "maxFailCount=%d, " % maxFail
+                g.audit["action_detail"] += f"maxFailCount={maxFail}, "
 
             if "SyncWindow".lower() in param:
                 msg = "[set] setting SyncWindow failed"
@@ -1498,7 +1502,7 @@ class AdminController(BaseController, JWTMixin):
                 ret = th.setSyncWindow(syncWindow, user, serial)
                 res["set SyncWindow"] = ret
                 count = count + 1
-                g.audit["action_detail"] += "syncWindow=%d, " % syncWindow
+                g.audit["action_detail"] += f"syncWindow={syncWindow}, "
 
             if "description".lower() in param:
                 msg = "[set] setting description failed"
@@ -1511,7 +1515,7 @@ class AdminController(BaseController, JWTMixin):
                 ret = th.setDescription(description, user, serial)
                 res["set description"] = ret
                 count = count + 1
-                g.audit["action_detail"] += "description=%r, " % description
+                g.audit["action_detail"] += f"description={description!r}, "
 
             if "CounterWindow".lower() in param:
                 msg = "[set] setting CounterWindow failed"
@@ -1524,7 +1528,7 @@ class AdminController(BaseController, JWTMixin):
                 ret = th.setCounterWindow(counterWindow, user, serial)
                 res["set CounterWindow"] = ret
                 count = count + 1
-                g.audit["action_detail"] += "counterWindow=%d, " % counterWindow
+                g.audit["action_detail"] += f"counterWindow={counterWindow}, "
 
             if "OtpLen".lower() in param:
                 msg = "[set] setting OtpLen failed"
@@ -1537,7 +1541,7 @@ class AdminController(BaseController, JWTMixin):
                 ret = th.setOtpLen(otpLen, user, serial)
                 res["set OtpLen"] = ret
                 count = count + 1
-                g.audit["action_detail"] += "otpLen=%d, " % otpLen
+                g.audit["action_detail"] += f"otpLen={otpLen}, "
 
             if "hashlib".lower() in param:
                 msg = "[set] setting hashlib failed"
@@ -1551,7 +1555,7 @@ class AdminController(BaseController, JWTMixin):
                 ret = th.setHashLib(hashlib, user, serial)
                 res["set hashlib"] = ret
                 count = count + 1
-                g.audit["action_detail"] += "hashlib=%s, " % str(hashlib)
+                g.audit["action_detail"] += f"hashlib={hashlib!s}, "
 
             if "timeWindow".lower() in param:
                 msg = "[set] setting timeWindow failed"
@@ -1564,7 +1568,7 @@ class AdminController(BaseController, JWTMixin):
                 ret = th.addTokenInfo("timeWindow", timeWindow, user, serial)
                 res["set timeWindow"] = ret
                 count = count + 1
-                g.audit["action_detail"] += "timeWindow=%d, " % timeWindow
+                g.audit["action_detail"] += f"timeWindow={timeWindow}, "
 
             if "timeStep".lower() in param:
                 msg = "[set] setting timeStep failed"
@@ -1579,7 +1583,7 @@ class AdminController(BaseController, JWTMixin):
 
                 res["set timeStep"] = 1
                 count = count + 1
-                g.audit["action_detail"] += "timeStep=%d, " % timeStep
+                g.audit["action_detail"] += f"timeStep={timeStep}, "
 
             if "timeShift".lower() in param:
                 msg = "[set] setting timeShift failed"
@@ -1592,7 +1596,7 @@ class AdminController(BaseController, JWTMixin):
                 ret = th.addTokenInfo("timeShift", timeShift, user, serial)
                 res["set timeShift"] = ret
                 count = count + 1
-                g.audit["action_detail"] += "timeShift=%d, " % timeShift
+                g.audit["action_detail"] += f"timeShift={timeShift}, "
 
             if "countAuth".lower() in param:
                 msg = "[set] setting countAuth failed"
@@ -1610,7 +1614,7 @@ class AdminController(BaseController, JWTMixin):
                 [setattr(token, "count_auth", ca) for token in tokens]
                 count += len(tokens)
                 res["set countAuth"] = len(tokens)
-                g.audit["action_detail"] += "countAuth=%d, " % ca
+                g.audit["action_detail"] += f"countAuth={ca}, "
 
             if "countAuthMax".lower() in param:
                 msg = "[set] setting countAuthMax failed"
@@ -1628,7 +1632,7 @@ class AdminController(BaseController, JWTMixin):
                 [setattr(tok, "count_auth_max", ca) for tok in tokens]
                 count += len(tokens)
                 res["set countAuthMax"] = len(tokens)
-                g.audit["action_detail"] += "countAuthMax=%d, " % ca
+                g.audit["action_detail"] += f"countAuthMax={ca}, "
 
             if "countAuthSuccess".lower() in param:
                 msg = "[set] setting countAuthSuccess failed"
@@ -1646,7 +1650,7 @@ class AdminController(BaseController, JWTMixin):
                 [setattr(tok, "count_auth_success", ca) for tok in tokens]
                 count += len(tokens)
                 res["set countAuthSuccess"] = len(tokens)
-                g.audit["action_detail"] += "countAuthSuccess=%d, " % ca
+                g.audit["action_detail"] += f"countAuthSuccess={ca}, "
 
             if "countAuthSuccessMax".lower() in param:
                 msg = "[set] setting countAuthSuccessMax failed"
@@ -1664,7 +1668,7 @@ class AdminController(BaseController, JWTMixin):
                 [setattr(tok, "count_auth_success_max", ca) for tok in tokens]
                 count += len(tokens)
                 res["set countAuthSuccessMax"] = len(tokens)
-                g.audit["action_detail"] += "countAuthSuccessMax=%d, " % ca
+                g.audit["action_detail"] += f"countAuthSuccessMax={ca}, "
 
             if "validityPeriodStart".lower() in param:
                 msg = "[set] setting validityPeriodStart failed"
@@ -1682,7 +1686,7 @@ class AdminController(BaseController, JWTMixin):
                 [setattr(tok, "validity_period_start", ca) for tok in tokens]
                 count += len(tokens)
                 res["set validityPeriodStart"] = len(tokens)
-                g.audit["action_detail"] += "validityPeriodStart=%s, " % str(ca)
+                g.audit["action_detail"] += f"validityPeriodStart={ca!s}, "
 
             if "validityPeriodEnd".lower() in param:
                 msg = "[set] setting validityPeriodEnd failed"
@@ -1700,7 +1704,7 @@ class AdminController(BaseController, JWTMixin):
                 [setattr(tok, "validity_period_end", ca) for tok in tokens]
                 count += len(tokens)
                 res["set validityPeriodEnd"] = len(tokens)
-                g.audit["action_detail"] += "validityPeriodEnd=%s, " % str(ca)
+                g.audit["action_detail"] += f"validityPeriodEnd={ca!s}, "
 
             if "phone" in param:
                 msg = "[set] setting phone failed"
@@ -1719,11 +1723,11 @@ class AdminController(BaseController, JWTMixin):
                     tok.addToTokenInfo("phone", ca)
                 count += len(tokens)
                 res["set phone"] = len(tokens)
-                g.audit["action_detail"] += "phone=%s, " % str(ca)
+                g.audit["action_detail"] += f"phone={ca!s}, "
 
             if count == 0:
                 db.session.rollback()
-                return sendError(ParameterError("Usage: %s" % description, id=77))
+                return sendError(ParameterError(f"Usage: {description}", id=77))
 
             # TODO
             # Handle multiple tokens
@@ -1757,13 +1761,13 @@ class AdminController(BaseController, JWTMixin):
             db.session.rollback()
             # as this message is directly returned into the javascript
             # alert as escaped string we remove here all escaping chars
-            error = "%r" % exx
+            error = f"{exx!r}"
             error = error.replace('"', "|")
             error = error.replace("'", ":")
             error = error.replace("&", "+")
             error = error.replace(">", "]")
             error = error.replace("<", "[")
-            result = "%s: %s" % (msg, error)
+            result = f"{msg}: {error}"
             return sendError(result)
 
     ########################################################
@@ -1794,13 +1798,15 @@ class AdminController(BaseController, JWTMixin):
 
             try:
                 otp1 = param["otp1"]
-            except KeyError:
-                raise ParameterError("Missing parameter: 'otp1'")
+            except KeyError as exx:
+                msg = "Missing parameter: 'otp1'"
+                raise ParameterError(msg) from exx
 
             try:
                 otp2 = param["otp2"]
-            except KeyError:
-                raise ParameterError("Missing parameter: 'otp2'")
+            except KeyError as exx:
+                msg = "Missing parameter: 'otp2'"
+                raise ParameterError(msg) from exx
 
             # to support the challenge based resync, we have to pass the challenges
             #    down to the token implementation
@@ -1931,7 +1937,7 @@ class AdminController(BaseController, JWTMixin):
 
             g.audit["success"] = True
             g.audit["realm"] = realm
-            g.audit["info"] = "realm: %s" % realm
+            g.audit["info"] = f"realm: {realm}"
 
             db.session.commit()
 
@@ -1975,13 +1981,15 @@ class AdminController(BaseController, JWTMixin):
             try:
                 serial = param["serial"]
                 g.audit["serial"] = serial
-            except KeyError:
-                raise ParameterError("Missing parameter: 'serial'")
+            except KeyError as exx:
+                msg = "Missing parameter: 'serial'"
+                raise ParameterError(msg) from exx
 
             try:
                 realms = param["realms"]
-            except KeyError:
-                raise ParameterError("Missing parameter: 'realms'")
+            except KeyError as exx:
+                msg = "Missing parameter: 'realms'"
+                raise ParameterError(msg) from exx
             realmList = list({r.strip() for r in realms.split(",")})
             g.audit["realm"] = ", ".join(realmList)
 
@@ -2076,7 +2084,7 @@ class AdminController(BaseController, JWTMixin):
 
             opt_result_dict = {}
             if ret == 0 and serial:
-                opt_result_dict["message"] = "No token with serial %s" % serial
+                opt_result_dict["message"] = f"No token with serial {serial}"
             elif ret == 0 and user:
                 opt_result_dict["message"] = "No tokens for this user"
 
@@ -2116,14 +2124,16 @@ class AdminController(BaseController, JWTMixin):
         try:
             try:
                 serial_from = param["from"]
-            except KeyError:
-                raise ParameterError("Missing parameter: 'from'")
+            except KeyError as exx:
+                msg = "Missing parameter: 'from'"
+                raise ParameterError(msg) from exx
 
             try:
                 serial_to = param["to"]
                 g.audit["serial"] = serial_to
-            except KeyError:
-                raise ParameterError("Missing parameter: 'to'")
+            except KeyError as exx:
+                msg = "Missing parameter: 'to'"
+                raise ParameterError(msg) from exx
 
             # check admin authorization
             checkPolicyPre("admin", "copytokenpin", param)
@@ -2142,22 +2152,22 @@ class AdminController(BaseController, JWTMixin):
             g.audit["token_type"] = token.type
             g.audit["user"] = token.getUsername()
             g.audit["realm"] = ", ".join(token.getRealms())
-            g.audit["action_detail"] = "from %s" % serial_from
+            g.audit["action_detail"] = f"from {serial_from}"
 
             err_string = str(ret)
-            if -1 == ret:
+            if ret == -1:
                 err_string = "can not get PIN from source token"
-            elif -2 == ret:
+            elif ret == -2:
                 err_string = "can not set PIN to destination token"
-            if 1 != ret:
+            if ret != 1:
                 g.audit["action_detail"] += ", " + err_string
 
             db.session.commit()
             # Success
-            if 1 == ret:
+            if ret == 1:
                 return sendResult(True)
             else:
-                return sendError("copying token pin failed: %s" % err_string)
+                return sendError(f"copying token pin failed: {err_string}")
 
         except PolicyException as pe:
             log.error("[losttoken] Error doing losttoken %r", pe)
@@ -2193,14 +2203,16 @@ class AdminController(BaseController, JWTMixin):
         try:
             try:
                 serial_from = param["from"]
-            except KeyError:
-                raise ParameterError("Missing parameter: 'from'")
+            except KeyError as exx:
+                msg = "Missing parameter: 'from'"
+                raise ParameterError(msg) from exx
 
             try:
                 serial_to = param["to"]
                 g.audit["serial"] = serial_to
-            except KeyError:
-                raise ParameterError("Missing parameter: 'to'")
+            except KeyError as exx:
+                msg = "Missing parameter: 'to'"
+                raise ParameterError(msg) from exx
 
             # check admin authorization
             checkPolicyPre("admin", "copytokenuser", param)
@@ -2219,24 +2231,24 @@ class AdminController(BaseController, JWTMixin):
             g.audit["token_type"] = token.type
             g.audit["user"] = token.getUsername()
             g.audit["realm"] = ", ".join(token_realms)
-            g.audit["action_detail"] = "from %s" % serial_from
+            g.audit["action_detail"] = f"from {serial_from}"
             g.reporting["realms"] = set(token_realms or ["/:no realms"])
 
             err_string = str(ret)
-            if -1 == ret:
+            if ret == -1:
                 err_string = "can not get user from source token"
-            if -2 == ret:
+            if ret == -2:
                 err_string = "can not set user to destination token"
-            if 1 != ret:
+            if ret != 1:
                 g.audit["action_detail"] += ", " + err_string
                 g.audit["success"] = 0
 
             db.session.commit()
             # Success
-            if 1 == ret:
+            if ret == 1:
                 return sendResult(True)
             else:
-                return sendError("copying token user failed: %s" % err_string)
+                return sendError(f"copying token user failed: {err_string}")
 
         except PolicyException as pe:
             log.error("[copyTokenUser] Policy Exception %r", pe)
@@ -2289,7 +2301,7 @@ class AdminController(BaseController, JWTMixin):
             g.audit["token_type"] = token.type
             g.audit["user"] = token.getUsername()
             g.audit["realm"] = ", ".join(token_realms)
-            g.audit["action_detail"] = "from %s" % serial
+            g.audit["action_detail"] = f"from {serial}"
             g.reporting["realms"] = set(
                 (token_realms or ["/:no realm:/"])
                 + (getTokenRealms(serial) or ["/:no realm:/"])
@@ -2334,7 +2346,7 @@ class AdminController(BaseController, JWTMixin):
         sendResultMethod = sendResult
         sendErrorMethod = sendError
 
-        from linotp.lib.ImportOTP import getKnownTypes
+        from linotp.lib.ImportOTP import getKnownTypes  # noqa: PLC0415
 
         known_types.extend(getKnownTypes())
         log.info(
@@ -2342,15 +2354,15 @@ class AdminController(BaseController, JWTMixin):
             known_types,
         )
 
-        from linotp.lib.ImportOTP.PSKC import parsePSKCdata
+        from linotp.lib.ImportOTP.PSKC import parsePSKCdata  # noqa: PLC0415
 
         log.info("[loadtokens] loaded parsePSKCdata")
 
-        from linotp.lib.ImportOTP.DPWplain import parseDPWdata
+        from linotp.lib.ImportOTP.DPWplain import parseDPWdata  # noqa: PLC0415
 
         log.info("[loadtokens] loaded parseDPWdata")
 
-        from linotp.lib.ImportOTP.eTokenDat import parse_dat_data
+        from linotp.lib.ImportOTP.eTokenDat import parse_dat_data  # noqa: PLC0415
 
         log.info("[loadtokens] loaded parseDATdata")
 
@@ -2375,7 +2387,7 @@ class AdminController(BaseController, JWTMixin):
 
             hashlib = None
 
-            if "pskc" == fileType:
+            if fileType == "pskc":
                 pskc_type = params["pskc_type"]
                 pskc_password = params["pskc_password"]
                 pskc_preshared = params["pskc_preshared"]
@@ -2411,7 +2423,7 @@ class AdminController(BaseController, JWTMixin):
             else:
                 typeString = fileType
             log.debug("[loadtokens] typeString: <<%s>>", typeString)
-            if "pskc" == typeString:
+            if typeString == "pskc":
                 log.debug(
                     "[loadtokens] passing password: %s, key: %s, checkserial: %s",
                     pskc_password,
@@ -2426,7 +2438,7 @@ class AdminController(BaseController, JWTMixin):
                     "[loadtokens] Error loading/importing token file. "
                     "file or type empty!"
                 )
-                return sendErrorMethod(("Error loading tokens. File or Type empty!"))
+                return sendErrorMethod("Error loading tokens. File or Type empty!")
 
             if typeString not in known_types:
                 log.error(
@@ -2437,8 +2449,9 @@ class AdminController(BaseController, JWTMixin):
                 )
                 return sendErrorMethod(
                     (
-                        "Unknown file type: >>%s<<. We only know the "
-                        "types: %s" % (typeString, ", ".join(known_types))
+                        "Unknown file type: >>{}<<. We only know the types: {}".format(
+                            typeString, ", ".join(known_types)
+                        )
                     ),
                 )
 
@@ -2466,21 +2479,21 @@ class AdminController(BaseController, JWTMixin):
                 TOKENS = parsePSKCdata(fileString, do_feitian=True)
 
             elif typeString == "pskc":
-                if "key" == pskc_type:
+                if pskc_type == "key":
                     TOKENS = parsePSKCdata(
                         fileString,
                         preshared_key_hex=pskc_preshared,
                         do_checkserial=pskc_checkserial,
                     )
 
-                elif "password" == pskc_type:
+                elif pskc_type == "password":
                     TOKENS = parsePSKCdata(
                         fileString,
                         password=pskc_password,
                         do_checkserial=pskc_checkserial,
                     )
 
-                elif "plain" == pskc_type:
+                elif pskc_type == "plain":
                     TOKENS = parsePSKCdata(fileString, do_checkserial=pskc_checkserial)
 
             tokenrealm = ""
@@ -2523,7 +2536,8 @@ class AdminController(BaseController, JWTMixin):
 
             if targetRealm:
                 if targetRealm not in admin_realms:
-                    raise Exception("target realm could not be assigned")
+                    msg = "target realm could not be assigned"
+                    raise Exception(msg)
 
                 tokenrealm = targetRealm
 
@@ -2541,8 +2555,8 @@ class AdminController(BaseController, JWTMixin):
 
             ret = ""
             th = TokenHandler()
-            for serial in TOKENS:
-                log.debug("[loadtokens] importing token %s", TOKENS[serial])
+            for serial, token in TOKENS.items():
+                log.debug("[loadtokens] importing token %s", token)
 
                 log.info(
                     "[loadtokens] initialize token. serial: %r, realm: %r",
@@ -2554,23 +2568,22 @@ class AdminController(BaseController, JWTMixin):
                 # init parameters in correct format
 
                 if typeString == "dat":
-                    init_param = TOKENS[serial]
+                    init_param = token
 
                 else:
                     init_param = {
                         "serial": serial,
-                        "type": TOKENS[serial]["type"],
-                        "description": TOKENS[serial].get("description", "imported"),
-                        "otpkey": TOKENS[serial]["hmac_key"],
-                        "otplen": TOKENS[serial].get("otplen"),
-                        "timeStep": TOKENS[serial].get("timeStep"),
-                        "hashlib": TOKENS[serial].get("hashlib"),
+                        "type": token["type"],
+                        "description": token.get("description", "imported"),
+                        "otpkey": token["hmac_key"],
+                        "otplen": token.get("otplen"),
+                        "timeStep": token.get("timeStep"),
+                        "hashlib": token.get("hashlib"),
                     }
 
                 # add ocrasuite for ocra tokens, only if ocrasuite is not empty
-                if TOKENS[serial]["type"] in ["ocra2"]:
-                    if TOKENS[serial].get("ocrasuite", "") != "":
-                        init_param["ocrasuite"] = TOKENS[serial].get("ocrasuite")
+                if token["type"] in ["ocra2"] and token.get("ocrasuite", "") != "":
+                    init_param["ocrasuite"] = token.get("ocrasuite")
 
                 if hashlib and hashlib != "auto":
                     init_param["hashlib"] = hashlib
@@ -2594,11 +2607,7 @@ class AdminController(BaseController, JWTMixin):
                 tokenFile.filename,
             )
 
-            g.audit["info"] = "%s, %s (imported: %i)" % (
-                fileType,
-                tokenFile,
-                len(TOKENS),
-            )
+            g.audit["info"] = f"{fileType}, {tokenFile} (imported: {len(TOKENS)})"
             g.audit["success"] = ret
             g.audit["serial"] = ", ".join(TOKENS.keys())
             g.audit["token_type"] = ", ".join(
@@ -2614,12 +2623,12 @@ class AdminController(BaseController, JWTMixin):
         except PolicyException as pex:
             log.error("[loadtokens] Failed checking policy: %r", pex)
             db.session.rollback()
-            return sendError("%r" % pex, 1)
+            return sendError(f"{pex!r}", 1)
 
         except Exception as exx:
             log.error("[loadtokens] failed! %r", exx)
             db.session.rollback()
-            return sendErrorMethod("%r" % exx)
+            return sendErrorMethod(f"{exx!r}")
 
     @methods(["POST"])
     def testresolver(self):
@@ -2637,15 +2646,15 @@ class AdminController(BaseController, JWTMixin):
         """
 
         try:
-            request_params = self.request_params
             try:
                 resolvername = self.request_params["name"]
 
             except KeyError as exx:
-                raise ParameterError(_("Missing parameter: %r") % exx)
+                raise ParameterError(_("Missing parameter: %r") % exx) from exx
 
             if resolvername not in request_context["Resolvers"]:
-                raise Exception("no such resolver %r defined!" % resolvername)
+                msg = f"no such resolver {resolvername!r} defined!"
+                raise Exception(msg)
 
             # ---------------------------------------------------------- --
 
@@ -2658,8 +2667,9 @@ class AdminController(BaseController, JWTMixin):
             resolver_cls = get_resolver_class(resolver_info["type"])
 
             if not callable(resolver_cls.testconnection):
+                msg = "resolver %r does not support a connection test"
                 raise Exception(
-                    "resolver %r does not support a connection test",
+                    msg,
                     resolvername,
                 )
 
@@ -2702,13 +2712,15 @@ class AdminController(BaseController, JWTMixin):
         try:
             serial = param.get("serial")
             if not serial:
-                raise ParameterError("Missing parameter: 'serial'")
+                msg = "Missing parameter: 'serial'"
+                raise ParameterError(msg)
 
             g.audit["serial"] = serial
 
             otp = param.get("otp")
             if not otp:
-                raise ParameterError("Missing parameter: 'otp'")
+                msg = "Missing parameter: 'otp'"
+                raise ParameterError(msg)
 
             window = param.get("window", "24h")
 
@@ -2743,10 +2755,7 @@ class AdminController(BaseController, JWTMixin):
             g.audit["success"] = res
 
             if not res:
-                g.audit["info"] = "no otp %r found in window %r" % (
-                    otp,
-                    window,
-                )
+                g.audit["info"] = f"no otp {otp!r} found in window {window!r}"
 
             db.session.commit()
             return sendResult(res, opt=opt)
@@ -2813,7 +2822,8 @@ class AdminController(BaseController, JWTMixin):
                     "[admin/checkstatus] : missing parameter: "
                     "transactionid, user or serial number for token"
                 )
-                raise ParameterError("Usage: %s" % description, id=77)
+                msg = f"Usage: {description}"
+                raise ParameterError(msg, id=77)
 
             # # gather all challenges from serial, transactionid and user
             challenges = set()
@@ -2925,10 +2935,12 @@ class AdminController(BaseController, JWTMixin):
             tokens = get_tokens(user, serial)
 
             if not tokens:
-                raise Exception("No token found. Unpairing not possible")
+                msg = "No token found. Unpairing not possible"
+                raise Exception(msg)
 
             if len(tokens) > 1:
-                raise Exception("Multiple tokens found. Unpairing not possible")
+                msg = "Multiple tokens found. Unpairing not possible"
+                raise Exception(msg)
 
             token = tokens[0]
 

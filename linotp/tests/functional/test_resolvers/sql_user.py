@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -38,25 +37,22 @@ from sqlalchemy.engine import create_engine
 log = logging.getLogger(__name__)
 
 
-class SqlUserDB(object):
+class SqlUserDB:
     def __init__(self, connect="sqlite://", table_name="User2"):
         self.tableName = table_name
         self.usercol = '"user"'
-        self.userTable = '"%s"' % self.tableName
+        self.userTable = f'"{self.tableName}"'
 
         self.connection = None
         try:
             self.engine = create_engine(connect)
             self.sqlurl = self.engine.url
             if self.sqlurl.drivername.startswith("mysql"):
-                self.userTable = "%s.%s" % (
-                    self.sqlurl.database,
-                    self.tableName,
-                )
+                self.userTable = f"{self.sqlurl.database}.{self.tableName}"
                 self.usercol = "user"
 
         except Exception as e:
-            print("%r" % e)
+            print(f"{e!r}")
             raise e
 
         umap = {
@@ -89,8 +85,6 @@ class SqlUserDB(object):
         # extend the dict with userid resolver attributes from the connect
         conn_dict = self._parse_connection(connect)
         self.resolverDef.update(conn_dict)
-
-        return
 
     def _parse_connection(self, connect):
         """
@@ -129,9 +123,9 @@ class SqlUserDB(object):
         create_key_value = []
 
         for key, value in list(self.sql_params.items()):
-            create_key_value.append("%s %s" % (key, value))
+            create_key_value.append(f"{key} {value}")
 
-        createStr = "CREATE TABLE %s ( %s )" % (
+        createStr = "CREATE TABLE {} ( {} )".format(
             self.userTable,
             ", ".join(create_key_value),
         )
@@ -140,10 +134,8 @@ class SqlUserDB(object):
         with self.engine.begin() as conn:
             conn.execute(t)
 
-        return
-
     def dropTable(self):
-        dropStr = "DROP TABLE %s" % (self.userTable)
+        dropStr = f"DROP TABLE {self.userTable}"
         t = sqlalchemy.sql.expression.text(dropStr)
         with self.engine.begin() as conn:
             conn.execute(t)
@@ -151,15 +143,12 @@ class SqlUserDB(object):
     def addUser(
         self, user, telephonenumber, mobile, sn, givenname, password, uid, mail
     ):
-        intoStr = """
-            INSERT INTO %s( %s, telephonenumber, mobile,
+        intoStr = f"""
+            INSERT INTO {self.userTable}( {self.usercol}, telephonenumber, mobile,
             sn, givenname, password, id, mail)
             VALUES (:user, :telephonenumber, :mobile, :sn, :givenname,
                     :password, :id, :mail)
-            """ % (
-            self.userTable,
-            self.usercol,
-        )
+            """
         t = sqlalchemy.sql.expression.text(intoStr)
 
         with self.engine.begin() as conn:
@@ -181,7 +170,7 @@ class SqlUserDB(object):
         # FROM Config WHERE Config.Key = :key"""), key=REPLICATION_CONFIG_KEY)
 
     def query(self):
-        selectStr = "select * from %s" % (self.userTable)
+        selectStr = f"select * from {self.userTable}"
         with self.engine.begin() as conn:
             result = conn.execute(selectStr)
 
@@ -190,19 +179,19 @@ class SqlUserDB(object):
 
     def delUsers(self, uid=None, username=None):
         if username is not None:
-            delStr = "DELETE FROM %s  WHERE user=:user" % (self.userTable)
+            delStr = f"DELETE FROM {self.userTable}  WHERE user=:user"
             t = sqlalchemy.sql.expression.text(delStr)
             with self.engine.begin() as conn:
                 conn.execute(t, {"user": username})
 
         elif type(uid) in (str, ""):
-            delStr = "DELETE FROM %s  WHERE id=:id" % (self.userTable)
+            delStr = f"DELETE FROM {self.userTable}  WHERE id=:id"
             t = sqlalchemy.sql.expression.text(delStr)
             with self.engine.begin() as conn:
                 conn.execute(t, {"id": uid})
 
         elif uid is None:
-            delStr = "DELETE FROM %s" % (self.userTable)
+            delStr = f"DELETE FROM {self.userTable}"
             t = sqlalchemy.sql.expression.text(delStr)
             with self.engine.begin() as conn:
                 conn.execute(t)

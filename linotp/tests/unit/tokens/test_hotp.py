@@ -1,13 +1,12 @@
 import json
 import unittest
-
-from mock import patch
+from unittest.mock import patch
 
 from linotp.tokens.base import InvalidSeedException
 from linotp.tokens.hmactoken import HmacTokenClass
 
 
-class FakeTokenModel(object):
+class FakeTokenModel:
     def __init__(self, hashlib=None):
         self.info_dict = {}
         self.hashlib = hashlib

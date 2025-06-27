@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -151,9 +150,8 @@ class HmacTokenClass(TokenClass):
 
         if key is not None and key in res:
             ret = res.get(key)
-        else:
-            if ret == "all":
-                ret = res
+        elif ret == "all":
+            ret = res
         return ret
 
     def __init__(self, a_token):
@@ -213,8 +211,6 @@ class HmacTokenClass(TokenClass):
         # ------------------------------------------------------------------ --
 
         TokenClass.update(self, param, reset_failcount)
-
-        return
 
     def validate_seed(self, seed):
         """
@@ -347,7 +343,7 @@ class HmacTokenClass(TokenClass):
 
         data = {
             "serial": self.token.getSerial(),
-            "date": "%s" % datetime.now(),
+            "date": f"{datetime.now()}",
         }
 
         return (True, message, data, None)
@@ -395,7 +391,7 @@ class HmacTokenClass(TokenClass):
         hmac2Otp = HmacOtp(secObj, counter, otplen, self.getHashlib(self.hashlibStr))
         res = hmac2Otp.checkOtp(anOtpVal, window)
 
-        if -1 == res:
+        if res == -1:
             res = self.autosync(hmac2Otp, anOtpVal)
 
         return res
@@ -444,9 +440,9 @@ class HmacTokenClass(TokenClass):
             # need to do this manually here:
             self.incOtpCounter(res)
         if res == -1:
-            msg = "otp counter %r was not found" % otp
+            _msg = f"otp counter {otp!r} was not found"
         else:
-            msg = "otp counter %r was found" % otp
+            _msg = f"otp counter {otp!r} was found"
         return res
 
     def autosync(self, hmac2Otp, anOtpVal):
@@ -476,16 +472,15 @@ class HmacTokenClass(TokenClass):
         # So the boolean has no .lower()
         if isinstance(setting, bool):
             autosync = setting
+        elif setting.lower() == "true":
+            autosync = True
+        elif setting.lower() == "false":
+            autosync = False
         else:
-            if "true" == setting.lower():
-                autosync = True
-            elif "false" == setting.lower():
-                autosync = False
-            else:
-                autosync = False
+            autosync = False
 
         # if autosync is enabled
-        if False == autosync:
+        if not autosync:
             log.debug("[autosync] end. autosync is not enabled : res %r", res)
             return res
 
@@ -526,10 +521,7 @@ class HmacTokenClass(TokenClass):
 
                 res = -1
 
-        if res == -1:
-            msg = "call was not successful"
-        else:
-            msg = "call was successful"
+        _msg = "call was not successful" if res == -1 else "call was successful"
 
         return res
 
@@ -619,9 +611,9 @@ class HmacTokenClass(TokenClass):
 
         try:
             otplen = int(self.token.LinOtpOtpLen)
-        except ValueError as ex:
-            log.error("[getOtp]: Could not convert otplen - value error %r ", ex)
-            raise Exception(ex)
+        except ValueError as exx:
+            log.error("[getOtp]: Could not convert otplen - value error %r ", exx)
+            raise
 
         self.hashlibStr = self.getFromTokenInfo("hashlib", "sha1")
         secObj = self._get_secret_object()
@@ -635,10 +627,10 @@ class HmacTokenClass(TokenClass):
         otpval = hmac2Otp.generate(inc_counter=False)
 
         pin = self.getPin()
-        combined = "%s%s" % (otpval, pin)
+        combined = f"{otpval}{pin}"
 
         if getFromConfig("PrependPin") == "True":
-            combined = "%s%s" % (pin, otpval)
+            combined = f"{pin}{otpval}"
 
         return (1, pin, otpval, combined)
 
@@ -658,12 +650,12 @@ class HmacTokenClass(TokenClass):
         error = "No count specified"
         try:
             otplen = int(self.token.LinOtpOtpLen)
-        except ValueError as ex:
+        except ValueError as exx:
             log.error(
                 "[get_multi_otp]: Could not convert otplen - value error %r ",
-                ex,
+                exx,
             )
-            raise Exception(ex)
+            raise
         s_count = self.getOtpCount()
         secObj = self._get_secret_object()
         hmac2Otp = HmacOtp(secObj, s_count, otplen, self.getHashlib(self.hashlibStr))
@@ -695,7 +687,7 @@ class HmacTokenClass(TokenClass):
             response_detail["otpkey"] = {
                 "order": "1",
                 "description": _("OTP seed"),
-                "value": "seed://%s" % otpkey,
+                "value": f"seed://{otpkey}",
                 "img": create_img(otpkey, width=200),
             }
             try:

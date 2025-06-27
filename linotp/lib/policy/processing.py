@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -39,7 +38,6 @@ starting with new_ could be moved in place
 """
 
 import logging
-from typing import Any, Tuple
 
 from linotp.lib.policy.evaluate import PolicyEvaluator
 from linotp.lib.policy.util import get_policies

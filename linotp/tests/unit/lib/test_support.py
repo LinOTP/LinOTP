@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,9 +26,9 @@
 
 
 import unittest
+from unittest.mock import patch
 
 import pytest
-from mock import patch
 
 from linotp.lib.support import verify_token_volume
 
@@ -76,5 +75,3 @@ class LicenseSupportTestCase(unittest.TestCase):
 
         assert not valid
         assert "Grace limit reached" not in detail
-
-        return

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -47,12 +46,12 @@ from linotp.lib.token import getNumTokenUsers, getTokenNumResolver
 log = logging.getLogger(__name__)
 
 __all__ = [
-    "parseSupportLicense",
     "getSupportLicenseInfo",
-    "readLicenseInfo",
-    "setSupportLicense",
     "isSupportLicenseValid",
+    "parseSupportLicense",
+    "readLicenseInfo",
     "removeSupportLicenseInfo",
+    "setSupportLicense",
 ]
 
 PUB_KEY_DIRS = ["/etc/lseappliance/pubkeys"]
@@ -128,7 +127,7 @@ class LicenseInfo(dict):
         initialize the special dict with some additional attributes
         """
         # parent dict init
-        self.parent = super(LicenseInfo, self)
+        self.parent = super()
         self.parent.__init__(*args, **kwargs)
         self._list = []
 
@@ -160,7 +159,7 @@ class LicenseInfo(dict):
 
 class InvalidLicenseException(Exception):
     def __init__(self, message, type=None):
-        super(InvalidLicenseException, self).__init__(message)
+        super().__init__(message)
         self.type = type
 
 
@@ -189,33 +188,35 @@ def parseSupportLicense(licString: str):
         and licArry[-1].strip() != "-----END LICENSE SIGNATURE-----"
     ):
         log.error("Invalid licence: Format error: %r", licString[0:40])
+        msg = "Format error - not a valid license file!"
         raise InvalidLicenseException(
-            "Format error - not a valid license file!",
+            msg,
             type="INVALID_FORMAT",
         )
 
     read_license = 0
     read_signature = 0
     for line in licArry:
-        l = line.strip()
-        if l == "-----BEGIN LICENSE-----":
+        stripped_line = line.strip()
+        if stripped_line == "-----BEGIN LICENSE-----":
             read_license = 1
-        elif l == "-----END LICENSE-----":
+        elif stripped_line == "-----END LICENSE-----":
             read_license = 0
-        elif l == "-----BEGIN LICENSE SIGNATURE-----":
+        elif stripped_line == "-----BEGIN LICENSE SIGNATURE-----":
             read_signature = 1
-        elif l == "-----END LICENSE SIGNATURE-----":
+        elif stripped_line == "-----END LICENSE SIGNATURE-----":
             read_signature = 0
         else:
-            if 1 == read_license:
+            if read_license == 1:
                 licInfo.add(line)
-            if 1 == read_signature:
-                signature += l.rstrip()
+            if read_signature == 1:
+                signature += stripped_line.rstrip()
 
     if len(signature) < 20 or len(licInfo) < 10:
         log.error("Format error - not a valid license file! %r", licString[0:40])
+        msg = "Format error - not a valid license file!"
         raise InvalidLicenseException(
-            "Format error - not a valid license file!",
+            msg,
             type="INVALID_FORMAT",
         )
 
@@ -235,7 +236,7 @@ def readLicenseInfo(filename):
                       license as string, which the signature could be checked
                       against
     """
-    with open(filename, "r") as f:
+    with open(filename) as f:
         return parseSupportLicense(f.read())
 
 
@@ -338,10 +339,7 @@ def do_nagging(lic_info, nag_days=7):
     # we start 7 days after download license was installed
     nag_offset = nag_days
 
-    if not (
-        lic_info.license_type
-        and (lic_info.license_type == "download" or lic_info.license_type == "demo")
-    ):
+    if not (lic_info.license_type and (lic_info.license_type in {"download", "demo"})):
         return False
 
     # in case there is no duration definition in 'xx days' we do the nagging
@@ -538,8 +536,9 @@ def set_duration(lic_dict, raiseException=False):
     days = lic_dict.license_expiration.replace("days", "").strip()
     try:
         days = int(days)
-    except ValueError as _val:
-        raise LicenseException("Unable to interpret duration in license description")
+    except ValueError as exx:
+        msg = "Unable to interpret duration in license description"
+        raise LicenseException(msg) from exx
 
     # we have a timely limited version, so we have to check if there is
     # already a license like this installed by comparing the signatures
@@ -570,7 +569,7 @@ def set_duration(lic_dict, raiseException=False):
 
     # we take only some bytes as it is encrypted afterwards
     signature = base64.b64encode(lic_sign)[:500].decode()
-    license_expire = "%s:%s" % (signature, expires_str)
+    license_expire = f"{signature}:{expires_str}"
 
     enc_license_expire = EncryptedData.from_unencrypted(license_expire)
     storeConfig("license_duration", enc_license_expire)
@@ -617,7 +616,7 @@ def verifyLicenseInfo(lic_dict, lic_sign, raiseException=False, checkVolume=True
     lic_dict.license_type = valid
     (valid, expiration) = verify_expiration(lic_dict)
     if not valid:
-        error = "%s" % expiration
+        error = f"{expiration}"
         log.error(
             "Verification of support license failed!Error was %s\n. Lincence info: %r",
             error,
@@ -660,10 +659,7 @@ def verify_signature(lic_dict, lic_sign, licStr=None):
     if not lic_dict:
         return None
 
-    if not licStr:
-        lic_str = lic_dict.info()
-    else:
-        lic_str = licStr
+    lic_str = licStr if licStr else lic_dict.info()
 
     log.debug(
         "Licence Signature check: Licence text is %r, signature is %r",
@@ -719,7 +715,7 @@ def verify_expiration(lic_dic):
     """
 
     if "expire" not in lic_dic:
-        msg = "%s %r" % (
+        msg = "{} {!r}".format(
             _("no license expiration information in license "),
             lic_dic.info(),
         )
@@ -727,7 +723,7 @@ def verify_expiration(lic_dic):
         return (False, msg)
 
     if "subscription" not in lic_dic:
-        msg = "%s %r" % (
+        msg = "{} {!r}".format(
             _("no license subscription information in license"),
             lic_dic.info(),
         )
@@ -777,7 +773,8 @@ def verify_volume(lic_dict):
     elif "user-num" in lic_dict:
         return verify_user_volume(lic_dict)
 
-    raise InvalidLicenseException("licenses is neither token nor user based!")
+    msg = "licenses is neither token nor user based!"
+    raise InvalidLicenseException(msg)
 
 
 def verify_user_volume(lic_dict):
@@ -799,7 +796,7 @@ def verify_user_volume(lic_dict):
             lic_dict.get("user-num"),
             err,
         )
-        return False, "max %d" % user_volume
+        return False, f"max {user_volume}"
 
     detail = ""
 
@@ -853,7 +850,7 @@ def verify_token_volume(lic_dict):
             lic_dict.get("token-num"),
             err,
         )
-        return False, "max %d" % token_volume
+        return False, f"max {token_volume}"
 
     detail = ""
 
@@ -966,7 +963,7 @@ def check_duration(expire, lic_info):
                 return False, "License expired"
 
     duration = int(expire.replace("days", "").strip())
-    return duration > 0, "%d days" % duration
+    return duration > 0, f"{duration} days"
 
 
 def check_date(expire_type, expire):
@@ -995,12 +992,12 @@ def check_date(expire_type, expire):
             expiration_date = None
 
     if not expiration_date:
-        msg = "%s %r" % (_("unsupported date format date %r"), expire)
+        msg = "{} {!r}".format(_("unsupported date format date %r"), expire)
         log.error("Licence: Check of %s failed: %s", expire_type, msg)
         return (False, msg)
 
     if today > expiration_date:
-        msg = "%s %r" % (_("expired - valid till"), expire)
+        msg = "{} {!r}".format(_("expired - valid till"), expire)
         log.error("Licence: Check of %s failed: %s", expiration_date, msg)
         return (False, msg)
 
@@ -1019,7 +1016,7 @@ def readPublicKey(filename):
     pubKey = ""
 
     try:
-        with open(filename, "r") as f:
+        with open(filename) as f:
             pem = f.read()
     except Exception as exx:
         log.error(

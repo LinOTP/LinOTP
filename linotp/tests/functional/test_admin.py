@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -275,7 +274,7 @@ class TestAdminController(TestController):
         assert '"status": true,' in response, response
         resp = json.loads(response.body)
         values = resp.get("result", {}).get("value", [])
-        assert len(values) > 15, "not enough users returned %r" % resp
+        assert len(values) > 15, f"not enough users returned {resp!r}"
 
     def test_userlist_paged(self):
         """
@@ -320,8 +319,6 @@ class TestAdminController(TestController):
         resp = json.loads(response.body)
         value = resp.get("result", {}).get("error", {}).get("code", 0)
         assert value == 9876, resp
-
-        return
 
     def test_db_for_default_realm_and_resolver(self):
         """
@@ -515,7 +512,6 @@ class TestAdminController(TestController):
         assert '"value": true' in response, response
 
         self.delete_token("umlauttoken")
-        return
 
     def test_losttoken_email(self):
         """
@@ -573,7 +569,6 @@ class TestAdminController(TestController):
 
         self.delete_token(token_name)
         self.delete_token(lost_token_name)
-        return
 
     def test_losttoken_sms(self):
         """
@@ -631,7 +626,6 @@ class TestAdminController(TestController):
 
         self.delete_token(token_name)
         self.delete_token(lost_token_name)
-        return
 
     def test_losttoken_fail(self):
         """
@@ -690,7 +684,6 @@ class TestAdminController(TestController):
 
         self.delete_token(token_name)
         self.delete_token(lost_token_name)
-        return
 
     def test_losttoken_spass(self):
         """
@@ -772,7 +765,6 @@ class TestAdminController(TestController):
         # all fine, clean up
         self.delete_token(token_name)
         self.delete_token(temp_token_name)
-        return
 
     def test_enroll_umlaut(self):
         parameters = {
@@ -883,8 +875,6 @@ class TestAdminController(TestController):
         assert '"set countAuth": 1' in response, response
         assert '"set countAuthMax": 1' in response, response
 
-        return
-
     def test_set_validity(self):
         """
         Setting validity period
@@ -968,21 +958,15 @@ class TestAdminController(TestController):
         )
 
         assert response.json["result"]["status"], (
-            'Expected response.result.status to be True in response: "{}"'.format(
-                response.json
-            )
+            f'Expected response.result.status to be True in response: "{response.json}"'
         )
 
         assert token_serial_1 in response.json["result"]["value"], (
-            'Expected response.result.value to contain token id "{}" in response: "{}"'.format(
-                token_serial_1, response.json
-            )
+            f'Expected response.result.value to contain token id "{token_serial_1}" in response: "{response.json}"'
         )
 
         assert token_serial_2 in response.json["result"]["value"], (
-            'Expected response.result.value to contain token id "{}" in response: "{}"'.format(
-                token_serial_2, response.json
-            )
+            f'Expected response.result.value to contain token id "{token_serial_2}" in response: "{response.json}"'
         )
 
     def test_set_empty(self):
@@ -1365,7 +1349,7 @@ class TestAdminController(TestController):
                 self.init_token({**params, "serial": new_serial})
 
             content_type = "application/json" if action in ["setValidity"] else None
-            response = self.make_admin_request(
+            _response = self.make_admin_request(
                 action=action, params=request_params, content_type=content_type
             )
 
@@ -1404,15 +1388,15 @@ class TestAdminController(TestController):
         local_admin_resoler.add_user(username, password)
 
         client = FlaskClient(self.app)
-        res = client.post(
-            "/admin/login", data=dict(username=username, password=password)
+        _res = client.post(
+            "/admin/login", data={"username": username, "password": password}
         )
 
         audit_entry = self.get_last_audit_entry()
-        assert "admin/login" == audit_entry[4]
-        assert "1" == audit_entry[5]
+        assert audit_entry[4] == "admin/login"
+        assert audit_entry[5] == "1"
         assert username == audit_entry[8]
-        assert "linotp_admins" == audit_entry[9]
+        assert audit_entry[9] == "linotp_admins"
         assert f"{username}@linotp_admins (LinOTP_local_admins)" in audit_entry[10]
 
     def test_audit_for_unsuccessful_admin_login(
@@ -1425,16 +1409,15 @@ class TestAdminController(TestController):
         local_admin_resoler.add_user(username, password)
 
         client = FlaskClient(self.app)
-        res = client.post(
-            "/admin/login",
-            data=dict(username=username, password=password + "WRONG"),
+        _res = client.post(
+            "/admin/login", data={"username": username, "password": password + "WRONG"}
         )
 
         audit_entry = self.get_last_audit_entry()
-        assert "admin/login" == audit_entry[4]
-        assert "0" == audit_entry[5]
+        assert audit_entry[4] == "admin/login"
+        assert audit_entry[5] == "0"
         assert username == audit_entry[8]
-        assert "linotp_admins" == audit_entry[9]
+        assert audit_entry[9] == "linotp_admins"
         assert f"{username}@linotp_admins" not in audit_entry[10]
 
     @patch("linotp.controllers.base.get_jwt")
@@ -1443,16 +1426,16 @@ class TestAdminController(TestController):
 
         username = "admin"
 
-        res = self._make_authenticated_request(controller="admin", action="logout")
+        _res = self._make_authenticated_request(controller="admin", action="logout")
 
         audit_entry = self.get_last_audit_entry()
-        assert "admin/logout" == audit_entry[4]
-        assert "1" == audit_entry[5]
+        assert audit_entry[4] == "admin/logout"
+        assert audit_entry[5] == "1"
         assert username == audit_entry[8]
-        assert "linotp_admins" == audit_entry[9]
+        assert audit_entry[9] == "linotp_admins"
         assert f"{username}@linotp_admins" in audit_entry[10]
 
-    def create_reporting_policy(self, policy_params: dict = None):
+    def create_reporting_policy(self, policy_params: dict | None = None):
         policy_params = policy_params or {}
         params = {
             "name": policy_params.get("name", "reporting_policy"),
@@ -1687,7 +1670,7 @@ class TestAdminController(TestController):
             self.create_reporting_policy()
 
             # trigger action
-            response = self.make_admin_request(
+            _response = self.make_admin_request(
                 action, params=test_dict.get("request_params")
             )
 
@@ -1738,9 +1721,9 @@ class TestAdminController(TestController):
             "remove",
             "tokenrealm",
         ]:
-            response = self.make_request("admin", action, params={"serial": serial})
+            _response = self.make_request("admin", action, params={"serial": serial})
 
             # verify no reporting was triggered
             with DBSession() as session:
                 entries = session.query(Reporting).all()
-                assert [] == entries, action
+                assert entries == [], action

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -25,7 +24,6 @@
 #    Support: www.lsexperts.de
 #
 
-import pytest
 
 from linotp.lib.policy import checkAdminAuthorization
 from linotp.lib.user import User

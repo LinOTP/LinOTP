@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #
 #   LinOTP - the open source solution for two factor authentication
 #   Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -30,9 +28,9 @@ LDAP Resolver unit test - search for multiple login names
 """
 
 import unittest
+from unittest.mock import patch
 
 import pytest
-from mock import patch
 
 from linotp.useridresolver.LDAPIdResolver import IdResolver as LDAPResolver
 
@@ -74,7 +72,7 @@ class TestLDAPResolverMultipleSearchIds(unittest.TestCase):
 
         # 2. finally trigger the call getUserId
 
-        userid = resolver.getUserId(loginname=login_name)
+        _userid = resolver.getUserId(loginname=login_name)
 
         # 3. verify that the login name occurs multiple times in the filter
 

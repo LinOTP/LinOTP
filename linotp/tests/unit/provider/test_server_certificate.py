@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -25,12 +24,10 @@
 #    Support: www.linotp.de
 #
 
-import json
 import os
 import unittest
 
 import pytest
-from mock import patch
 
 from linotp.provider.config_parsing import ConfigParsingMixin
 from linotp.tests import TestController
@@ -66,7 +63,7 @@ class TestProviderBase(unittest.TestCase):
 
         for config in configurations:
             with pytest.raises(ValueError):
-                res = ConfigParsingMixin.load_server_cert(
+                _res = ConfigParsingMixin.load_server_cert(
                     config, server_cert_key="server_certificate"
                 )
 
@@ -110,6 +107,6 @@ class TestProviderBase(unittest.TestCase):
         }
 
         with pytest.raises(IOError):
-            res = ConfigParsingMixin.load_server_cert(
+            _res = ConfigParsingMixin.load_server_cert(
                 config, server_cert_key="server_certificate"
             )

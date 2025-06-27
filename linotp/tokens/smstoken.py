@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -133,7 +132,7 @@ from linotp.tokens.hmactoken import HmacTokenClass
 log = logging.getLogger(__name__)
 
 try:
-    from linotp.provider.smsprovider import getSMSProviderClass
+    from linotp.provider.smsprovider import getSMSProviderClass  # noqa: F401
 
     SMSPROVIDER_IMPORTED = True
 except ImportError as exx:
@@ -205,7 +204,7 @@ def is_phone_editable(user=""):
     This is a int policy, while the '0' is a deny
     """
     # the default string is the OTP value
-    ret = True
+    _ret = True
     realm = user.realm
     login = user.login
 
@@ -222,10 +221,7 @@ def is_phone_editable(user=""):
         policies, scope="selfservice", action="edit_sms", default=1
     )
 
-    if edit_sms == 0:
-        return False
-
-    return True
+    return edit_sms != 0
 
 
 @tokenclass_registry.class_entry("sms")
@@ -333,9 +329,8 @@ class SmsTokenClass(HmacTokenClass):
 
         if key and key in res:
             ret = res.get(key)
-        else:
-            if ret == "all":
-                ret = res
+        elif ret == "all":
+            ret = res
 
         return ret
 
@@ -353,8 +348,9 @@ class SmsTokenClass(HmacTokenClass):
         # specific - phone
         try:
             phone = param["phone"]
-        except KeyError:
-            raise ParameterError("Missing parameter: 'phone'")
+        except KeyError as exx:
+            msg = "Missing parameter: 'phone'"
+            raise ParameterError(msg) from exx
 
         # in scope selfservice - check if edit_sms is allowed
         # if not allowed to edit, check if the phone is the same
@@ -375,8 +371,6 @@ class SmsTokenClass(HmacTokenClass):
             param["genkey"] = 1
 
         HmacTokenClass.update(self, param, reset_failcount)
-
-        return
 
     def is_challenge_response(self, passw, user, options=None, challenges=None):
         """
@@ -427,7 +421,7 @@ class SmsTokenClass(HmacTokenClass):
         # (res, pin, otpval) = split_pin_otp(self, passw, user, options=options)
         # if policy to send sms on emtpy pin is set, return true
         realms = self.token.getRealmNames()
-        if trigger_sms(realms):
+        if trigger_sms(realms):  # noqa: SIM102
             if "check_s" in options.get("scope", {}) and "challenge" in options:
                 request_is_valid = True
                 return request_is_valid
@@ -513,15 +507,15 @@ class SmsTokenClass(HmacTokenClass):
             transactionid = options.get("transactionid", None)
             res, result = self.sendSMS(message=message, transactionid=transactionid)
 
-            self.info["info"] = "SMS sent: %r" % res
+            self.info["info"] = f"SMS sent: {res!r}"
             log.debug("SMS sent: %s", result)
 
             return res, result
 
-        except Exception as e:
+        except Exception as exx:
             # The PIN was correct, but the SMS could not be sent.
-            self.info["info"] = str(e)
-            info = "The SMS could not be sent: %r" % e
+            self.info["info"] = str(exx)
+            info = f"The SMS could not be sent: {exx!r}"
             log.warning("[submitChallenge] %s", info)
             return False, info
 
@@ -610,7 +604,7 @@ class SmsTokenClass(HmacTokenClass):
         # datetime format in the storeing data
         timeScope = self.loadLinOtpSMSValidTime()
         expiryDate = datetime.datetime.now() + datetime.timedelta(seconds=timeScope)
-        data = {"valid_until": "%s" % expiryDate}
+        data = {"valid_until": f"{expiryDate}"}
 
         return (success, message, data, attributes)
 
@@ -630,12 +624,12 @@ class SmsTokenClass(HmacTokenClass):
         change the tokeninfo data of the last challenge
         """
 
-        tok = super(SmsTokenClass, self)
+        _tok = super()
         counter = self.getOtpCount()
         window = self.getOtpCountWindow()
 
-        now = datetime.datetime.now()
-        timeScope = self.loadLinOtpSMSValidTime()
+        _now = datetime.datetime.now()
+        _timeScope = self.loadLinOtpSMSValidTime()
 
         otp_val = passw
 
@@ -680,33 +674,31 @@ class SmsTokenClass(HmacTokenClass):
             options = {}
 
         ret = HmacTokenClass.checkOtp(self, anOtpVal, counter, window)
-        if ret != -1:
-            if self.isValid() is False:
-                ret = -1
+        if ret != -1 and self.isValid() is False:
+            ret = -1
 
-        if ret >= 0:
-            if get_auth_AutoSMSPolicy():
-                user = None
-                message = "<otp>"
-                realms = self.getRealms()
-                if realms:
-                    _sms_ret, message = get_auth_smstext(realm=realms[0])
+        if ret >= 0 and get_auth_AutoSMSPolicy():
+            user = None
+            message = "<otp>"
+            realms = self.getRealms()
+            if realms:
+                _sms_ret, message = get_auth_smstext(realm=realms[0])
 
-                if "user" in options:
-                    user = options.get("user", None)
-                    if user:
-                        _sms_ret, message = get_auth_smstext(realm=user.realm)
-                realms = self.getRealms()
+            if "user" in options:
+                user = options.get("user", None)
+                if user:
+                    _sms_ret, message = get_auth_smstext(realm=user.realm)
+            realms = self.getRealms()
 
-                if "data" in options or "message" in options:
-                    message = options.get("data", options.get("message", "<otp>"))
+            if "data" in options or "message" in options:
+                message = options.get("data", options.get("message", "<otp>"))
 
-                try:
-                    _success, message = self.sendSMS(message=message)
-                except Exception as exx:
-                    log.error(exx)
-                finally:
-                    self.incOtpCounter(ret, reset=False)
+            try:
+                _success, message = self.sendSMS(message=message)
+            except Exception as exx:
+                log.error(exx)
+            finally:
+                self.incOtpCounter(ret, reset=False)
         if ret >= 0:
             msg = "otp verification was successful!"
         else:
@@ -749,7 +741,6 @@ class SmsTokenClass(HmacTokenClass):
         :return: nothing
         """
         self.setSMSInfo("phone", phone)
-        return
 
     def setUntil(self, until):
         """
@@ -763,7 +754,6 @@ class SmsTokenClass(HmacTokenClass):
         """
 
         self.setSMSInfo("until", until)
-        return
 
     def _getPhone(self):
         """
@@ -835,7 +825,6 @@ class SmsTokenClass(HmacTokenClass):
         :return: nothing
         """
         self.addToTokenInfo(key, value)
-        return
 
     def getSMSInfo(self):
         """
@@ -879,9 +868,9 @@ class SmsTokenClass(HmacTokenClass):
         if dueDate >= now:
             ret = True
         if ret is True:
-            msg = "the sms challenge is still valid"
+            _msg = "the sms challenge is still valid"
         else:
-            msg = "the sms challenge is no more valid"
+            _msg = "the sms challenge is no more valid"
         return ret
 
     def sendSMS(self, message=None, transactionid=None):
@@ -903,11 +892,12 @@ class SmsTokenClass(HmacTokenClass):
             message = "<otp>"
 
         if not SMSPROVIDER_IMPORTED:
-            raise Exception(
+            msg = (
                 "The SMSProvider could not be imported. Maybe you "
                 "didn't install the package (Debian "
                 "linotp-smsprovider or PyPI SMSProvider)"
             )
+            raise Exception(msg)
 
         # we require the token owner to get the phone number and the provider
         owner = get_token_owner(self)
@@ -920,9 +910,9 @@ class SmsTokenClass(HmacTokenClass):
         if "<otp>" not in message:
             log.error("Message unconfigured: prepending <otp> to message")
             if isinstance(message, str):
-                message = "<otp> %s" % message
+                message = f"<otp> {message}"
             else:
-                message = "<otp> %r" % message
+                message = f"<otp> {message!r}"
 
         message = message.replace("<otp>", otp)
         message = message.replace("<serial>", serial)
@@ -958,7 +948,8 @@ class SmsTokenClass(HmacTokenClass):
             if not sms_provider:
                 log.error("Unable to load provider %r", provider_name)
                 log.error("Please verify your provider configuration!")
-                raise Exception("unable to load provider")
+                msg = "unable to load provider"
+                raise Exception(msg)
 
             try:
                 success = sms_provider.submitMessage(phone, message)
@@ -967,15 +958,14 @@ class SmsTokenClass(HmacTokenClass):
                 log.info("SMS successfully submitted by provider: %r", provider_name)
                 break
 
-            except ProviderNotAvailable as exx:
+            except ProviderNotAvailable:
                 log.warning("Provider not available %r", provider_name)
                 res_scheduler.block(provider_name, delay=30)
 
         if not available:
             log.error("all providers are not available %r", providers)
-            raise AllResourcesUnavailable(
-                "unable to connect to any SMSProvider %r" % providers
-            )
+            msg = f"unable to connect to any SMSProvider {providers!r}"
+            raise AllResourcesUnavailable(msg)
 
         log.info("[sendSMS] message submitted")
 

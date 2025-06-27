@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -30,9 +29,7 @@
 Test challenge response functionality for the motp token
 """
 
-import binascii
 import hashlib
-import json
 import time
 from datetime import datetime
 

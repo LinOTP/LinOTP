@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -33,7 +32,6 @@ import logging
 from flask import current_app, g, request
 
 from linotp.controllers.base import BaseController
-from linotp.flap import config
 from linotp.flap import render_mako as render
 from linotp.flap import tmpl_context as c
 from linotp.lib import deprecated_methods
@@ -44,8 +42,6 @@ from linotp.lib.reply import sendError, sendResult
 from linotp.lib.token import get_multi_otp, get_tokens, getOtp, getTokenType
 from linotp.lib.type_utils import boolean
 from linotp.lib.user import (
-    getDefaultRealm,
-    getUserFromParam,
     getUserFromRequest,
 )
 from linotp.lib.util import getParam
@@ -127,8 +123,7 @@ class GettokenController(BaseController):
 
             max_count = checkPolicyPre("gettoken", "max_count", param)
             log.debug("[getmultiotp] maxcount policy: %s", max_count)
-            if count > max_count:
-                count = max_count
+            count = min(count, max_count)
 
             log.debug("[getmultiotp] retrieving OTP value for token %s", serial)
             ret = get_multi_otp(serial, count=int(count), curTime=curTime)
@@ -151,7 +146,7 @@ class GettokenController(BaseController):
         except Exception as exx:
             log.error("[getmultiotp] gettoken/getmultiotp failed: %r", exx)
             db.session.rollback()
-            return sendError("gettoken/getmultiotp failed: %r" % exx, 0)
+            return sendError(f"gettoken/getmultiotp failed: {exx!r}", 0)
 
     @deprecated_methods(["POST"])
     def getotp(self):
@@ -208,7 +203,7 @@ class GettokenController(BaseController):
                     )
                     res = -3
                     serials = [token.getSerial() for token in toks]
-                elif 1 == tokennum:
+                elif tokennum == 1:
                     serial = toks[0].getSerial()
                     log.debug(
                         "[getotp] retrieving OTP for token %s for user %s@%s",
@@ -235,8 +230,8 @@ class GettokenController(BaseController):
                 if max_count <= 0:
                     return sendError(
                         "The policy forbids receiving"
-                        " OTP values for the token %s in "
-                        "this realm" % serial,
+                        f" OTP values for the token {serial} in "
+                        "this realm",
                         1,
                     )
 
@@ -273,7 +268,7 @@ class GettokenController(BaseController):
         except Exception as exx:
             log.error("[getotp] gettoken/getotp failed: %r", exx)
             db.session.rollback()
-            return sendError("gettoken/getotp failed: %s" % exx, 0)
+            return sendError(f"gettoken/getotp failed: {exx}", 0)
 
 
 # eof###########################################################################

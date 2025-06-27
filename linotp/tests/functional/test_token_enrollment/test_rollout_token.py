@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -31,9 +30,6 @@ Test the onetime token for the selfservice login
 """
 
 import json
-from typing import List
-
-import pytest
 
 from linotp.tests import TestController
 
@@ -101,8 +97,8 @@ class TestRolloutToken(TestController):
         pw: str,
         pin: str,
         serial: str = ROLLOUT_TOKEN_SERIAL,
-        scopes: List[str] = None,
-        rollout: bool = None,
+        scopes: list[str] | None = None,
+        rollout: bool | None = None,
     ):
         params = {
             "otpkey": pw,
@@ -123,7 +119,7 @@ class TestRolloutToken(TestController):
             params["scope"] = json.dumps({"path": scopes})
 
         response = self.make_admin_request("init", params=params)
-        assert response.json["result"]["value"] == True, response
+        assert response.json["result"]["value"] is True, response
 
     def init_token(self, user: str, pw: str, pin: str, serial: str = "KIPWOTHER"):
         params = {
@@ -135,7 +131,7 @@ class TestRolloutToken(TestController):
             "description": "Production token - not rollout",
         }
         response = self.make_admin_request("init", params=params)
-        assert response.json["result"]["value"] == True, response
+        assert response.json["result"]["value"] is True, response
 
     def validate_check(self, user, pin, password):
         params = {"user": user, "pass": pin + password}
@@ -147,8 +143,8 @@ class TestRolloutToken(TestController):
         self,
         exp_validate: bool,  # should a validate request work with this token?
         exp_userservice: bool,  # should a selfservice login work with this token?
-        scopes: List[str] = None,
-        rollout: bool = None,
+        scopes: list[str] | None = None,
+        rollout: bool | None = None,
     ):
         self.init_rollout_token(
             self.user, self.otp1, self.pin1, scopes=scopes, rollout=rollout
@@ -218,10 +214,10 @@ class TestRolloutToken(TestController):
         # ensure the rollout is only valid in scope userservice
 
         response = self.validate_check(self.user, self.pin1, self.otp1)
-        assert response.json["result"]["value"] == False, response
+        assert response.json["result"]["value"] is False, response
 
         response, _ = self._user_service_login(self.user, self.pw, self.otp1)
-        assert response.json["result"]["value"] == True, response
+        assert response.json["result"]["value"] is True, response
 
         # ------------------------------------------------------------------ --
 
@@ -244,7 +240,7 @@ class TestRolloutToken(TestController):
         # the rollout token should have disappeared
 
         response = self.validate_check(self.user, self.pin2, self.otp2)
-        assert response.json["result"]["value"] == True, response
+        assert response.json["result"]["value"] is True, response
 
         response = self.make_admin_request("show")
         assert self.ROLLOUT_TOKEN_SERIAL not in response, response
@@ -289,10 +285,10 @@ class TestRolloutToken(TestController):
         # possible in the selfservice
 
         response = self.validate_check(self.user, self.pin1, self.otp1)
-        assert response.json["result"]["value"] == False, response
+        assert response.json["result"]["value"] is False, response
 
         response, _ = self._user_service_login(self.user, self.pw, self.otp1)
-        assert response.json["result"]["value"] == True, response
+        assert response.json["result"]["value"] is True, response
 
         # ------------------------------------------------------------------ --
 
@@ -308,7 +304,7 @@ class TestRolloutToken(TestController):
         # the rollout token should have disappeared
 
         response, _ = self._user_service_login(self.user, self.pw, self.otp2)
-        assert response.json["result"]["value"] == True, response
+        assert response.json["result"]["value"] is True, response
 
         response = self.make_admin_request("show")
         assert self.ROLLOUT_TOKEN_SERIAL not in response, response
@@ -326,10 +322,10 @@ class TestRolloutToken(TestController):
         # possible in the selfservice
 
         response = self.validate_check(self.user, self.pin1, self.otp1)
-        assert response.json["result"]["value"] == False, response
+        assert response.json["result"]["value"] is False, response
 
         response, _ = self._user_service_login(self.user, self.pw, self.otp1)
-        assert response.json["result"]["value"] == True, response
+        assert response.json["result"]["value"] is True, response
 
         # ------------------------------------------------------------------ --
 
@@ -345,7 +341,7 @@ class TestRolloutToken(TestController):
         # the rollout token should not disappeared as the policy is not set
 
         response, _ = self._user_service_login(self.user, self.pw, self.otp2)
-        assert response.json["result"]["value"] == True, response
+        assert response.json["result"]["value"] is True, response
 
         response = self.make_admin_request("show")
         assert self.ROLLOUT_TOKEN_SERIAL in response, response
@@ -366,16 +362,16 @@ class TestRolloutToken(TestController):
 
         response = self.validate_check(self.user, self.pin1, self.otp1)
         if "validate" in scope:
-            assert response.json["result"]["value"] == True, response
+            assert response.json["result"]["value"] is True, response
         else:
-            assert response.json["result"]["value"] == False, response
+            assert response.json["result"]["value"] is False, response
 
         # Login via selfservice
         response, _ = self._user_service_login(self.user, self.pw, self.otp1)
         if "userservice" in scope:
-            assert response.json["result"]["value"] == True, response
+            assert response.json["result"]["value"] is True, response
         else:
-            assert response.json["result"]["value"] == False, response
+            assert response.json["result"]["value"] is False, response
 
         # ------------------------------------------------------------------ --
 
@@ -398,7 +394,7 @@ class TestRolloutToken(TestController):
         # rollout token should have been purged as the policy is set
 
         response, _ = self._user_service_login(self.user, self.pw, self.otp2)
-        assert response.json["result"]["value"] == True, response
+        assert response.json["result"]["value"] is True, response
 
         response = self.make_admin_request("show")
 
@@ -433,10 +429,10 @@ class TestRolloutToken(TestController):
         # do a login with both tokens
 
         response = self.validate_check(self.user, self.pin1, self.otp1)
-        assert response.json["result"]["value"] == True, response
+        assert response.json["result"]["value"] is True, response
 
         response = self.validate_check(self.user, self.pin2, self.otp1)
-        assert response.json["result"]["value"] == True, response
+        assert response.json["result"]["value"] is True, response
 
         # ------------------------------------------------------------------ --
 

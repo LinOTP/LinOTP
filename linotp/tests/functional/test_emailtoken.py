@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -33,9 +32,9 @@ Test linotp.tokens.emailtoken
 import re
 import smtplib
 import time
+from unittest.mock import patch
 
 from freezegun import freeze_time
-from mock import patch
 
 from linotp.tests import TestController
 
@@ -167,8 +166,6 @@ class TestEmailtokenController(TestController):
         assert response_json["result"]["status"]
         assert response_json["result"]["value"]
 
-        return
-
     def test_00000_multiple_challenges(self):
         """
         Test with multiple challenges
@@ -222,7 +219,7 @@ class TestEmailtokenController(TestController):
         """
         Test that challenges email Header validity'
         """
-        response = self.make_validate_request(
+        _response = self.make_validate_request(
             "check", params={"user": "root", "pass": self.pin}
         )
         assert self.mock_smtp_instance.sendmail.call_count >= 1, (
@@ -235,7 +232,7 @@ class TestEmailtokenController(TestController):
         email_to = ordered_args[1]
         message = ordered_args[2]
 
-        assert "linotp@example.com" == email_from
+        assert email_from == "linotp@example.com"
         assert self.default_email_address == email_to
 
         # searches for the date-header in the message
@@ -246,7 +243,7 @@ class TestEmailtokenController(TestController):
             if line.startswith("Date:"):
                 date = line
                 break
-        assert "Date: Sat, 14 Jan 2012 00:00:00 -0000" == date
+        assert date == "Date: Sat, 14 Jan 2012 00:00:00 -0000"
 
     def test_timeout(self):
         """
@@ -291,7 +288,7 @@ class TestEmailtokenController(TestController):
 
         # Trigger 2nd challenge (should send no e-mail)
         response, _ = self._trigger_challenge()
-        assert "e-mail with otp already submitted" == response["detail"]["message"]
+        assert response["detail"]["message"] == "e-mail with otp already submitted"
 
         time.sleep(5)  # wait for blocking timeout to pass
 
@@ -376,7 +373,7 @@ class TestEmailtokenController(TestController):
         matches = re.search(r"\d{6}", message)
         assert matches is not None
         otp = matches.group(0)
-        assert 6 == len(otp)
+        assert len(otp) == 6
         return response.json, otp
 
     def _assert_email_sent(self, response):
@@ -387,6 +384,6 @@ class TestEmailtokenController(TestController):
         :param response: The response returned by validate/check
         :response type: dict
         """
-        assert "e-mail sent successfully" == response["detail"]["message"]
+        assert response["detail"]["message"] == "e-mail sent successfully"
         assert response["result"]["status"]
         assert not response["result"]["value"]

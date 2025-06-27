@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -80,7 +79,7 @@ class Echo:
             click.echo(message, err=err, **kwargs)
 
 
-def get_backup_filename(filename: str, now: datetime = None) -> str:
+def get_backup_filename(filename: str, now: datetime | None = None) -> str:
     """
     Creates a time-stamped filename suitable for use as a “backup
     filename”. The given filename can contain a placeholder `%s` where

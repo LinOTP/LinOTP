@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -32,7 +31,7 @@ import tempfile
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.file_detector import LocalFileDetector
 
-from linotp_selenium_helper.manage_ui import ManageUi, MsgType
+from linotp_selenium_helper.manage_ui import ManageUi
 
 from .manage_ui import ManageDialog
 
@@ -78,23 +77,24 @@ class TokenImport(ManageDialog):
         """
 
         if not file_content and not file_path:
-            raise Exception(
-                """Wrong test implementation. TokenImport.do_import
+            msg = """Wrong test implementation. TokenImport.do_import
                             needs file_content or file_path!
                             """
-            )
+            raise Exception(msg)
 
         if not self.manage.realm_manager.get_realms_via_api():
-            raise Exception(
+            msg = (
                 "Test problem: TokenImport requires a realm, but norealms are available"
             )
+            raise Exception(msg)
 
         if file_content:
             # Create the temp xml file with the given file_content.
-            tf = tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".xml")
-            tf.write(file_content)
-            tf.close()
-            self.file_path = tf.name
+            with tempfile.NamedTemporaryFile(
+                mode="w", delete=False, suffix=".xml"
+            ) as tf:
+                tf.write(file_content)
+                self.file_path = tf.name
         else:
             # Use the provided xml token file.
             self.file_path = file_path
@@ -125,7 +125,8 @@ class TokenImport(ManageDialog):
         # Check the alert boxes on the top of the LinOTP UI
         info = self.manage.alert_box_handler.last_line
         if info.type != "info" or not info.text.startswith("Token import result:"):
-            raise TokenImportError("Import failure:{}".format(info))
+            msg = f"Import failure:{info}"
+            raise TokenImportError(msg)
 
 
 class TokenImportAladdin(TokenImport):

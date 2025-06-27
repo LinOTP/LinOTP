@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -231,9 +230,8 @@ class VoiceTokenClass(HmacTokenClass):
 
         if key and key in res:
             ret = res.get(key)
-        else:
-            if ret == "all":
-                ret = res
+        elif ret == "all":
+            ret = res
 
         log.debug("Returned the configuration section: ret %r ", ret)
 
@@ -256,7 +254,8 @@ class VoiceTokenClass(HmacTokenClass):
         # set the required phone / mobile number
 
         if "phone" not in param:
-            raise ParameterError("Missing parameter: 'phone'")
+            msg = "Missing parameter: 'phone'"
+            raise ParameterError(msg)
 
         self.set_phone(param["phone"])
 
@@ -526,7 +525,8 @@ class VoiceTokenClass(HmacTokenClass):
         """
         :raises NotImplementedError
         """
-        raise NotImplemented("method getOtp is not implemented for VoiceToken")
+        msg = "method getOtp is not implemented for VoiceToken"
+        raise NotImplementedError(msg)
 
     def _calc_otp(self, input_data):
         """

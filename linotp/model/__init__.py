@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -165,7 +164,8 @@ def setup_db(app) -> None:
             log.warning(
                 "The audit database can not share the same"
                 " sqlite database file with the LinOTP database."
-                f' Using "{audit_database_uri}" instead.'
+                " Using '%s' instead.",
+                audit_database_uri,
             )
 
     if audit_database_uri != "OFF":
@@ -193,7 +193,7 @@ def setup_db(app) -> None:
     if audit_database_uri != "OFF":
         engine = db.engines.get("auditdb")
 
-        from linotp.lib.audit.SQLAudit import AuditTable
+        from linotp.lib.audit.SQLAudit import AuditTable  # noqa: PLC0415
 
         auditdb_table_names = [tn.lower() for tn in inspect(engine).get_table_names()]
         if AuditTable.__tablename__.lower() not in auditdb_table_names:
@@ -232,7 +232,7 @@ def init_db_tables(app, drop_data=False, add_defaults=True):
             # The audit table is created in the configured audit database
             # connection if audit is not turned off. The database model is
             # added to SQLAlchemy if the file is imported.
-            import linotp.lib.audit.SQLAudit
+            import linotp.lib.audit.SQLAudit  # noqa: F401, PLC0415
 
         if drop_data:
             echo("Dropping tables to erase all data...", v=1)
@@ -243,7 +243,7 @@ def init_db_tables(app, drop_data=False, add_defaults=True):
             else:
                 db.drop_all()
 
-        echo(f"Creating tables...", v=1)
+        echo("Creating tables...", v=1)
         if app.config["AUDIT_DATABASE_URI"] == "OFF":
             db.metadata.create_all(bind=db.engine)
         else:
@@ -261,7 +261,7 @@ def init_db_tables(app, drop_data=False, add_defaults=True):
 
         if admin_username and admin_password:
             echo("Setting up cloud admin user...", v=1)
-            from linotp.lib.tools.set_password import (
+            from linotp.lib.tools.set_password import (  # noqa: PLC0415
                 DataBaseContext,
                 SetPasswordHandler,
             )

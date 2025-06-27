@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -55,7 +54,8 @@ class RestSMSProvider(ISMSProvider, ConfigParsingMixin):
 
     def loadConfig(self, configDict):
         if not configDict:
-            raise Exception("missing configuration")
+            msg = "missing configuration"
+            raise Exception(msg)
 
         self.config = configDict
 
@@ -82,7 +82,8 @@ class RestSMSProvider(ISMSProvider, ConfigParsingMixin):
 
         self.auth_type = configDict.get("AUTHENTICATION", "BASIC").lower()
         if self.auth_type not in ["basic", "digest"]:
-            raise Exception("no valid Authentication type provided")
+            msg = "no valid Authentication type provided"
+            raise Exception(msg)
 
         # support for multiple urls
 
@@ -131,9 +132,12 @@ class RestSMSProvider(ISMSProvider, ConfigParsingMixin):
 
         # if the template is a simple string, we do a simple replace
 
-        if isinstance(sms_phone_template, str):
-            if sms_phone_template and "<phone>" in sms_phone_template:
-                return sms_phone_template.replace("<phone>", phone)
+        if (
+            isinstance(sms_phone_template, str)
+            and sms_phone_template
+            and "<phone>" in sms_phone_template
+        ):
+            return sms_phone_template.replace("<phone>", phone)
 
         # if the template is a list, we replace text items
         # while others are preserved
@@ -200,7 +204,7 @@ class RestSMSProvider(ISMSProvider, ConfigParsingMixin):
         # do some phone number normalisation if MSISDN parameter is provided
 
         # prepare the phone number
-        msisdn = "true" in ("%r" % self.config.get("MSISDN", "false")).lower()
+        msisdn = "true" in ("{!r}".format(self.config.get("MSISDN", "false"))).lower()
         if msisdn:
             phone = self._get_msisdn_phonenumber(phone)
 
@@ -282,16 +286,18 @@ class RestSMSProvider(ISMSProvider, ConfigParsingMixin):
                 log.info("RestSMSProvider request failed: %r", response.reason)
                 return False
 
-            except requests.exceptions.Timeout as exc:
-                log.error("RestSMSProvider timed out %r", exc)
+            except requests.exceptions.Timeout as exx:
+                log.error("RestSMSProvider timed out %r", exx)
                 retry -= 1
                 if retry <= 0:
-                    raise ProviderNotAvailable("RestSMSProvider timed out %r" % exc)
+                    msg = f"RestSMSProvider timed out {exx!r}"
+                    raise ProviderNotAvailable(msg) from exx
 
-            except Exception as exc:
-                log.error("RestSMSProvider %r", exc)
+            except Exception as exx:
+                log.error("RestSMSProvider %r", exx)
                 retry = 0
-                raise Exception("Failed to send SMS. %s" % str(exc))
+                msg = f"Failed to send SMS. {exx!s}"
+                raise Exception(msg) from exx
 
 
 def json_replace(payload, key, value):

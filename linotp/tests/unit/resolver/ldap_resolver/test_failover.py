@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 #
 #   LinOTP - the open source solution for two factor authentication
 #   Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -33,7 +31,6 @@ import unittest
 import pytest
 from freezegun import freeze_time
 from ldap import INVALID_CREDENTIALS, LDAPError
-from mock import patch
 
 from linotp.lib.resources import DictResourceRegistry, ResourceScheduler
 from linotp.useridresolver import LDAPIdResolver as ldap_resolver_module
@@ -55,10 +52,12 @@ class MockedLdapObject:
         """emulate a simple_bind"""
 
         if "fail" in self.uri:
-            raise LDAPError("failed to connect")
+            msg = "failed to connect"
+            raise LDAPError(msg)
 
         if passw != "geheim1":
-            raise INVALID_CREDENTIALS("not geheim1!")
+            msg = "not geheim1!"
+            raise INVALID_CREDENTIALS(msg)
 
         return True
 
@@ -74,7 +73,7 @@ class FakeLdapResolver(LDAPResolver):
     called = []
 
     def __init__(self, *args, **kwargs):
-        super(FakeLdapResolver, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     @classmethod
     def m_connect(cls, uri, *args, **kwargs):
@@ -107,7 +106,7 @@ class MockedResourceScheduler(ResourceScheduler):
 
     def __init__(self, uri_list=None, tries=1):
         """overload the constuctor so we can control the retries"""
-        super(MockedResourceScheduler, self).__init__(
+        super().__init__(
             uri_list=uri_list,
             tries=TRIES,
             resource_registry_class=MockedResourceRegistry,
@@ -190,8 +189,6 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
         assert "ldap://ok_bind4.psw.de" not in registry
 
-        return
-
     def test_bind_with_fail(self):
         """
         test the failover in the bind handling
@@ -239,7 +236,7 @@ class TestLDAPResolverFailover(unittest.TestCase):
 
             registry = MockedResourceRegistry.registry
 
-            for key, value in list(registry.items()):
+            for value in registry.values():
                 assert value is not None
 
             # -------------------------------------------------------------- --
@@ -313,8 +310,6 @@ class TestLDAPResolverFailover(unittest.TestCase):
             # verify that the 4th entry was never evaluated
 
             assert "ldap://go_bind4.psw.de" not in registry
-
-        return
 
     def test_checkPass_with_failover(self):
         """
@@ -415,8 +410,6 @@ class TestLDAPResolverFailover(unittest.TestCase):
         # verify that the 4th entry was never evaluated
 
         assert "ldap://ok_bind4.psw.de" not in registry
-
-        return
 
 
 # eof #

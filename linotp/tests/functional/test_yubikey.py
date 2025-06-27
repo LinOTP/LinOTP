@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -65,7 +64,6 @@ class TestYubikeyController(TestController):
             public_uid + "ljlhjbkejkctubnejrhuvljkvglvvlbk",
             public_uid + "eihtnehtetluntirtirrvblfkttbjuih",
         ]
-        return
 
     def init_token(
         self,
@@ -77,7 +75,7 @@ class TestYubikeyController(TestController):
         user=None,
         pin=None,
     ):
-        serial = "UBAM%s_%s" % (serialnum, yubi_slot)
+        serial = f"UBAM{serialnum}_{yubi_slot}"
 
         params = {
             "type": "yubikey",
@@ -99,7 +97,7 @@ class TestYubikeyController(TestController):
             params["public_uid"] = public_uid
 
         response = self.make_admin_request("init", params=params)
-        assert '"value": true' in response, "Response: %r" % response
+        assert '"value": true' in response, f"Response: {response!r}"
 
         # setup the otp values, that we check against
         self.init_otps(public_uid)
@@ -121,15 +119,13 @@ class TestYubikeyController(TestController):
             for otp in self.valid_otps:
                 params = {"serial": serial, "pass": otp}
                 response = self.make_validate_request("check_s", params=params)
-                assert '"value": true' in response, "Response: %r" % response
+                assert '"value": true' in response, f"Response: {response!r}"
 
             # Repeat an old (therefore invalid) OTP value
             invalid_otp = public_uid + "fcniufvgvjturjgvinhebbbertjnihit"
             params = {"serial": serial, "pass": invalid_otp}
             response = self.make_validate_request("check_s", params=params)
-            assert '"value": false' in response, "Response: %r" % response
-
-        return
+            assert '"value": false' in response, f"Response: {response!r}"
 
     def test_yubico_resync(self):
         """
@@ -149,7 +145,7 @@ class TestYubikeyController(TestController):
             "session": self.session,
         }
         response = self.make_admin_request("resync", params=params)
-        assert '"value": true' in response, "Response: %r" % response
+        assert '"value": true' in response, f"Response: {response!r}"
 
         params = {
             "serial": serial,
@@ -158,9 +154,7 @@ class TestYubikeyController(TestController):
             "session": self.session,
         }
         response = self.make_admin_request("resync", params=params)
-        assert '"value": false' in response, "Response: %r" % response
-
-        return
+        assert '"value": false' in response, f"Response: {response!r}"
 
     def test_yubico_getSerialByOtp_false(self):
         """
@@ -189,15 +183,13 @@ class TestYubikeyController(TestController):
             }
             response = self.make_admin_request("getSerialByOtp", params=params)
 
-            assert '"status": true' in response, "Response: %r" % response
+            assert '"status": true' in response, f"Response: {response!r}"
 
             # now access the data / serial number
             resp = json.loads(response.body)
             data = resp.get("result", {}).get("value", {})
             get_serial = data.get("serial")
             assert get_serial == "", resp
-
-        return
 
     def test_yubico_getSerialByOtp(self):
         """
@@ -217,15 +209,13 @@ class TestYubikeyController(TestController):
                 }
                 response = self.make_admin_request("getSerialByOtp", params=params)
 
-                assert '"status": true' in response, "Response: %r" % response
+                assert '"status": true' in response, f"Response: {response!r}"
 
                 # now access the data / serial number
                 resp = json.loads(response.body)
                 data = resp.get("result", {}).get("value", {})
                 get_serial = data.get("serial")
                 assert serial == get_serial, resp
-
-        return
 
     def test_yubikey_auth_otppin(self):
         """
@@ -308,7 +298,7 @@ class TestYubikeyController(TestController):
 
             params = {"user": user, "pass": pin + otp}
             response = self.make_validate_request("check", params=params)
-            assert not ('"value": true' in response), response
+            assert '"value": true' not in response, response
 
             # -------------------------------------------------------------- --
 
@@ -317,8 +307,6 @@ class TestYubikeyController(TestController):
             params = {"user": user, "pass": pin + pw_password}
             response = self.make_validate_request("check", params=params)
             assert '"value": true' in response, response
-
-        return
 
 
 # eof

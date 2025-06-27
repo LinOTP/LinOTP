@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -28,11 +27,12 @@
 
 """used to do testing of the radius token"""
 
+import contextlib
 import logging
+from unittest.mock import patch
 
 import pyrad.packet
 import pyrad.server
-from mock import patch
 from pyrad.client import Client
 
 from linotp.tests import TestController
@@ -66,7 +66,8 @@ def mocked_SendPacket_reject(rad_client, *argparams, **kwparams):
 
 def mocked_SendPacket_error(rad_client, *argparams, **kwparams):
     """mock the radius accept response"""
-    raise pyrad.server.ServerPacketError("bad packet")
+    msg = "bad packet"
+    raise pyrad.server.ServerPacketError(msg)
 
 
 class TestRadiusToken(TestController):
@@ -81,10 +82,8 @@ class TestRadiusToken(TestController):
         self.create_common_realms()
 
         # cleanup from last run
-        try:
+        with contextlib.suppress(AssertionError):
             self.deleteRadiusToken()
-        except AssertionError:
-            pass
 
         self.create_radius_token()
 
@@ -103,7 +102,7 @@ class TestRadiusToken(TestController):
             "user": "remoteuser",
             "pin": "pin",
             "description": "RadiusToken1",
-            "radius.server": "localhost:%s" % self.radius_authport,
+            "radius.server": f"localhost:{self.radius_authport}",
             "radius.local_checkpin": 0,
             "radius.user": "user_with_pin",
             "radius.secret": "testing123",
@@ -118,7 +117,7 @@ class TestRadiusToken(TestController):
             "user": "localuser",
             "pin": "pin",
             "description": "RadiusToken2",
-            "radius.server": "localhost:%s" % self.radius_authport,
+            "radius.server": f"localhost:{self.radius_authport}",
             "radius.local_checkpin": 1,
             "radius.user": "user_no_pin",
             "radius.secret": "testing123",

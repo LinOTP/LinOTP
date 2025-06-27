@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -34,16 +33,13 @@ used to do functional testing of the remote token
 
 """
 
-import binascii
 import json
 import logging
-import smtplib
 import urllib.parse
+from unittest.mock import patch
 
 import httplib2
-from mock import patch
 
-from linotp.lib.util import str2unicode
 from linotp.tests.functional.challenge_response.testing_controller import (
     TestingChallengeResponseController,
 )
@@ -93,7 +89,7 @@ class TestRemoteToken(TestingChallengeResponseController):
         and we loose the information how many tokens are within a realm!
         """
         TestingChallengeResponseController.setUp(self)
-        self.remote_url = "http://127.0.0.1:%s" % self.paster_port
+        self.remote_url = f"http://127.0.0.1:{self.paster_port}"
 
         self.delete_all_policies()
         self.delete_all_token()
@@ -101,10 +97,8 @@ class TestRemoteToken(TestingChallengeResponseController):
         self.create_common_resolvers()
         self.create_common_realms()
 
-        return
-
     def create_local_tokens(self, serial):
-        serial = "LSP%s" % serial
+        serial = f"LSP{serial}"
 
         # local token
         param_local_1 = {
@@ -197,8 +191,6 @@ class TestRemoteToken(TestingChallengeResponseController):
         )
         assert '"set pin": 1' in response, response
 
-        return
-
     @patch.object(httplib2.Http, "request", mocked_http_request)
     def test_check_token_local_pin(self):
         """
@@ -243,8 +235,6 @@ class TestRemoteToken(TestingChallengeResponseController):
         response = self.make_validate_request("check", params=parameters)
 
         assert '"value": false' in response, response
-
-        return
 
     @patch.object(httplib2.Http, "request", mocked_http_request)
     def test_check_token_remote_pin(self):
@@ -311,8 +301,6 @@ class TestRemoteToken(TestingChallengeResponseController):
 
         assert '"value": false' in response, response
 
-        return
-
     @patch.object(httplib2.Http, "request", mocked_http_request)
     def test_fix_12061(self):
         """
@@ -327,7 +315,7 @@ class TestRemoteToken(TestingChallengeResponseController):
         log.debug("current test against %r", sqlconnect)
 
         # verify that there is n index on the TokenSerial number
-        from linotp.model import token_table
+        from linotp.model import token_table  # noqa: PLC0415
 
         for column in token_table.columns:
             log.debug(
@@ -341,8 +329,8 @@ class TestRemoteToken(TestingChallengeResponseController):
 
         # create token and remote token which points to this
         serials = []
-        serial = self.create_local_tokens("tok_%d" % 1)
-        rserial = "%s_remote" % serial
+        serial = self.create_local_tokens("tok_1")
+        rserial = f"{serial}_remote"
         serials.append(rserial)
 
         parameters1 = {
@@ -380,7 +368,7 @@ class TestRemoteToken(TestingChallengeResponseController):
                 # to do the same before comparing
                 l_pin = params.get("pass")
 
-                value = l_pin == pin
+                value = l_pin == pin  # noqa: B023
                 content = {
                     "version": "LinOTP MOCK",
                     "jsonrpc": "2.0",
@@ -397,8 +385,6 @@ class TestRemoteToken(TestingChallengeResponseController):
 
         for serial in serials:
             self.delete_token(serial)
-
-        return
 
 
 # eof###########################################################################

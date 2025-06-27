@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -28,7 +27,6 @@
 This model contains the linotp processing logic
 """
 
-import warnings
 from functools import wraps
 
 
@@ -45,7 +43,7 @@ def render_calling_path(func):
 
     try:
         methods = ", ".join(func.methods)
-    except:
+    except Exception:
         methods = "GET, POST"
     return f"**{methods}** */{module_name}/{func_name}*\n "
 
@@ -108,7 +106,7 @@ def deprecated_methods(deprecated_methods_list):
         if is_get_deprecated():
             doc_posttext = """ """
         if is_post_deprecated():
-            doc_posttext = doc_posttext = """ """
+            doc_posttext = """ """
 
         return doc_posttext
 

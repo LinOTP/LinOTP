@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -26,39 +25,27 @@
 #
 """paralell test"""
 
-import base64
 import binascii
 import json
 import logging
-import os
 import random
 import sys
 import threading
 import time
-import unittest
-from datetime import datetime, timedelta
+from datetime import datetime
 from urllib.parse import parse_qs, urlparse
 
-from Cryptodome.Hash import HMAC
-from Cryptodome.Hash import SHA as SHA1
-from Cryptodome.Hash import SHA256 as SHA256
-
-# FIXME:  from linotp.tokens.ocra import OcraSuite
 from linotp.lib.crypto.utils import (
-    check,
     createActivationCode,
-    decrypt,
-    encrypt,
-    geturandom,
     kdf2,
 )
-from linotp.lib.ext.pbkdf2 import PBKDF2
-from linotp.tests import *
+from linotp.tests import TestController, environ, url
+from linotp.tokens.ocra2token import OcraSuite
 
 log = logging.getLogger(__name__)
 
 
-class OcraOtp(object):
+class OcraOtp:
     def __init__(self, ocrapin=None):
         self.ocra = None
         self.bkey = None
@@ -183,7 +170,6 @@ class doRequest(threading.Thread):
     def run(self):
         if hasattr(self.utest, self.test_name):
             self.response = getattr(self.utest, self.test_name)(self.rid)
-        return
 
     def status(self):
         res = '"status": true,' in self.response
@@ -194,7 +180,7 @@ class doRequest(threading.Thread):
 
 
 def genUrl(controller="admin", action="init"):
-    return "/%s/%s" % (controller, action)
+    return f"/{controller}/{action}"
 
 
 class OcraTest(TestController):
@@ -477,7 +463,6 @@ class OcraTest(TestController):
                     self.threads = int(k[1])
                 if k[0] == "ptest.runs":
                     self.runs = int(k[1])
-        return
 
     def tearDown(self):
         return
@@ -488,7 +473,7 @@ class OcraTest(TestController):
             "scope": "authentication",
             "realm": "mydefrealm",
         }
-        params["action"] = "qrtanurl=%s" % (str(check_url))
+        params["action"] = f"qrtanurl={check_url!s}"
         response = self.app.get(
             genUrl(controller="system", action="setPolicy"), params=params
         )
@@ -617,12 +602,9 @@ class OcraTest(TestController):
 
         self.removeTokens(serial=ocra.serial)
 
-        f = open("/tmp/challengeTestSet", "w+")
-        testStr = json.dumps(tt, indent=4)
-        f.write(testStr)
-        f.close()
-
-        return
+        with open("/tmp/challengeTestSet", "w+") as f:
+            testStr = json.dumps(tt, indent=4)
+            f.write(testStr)
 
     def randOTP(self, otp):
         """randomly change the chars in an otp - to gen a wron otp"""
@@ -630,7 +612,7 @@ class OcraTest(TestController):
         lenotp = len(str(otp))
         if lenotp > 1:
             while rotp == otp:
-                for i in range(0, 3):
+                for _i in range(3):
                     idx1 = random.randint(0, lenotp - 1)
                     idx2 = random.randint(0, lenotp - 1)
                     if idx1 != idx2:
@@ -837,7 +819,7 @@ class OcraTest(TestController):
             jresp = json.loads(response.body)
             challenge = str(jresp.get("detail").get("challenge"))
             transid = str(jresp.get("detail").get("transactionid"))
-        except Exception as e:
+        except Exception:
             challenge = None
             transid = None
 
@@ -869,14 +851,12 @@ class OcraTest(TestController):
 
         if self.runs == -1:
             i = 0
-            while 1 == 1:
+            while True:
                 i = i + 1
                 self._prun_(i, self.threads)
         else:
-            for i in range(0, self.runs):
+            for i in range(self.runs):
                 self._prun_(i, self.threads)
-
-        return
 
     def _prun_(self, run_num, numthreads):
         """
@@ -884,11 +864,11 @@ class OcraTest(TestController):
         """
         p_tests = []
 
-        for _i in range(0, numthreads):
+        for _i in range(numthreads):
             p_test = doRequest(self, rid=_i, test="ptest_OCRA_token_failcounterInc")
             p_tests.append(p_test)
             if "paste.registry" in environ:
-                environ["paste.registry"].register(myglobal, p_test)
+                environ["paste.registry"].register(myglobal, p_test)  # noqa: F821
 
             # prevent that all threads start at same time:
             # this will cause an p_thread error within the odbc layer
@@ -947,13 +927,7 @@ class OcraTest(TestController):
             key = test["keyh"]
             bkey = test["key"]
             ocrapin = "myocrapin"
-            tid = tid
-            serial = "QR_One_%r_%r_%r_%r" % (
-                tid,
-                tcount,
-                int(time.time()),
-                random.randint(0, 100),
-            )
+            serial = f"QR_One_{tid!r}_{tcount!r}_{int(time.time())!r}_{random.randint(0, 100)!r}"
             log.info("## serial: %r", serial)
             count = 0
             tcount = tcount + 1
@@ -1029,10 +1003,10 @@ class OcraTest(TestController):
 
             # verify that the failcounter increments (max is 10)
             fcount = 0
-            for count in range(1, 3):
+            for _count in range(1, 3):
                 # create more than one challenge
                 chals = random.randint(2, 5)
-                for cc in range(1, chals):
+                for _cc in range(1, chals):
                     """-2- fetch the challenge"""
                     p = {
                         "serial": serial,
@@ -1092,7 +1066,7 @@ class OcraTest(TestController):
                 )
                 log.info("response %s\n", response)
                 assert '"status": true' in response
-                assstring = '"failcount": %d,' % (fcount)
+                assstring = f'"failcount": {fcount},'
                 log.info("assert %s\n", assstring)
                 if assstring not in response:
                     log.error(response)
@@ -1111,7 +1085,7 @@ class OcraTest(TestController):
             log.info("response %s\n", response)
             assert '"value": 1' in response
 
-            for _iii in range(0, 3):
+            for _iii in range(3):
                 parameters = {
                     "serial": serial,
                 }

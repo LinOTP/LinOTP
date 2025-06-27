@@ -1,5 +1,3 @@
-import re
-
 from . import TestPoliciesBase
 
 
@@ -83,5 +81,3 @@ class TestUpoloadPolicies(TestPoliciesBase):
         )
 
         assert "The maximum number of allowed tokens in realm" in response, response
-
-        return

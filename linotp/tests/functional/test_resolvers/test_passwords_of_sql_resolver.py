@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -49,8 +48,6 @@ class SQLResolverPasswordTest(SQLTestController):
 
         SQLTestController.setUp(self)
         self.setUpSQL()
-
-        return
 
     def tearDown(self):
         """drop the users and the user table"""
@@ -266,8 +263,6 @@ class SQLResolverPasswordTest(SQLTestController):
 
         self.run_password_check(user, password, realm=realm)
 
-        return
-
     def run_password_check(self, user, password, realm):
         self.define_otp_pin_policy("token_pin")
 
@@ -343,8 +338,6 @@ class SQLResolverPasswordTest(SQLTestController):
 
         response = self.make_validate_request("check", params=params)
         assert '"value": false' in response
-
-        return
 
 
 # eof

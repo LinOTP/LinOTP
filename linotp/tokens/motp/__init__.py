@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -37,7 +36,7 @@ from linotp.lib.crypto.utils import zerome
 log = logging.getLogger(__name__)
 
 
-class mTimeOtp(object):
+class mTimeOtp:
     """
     implements the motp timebased check_otp
     - s. https://github.com/neush/otpn900/blob/master/src/test_motp.c
@@ -109,10 +108,7 @@ class mTimeOtp(object):
                 self.oldtime,
             )
             res = -1
-        if res == -1:
-            msg = "checking motp failed"
-        else:
-            msg = "checking motp sucess"
+        _msg = "checking motp failed" if res == -1 else "checking motp sucess"
 
         return res
 
@@ -171,8 +167,6 @@ def motp_test():
     ntime = timeOtp2.checkOtp("7215e7", 18, options={"iniTime": 126753360})
     # expecting true
     print("result: ", ntime, " should be 126753370")
-
-    return
 
 
 if __name__ == "__main__":

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -33,9 +32,7 @@ Test the autoassignment Policy.
 import json
 from copy import deepcopy
 
-import pytest
 from flask import g
-from mock import patch
 
 from linotp.tests import TestController
 
@@ -136,7 +133,7 @@ class TestAutoassignmentController(TestController):
             ("molière", "molière"),
             ("shakespeare", "shakespeare1"),
             ("lorca", "lorca1"),
-            ("aἰσχύλος", "Πέρσαι"),
+            ("aἰσχύλος", "Πέρσαι"),  # noqa: RUF001
             ("beckett", "beckett1"),
         ]
 
@@ -194,7 +191,7 @@ class TestAutoassignmentController(TestController):
         response = self.make_admin_request("assign", params=params)
         content = response.json
         assert content["result"]["status"]
-        assert 1 == content["result"]["value"]
+        assert content["result"]["value"] == 1
 
         # Try to autoassign token[0] to users[1] -> should fail because it is
         # already assigned to users[0]
@@ -249,7 +246,7 @@ class TestAutoassignmentController(TestController):
         response = self.make_admin_request("assign", params=params)
         content = response.json
         assert content["result"]["status"]
-        assert 1 == content["result"]["value"]
+        assert content["result"]["value"] == 1
 
         # Try to autoassign token[1] to users[0] -> should fail because the
         # user already has a token
@@ -359,7 +356,7 @@ class TestAutoassignmentController(TestController):
         response = self.make_admin_request("assign", params=params)
         content = response.json
         assert content["result"]["status"]
-        assert 1 == content["result"]["value"]
+        assert content["result"]["value"] == 1
         # No PIN was set
         self._validate(
             user_name,
@@ -444,7 +441,7 @@ class TestAutoassignmentController(TestController):
             response = self.make_admin_request("tokenrealm", params=params)
             content = response.json
             assert content["result"]["status"]
-            assert 1 == content["result"]["value"]
+            assert content["result"]["value"] == 1
 
     def _create_autoassignment_policy(self, name, realm, action="autoassignment"):
         """
@@ -492,10 +489,7 @@ class TestAutoassignmentController(TestController):
         response = self.make_validate_request("check", params=params)
         content = response.json
         if not err_msg:
-            err_msg = "validate/check failed for %r. Response: %r" % (
-                user,
-                content,
-            )
+            err_msg = f"validate/check failed for {user!r}. Response: {content!r}"
         if expected == "success":
             assert content["result"]["status"], err_msg
             assert content["result"]["value"], err_msg
@@ -509,7 +503,7 @@ class TestAutoassignmentController(TestController):
             assert not content["result"]["status"], err_msg
             assert not content["result"]["value"], err_msg
         else:
-            self.fail("Unknown 'expected' %s" % expected)
+            self.fail(f"Unknown 'expected' {expected}")
         return content
 
     def test_autoassign_mixed_token_wo_password(self):
@@ -528,7 +522,13 @@ class TestAutoassignmentController(TestController):
         """
 
         # 5 users from myDefRealm
-        users = ["molière", "shakespeare", "lorca", "aἰσχύλος", "beckett"]
+        users = [
+            "molière",
+            "shakespeare",
+            "lorca",
+            "aἰσχύλος",  # noqa: RUF001
+            "beckett",
+        ]
 
         # 5 token descriptions
         token_list = deepcopy(self.token_list)
@@ -593,8 +593,6 @@ class TestAutoassignmentController(TestController):
 
                 response = self.make_validate_request("check", params=params)
                 assert '"value": true' in response
-
-        return
 
 
 # eof #

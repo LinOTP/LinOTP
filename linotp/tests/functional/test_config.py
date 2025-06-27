@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -198,7 +197,7 @@ class TestConfigController(TestController):
 
             config_data = base64.b64encode(create_long_entries(length))
 
-            config_entry = "longBase64ConfigEntry%d" % i
+            config_entry = f"longBase64ConfigEntry{i}"
             self.entries.add(config_entry)
 
             param = {config_entry: config_data}
@@ -210,14 +209,12 @@ class TestConfigController(TestController):
             response = self.make_system_request("getConfig", params=param)
             jresp = json.loads(response.body)
 
-            entry_name = "getConfig %s" % config_entry
+            entry_name = f"getConfig {config_entry}"
             data = jresp.get("result", {}).get("value", {}).get(entry_name)
 
             assert config_data.decode("utf-8") == data, "error while comparing data"
 
         self.delete_config(prefix="longBase64ConfigEntry")
-
-        return
 
     def test_random_large_hexlify_config(self):
         """
@@ -231,7 +228,7 @@ class TestConfigController(TestController):
 
             config_data = binascii.hexlify(create_long_entries(length))
 
-            config_entry = "longHexConfigEntry%d" % i
+            config_entry = f"longHexConfigEntry{i}"
             self.entries.add(config_entry)
 
             param = {config_entry: config_data}
@@ -243,14 +240,12 @@ class TestConfigController(TestController):
             response = self.make_system_request("getConfig", params=param)
             jresp = json.loads(response.body)
 
-            entry_name = "getConfig %s" % config_entry
+            entry_name = f"getConfig {config_entry}"
             data = jresp.get("result", {}).get("value", {}).get(entry_name)
 
             assert config_data.decode("utf-8") == data, "error while comparing data"
 
         self.delete_config(prefix="longHexConfigEntry")
-
-        return
 
     def test_random_large_UFT8_config(self):
         """
@@ -265,7 +260,7 @@ class TestConfigController(TestController):
         for i in range(1, 10):
             length = 1000 * i + random.randint(0, 1000)
 
-            config_entry = "longUnicodeConfigEntry%d" % i
+            config_entry = f"longUnicodeConfigEntry{i}"
             self.entries.add(config_entry)
 
             config_data = create_long_unicode(alphabet, length)
@@ -280,7 +275,7 @@ class TestConfigController(TestController):
             response = self.make_system_request("getConfig", params=param)
             jresp = json.loads(response.body)
 
-            entry_name = "getConfig %s" % config_entry
+            entry_name = f"getConfig {config_entry}"
             data = jresp.get("result", {}).get("value", {}).get(entry_name)
 
             if config_data != data:
@@ -290,22 +285,18 @@ class TestConfigController(TestController):
                         break
                     it += 1
 
-                assert config_data == data, "error while comparing data: %r  %r" % (
-                    config_data[it - 3 : it + 1],
-                    data[it - 3 : it + 1],
+                assert config_data == data, (
+                    f"error while comparing data: {config_data[it - 3 : it + 1]!r}  {data[it - 3 : it + 1]!r}"
                 )
 
             if len(config_data) != len(data):
-                assert config_data == data, "error while comparing length: %r  %r" % (
-                    config_data[len(data) :],
-                    data[len(config_data) :],
+                assert config_data == data, (
+                    f"error while comparing length: {config_data[len(data) :]!r}  {data[len(config_data) :]!r}"
                 )
 
             assert config_data == data, "error while comparing data"
 
         self.delete_config(prefix="longUnicodeConfigEntry")
-
-        return
 
     def test_UFT8_alphabet_config(self):
         """
@@ -326,7 +317,7 @@ class TestConfigController(TestController):
             config_data = config_data_base + "".join(config_data_array)
             u8_config_data = config_data.encode("utf-8")
 
-            config_entry = "longUnicodeConfigEntry%d" % i
+            config_entry = f"longUnicodeConfigEntry{i}"
             param = {config_entry: u8_config_data}
             response = self.make_system_request("setConfig", params=param)
             assert '"status": true' in response, response
@@ -340,7 +331,7 @@ class TestConfigController(TestController):
             response = self.make_system_request("getConfig", params=param)
             jresp = json.loads(response.body)
 
-            entry_name = "getConfig %s" % config_entry
+            entry_name = f"getConfig {config_entry}"
             data = jresp.get("result", {}).get("value", {}).get(entry_name)
 
             if config_data != data:
@@ -350,22 +341,18 @@ class TestConfigController(TestController):
                         break
                     it += 1
 
-                assert config_data == data, "error while comparing data: %r  %r" % (
-                    config_data[it - 3 : it + 1],
-                    data[it - 3 : it + 1],
+                assert config_data == data, (
+                    f"error while comparing data: {config_data[it - 3 : it + 1]!r}  {data[it - 3 : it + 1]!r}"
                 )
 
             if len(config_data) != len(data):
-                assert config_data == data, "error while comparing length: %r  %r" % (
-                    config_data[len(data) :],
-                    data[len(config_data) :],
+                assert config_data == data, (
+                    f"error while comparing length: {config_data[len(data) :]!r}  {data[len(config_data) :]!r}"
                 )
 
             assert config_data == data, "error while comparing data"
 
         self.delete_config(prefix="longUnicodeConfigEntry")
-
-        return
 
     def test_wrapping_large_utf8_config(self):
         """
@@ -380,7 +367,7 @@ class TestConfigController(TestController):
         for i in range(1, 40):
             length = 1980 + i
 
-            config_entry = "longUtf8ConfigEntry%d" % i
+            config_entry = f"longUtf8ConfigEntry{i}"
             self.entries.add(config_entry)
 
             config_data = create_long_unicode(alphabet, length)
@@ -400,7 +387,7 @@ class TestConfigController(TestController):
             response = self.make_system_request("getConfig", params=param)
             jresp = json.loads(response.body)
 
-            entry_name = "getConfig %s" % config_entry
+            entry_name = f"getConfig {config_entry}"
             data = jresp.get("result", {}).get("value", {}).get(entry_name)
 
             if config_data != data:
@@ -410,22 +397,18 @@ class TestConfigController(TestController):
                         break
                     it += 1
 
-                assert config_data == data, "error while comparing data: %r  %r" % (
-                    config_data[it - 3 : it + 1],
-                    data[it - 3 : it + 1],
+                assert config_data == data, (
+                    f"error while comparing data: {config_data[it - 3 : it + 1]!r}  {data[it - 3 : it + 1]!r}"
                 )
 
             if len(config_data) != len(data):
-                assert config_data == data, "error while comparing length: %r  %r" % (
-                    config_data[len(data) :],
-                    data[len(config_data) :],
+                assert config_data == data, (
+                    f"error while comparing length: {config_data[len(data) :]!r}  {data[len(config_data) :]!r}"
                 )
 
             assert config_data == data, "error while comparing data"
 
         self.delete_config(prefix="longUtf8ConfigEntry")
-
-        return
 
     def test_wrapping_large_utf8_password_config(self):
         """
@@ -440,7 +423,7 @@ class TestConfigController(TestController):
         for i in range(1, 40):
             length = 1980 + i
 
-            config_entry = "longUtf8ConfigEntry%d" % i
+            config_entry = f"longUtf8ConfigEntry{i}"
             self.entries.add(config_entry)
 
             config_data = create_long_unicode(alphabet, length)
@@ -469,13 +452,11 @@ class TestConfigController(TestController):
             response = self.make_system_request("getConfig", params=param)
             jresp = json.loads(response.body)
 
-            entry_name = "getConfig %s" % config_entry
+            entry_name = f"getConfig {config_entry}"
             data = jresp.get("result", {}).get("value", {}).get(entry_name)
 
             # we can't compare the result, as it is the encrypted data
             assert data != config_data, response
-
-        return
 
     def test_wrapping_large_hexlify_config(self):
         """
@@ -488,7 +469,7 @@ class TestConfigController(TestController):
         for i in range(1, 40):
             length = 1980 + i
 
-            config_entry = "longHexlifyConfigEntry%d" % i
+            config_entry = f"longHexlifyConfigEntry{i}"
             self.entries.add(config_entry)
 
             config_data = binascii.hexlify(create_long_entries(length))
@@ -501,7 +482,7 @@ class TestConfigController(TestController):
             response = self.make_system_request("getConfig", params=param)
             jresp = json.loads(response.body)
 
-            entry_name = "getConfig %s" % config_entry
+            entry_name = f"getConfig {config_entry}"
             data = jresp.get("result", {}).get("value", {}).get(entry_name)
 
             if config_data != data:
@@ -512,24 +493,17 @@ class TestConfigController(TestController):
                     it += 1
 
                 assert config_data.decode("utf-8") == data, (
-                    "error while comparing data: %r  %r"
-                    % (
-                        config_data[it - 3 : it + 1],
-                        data[it - 3 : it + 1],
-                    )
+                    f"error while comparing data: {config_data[it - 3 : it + 1]!r}  {data[it - 3 : it + 1]!r}"
                 )
 
             if len(config_data) != len(data):
-                assert config_data == data, "error while comparing length: %r  %r" % (
-                    config_data[len(data) :],
-                    data[len(config_data) :],
+                assert config_data == data, (
+                    f"error while comparing length: {config_data[len(data) :]!r}  {data[len(config_data) :]!r}"
                 )
 
             assert config_data.decode("utf-8") == data, "error while comparing data"
 
         self.delete_config(prefix="longHexlifyConfigEntry")
-
-        return
 
     def test_wrapping_large_base64_config(self):
         """
@@ -542,7 +516,7 @@ class TestConfigController(TestController):
         for i in range(1, 40):
             length = 1980 + i
 
-            config_entry = "longB64ConfigEntry%d" % i
+            config_entry = f"longB64ConfigEntry{i}"
             self.entries.add(config_entry)
 
             config_data = base64.b64encode(create_long_entries(length))
@@ -556,7 +530,7 @@ class TestConfigController(TestController):
             response = self.make_system_request("getConfig", params=param)
             jresp = json.loads(response.body)
 
-            entry_name = "getConfig %s" % config_entry
+            entry_name = f"getConfig {config_entry}"
             data = jresp.get("result", {}).get("value", {}).get(entry_name)
 
             if config_data != data:
@@ -567,24 +541,17 @@ class TestConfigController(TestController):
                     it += 1
 
                 assert config_data.decode("utf-8") == data, (
-                    "error while comparing data: %r  %r"
-                    % (
-                        config_data[it - 3 : it + 1],
-                        data[it - 3 : it + 1],
-                    )
+                    f"error while comparing data: {config_data[it - 3 : it + 1]!r}  {data[it - 3 : it + 1]!r}"
                 )
 
             if len(config_data) != len(data):
-                assert config_data == data, "error while comparing length: %r  %r" % (
-                    config_data[len(data) :],
-                    data[len(config_data) :],
+                assert config_data == data, (
+                    f"error while comparing length: {config_data[len(data) :]!r}  {data[len(config_data) :]!r}"
                 )
 
             assert config_data.decode("utf-8") == data, "error while comparing data"
 
         self.delete_config(prefix="longB64ConfigEntry")
-
-        return
 
     def test_delete_of_previous_continuous(self):
         """
@@ -660,5 +627,3 @@ class TestConfigController(TestController):
 
         finally:
             self.delete_config(prefix="X.")
-
-        return

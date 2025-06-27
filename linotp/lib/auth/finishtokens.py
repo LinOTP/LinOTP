@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -41,7 +40,7 @@ from linotp.lib.token import get_token_owner, get_tokens, remove_token
 log = logging.getLogger(__name__)
 
 
-class FinishTokens(object):
+class FinishTokens:
     def __init__(
         self,
         valid_tokens,
@@ -149,9 +148,8 @@ class FinishTokens(object):
         if len(valid_tokens) == 1:
             token = valid_tokens[0]
             if user:
-                action_detail = "user %r@%r successfully authenticated." % (
-                    user.login,
-                    user.realm,
+                action_detail = (
+                    f"user {user.login!r}@{user.realm!r} successfully authenticated."
                 )
                 g.audit["user"] = user.login
                 g.audit["realm"] = user.realm
@@ -166,7 +164,7 @@ class FinishTokens(object):
                     request_context["RequestUser"] = user
             else:
                 action_detail = (
-                    "serial %r successfully authenticated." % token.getSerial()
+                    f"serial {token.getSerial()!r} successfully authenticated."
                 )
 
             log.info(action_detail)
@@ -250,7 +248,8 @@ class FinishTokens(object):
                     user.login,
                 )
 
-            raise UserError("multiple token match error", id=-33)
+            msg = "multiple token match error"
+            raise UserError(msg, id=-33)
 
     def finish_challenge_token(self):
         """
@@ -394,7 +393,7 @@ def janitor_to_remove_enrollment_token(valid_tokens):
         # if the authenticated token is a rollout token, we dont count him
 
         path = token.getFromTokenInfo("scope", {}).get("path", [])
-        if set(path) & set(["userservice", "validate"]):
+        if set(path) & {"userservice", "validate"}:
             continue
 
         # TODO: get owner sadly throws a genric exception in case of
@@ -430,7 +429,7 @@ def janitor_to_remove_enrollment_token(valid_tokens):
 
         for token in user_tokens:
             path = token.getFromTokenInfo("scope", {}).get("path", [])
-            if set(path) & set(["userservice", "validate"]):
+            if set(path) & {"userservice", "validate"}:
                 to_be_removed_tokens.append(token)
 
     # ------------------------------------------------------------------ --

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -29,10 +28,12 @@ import binascii
 import json
 import logging
 import unittest
+from unittest.mock import MagicMock, patch
 
-import pytest
 from Cryptodome.Cipher import AES
-from mock import MagicMock, patch
+
+import linotp.lib.crypto
+from linotp.tokens.yubikeytoken import YubikeyTokenClass
 
 
 def _aes_decrypt_constructor(hex_key):
@@ -63,9 +64,6 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
     """
 
     def setUp(self):
-        import linotp.lib.crypto
-        from linotp.tokens.yubikeytoken import YubikeyTokenClass
-
         # Without this logging in the tested class fails
         logging.basicConfig()
 
@@ -111,7 +109,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         def _get_secret_object():
             return secret_obj
 
-        setattr(self.yubikey_token, "_get_secret_object", _get_secret_object)
+        self.yubikey_token._get_secret_object = _get_secret_object
         model_token.setType.assert_called_once_with("yubikey")
 
     def test_checkotp_positive(self):
@@ -138,8 +136,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         }
 
         # Test positive cases (otp_counter_dict)
-        for otp in otp_counter_dict:
-            counter_expected = otp_counter_dict[otp]
+        for otp, counter_expected in otp_counter_dict.items():
             counter_actual = self.yubikey_token.checkOtp(otp)
             assert counter_expected == counter_actual, (
                 "Counter for OTP: "
@@ -178,7 +175,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         counter_actual = self.yubikey_token.checkOtp(otp)
 
         assert counter_expected == counter_actual, (
-            "verification for malicous prefix: %s should fail." % otp
+            f"verification for malicous prefix: {otp} should fail."
         )
 
         logger.disabled = False
@@ -194,7 +191,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         counter_actual = self.yubikey_token.checkOtp(otp)
 
         assert counter_expected == counter_actual, (
-            "verification for malicous prefix: %s should fail." % otp
+            f"verification for malicous prefix: {otp} should fail."
         )
 
         logger.disabled = False
@@ -220,7 +217,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         counter_actual = self.yubikey_token.checkOtp(otp)
 
         assert counter_expected == counter_actual, (
-            "verification for malicous prefix: %s should fail." % otp
+            f"verification for malicous prefix: {otp} should fail."
         )
 
         logger.disabled = False
@@ -236,7 +233,7 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         counter_actual = self.yubikey_token.checkOtp(otp)
 
         assert counter_expected == counter_actual, (
-            "verification for malicous prefix: %s should fail." % otp
+            f"verification for malicous prefix: {otp} should fail."
         )
 
         logger.disabled = False
@@ -293,8 +290,6 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         """
         Verify the simple classmethods getClassType and getClassPrefix
         """
-        from linotp.tokens.yubikeytoken import YubikeyTokenClass
-
         assert YubikeyTokenClass.getClassType() == "yubikey"
         assert YubikeyTokenClass.getClassPrefix() == "UBAM"
 
@@ -302,7 +297,6 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         """
         Test the classmethod getClassInfo
         """
-        from linotp.tokens.yubikeytoken import YubikeyTokenClass
 
         full_class_info = {
             "selfservice": {},
@@ -315,12 +309,15 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         }
         class_info = YubikeyTokenClass.getClassInfo()
         assert full_class_info == class_info
-        assert "YubiKey in Yubico Mode" == YubikeyTokenClass.getClassInfo(key="title")
+        assert YubikeyTokenClass.getClassInfo(key="title") == "YubiKey in Yubico Mode"
         assert full_class_info == YubikeyTokenClass.getClassInfo(
             key="some_non_existent_key"
         )
-        assert "some_random_value" == YubikeyTokenClass.getClassInfo(
-            key="some_non_existent_key", ret="some_random_value"
+        assert (
+            YubikeyTokenClass.getClassInfo(
+                key="some_non_existent_key", ret="some_random_value"
+            )
+            == "some_random_value"
         )
 
     def test_check_otp_exist(self):
@@ -339,8 +336,8 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         otp = self.public_uid + "fcniufvgvjturjgvinhebbbertjnihit"  # counter 256
         self.yubikey_token.incOtpCounter.reset_mock()
         counter_actual = self.yubikey_token.check_otp_exist(otp)
-        assert 0 == self.yubikey_token.incOtpCounter.call_count
-        assert -1 == counter_actual
+        assert self.yubikey_token.incOtpCounter.call_count == 0
+        assert counter_actual == -1
 
     def test_is_challenge_request(self):
         """

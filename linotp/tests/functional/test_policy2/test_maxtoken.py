@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -84,23 +83,21 @@ class TestPolicyMaxtoken(TestController):
 
         for i in range(1, 4):
             token_params = {
-                "serial": "#TCOUNT%d" % i,
+                "serial": f"#TCOUNT{i}",
             }
             response = self.enroll_token(token_params)
-            assert "#TCOUNT%d" % i in response
+            assert f"#TCOUNT{i}" in response
 
         for i in range(1, 3):
-            params = {"serial": "#TCOUNT%d" % i, "user": "def"}
+            params = {"serial": f"#TCOUNT{i}", "user": "def"}
             response = self.make_admin_request("assign", params=params)
             assert '"value": true' in response, response
 
         i = 3
-        params = {"serial": "#TCOUNT%d" % i, "user": "def"}
+        params = {"serial": f"#TCOUNT{i}", "user": "def"}
         response = self.make_admin_request("assign", params=params)
         message = "ERR411: The maximum number of allowed tokens"
         assert message in response, response
-
-        return
 
     def test_maxtoken_enroll(self):
         """
@@ -123,17 +120,15 @@ class TestPolicyMaxtoken(TestController):
         response = self.create_policy(policy)
 
         for i in range(1, 3):
-            token_params = {"serial": "#TCOUNT%d" % i, "user": "def"}
+            token_params = {"serial": f"#TCOUNT{i}", "user": "def"}
             response = self.enroll_token(token_params)
-            assert "#TCOUNT%d" % i in response
+            assert f"#TCOUNT{i}" in response
 
         i = 3
-        token_params = {"serial": "#TCOUNT%d" % i, "user": "def"}
+        token_params = {"serial": f"#TCOUNT{i}", "user": "def"}
         response = self.enroll_token(token_params)
         message = "ERR411: The maximum number of allowed tokens per user is exceeded"
         assert message in response, response
-
-        return
 
     def test_maxtoken_selfservice(self):
         """
@@ -381,7 +376,7 @@ class TestMaxtokenSelfService(TestController):
 
         for i in range(1, 4):
             token_params = {
-                "serial": "#TCOUNT%d" % i,
+                "serial": f"#TCOUNT{i}",
                 "user": "passthru_user1@myDefRealm",
             }
             self.enroll_token(token_params)
@@ -401,7 +396,7 @@ class TestMaxtokenSelfService(TestController):
     def test_all_token_limits_not_set(self):
         for i in range(1, 4):
             token_params = {
-                "serial": "#TCOUNT%d" % i,
+                "serial": f"#TCOUNT{i}",
                 "user": "passthru_user1@myDefRealm",
             }
             self.enroll_token(token_params)
@@ -434,7 +429,7 @@ class TestMaxtokenSelfService(TestController):
 
         for i in range(1, 4):
             token_params = {
-                "serial": "#TCOUNT%d" % i,
+                "serial": f"#TCOUNT{i}",
                 "type": "pw",
                 "user": "passthru_user1@myDefRealm",
             }

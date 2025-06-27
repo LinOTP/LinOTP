@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -30,12 +29,10 @@
 
 import logging
 
-from linotp.provider import provider_registry
-
 log = logging.getLogger(__name__)
 
 
-class IPushProvider(object):
+class IPushProvider:
     """
     An abstract class that has to be implemented by ever e-mail provider class
     """
@@ -77,9 +74,8 @@ class IPushProvider(object):
         :param transactionId: The push notification transaction reference
         :return: A tuple of success and result message
         """
-        raise NotImplementedError(
-            "Every subclass of IPushProvider has to implement this method."
-        )
+        msg = "Every subclass of IPushProvider has to implement this method."
+        raise NotImplementedError(msg)
 
     def loadConfig(self, configDict):
         """
@@ -88,4 +84,3 @@ class IPushProvider(object):
         :param configDict: A dictionary that contains all configuration entries
                           you defined (e.g. in a linotp.cfg file)
         """
-        pass

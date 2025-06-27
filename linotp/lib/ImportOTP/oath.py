@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -146,10 +145,7 @@ def parseOATHcsv(csv):
 
         else:
             otplen = line[3]
-            if otplen:
-                otplen = int(otplen)
-            else:
-                otplen = 6
+            otplen = int(otplen) if otplen else 6
 
             token["otplen"] = otplen
 
@@ -172,13 +168,12 @@ def parseOATHcsv(csv):
         hash_hint = line[5].lower()
         if hash_hint and hash_hint in ["sha1", "sha256", "sha512"]:
             hashlib = hash_hint
+        elif len(key) == 2 * 64:
+            hashlib = "sha512"
+        elif len(key) == 2 * 32:
+            hashlib = "sha256"
         else:
-            if len(key) == 2 * 64:
-                hashlib = "sha512"
-            elif len(key) == 2 * 32:
-                hashlib = "sha256"
-            else:
-                hashlib = "sha1"
+            hashlib = "sha1"
 
         if ttype not in ["ocra", "ocra2"]:
             token["hashlib"] = hashlib

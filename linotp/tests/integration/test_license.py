@@ -1,5 +1,4 @@
 #
-# -*- coding: utf-8 -*-
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
 #    Copyright (C) 2019-     netgo software GmbH
@@ -25,6 +24,12 @@
 #    Support: www.linotp.de
 #
 
+import pytest
+from linotp_selenium_helper.license_import import (
+    FileUploadException,
+    LicenseImport,
+    LicenseTempFile,
+)
 
 EXPIRED_LICENSE = """-----BEGIN LICENSE-----
 comment=License for LSE LinOTP 2
@@ -44,13 +49,6 @@ issuer=LSE Leading Security Experts GmbH
 lgNY1u/Y96WG7DVfuid/rdCDBPX99RgcWml+YU1JJdDudSYKheKitoWcoFVp+4YV5FqdfkfESzcJwYoF2588q+RUfky2g/FmE0XM+YBhRsc/SW9Xp199yHMnIBbvx3zBGomZxizKb5/nCwKvQaOGIAdzvmg+MHWqk+rE0HuZU0xXZQRhxPlDcGeeMvBI+X207WlUKQk4fI4yO5lb4FBr4pixjYlSq/1k88NKI48FHADwkoeq7xC6Pw8LLTjO9wYEYeh+JhI0R0xPPPfLCiqgPtZA9lYbICgJXhLwQClB6qYe3C5i9+ePuKqNOC1NDDulOhiv4RfpfxkXXjhky2DIGA==
 -----END LICENSE SIGNATURE-----
 """
-
-import pytest
-from linotp_selenium_helper.license_import import (
-    FileUploadException,
-    LicenseImport,
-    LicenseTempFile,
-)
 
 
 def test_expired_license(testcase):

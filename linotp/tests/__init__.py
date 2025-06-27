@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -51,7 +50,6 @@ import logging
 import os
 import warnings
 from datetime import datetime
-from typing import Optional
 from unittest import TestCase
 from unittest.mock import Mock, patch
 from uuid import uuid4
@@ -66,7 +64,7 @@ warnings.filterwarnings(action="ignore", category=DeprecationWarning)
 
 
 def fxn():
-    warnings.warn("deprecated", DeprecationWarning)
+    warnings.warn("deprecated", DeprecationWarning, stacklevel=1)
 
 
 with warnings.catch_warnings():
@@ -75,7 +73,7 @@ with warnings.catch_warnings():
 
 LOG = logging.getLogger("flask.app")
 
-__all__ = ["environ", "url", "TestController"]
+__all__ = ["TestController", "environ", "url"]
 
 environ = {}
 
@@ -85,7 +83,7 @@ def url(controller, action):
     Generate URL for a given controller and action
     """
     if controller.endswith("/"):
-        warnings.warn("Controller name should not have a trailing slash")
+        warnings.warn("Controller name should not have a trailing slash", stacklevel=1)
         controller = controller.rpartition("/")[0]
 
     return "/".join([controller, action or ""]).replace("//", "/")
@@ -161,7 +159,6 @@ class TestController(TestCase):
     def teardown_class(cls):
         """teardown - cleanup of test class execution result"""
         LOG.info("######## teardown_class: %r", cls)
-        return
 
     @staticmethod
     def delete_cookie(app_client, key):
@@ -172,7 +169,6 @@ class TestController(TestCase):
         :param key: the key of the cookie
         """
         app_client.delete_cookie(".localhost", key)
-        return
 
     @staticmethod
     def get_cookies(response):
@@ -296,8 +292,8 @@ class TestController(TestCase):
     def _make_authenticated_request(
         self,
         app_get_jwt_identity: Mock,
-        controller: Optional[str] = None,
-        action: Optional[str] = None,
+        controller: str | None = None,
+        action: str | None = None,
         method=None,
         params=None,
         headers=None,
@@ -623,7 +619,7 @@ class TestController(TestCase):
     def delete_all_realms(self, auth_user="admin"):
         """get all realms and delete them"""
 
-        admin_realm = current_app.config["ADMIN_REALM_NAME"].lower()
+        _admin_realm = current_app.config["ADMIN_REALM_NAME"].lower()
 
         response = self.make_system_request("getRealms", params={}, auth_user=auth_user)
 
@@ -678,7 +674,7 @@ class TestController(TestCase):
             action="getPolicy", params={}, auth_user=auth_user
         )
         content = response.json
-        err_msg = "Error getting all policies. Response %s" % (content)
+        err_msg = f"Error getting all policies. Response {content}"
         assert content["result"]["status"], err_msg
         policies = content.get("result", {}).get("value", {})
 
@@ -701,8 +697,6 @@ class TestController(TestCase):
         for sys_policy in sys_policies:
             self.delete_policy(sys_policy, auth_user=auth_user)
 
-        return
-
     def create_policy(self, params):
         """
         Create a policy. Following keys are expected in params: name, scope,
@@ -713,19 +707,17 @@ class TestController(TestCase):
         """
         lparams = {"user": "*", "realm": "*", "client": "", "time": ""}
         lparams.update(params)
-        expected_keys = set(
-            ["name", "scope", "action", "user", "realm", "client", "time"]
-        )
+        expected_keys = {"name", "scope", "action", "user", "realm", "client", "time"}
         diff_set = expected_keys - set(lparams.keys())
         assert len(diff_set) == 0, (
-            "Some key is missing to create a policy %r" % diff_set
+            f"Some key is missing to create a policy {diff_set!r}"
         )
 
         response = self.make_system_request("setPolicy", params=lparams)
         content = response.json
         assert content["result"]["status"]
         expected_value = {
-            "setPolicy %s" % params["name"]: {
+            "setPolicy {}".format(params["name"]): {
                 "realm": True,
                 "active": True,
                 "client": True,
@@ -767,8 +759,6 @@ class TestController(TestCase):
 
             assert "false" not in response
 
-        return
-
     def delete_policy(self, name, auth_user="admin"):
         """
         Delete the policy with the given name
@@ -782,13 +772,13 @@ class TestController(TestCase):
         expected_value = {
             "delPolicy": {
                 "result": {
-                    "linotp.Policy.%s.action" % name: True,
-                    "linotp.Policy.%s.active" % name: True,
-                    "linotp.Policy.%s.client" % name: True,
-                    "linotp.Policy.%s.realm" % name: True,
-                    "linotp.Policy.%s.scope" % name: True,
-                    "linotp.Policy.%s.time" % name: True,
-                    "linotp.Policy.%s.user" % name: True,
+                    f"linotp.Policy.{name}.action": True,
+                    f"linotp.Policy.{name}.active": True,
+                    f"linotp.Policy.{name}.client": True,
+                    f"linotp.Policy.{name}.realm": True,
+                    f"linotp.Policy.{name}.scope": True,
+                    f"linotp.Policy.{name}.time": True,
+                    f"linotp.Policy.{name}.user": True,
                 }
             }
         }
@@ -804,7 +794,7 @@ class TestController(TestCase):
         response = self.make_admin_request("show", params={})
         content = response.json
 
-        err_msg = "Error getting token list. Response %s" % (content)
+        err_msg = f"Error getting token list. Response {content}"
         assert content["result"]["status"], err_msg
         data = content["result"]["value"]["data"]
         for entry in data:
@@ -821,9 +811,9 @@ class TestController(TestCase):
         params = {"serial": serial}
         response = self.make_admin_request("remove", params=params)
         content = response.json
-        err_msg = "Error deleting token %s. Response %s" % (serial, content)
+        err_msg = f"Error deleting token {serial}. Response {content}"
         assert content["result"]["status"], err_msg
-        assert 1 == content["result"]["value"], err_msg
+        assert content["result"]["value"] == 1, err_msg
 
     def create_common_resolvers(self):
         """
@@ -931,13 +921,13 @@ class TestController(TestCase):
 
         assert content["result"]["status"]
         realms = content["result"]["value"]
-        lookup_realm = set(["mydefrealm", "mymixrealm", "myotherrealm"])
+        lookup_realm = {"mydefrealm", "mymixrealm", "myotherrealm"}
         assert lookup_realm == set(realms).intersection(lookup_realm)
         assert "mydefrealm" in realms
         assert "default" in realms["mydefrealm"]
         assert realms["mydefrealm"]["default"]
 
-    def _user_service_init(self, auth_user: str, password: str, otp: str = None):
+    def _user_service_init(self, auth_user: str, password: str, otp: str | None = None):
         auth_user = auth_user.encode("utf-8")
         password = password.encode("utf-8")
 
@@ -974,7 +964,7 @@ class TestController(TestCase):
             params = {}
 
         if not hasattr(self, "user_service"):
-            setattr(self, "user_service", {})
+            self.user_service = {}
 
         otp = None
         if len(auth_user) == 3:
@@ -1047,7 +1037,7 @@ class TestController(TestCase):
         # ------------------------------------------------------------------ --
 
         if not hasattr(self, "user_selfservice"):
-            setattr(self, "user_selfservice", {})
+            self.user_selfservice = {}
 
         auth_cookie = self.user_selfservice.get(user)
 
@@ -1067,7 +1057,8 @@ class TestController(TestCase):
         )
 
         if response.status_code != 200:
-            raise Exception("Server Error %d" % response.status_code)
+            msg = f"Server Error {response.status_code}"
+            raise Exception(msg)
 
         response.body = response.data.decode("utf-8")
         return response
@@ -1094,7 +1085,7 @@ class TestController(TestCase):
         # ------------------------------------------------------------------ --
 
         if not hasattr(self, "user_selfservice"):
-            setattr(self, "user_selfservice", {})
+            self.user_selfservice = {}
 
         auth_cookie = self.user_selfservice.get(user)
 

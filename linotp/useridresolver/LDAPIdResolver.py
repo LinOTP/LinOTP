@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #   LinOTP - the open source solution for two factor authentication
 #   Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -35,7 +34,6 @@ import json
 import logging
 import sys
 from datetime import datetime
-from typing import Dict
 
 import ldap
 import ldap.filter
@@ -48,6 +46,8 @@ try:
     ldap_api_version = 2.3
 except ImportError:
     ldap_api_version = 2.4
+
+import contextlib
 
 import click
 from flask import current_app
@@ -120,7 +120,7 @@ class IdResolver(UserIdResolver):
     LDAP User Id resolver
     """
 
-    nameDict: Dict[str, str] = {}
+    nameDict: dict[str, str] = {}
     conf = ""
     db_prefix = "useridresolver.LDAPIdResolver.IdResolver"
 
@@ -199,7 +199,6 @@ class IdResolver(UserIdResolver):
         :return: -nothing-
         """
         log.debug("Setting up LDAPIdResolver")
-        return
 
     @classmethod
     def connect(cls, uri, caller, trace_level=0):
@@ -216,7 +215,7 @@ class IdResolver(UserIdResolver):
             try:
                 l_obj = ldap.initialize(uri, trace_level=trace_level)
             except ldap.LDAPError as exx:
-                log.error(f"couldn't connect to {uri}: {exx!r}")
+                log.error("couldn't connect to %r: %r", uri, exx)
                 raise exx
 
             # Set LDAP protocol version used
@@ -242,7 +241,8 @@ class IdResolver(UserIdResolver):
 
         if not uri.startswith(("ldaps://", "ldap://")):
             log.error("unsuported protocol %r", uri)
-            raise Exception("unsuported protocol %r" % uri)
+            msg = f"unsuported protocol {uri!r}"
+            raise Exception(msg)
 
         l_obj = init_ldap(uri, trace_level)
 
@@ -264,10 +264,10 @@ class IdResolver(UserIdResolver):
                 else ldap.OPT_X_TLS_NEVER
             )
             log.debug(
-                f"Using root-level CA certificates from {ca_cert_file}"
-                ", server certificates "
-                f"{'must' if caller.only_trusted_certs else 'need not'} "
-                "be valid."
+                "Using root-level CA certificates from %s"
+                ", server certificates %s be valid.",
+                ca_cert_file,
+                "must" if caller.only_trusted_certs else "need not",
             )
             l_obj.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, cert_req)
             l_obj.set_option(ldap.OPT_X_TLS_NEWCTX, 0)
@@ -282,11 +282,11 @@ class IdResolver(UserIdResolver):
                 # and the previous `if` has set the proper LDAP TLS options
                 # for us.
 
-                log.debug(f"Attempting STARTTLS on {uri} (as configured)")
+                log.debug("Attempting STARTTLS on %r (as configured)", uri)
                 try:
                     l_obj.start_tls_s()
                 except ldap.LDAPError as exx:
-                    log.error(f"Couldn't STARTTLS on {uri}: {exx!r}")
+                    log.error("Couldn't STARTTLS on %r: %r", uri, exx)
                     raise exx
 
             else:
@@ -299,7 +299,7 @@ class IdResolver(UserIdResolver):
                 # set that to “no”, and we do hope that you have thought
                 # of the consequences.
 
-                log.warning(f"Plain LDAP connection (THIS IS INSECURE!!!)")
+                log.warning("Plain LDAP connection (THIS IS INSECURE!!!)")
 
         # At this point we should have either an LDAPS connection, or an
         # LDAP connection that has been upgraded to TLS, or a plain LDAP
@@ -316,7 +316,7 @@ class IdResolver(UserIdResolver):
                 if hasattr(l_obj, "OPT_X_TLS_CIPHER")
                 else "Unknown"
             )
-            log.info(f"LDAP TLS: using cipher={cipher}")
+            log.info("LDAP TLS: using cipher=%r", cipher)
 
         if caller.noreferrals:
             log.debug("using noreferrals: %r", caller.noreferrals)
@@ -359,7 +359,7 @@ class IdResolver(UserIdResolver):
         # first parameter, while its as well possible to use the connect
         # method from the LDAPResolver instance
 
-        class Caller(object):
+        class Caller:
             pass
 
         caller = Caller()
@@ -432,11 +432,10 @@ class IdResolver(UserIdResolver):
                 result_type, result_data = l_obj.result(ldap_result_id, 0)
                 if result_data == []:
                     break
-                else:
-                    if result_type == ldap.RES_SEARCH_ENTRY:
-                        # compose response as we like it
-                        userdata["userid"] = result_data[0][0]
-                        resultList.append(userdata)
+                elif result_type == ldap.RES_SEARCH_ENTRY:
+                    # compose response as we like it
+                    userdata["userid"] = result_data[0][0]
+                    resultList.append(userdata)
 
         except ldap.SIZELIMIT_EXCEEDED as exx:
             if len(resultList) < sizelimit:
@@ -447,7 +446,7 @@ class IdResolver(UserIdResolver):
             status = "error"
             if not silent:
                 log.error("[testconnection] LDAP Error: %r", err)
-            return (status, "Connection Error: %s" % str(err))
+            return (status, f"Connection Error: {err}")
 
         except ldap.LDAPError as err:
             status = "error"
@@ -540,7 +539,8 @@ class IdResolver(UserIdResolver):
 
         log.error("Failed to bind to any resource %r", urilist)
 
-        raise ResolverNotAvailable("Unable to bind to servers %r" % urilist)
+        msg = f"Unable to bind to servers {urilist!r}"
+        raise ResolverNotAvailable(msg)
 
     def unbind(self, lobj):
         """
@@ -711,7 +711,7 @@ class IdResolver(UserIdResolver):
 
         s_base = self.base
         s_scope = ldap.SCOPE_SUBTREE
-        s_filter = "(%s=%s)" % (self.uidType, userid)
+        s_filter = f"({self.uidType}={userid})"
 
         if self.uidType.lower() == "dn":
             s_base = userid
@@ -719,14 +719,14 @@ class IdResolver(UserIdResolver):
             s_filter = None
 
         elif self.uidType.lower() == "objectguid":
-            s_base = "<guid=%s>" % (userid)
+            s_base = f"<guid={userid}>"
             s_scope = ldap.SCOPE_BASE
             s_filter = None
 
             if self.proxy:
                 s_base = self.base
                 s_scope = ldap.SCOPE_SUBTREE
-                s_filter = "(objectGuid=%s)" % escape_hex_for_search(userid)
+                s_filter = f"(objectGuid={escape_hex_for_search(userid)})"
 
         # ------------------------------------------------------------------ --
 
@@ -943,11 +943,13 @@ class IdResolver(UserIdResolver):
 
         except Exception as exx:
             log.error("failed to parse configuration: %r", exx)
-            raise ResolverLoadConfigError("failed to parse configuration: %r" % exx)
+            msg = f"failed to parse configuration: {exx!r}"
+            raise ResolverLoadConfigError(msg) from exx
 
         if missing:
             log.error("missing config entries: %r", missing)
-            raise ResolverLoadConfigError(" missing config entries: %r" % missing)
+            msg = f" missing config entries: {missing!r}"
+            raise ResolverLoadConfigError(msg)
 
         # ------------------------------------------------------------------ --
 
@@ -967,10 +969,10 @@ class IdResolver(UserIdResolver):
         try:
             self.userinfo = json.loads(l_config["USERINFO"])
         except ValueError as exx:
-            raise ResolverLoadConfigError(
-                "Invalid userinfo - no json"
-                " document: %s %r" % (l_config["USERINFO"], exx)
+            msg = (
+                f"Invalid userinfo - no json document: {l_config['USERINFO']!r} {exx!r}"
             )
+            raise ResolverLoadConfigError(msg) from exx
 
         # ------------------------------------------------------------------ --
 
@@ -1036,10 +1038,7 @@ class IdResolver(UserIdResolver):
             return False
 
         log.debug("[checkPass] uidType: %r", self.uidType)
-        if self.uidType.lower() == "dn":
-            DN = uid
-        else:
-            DN = self._getUserDN(uid)
+        DN = uid if self.uidType.lower() == "dn" else self._getUserDN(uid)
 
         log.debug("[checkPass] DN: %r", DN)
 
@@ -1085,7 +1084,8 @@ class IdResolver(UserIdResolver):
         if last_error:
             log.error("[checkPass] access to resource failed: %r", last_error)
 
-        raise ResolverNotAvailable("unable to bind to servers %r" % urilist)
+        msg = f"unable to bind to servers {urilist!r}"
+        raise ResolverNotAvailable(msg)
 
     def _is_ad(self):
         """
@@ -1281,7 +1281,7 @@ class IdResolver(UserIdResolver):
             searchTermValue = searchDict.get("searchTerm")
             if searchTermValue:
                 for ldapKey in self.userinfo.values():
-                    searchFilterOr += "(%s=%s)" % (ldapKey, searchTermValue)
+                    searchFilterOr += f"({ldapKey}={searchTermValue})"
             # AND filter
             for searchKey, searchValue in searchDict.items():
                 if searchKey == "searchTerm":
@@ -1291,15 +1291,15 @@ class IdResolver(UserIdResolver):
                 if searchKey in self.userinfo:
                     ldapKey = self.userinfo[searchKey]
                     # value and searchFilter are Unicode!
-                    searchFilter += "(%s=%s)" % (ldapKey, searchValue)
+                    searchFilter += f"({ldapKey}={searchValue})"
                 else:
                     log.warning("[getUserList] Unknown searchkey: %r", searchKey)
 
             # finaly embedd the filter in the ldap query string
             if searchFilterOr:
-                searchFilter = "(&(|%s)%s)" % (searchFilterOr, searchFilter)
+                searchFilter = f"(&(|{searchFilterOr}){searchFilter})"
             else:
-                searchFilter = "(&%s)" % (searchFilter)
+                searchFilter = f"(&{searchFilter})"
             log.debug("[getUserList] searchfilter: %r", searchFilter)
         except Exception as exep:
             log.error("[getUserList] Error creating searchFilter: %r", exep)
@@ -1353,7 +1353,8 @@ class IdResolver(UserIdResolver):
                         lc.controlValue = (page_size, cookie)
 
             if not pctrls:
-                raise Exception("Warning: Server ignores RFC 2696 control.")
+                msg = "Warning: Server ignores RFC 2696 control."
+                raise Exception(msg)
 
             if not cookie:
                 return (None, None, None)
@@ -1485,12 +1486,13 @@ class IdResolver(UserIdResolver):
         # userid type especially for the objectguid or the userPrincipalName
 
         userid = None
-        for entry_key in result_data.keys():
+        for entry_key in result_data:
             if uidType.lower() == entry_key.lower():
                 userid = result_data.get(entry_key)[0]
 
         if not userid:
-            raise Exception("No Userid found")
+            msg = "No Userid found"
+            raise Exception(msg)
 
         # objectguid is converted to hex
 
@@ -1553,23 +1555,23 @@ def resolver_request(params, silent=False):
 
     current_app.preprocess_request()
 
-    pr("Trying to connect to %r" % params["LDAPURI"])
+    pr(f"Trying to connect to {params['LDAPURI']!r}.")
     status, results = IdResolver.testconnection(params, silent)
-    pr("Status: %r" % status)
+    pr(f"Status: {status!r}")
 
     if results:
         pr("Result:")
 
         if status != "success":
-            pr("%r" % results)
+            pr(f"{results!r}")
             return False
 
         for result in results:
             if not result:
-                pr("%r" % result)
+                pr(f"{result!r}")
             else:
                 for key, value in list(result.items()):
-                    pr("%s : %s" % (key, value))
+                    pr(f"{key} : {value}")
 
     return True
 
@@ -1734,10 +1736,8 @@ def ldap_test(
             current_app.config["TLS_CA_CERTIFICATES_FILE"] = cert_file
             params0["only_trusted_certs"] = checking
             with current_app.test_request_context():
-                try:
+                with contextlib.suppress(ldap.SERVER_DOWN):
                     result = resolver_request(params0, silent=True)
-                except ldap.SERVER_DOWN:
-                    pass
                 cf_available = (
                     "Unavailable" if cert_file == "/dev/null" else "Available"
                 )

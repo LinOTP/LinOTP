@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -26,16 +25,16 @@
 #
 
 import unittest
+from unittest.mock import patch
 
 import pytest
-from mock import patch
 
 from linotp.lib.user import _get_user_lookup_cache
 
 # from linotp.lib.user import _get_resolver_lookup_cache
 
 
-class MockedCacheManager(object):
+class MockedCacheManager:
     def get_cache(self, cache_name, type="memory", expiretime=None):
         self.expiretime = expiretime
         return {"cache": "dict"}
@@ -78,5 +77,3 @@ class TestCacheActivation(unittest.TestCase):
 
         mocked_cache_manager = mocked_context["CacheManager"]
         assert mocked_cache_manager.expiretime == 36 * 3600
-
-        return

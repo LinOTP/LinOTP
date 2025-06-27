@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -31,8 +30,7 @@ unit test for the dynamoc mobile number policy of the smstoken
 """
 
 import unittest
-
-from mock import patch
+from unittest.mock import patch
 
 from linotp.tokens.smstoken import SmsTokenClass
 
@@ -51,7 +49,7 @@ dynamic_mobile_policy = [
 fake_context = {"Client": "127.0.0.1"}
 
 
-class FakeUser(object):
+class FakeUser:
     def __init__(self, login, realm):
         self.login = login
         self.realm = realm
@@ -139,8 +137,6 @@ class TestSMSToken(unittest.TestCase):
         mobile = sms_token.get_mobile_number(None)
 
         assert mobile == token_mobile
-
-        return
 
 
 # eof #

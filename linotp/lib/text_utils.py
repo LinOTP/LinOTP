@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -62,7 +61,7 @@ def utf8_slice(text, chunk_size):
     t_len = 0
     start = 0
 
-    for pos in range(0, len(text)):
+    for pos in range(len(text)):
         ll = len(text[pos].encode("utf-8"))
         t_len = t_len + ll
 

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -34,7 +33,7 @@ from math import ceil
 log = logging.getLogger(__name__)
 
 
-class AuditQuery(object):
+class AuditQuery:
     """build the the audit query and return result iterator"""
 
     def __init__(self, param, audit_obj, user=None, columns=None):
@@ -45,7 +44,6 @@ class AuditQuery(object):
         self.page = self._rp_dict.get("page", 1)
 
         self.audit_obj = audit_obj
-        return
 
     def _get_default_columns(self):
         return [
@@ -72,7 +70,7 @@ class AuditQuery(object):
         search_dict = {}
 
         if "query" in param:
-            if "extsearch" == param["qtype"]:
+            if param["qtype"] == "extsearch":
                 search_list = param["query"].split(";")
 
                 for s in search_list:
@@ -82,7 +80,7 @@ class AuditQuery(object):
             else:
                 search_dict[param["qtype"]] = param["query"]
         else:
-            search_dict = {key: value for key, value in param.items()}
+            search_dict = dict(param.items())
 
         if user:
             search_dict["user"] = user.login
@@ -98,7 +96,7 @@ class AuditQuery(object):
         if "page" in param:
             rp_dict["page"] = self._parse_int(param.get("page", "1"), 1)
         if "rp" in param:
-            rp_dict["rp"] = "%d" % self._parse_int(param.get("rp", "15"), 15)
+            rp_dict["rp"] = f"{self._parse_int(param.get('rp', '15'), 15)}"
 
         return rp_dict
 
@@ -155,7 +153,7 @@ class AuditQuery(object):
             return ceil(self.get_total() / int(records_per_page))
 
 
-class JSONAuditIterator(object):
+class JSONAuditIterator:
     """
     default audit output generator in json format
     """
@@ -177,7 +175,7 @@ class JSONAuditIterator(object):
         res = ""
         prefix = ""
         if self.i == 0:
-            prefix = '{ "page": %d, "rows": [' % int(self.page)
+            prefix = f'{{ "page": {int(self.page)}, "rows": ['
             res = prefix
             self.i = 1
         else:
@@ -187,14 +185,11 @@ class JSONAuditIterator(object):
         try:
             row_data = next(self.result)
             entry = self.audit_query.get_entry(row_data)
-            res = "%s %s" % (res, json.dumps(entry, indent=3))
+            res = f"{res} {json.dumps(entry, indent=3)}"
 
         except StopIteration as exx:
             if self.closed is False:
-                res = '%s ], "total": %d }' % (
-                    prefix,
-                    self.audit_query.get_total(),
-                )
+                res = f'{prefix} ], "total": {self.audit_query.get_total()} }}'
                 self.closed = True
             else:
                 raise exx
@@ -205,7 +200,7 @@ class JSONAuditIterator(object):
         return self
 
 
-class CSVAuditIterator(object):
+class CSVAuditIterator:
     """
     create cvs output by iterating over result
     """
@@ -230,12 +225,7 @@ class CSVAuditIterator(object):
         try:
             headers = ""
             if self.i == 0 and self.audit_query.with_headers():
-                headers = (
-                    "%s\n"
-                    % json.dumps(self.audit_query.get_headers(), ensure_ascii=False)[
-                        1:-1
-                    ]
-                )
+                headers = f"{json.dumps(self.audit_query.get_headers(), ensure_ascii=False)[1:-1]}\n"
                 res = headers
 
             row_data = next(self.result)
@@ -257,7 +247,7 @@ class CSVAuditIterator(object):
 
         except StopIteration as exx:
             if self.closed is False:
-                res = "%s\n" % res
+                res = f"{res}\n"
                 self.closed = True
             else:
                 raise exx

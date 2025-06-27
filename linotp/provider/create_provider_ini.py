@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -34,7 +33,7 @@ def create_provider_config():
     not used but implemented to generate templates of provider configs
     'contents' contains the ini file
     """
-    from linotp.provider import Provider_types, get_all_new_providers
+    from linotp.provider import Provider_types, get_all_new_providers  # noqa: PLC0415
 
     provider_config = {}
     for provider_type in list(Provider_types.keys()):
@@ -46,7 +45,7 @@ def create_provider_config():
 
     for provider_type, providers in list(provider_config.items()):
         for provider in list(providers.keys()):
-            section = "%s:%s" % (provider_type, provider)
+            section = f"{provider_type}:{provider}"
             ini.add_section(section)
 
             provider_config = providers.get(provider)

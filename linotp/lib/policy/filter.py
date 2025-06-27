@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -34,7 +33,7 @@ import re
 log = logging.getLogger(__name__)
 
 
-class UserDomainCompare(object):
+class UserDomainCompare:
     def __init__(self):
         self._compare = None
 
@@ -73,7 +72,6 @@ class UserDomainCompare(object):
             self._compare = self._compareResolver
         else:
             self._compare = self._compareUser
-        return
 
     def _compareDomain(self, userObj, user_def):
         """
@@ -143,7 +141,7 @@ class UserDomainCompare(object):
             def_resolver = def_resolver.split(".")[-1]
 
         # check if the resolver is defined at all
-        from linotp.lib.resolver import getResolverList
+        from linotp.lib.resolver import getResolverList  # noqa: PLC0415
 
         resolvers = getResolverList()
         if def_resolver not in resolvers:
@@ -162,7 +160,7 @@ class UserDomainCompare(object):
         return self._compareUser(userObj, simple_user_def)
 
 
-class AttributeCompare(object):
+class AttributeCompare:
     """
     Policy Attribute Comparison to support user filter like
 
@@ -218,13 +216,12 @@ class AttributeCompare(object):
         if not udef:
             # only attribute compare
             self.set_user_access(udef, "attribute_only")
-        else:
-            if "@" in udef:
-                self.set_user_access(udef, "domain_compare")
-            elif ":" == udef[-1]:  # resolver match
-                self.set_user_access(udef, "get_resolver")
-            elif len(udef) > 0:  # simple username compare
-                self.set_user_access(udef, "simple_name")
+        elif "@" in udef:
+            self.set_user_access(udef, "domain_compare")
+        elif udef[-1] == ":":  # resolver match
+            self.set_user_access(udef, "get_resolver")
+        elif len(udef) > 0:  # simple username compare
+            self.set_user_access(udef, "simple_name")
 
     def _attr_equal(self, user_info):
         """
@@ -360,9 +357,7 @@ class AttributeCompare(object):
         self.user_spec = user_spec
         if typ == "attribute_only":
             self.access_user = self._userinfo_direct
-        elif typ == "simple_name":
-            self.access_user = self._user_domain_compare
-        elif typ == "domain_compare":
+        elif typ in {"simple_name", "domain_compare"}:
             self.access_user = self._user_domain_compare
         elif typ == "get_resolver":
             self.access_user = self._resolver_compare

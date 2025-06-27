@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -34,11 +33,7 @@
 - enrollment
 """
 
-import copy
 import logging
-import re
-
-import pytest
 
 from . import TestPoliciesBase
 
@@ -59,7 +54,6 @@ class TestRealmPolicies(TestPoliciesBase):
         self.delete_all_realms()
         self.delete_all_resolvers()
         TestPoliciesBase.tearDown(self)
-        return
 
     def test_realms_allowed_by_admin_show(self):
         """
@@ -116,9 +110,9 @@ class TestRealmPolicies(TestPoliciesBase):
             )
 
             assert response.json["result"]["status"], response
-            assert response.json["result"]["value"]["setPolicy %s" % pol["name"]], (
-                response
-            )
+            assert response.json["result"]["value"][
+                "setPolicy {}".format(pol["name"])
+            ], response
 
         # create two tokens and set them in different realms
         seed = "154bf508c52f3048fcf9cf721bbb892637f5e348"

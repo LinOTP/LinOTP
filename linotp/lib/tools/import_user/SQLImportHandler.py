@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -52,13 +51,11 @@ class DuplicateUserError(Exception):
     pass
 
 
-class DatabaseContext(object):
+class DatabaseContext:
     """
     with the database context ist is possible to drive the "user import"
     from the shell and from within LinOTP
     """
-
-    pass
 
 
 class LinOTP_DatabaseContext(DatabaseContext):
@@ -73,8 +70,6 @@ class LinOTP_DatabaseContext(DatabaseContext):
         """
         self.session = SqlSession
         self.engine = SqlEngine
-
-        return
 
     def get_session(self):
         """
@@ -110,7 +105,6 @@ class Shell_DatabaseContext(DatabaseContext):
         self.engine = create_engine(sql_url, echo=True)
         self.sessionmaker.configure(bind=self.engine)
         self.session = self.sessionmaker()
-        return
 
     def get_session(self):
         """
@@ -130,7 +124,6 @@ class Shell_DatabaseContext(DatabaseContext):
         """
 
         print("create resolver currently only available in the scope of LinOTP")
-        return
 
 
 class SQLImportHandler(ImportHandler):
@@ -166,7 +159,7 @@ class SQLImportHandler(ImportHandler):
 
         mapping = {entry: entry for entry in ImportedUser.user_entries}
 
-        where = "groupid = '%s'" % self.groupid
+        where = f"groupid = '{self.groupid}'"
 
         resolver_parameters = {
             "Driver": "",
@@ -189,7 +182,8 @@ class SQLImportHandler(ImportHandler):
         _config, missing = sql_resolver.filter_config(resolver_parameters)
 
         if missing:
-            raise Exception("missing some resolver attributes: %r", missing)
+            msg = "missing some resolver attributes: %r"
+            raise Exception(msg, missing)
 
         return resolver_parameters
 
@@ -330,10 +324,11 @@ class SQLImportHandler(ImportHandler):
         )
 
         if len(del_user) > 1:
-            raise DuplicateUserError(
+            msg = (
                 f"There exist more than one user with userid {user_id} and "
                 f"groupid {self.groupid}. Database maybe corrupted."
             )
+            raise DuplicateUserError(msg)
 
         if del_user:
             session.delete(del_user[0])

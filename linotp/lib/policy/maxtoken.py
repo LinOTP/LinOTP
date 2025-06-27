@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -27,12 +26,11 @@
 """maxtoken policy processing"""
 
 import logging
-from typing import Any, Dict, List, Union
+from typing import Any
 
 from flask_babel import gettext as _
 
 import linotp
-from linotp.lib.context import request_context as context
 from linotp.lib.policy.action import get_action_value
 from linotp.lib.policy.processing import get_client_policy
 from linotp.lib.policy.util import _get_client, _getUserRealms
@@ -98,7 +96,7 @@ def check_maxtoken_for_user(user: User):
     token_limit = get_maxtoken_for_user(user)
     if token_limit is None:
         return
-    tokens: List[Any] = linotp.lib.token.get_tokens(user, "")  # type: ignore
+    tokens: list[Any] = linotp.lib.token.get_tokens(user, "")  # type: ignore
     token_count = len(tokens)
 
     # check the maxtoken policy
@@ -113,7 +111,7 @@ def check_maxtoken_for_user(user: User):
         raise linotp.lib.policy.MaxTokenUserPolicyException(error_msg)
 
 
-def get_maxtoken_for_user(user: User) -> Union[int, None]:
+def get_maxtoken_for_user(user: User) -> int | None:
     """
     This function returns maximum number of tokens
     allowed for a user if maxtoken policy is set or None
@@ -123,7 +121,7 @@ def get_maxtoken_for_user(user: User) -> Union[int, None]:
         return
 
     client: str = _get_client()
-    user_realms: List[str] = _getUserRealms(user)
+    user_realms: list[str] = _getUserRealms(user)
 
     log.debug(
         "getting the already assigned tokens for user %r, realms %s",
@@ -132,7 +130,7 @@ def get_maxtoken_for_user(user: User) -> Union[int, None]:
     )
 
     action = "maxtoken"
-    maxtoken_limits: List[Union[int, bool]] = _get_maxtoken_pro_realm(
+    maxtoken_limits: list[int | bool] = _get_maxtoken_pro_realm(
         user_realms, user, action, client
     )
 
@@ -161,21 +159,20 @@ def check_maxtoken_for_user_by_type(user: User, type_of_token: str):
     if token_limit is None:
         return
 
-    tokens: List[Any] = linotp.lib.token.get_tokens(user, token_type=type_of_token)  # type: ignore
+    tokens: list[Any] = linotp.lib.token.get_tokens(user, token_type=type_of_token)  # type: ignore
     token_count = len(tokens)
 
     if token_count + 1 > token_limit:
         error_msg = _(
-            "The maximum number of allowed tokens of type %s "
+            "The maximum number of allowed tokens of type %(type)s "
             "per user is exceeded. Check the policies "
-            "scope=enrollment, action=maxtoken%s"
-            % (type_of_token, type_of_token.upper())
-        )
+            "scope=enrollment, action=maxtoken%(type_upper)s"
+        ) % {"type": type_of_token, "type_upper": type_of_token.upper()}
 
         raise linotp.lib.policy.MaxTokenTypeUserPolicyException(error_msg)
 
 
-def get_maxtoken_for_user_by_type(user: User, type_of_token: str) -> Union[int, None]:
+def get_maxtoken_for_user_by_type(user: User, type_of_token: str) -> int | None:
     """
     This function returns maximum number of tokens of a specific type
     allowed for a user if maxtoken policy is set or None
@@ -184,7 +181,7 @@ def get_maxtoken_for_user_by_type(user: User, type_of_token: str) -> Union[int, 
         return
 
     client: str = _get_client()  # type: ignore
-    user_realms: List[str] = _getUserRealms(user)
+    user_realms: list[str] = _getUserRealms(user)
 
     log.debug(
         "getting the already assigned tokens for user %r, realms %s",
@@ -192,8 +189,8 @@ def get_maxtoken_for_user_by_type(user: User, type_of_token: str) -> Union[int, 
         user_realms,
     )
 
-    action = "maxtoken%s" % type_of_token.upper()
-    maxtoken_limits: List[Union[int, bool]] = _get_maxtoken_pro_realm(
+    action = f"maxtoken{type_of_token.upper()}"
+    maxtoken_limits: list[int | bool] = _get_maxtoken_pro_realm(
         user_realms, user, action, client
     )
 
@@ -202,12 +199,12 @@ def get_maxtoken_for_user_by_type(user: User, type_of_token: str) -> Union[int, 
 
 
 def calculate_token_limit(
-    limit_info: List[Union[int, bool]],
-) -> Union[int, None]:
+    limit_info: list[int | bool],
+) -> int | None:
     """
     This function encapsulates the logic to calculate the token limit
     """
-    maxtoken_limits: List[int] = []
+    maxtoken_limits: list[int] = []
 
     for limit in limit_info:
         if limit == -1 or isinstance(limit, bool):
@@ -220,16 +217,16 @@ def calculate_token_limit(
 
 
 def _get_maxtoken_pro_realm(
-    user_realms: List[str], user: User, action: str, client: str
-) -> List[int]:
+    user_realms: list[str], user: User, action: str, client: str
+) -> list[int]:
     """
     This private function abstracts reusable part of the logic
     from "get_maxtoken" functions
     """
-    maxtoken_limits: List[int] = []
+    maxtoken_limits: list[int] = []
 
     for user_realm in user_realms:
-        policies: Dict[str, Any] = get_client_policy(
+        policies: dict[str, Any] = get_client_policy(
             client,
             scope="enrollment",
             action=action,

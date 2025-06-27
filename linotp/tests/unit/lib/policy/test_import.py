@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -28,9 +27,9 @@
 """unit test policy import"""
 
 import unittest
+from unittest.mock import patch
 
 from configobj import ConfigObj
-from mock import patch
 
 from linotp.lib.policy.manage import import_policies
 
@@ -99,8 +98,6 @@ scope = authentication
         args, _kwargs = mocked_setPolicy.call_args
         policy = args[0]
         assert policy["realm"] == "*"
-
-        return
 
 
 # eof #

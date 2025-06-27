@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #    LinOTP - the open source solution for two factor authentication
 #    Copyright (C) 2010-2019 KeyIdentity GmbH
@@ -35,7 +34,6 @@ import logging
 from flask_babel import gettext as _
 
 from linotp.lib.auth.validate import check_pin, split_pin_otp
-from linotp.lib.challenges import Challenges
 from linotp.lib.config import getFromConfig
 from linotp.lib.context import request_context as context
 from linotp.lib.HMAC import HmacOtp
@@ -75,10 +73,7 @@ def is_email_editable(user=""):
         policies, scope="selfservice", action="edit_email", default=1
     )
 
-    if edit_email == 0:
-        return False
-
-    return True
+    return edit_email != 0
 
 
 @tokenclass_registry.class_entry("email")
@@ -134,8 +129,9 @@ class EmailTokenClass(HmacTokenClass):
 
         """
         LOG.debug(
-            "[getClassInfo] begin. Get class render info for section: "
-            "key %r, ret %r " % (key, ret)
+            "[getClassInfo] begin. Get class render info for section: key %r, ret %r",
+            key,
+            ret,
         )
 
         res = {
@@ -218,12 +214,9 @@ class EmailTokenClass(HmacTokenClass):
         # [comment copied from sms token]
         if key is not None and key in res:
             ret = res.get(key)
-        else:
-            if ret == "all":
-                ret = res
-        LOG.debug(
-            "[getClassInfo] end. Returned the configuration section: ret %r " % ret
-        )
+        elif ret == "all":
+            ret = res
+        LOG.debug("[getClassInfo] end. Returned the configuration section: ret %r", ret)
         return ret
 
     def update(self, param, reset_failcount=True):
@@ -260,7 +253,6 @@ class EmailTokenClass(HmacTokenClass):
         HmacTokenClass.update(self, param, reset_failcount)
 
         LOG.debug("[update] end. all token parameters are set.")
-        return
 
     def _getNextOtp(self):
         """
@@ -273,9 +265,9 @@ class EmailTokenClass(HmacTokenClass):
 
         try:
             otplen = int(self.token.LinOtpOtpLen)
-        except ValueError as ex:
-            LOG.error("[getNextOtp] ValueError %r", ex)
-            raise Exception(ex)
+        except ValueError as exx:
+            LOG.error("[getNextOtp] ValueError %r", exx)
+            raise
 
         secObj = self._get_secret_object()
         counter = self.token.getOtpCounter()
@@ -355,7 +347,7 @@ class EmailTokenClass(HmacTokenClass):
 
         attributes = {}
         counter = self.getOtpCount() + 1
-        data = {"counter_value": "%s" % counter}
+        data = {"counter_value": f"{counter}"}
 
         try:
             success, status_message = self._sendEmail()
@@ -483,7 +475,8 @@ class EmailTokenClass(HmacTokenClass):
 
         email_address = self._get_email_address(owner)
         if not email_address:
-            raise Exception("No e-mail address was defined for this token.")
+            msg = "No e-mail address was defined for this token."
+            raise Exception(msg)
 
         message = self._getEmailMessage(user=owner)
         subject = self._getEmailSubject(user=owner)
@@ -587,7 +580,8 @@ class EmailTokenClass(HmacTokenClass):
             # and we have to check all challenges
             split_status, pin, otp = split_pin_otp(self, passw, user, options)
             if split_status < 0:
-                raise Exception("Could not split passw")
+                msg = "Could not split passw"
+                raise Exception(msg)
             if not check_pin(self, pin, user, options):
                 return -1, []
 
@@ -629,7 +623,7 @@ class EmailTokenClass(HmacTokenClass):
         """
         response_detail = {}
 
-        info = self.getInfo()
+        _info = self.getInfo()
         response_detail["serial"] = self.getSerial()
 
         return response_detail
