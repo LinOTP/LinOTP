@@ -30,7 +30,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 3\n"
 "Report-Msgid-Bugs-To: info@linotp.de\n"
-"PO-Revision-Date: 2025-03-12 11:53+0100\n"
+"PO-Revision-Date: 2025-06-27 09:14+0200\n"
 "Last-Translator: michael <michael.weber@netgo.de>\n"
 "Language-Team: German - Germany <support@linotp.de>\n"
 "Language: de_DE\n"
@@ -85,11 +85,6 @@ msgstr "%s Benutzer werden gelöscht"
 msgid "'OATH token' app"
 msgstr "'OATH-Token' App"
 
-msgid "(FreeOTP, Google Authenticator or another OATH compatible soft token)"
-msgstr ""
-"(FreeOTP, Google Authenticator oder eine anderer OATH-kompatible Softtoken "
-"App)"
-
 msgid "(again)"
 msgstr "(wiederholen)"
 
@@ -105,20 +100,11 @@ msgstr "- Bereich auswählen -"
 msgid "1. Enter the activation code :"
 msgstr "1. Geben Sie bitte den Aktivierungscode ein:"
 
-msgid "1. You first need to install the oathtoken to your iPhone."
-msgstr "1. Sie müssen zuerst die OATH-Token-App auf Ihrem iPhone installieren."
-
 msgid "10 digits"
 msgstr "10 Stellen"
 
 msgid "2. Enter your confirmation code:"
 msgstr "2. Bitte geben Sie den Bestätigungscode ein:"
-
-msgid "2. Then you may create a profile."
-msgstr "2. Dann können Sie Ihren Token/das Profil erzeugen."
-
-msgid "3."
-msgstr "3."
 
 msgid "6 digits"
 msgstr "6 Stellen"
@@ -334,9 +320,6 @@ msgstr ""
 msgid "Choose your preferred method to authenticate"
 msgstr "Wählen Sie Ihre bevorzugte Methode zur Authentisierung"
 
-msgid "Choose your token profile "
-msgstr "Bitte wählen Sie Ihren Tokentyp "
-
 msgid "Choosen based on hash length. Fallback: SHA1"
 msgstr "Anhand der Hash-Länge ermittelt. Anderenfalls: SHA1"
 
@@ -351,11 +334,6 @@ msgstr "Felder leeren"
 
 msgid "Clearance Level"
 msgstr "Vertrauensstufe"
-
-msgid "Click on this link to install the oathtoken profile to your iPhone:"
-msgstr ""
-"Klicken Sie ihn Ihrem Smartphone auf diesen Link, um das Profil auf Ihrem "
-"iPhone zu installieren:"
 
 msgid "Client"
 msgstr "Client"
@@ -715,12 +693,6 @@ msgstr "FIDO-U2F-Token ausrollen"
 msgid "Enroll HOTP Token"
 msgstr "HOTP-Token ausrollen"
 
-msgid "Enroll OATH soft token"
-msgstr "OATH-Softtoken ausrollen"
-
-msgid "Enroll OATH token"
-msgstr "OATH-Token ausrollen"
-
 msgid "Enroll Password Token"
 msgstr "Passwort Token ausrollen"
 
@@ -1040,9 +1012,6 @@ msgstr "Ausrollen des Tokens fehlgeschlagen"
 
 msgid "Failed to enroll token!"
 msgstr "Ausrollen des Tokens fehlgeschlagen!"
-
-msgid "Failed to enroll token!\n"
-msgstr "Fehler beim Ausrollen des Tokens\n"
 
 msgid "Failed to enroll token, please contact your administrator"
 msgstr ""
@@ -1508,9 +1477,6 @@ msgstr "Init Seed"
 msgid "Input data is not valid!"
 msgstr "Die Formulardaten sind ungültig!"
 
-msgid "Install your soft token profile"
-msgstr "Installieren Sie Ihren Softtokentyp"
-
 msgid "Invalid session - please try again."
 msgstr "Ungültige Session - bitte versuchen Sie es nochmal."
 
@@ -1918,11 +1884,6 @@ msgstr "Altes Passwort"
 msgid "Only allow system-trusted certificates"
 msgstr "Nur vom System als vertrauenswürdig eingestufte Zertifikate zulassen"
 
-msgid "Or you can scan the QR code below your iPhone to import the secret."
-msgstr ""
-"Alternativ scannen Sie den unten angezeigten QR Code mit Ihrem Handy, um den "
-"Token zu initialisieren."
-
 msgid "Otp Value"
 msgstr "OTP-Wert"
 
@@ -2218,15 +2179,6 @@ msgstr "Provider %s als Standard gesetzt"
 
 msgid "Provider Config"
 msgstr "Providerkonfiguration"
-
-msgid "Provision your OATH Token"
-msgstr "OATH-Token registrieren"
-
-msgid "Provision your OATH soft token"
-msgstr "Rollen sie Ihren OATH-Token aus"
-
-msgid "Provision your soft token in LinOTP"
-msgstr "Legen Sie Ihren Softtoken im LinOTP an"
 
 msgid "Public key certificate"
 msgstr "Public-Key-Zertifikat"
@@ -2528,13 +2480,13 @@ msgstr ""
 msgid "Selfservice Home"
 msgstr "Self-Service-Start"
 
-#, python-brace-format
+#, python-format
 msgid ""
 "Selfservice Login Request\n"
-"User: {}"
+"User: %s"
 msgstr ""
 "Self-Service Login-Anfrage\n"
-"Benutzer: {}"
+"Benutzer: %s"
 
 msgid "Selfservice Portal"
 msgstr "Self-Service-Portal"
@@ -2901,11 +2853,12 @@ msgstr ""
 
 #, python-format
 msgid ""
-"The maximum number of allowed tokens of type %s per user is exceeded. Check "
-"the policies scope=enrollment, action=maxtoken%s"
+"The maximum number of allowed tokens of type %(type)s per user is exceeded. "
+"Check the policies scope=enrollment, action=maxtoken%(type_upper)s"
 msgstr ""
-"Die maximale Anzahl an Token des Typs %s pro Benutzer wurde erreicht. Bitte "
-"überprüfen Sie die Richtlinie scope=enrollment, action=maxtoken%s"
+"Die maximale Anzahl an Token des Typs %(type)s pro Benutzer wurde erreicht. "
+"Bitte überprüfen Sie die Richtlinie scope=enrollment, "
+"action=maxtoken%(type_upper)s"
 
 msgid ""
 "The maximum number of allowed tokens per user is exceeded. Check the "
@@ -3255,13 +3208,6 @@ msgstr "Timeout"
 msgid "Timeout (sec)"
 msgstr "Timeout (Sek)"
 
-msgid ""
-"To install the token on your mobile device, scan the QR code below with your "
-"soft token app or follow the link"
-msgstr ""
-"Um den Token in Ihrem Mobilgerät zu installieren, scannen Sie bitte den "
-"unten stehenden QRCode ein oder folgen Sie dem Link"
-
 msgid "To resolver"
 msgstr "Zu Resolver"
 
@@ -3389,9 +3335,6 @@ msgstr "Typ"
 msgid "UID Type"
 msgstr "UID-Typ"
 
-msgid "URL for OATH token"
-msgstr "URL für OATH-Token"
-
 msgid "URL for OCRA2 token"
 msgstr "URL für OCRA2-Token"
 
@@ -3499,13 +3442,6 @@ msgstr "Benutzerliste"
 
 msgid "Username"
 msgstr "Benutzername"
-
-msgid ""
-"Using the QR Code you can directly go to install the oath token on your "
-"iPhone."
-msgstr ""
-"Mit dem QR Code können Sie direkt die OATH-Token-App auf Ihrem iPhone "
-"installieren."
 
 msgid "Valid from"
 msgstr "Gültig ab"
@@ -3973,12 +3909,6 @@ msgstr "Sie können die PINs zurücksetzen für Token"
 msgid "You may resync the token:"
 msgstr "Resynchronisieren des Tokens:"
 
-msgid ""
-"You need an OATH compatible soft token app installed on your mobile device."
-msgstr ""
-"Sie müssen einen OATH-kompatible Softtoken-App auf Ihrem Handy installiert "
-"haben."
-
 msgid "You need to enable Javascript to use the LinOTP Management Web UI."
 msgstr ""
 "Sie müssen Javascript aktivieren, um das LinOTP Management Web UI benutzen "
@@ -4136,9 +4066,6 @@ msgstr "Aktivieren Sie Ihren QRToken"
 msgid "admin"
 msgstr "admin"
 
-msgid "and"
-msgstr "und"
-
 msgid "assigned"
 msgstr "zugewiesen"
 
@@ -4191,9 +4118,6 @@ msgstr "eToken .dat Datei"
 msgid "enable Token"
 msgstr "Token aktivieren"
 
-msgid "enroll OATH Token"
-msgstr "OATH-Token erzeugen"
-
 msgid "enroll TOTP token"
 msgstr "TOTP-Token ausrollen"
 
@@ -4215,15 +4139,6 @@ msgstr "PushToken ausrollen"
 msgid "enroll qrtoken"
 msgstr "QRToken ausrollen"
 
-msgid "enroll your event based token"
-msgstr "erstellen Sie Ihren ereignisbasierten Token"
-
-msgid "enroll your time based token"
-msgstr "Erstellen Sie Ihren zeitbasierten Token"
-
-msgid "enroll your token"
-msgstr "erstellen Sie Ihren Token"
-
 msgid "enroll yubico token"
 msgstr "Yubikey ausrollen"
 
@@ -4232,9 +4147,6 @@ msgstr "PIN setzen"
 
 msgid "enter token seed"
 msgstr "Tokenseed eingeben"
-
-msgid "event based"
-msgstr "ereignisbasiert"
 
 msgid "expired - valid till"
 msgstr "abgelaufen - gültig bis"
@@ -4268,19 +4180,19 @@ msgstr "Hole Challenge"
 
 #, python-format
 msgid ""
-"get_token_owner: The user %s in the resolver %s for token %s could not be "
-"found in any realm!"
+"get_token_owner: The user %(uid)s in the resolver %(resolver)s for token "
+"%(serial)s could not be found in any realm!"
 msgstr ""
-"getTokenOwner: Der Benutzer %s im Resolver %s zum Token %s konnte in keinem "
-"Realm gefunden werden!"
+"getTokenOwner: Der Benutzer %(uid)s im Resolver %(resolver)s zum Token "
+"%(serial)s konnte in keinem Realm gefunden werden!"
 
 #, python-format
 msgid ""
-"get_token_owner: The user %s/%s and the token %s is located in several "
-"realms: %s!"
+"get_token_owner: The user %(uid)s/%(resolver)s and the token %(serial)s is "
+"located in several realms: %(realms)s!"
 msgstr ""
-"getTokenOwner: Der Benutzer %s/%s und der Token %s sind in mehreren Realms "
-"enthalten: %s!"
+"getTokenOwner: Der Benutzer  %(uid)s/%(resolver)s und der Token %(serial)s "
+"sind in mehreren Realms enthalten: %(realms)s!"
 
 msgid "getotp is not activated."
 msgstr "'getotp' ist nicht aktiv."
@@ -4306,9 +4218,6 @@ msgstr ""
 msgid "in realm"
 msgstr "im Realm"
 
-msgid "install profile"
-msgstr "Profil installieren"
-
 msgid "invalid license (old license style)"
 msgstr "Ungülitige Lizenz (altes Lizenzformat)"
 
@@ -4317,9 +4226,6 @@ msgstr "ist vom Typ"
 
 msgid "license file is empty!"
 msgstr "Die Lizenzdatei ist leer!"
-
-msgid "link for iPhone"
-msgstr "Link für iPhone"
 
 msgid "locally"
 msgstr "lokal"
@@ -4519,14 +4425,8 @@ msgstr "SMS-Challenge/Response-Token - HMAC ereignisbasiert"
 msgid "submit"
 msgstr "Absenden"
 
-msgid "successfully created!"
-msgstr "erfolgreich erzeugt!"
-
 msgid "there is no user_selfservice cookie"
 msgstr "Cookie user_selfservice ist nicht gesetzt"
-
-msgid "time based"
-msgstr "zeitbasiert"
 
 msgid "time lookup window"
 msgstr "Zeitfenster"
@@ -4569,14 +4469,6 @@ msgid "username"
 msgstr "Benutzername"
 
 #, python-format
-msgid ""
-"valid types are 'oathtoken' and 'googleauthenticator' and "
-"'googleauthenticator_time'. You provided %s"
-msgstr ""
-"Gültige Typen sind 'oathtoken', 'googleauthenticator' oder "
-"'googleauthenticator_time'. Angegeben wurde %s"
-
-#, python-format
 msgid "valid types is 'ocra2'. You provided %s"
 msgstr "Gültige Werte sind 'ocra2'. Sie gaben %s an"
 
@@ -4601,11 +4493,27 @@ msgstr "WebUI generiert"
 #~ " oder scannen den fogenden QR Code mit Ihrer Google Authenticator App ein."
 
 #~ msgid ""
+#~ "(FreeOTP, Google Authenticator or another OATH compatible soft token)"
+#~ msgstr ""
+#~ "(FreeOTP, Google Authenticator oder eine anderer OATH-kompatible "
+#~ "Softtoken App)"
+
+#~ msgid ""
 #~ "1. You first need to install the google authenticator to your Android or "
 #~ "iPhone."
 #~ msgstr ""
 #~ "1. Sie müssen erst den Google Authenticator auf Ihrem Android oder iPhone "
 #~ "installieren."
+
+#~ msgid "1. You first need to install the oathtoken to your iPhone."
+#~ msgstr ""
+#~ "1. Sie müssen zuerst die OATH-Token-App auf Ihrem iPhone installieren."
+
+#~ msgid "2. Then you may create a profile."
+#~ msgstr "2. Dann können Sie Ihren Token/das Profil erzeugen."
+
+#~ msgid "3."
+#~ msgstr "3."
 
 #~ msgid "<h1>contact support</h1>"
 #~ msgstr "<h1>Support kontaktieren</h1>"
@@ -4646,6 +4554,14 @@ msgstr "WebUI generiert"
 
 #~ msgid "Challenge Timeout"
 #~ msgstr "Challenge Timeout"
+
+#~ msgid "Choose your token profile "
+#~ msgstr "Bitte wählen Sie Ihren Tokentyp "
+
+#~ msgid "Click on this link to install the oathtoken profile to your iPhone:"
+#~ msgstr ""
+#~ "Klicken Sie ihn Ihrem Smartphone auf diesen Link, um das Profil auf Ihrem "
+#~ "iPhone zu installieren:"
 
 #~ msgid "Click on this link to install the profile to your Android or iPhone:"
 #~ msgstr ""
@@ -4720,6 +4636,12 @@ msgstr "WebUI generiert"
 #~ msgid "Enroll HOTP"
 #~ msgstr "HOTP ausrollen"
 
+#~ msgid "Enroll OATH soft token"
+#~ msgstr "OATH-Softtoken ausrollen"
+
+#~ msgid "Enroll OATH token"
+#~ msgstr "OATH-Token ausrollen"
+
 #~ msgid "Enroll your TOTP Token"
 #~ msgstr "Rollen Sie Ihren HOTP Token aus"
 
@@ -4740,6 +4662,9 @@ msgstr "WebUI generiert"
 
 #~ msgid "Failed to activate token! \n"
 #~ msgstr "Fehler bei der Tokenaktivierung\n"
+
+#~ msgid "Failed to enroll token!\n"
+#~ msgstr "Fehler beim Ausrollen des Tokens\n"
 
 #~ msgid "Failed to import license"
 #~ msgstr "Import der Lizenz fehlgeschlagen"
@@ -4804,6 +4729,9 @@ msgstr "WebUI generiert"
 
 #~ msgid "Import tokens from Vasco DPX file"
 #~ msgstr "VASCO-DPX-Tokendatei importieren"
+
+#~ msgid "Install your soft token profile"
+#~ msgstr "Installieren Sie Ihren Softtokentyp"
 
 #~ msgid "Invalid License"
 #~ msgstr "ungültige Lizenz"
@@ -4883,6 +4811,11 @@ msgstr "WebUI generiert"
 #~ msgid "OCRA token settings"
 #~ msgstr "OCRA2-Token-Einstellungen"
 
+#~ msgid "Or you can scan the QR code below your iPhone to import the secret."
+#~ msgstr ""
+#~ "Alternativ scannen Sie den unten angezeigten QR Code mit Ihrem Handy, um "
+#~ "den Token zu initialisieren."
+
 #~ msgid "OtpAuth Softtoken Url"
 #~ msgstr "OtpAuth Softtoken Url"
 
@@ -4947,6 +4880,15 @@ msgstr "WebUI generiert"
 
 #~ msgid "Provision your Google Authenticator"
 #~ msgstr "Google Authenticator registrieren"
+
+#~ msgid "Provision your OATH Token"
+#~ msgstr "OATH-Token registrieren"
+
+#~ msgid "Provision your OATH soft token"
+#~ msgstr "Rollen sie Ihren OATH-Token aus"
+
+#~ msgid "Provision your soft token in LinOTP"
+#~ msgstr "Legen Sie Ihren Softtoken im LinOTP an"
 
 #~ msgid "RADIUS settings"
 #~ msgstr "RADIUS Einstellungen"
@@ -5090,6 +5032,13 @@ msgstr "WebUI generiert"
 #~ "Um das angelegte Profil auf Ihrem Handy zu aktivieren, klicken sie auf "
 #~ "das QR Code Bild"
 
+#~ msgid ""
+#~ "To install the token on your mobile device, scan the QR code below with "
+#~ "your soft token app or follow the link"
+#~ msgstr ""
+#~ "Um den Token in Ihrem Mobilgerät zu installieren, scannen Sie bitte den "
+#~ "unten stehenden QRCode ein oder folgen Sie dem Link"
+
 #~ msgid "Token defaults"
 #~ msgstr "Token-Standardwerte"
 
@@ -5099,8 +5048,18 @@ msgstr "WebUI generiert"
 #~ msgid "Tokentype"
 #~ msgstr "Token Typ"
 
+#~ msgid "URL for OATH token"
+#~ msgstr "URL für OATH-Token"
+
 #~ msgid "URL for google Authenticator"
 #~ msgstr "URL für Google Authenticator"
+
+#~ msgid ""
+#~ "Using the QR Code you can directly go to install the oath token on your "
+#~ "iPhone."
+#~ msgstr ""
+#~ "Mit dem QR Code können Sie direkt die OATH-Token-App auf Ihrem iPhone "
+#~ "installieren."
 
 #~ msgid ""
 #~ "Using the QR code you can directly go to install the google authenticator "
@@ -5155,6 +5114,13 @@ msgstr "WebUI generiert"
 #~ "Sie können den Token <span id=tokenid_resync></span> synchronisieren. "
 #~ "Hierzu geben Sie bitte zwei aufeinanderfolgende OTP-Werte ein."
 
+#~ msgid ""
+#~ "You need an OATH compatible soft token app installed on your mobile "
+#~ "device."
+#~ msgstr ""
+#~ "Sie müssen einen OATH-kompatible Softtoken-App auf Ihrem Handy "
+#~ "installiert haben."
+
 #~ msgid "Your OCRA Token :"
 #~ msgstr "Ihr OCRA-Token:"
 
@@ -5172,6 +5138,9 @@ msgstr "WebUI generiert"
 
 #~ msgid "already exists."
 #~ msgstr "existiert bereits."
+
+#~ msgid "and"
+#~ msgstr "und"
 
 #~ msgid "challenge expired!"
 #~ msgstr "Challenge abgelaufen!"
@@ -5203,11 +5172,26 @@ msgstr "WebUI generiert"
 #~ msgid "enroll Google Authenticator"
 #~ msgstr "Google Authenticator registrieren"
 
+#~ msgid "enroll OATH Token"
+#~ msgstr "OATH-Token erzeugen"
+
 #~ msgid "enroll TOTP Token"
 #~ msgstr "TOTP Token ausrollen"
 
 #~ msgid "enroll it!"
 #~ msgstr "rollen Sie ihn aus!"
+
+#~ msgid "enroll your event based token"
+#~ msgstr "erstellen Sie Ihren ereignisbasierten Token"
+
+#~ msgid "enroll your time based token"
+#~ msgstr "Erstellen Sie Ihren zeitbasierten Token"
+
+#~ msgid "enroll your token"
+#~ msgstr "erstellen Sie Ihren Token"
+
+#~ msgid "event based"
+#~ msgstr "ereignisbasiert"
 
 #~ msgid "feel free to contact "
 #~ msgstr "professionellen LinOTP Support und Subskription für Unternehmen"
@@ -5221,8 +5205,14 @@ msgstr "WebUI generiert"
 #~ msgid "in loginname"
 #~ msgstr "in Loginname"
 
+#~ msgid "install profile"
+#~ msgstr "Profil installieren"
+
 #~ msgid "link for Android"
 #~ msgstr "Link für Android"
+
+#~ msgid "link for iPhone"
+#~ msgstr "Link für iPhone"
 
 #~ msgid "load token file"
 #~ msgstr "Tokendatei laden"
@@ -5274,10 +5264,16 @@ msgstr "WebUI generiert"
 #~ msgid "splitAtSign"
 #~ msgstr "Trenne am @-Zeichen"
 
+#~ msgid "successfully created!"
+#~ msgstr "erfolgreich erzeugt!"
+
 #~ msgid "the maximum number of allowed tokens is exceeded. Check the policies"
 #~ msgstr ""
 #~ "Die Maximalzahl an lizensierten Token wurde überschritten - überprüfen "
 #~ "Sie ggf. die Richtlinien."
+
+#~ msgid "time based"
+#~ msgstr "zeitbasiert"
 
 #~ msgid "timeStep"
 #~ msgstr "Zeitschritt"
@@ -5324,6 +5320,14 @@ msgstr "WebUI generiert"
 
 #~ msgid "user and developer conferences,"
 #~ msgstr "Benutzer- und Entwicklerkonferenzen,"
+
+#, python-format
+#~ msgid ""
+#~ "valid types are 'oathtoken' and 'googleauthenticator' and "
+#~ "'googleauthenticator_time'. You provided %s"
+#~ msgstr ""
+#~ "Gültige Typen sind 'oathtoken', 'googleauthenticator' oder "
+#~ "'googleauthenticator_time'. Angegeben wurde %s"
 
 #~ msgid "validity end"
 #~ msgstr "Ende Gültigkeitszeitraum"
