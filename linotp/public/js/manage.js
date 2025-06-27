@@ -1226,7 +1226,7 @@ function token_setpin() {
     if (pintypeLowerCase === "otp") {
         url = "/admin/set";
         pinParam = "pin";
-    } else if (pintypeLowerCase === "motp" || pintypeLowerCase === "ocrapin") {
+    } else if (pintypeLowerCase === "motp" || pintypeLowerCase === "ocra") {
         url = "/admin/setPin";
         pinParam = "userpin";
     } else {
