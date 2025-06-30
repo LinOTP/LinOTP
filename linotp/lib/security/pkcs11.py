@@ -252,10 +252,10 @@ class Pkcs11SecurityModule(DefaultSecurityModule):
                 self.handles[key] = int(value)
 
         self.labels = {
-            CONFIG_KEY: config.get("configLabel", None),
-            TOKEN_KEY: config.get("tokenLabel", None),
-            VALUE_KEY: config.get("valueLabel", None),
-            DEFAULT_KEY: config.get("defaultLabel", None),
+            CONFIG_KEY: config.get("configLabel"),
+            TOKEN_KEY: config.get("tokenLabel"),
+            VALUE_KEY: config.get("valueLabel"),
+            DEFAULT_KEY: config.get("defaultLabel"),
         }
 
         # adjust label type to bytes

@@ -294,7 +294,7 @@ def split_value(policy, attribute="client", marks=False):
         ]
 
     # if for some reason the first element is empty, delete it.
-    if len(attrs_array) and attrs_array[0] == "":
+    if attrs_array and attrs_array[0] == "":
         del attrs_array[0]
     return attrs_array
 

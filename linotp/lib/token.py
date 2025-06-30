@@ -659,7 +659,7 @@ class TokenHandler:
             token_src_realm = user.realm
 
         # get all tokens of the users realm, which are not assigned
-        token_type = options.get("token_type", None)
+        token_type = options.get("token_type")
 
         # List of (token, pin) pairs
         matching_tokens = [
