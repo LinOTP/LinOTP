@@ -906,40 +906,28 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
 
     elif method == "setPin":
         if "userpin" in param:
-            if "userpin" not in param:
-                raise ParameterError(_("Missing parameter: %r") % "userpin", id=905)
-
             # check admin authorization
-            policies1 = getAdminPolicies("setSCPIN")
-            policies2 = getAdminPolicies("setMOTPPIN")
+            policies = getAdminPolicies("setMOTPPIN")
             _usr = User("", "", "")
-            if (
-                policies1["active"]
-                and not (checkAdminAuthorization(policies1, serial, _usr))
-            ) or (
-                policies2["active"]
-                and not (checkAdminAuthorization(policies2, serial, _usr))
+            if policies["active"] and not (
+                checkAdminAuthorization(policies, serial, _usr)
             ):
                 log.warning(
-                    "the admin >%s< is not allowed to set MOTP PIN/SC "
-                    "UserPIN for token %s.",
-                    policies1["admin"],
+                    "the admin >%s< is not allowed to set MOTP PIN for token %s.",
+                    policies["admin"],
                     serial,
                 )
 
                 raise PolicyException(
                     _(
                         "You do not have the administrative "
-                        "right to set MOTP PIN/ SC UserPIN "
+                        "right to set MOTP PIN "
                         "for token %s. Check the policies."
                     )
                     % serial
                 )
 
         if "sopin" in param:
-            if "sopin" not in param:
-                raise ParameterError(_("Missing parameter: %r") % "sopin", id=905)
-
             # check admin authorization
             policies = getAdminPolicies("setSCPIN")
             if policies["active"] and not checkAdminAuthorization(

@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - unhandled errors are now logged with traceback and returned in the response
+- Manage-UI shows info-box (success/error) for operation `Set PIN`
 
 ### Changed
 
@@ -19,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `userservice/enroll` response for HOTP/TOTP/mOTP tokens now includes a new field: `detail.enrollment_url`, which currently mirrors `detail.googleurl` property
 - `userservice/enroll` requests for mOTP tokens may now omit the `otpkey` parameter, which will cause a random `otpkey` to be assigned by LinOTP. Clients can find out about this from the response.
 - The `LINOTP_DATABASE_URI` environment variable now requires the PostgreSQL connection URL to use the prefix `postgresql://` instead of `postgres://`
-- Setting `WORKER_THREADS` to `auto` (or not setting it at all) will use “2 * number of CPU cores + 1” threads.
+- Setting `WORKER_THREADS` to `auto` (or not setting it at all) will use “2 \* number of CPU cores + 1” threads.
 
 ### Security
 
@@ -66,9 +67,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - the `detail_on_success` policy was active
   - the user had no tokens assigned
   - authentication was successful through a passing policy (e.g., `passthru` or `passOnNoToken`)
-  Previously, in this scenario the user object in the response was empty, which could
-  impact integrations that rely on the detail_on_success policy, such as LinOTP IdP.
-  Now, the user information is correctly included in the response.
+    Previously, in this scenario the user object in the response was empty, which could
+    impact integrations that rely on the detail_on_success policy, such as LinOTP IdP.
+    Now, the user information is correctly included in the response.
 - Apply policy `setrealm` in ValidateController when the user is known
 - otp_pin_random was breaking admin/assign in manage due to multi-token operation mode
   not being compatible with otp_pin_random generation
