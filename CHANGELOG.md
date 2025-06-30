@@ -46,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- filter audit trail by token type
 - Don't reject empty string as `pin` when `otp_pin_contents=+`
 
 ## [3.4.4-1] - 2025-06-18

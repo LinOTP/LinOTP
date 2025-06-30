@@ -7910,7 +7910,7 @@ function view_audit() {
             { display: i18n.gettext('Realm'), name: 'realm', isdefault: false },
             { display: i18n.gettext('Action'), name: 'action' },
             { display: i18n.gettext('Action Detail'), name: 'action_detail' },
-            { display: i18n.gettext('Token Type'), name: 'token_type' },
+            { display: i18n.gettext('Token Type'), name: 'tokentype' },
             { display: i18n.gettext('Administrator'), name: 'administrator' },
             { display: i18n.gettext('Successful'), name: 'success' },
             { display: i18n.gettext('Info'), name: 'info' },
