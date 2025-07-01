@@ -38,6 +38,7 @@ from datetime import datetime
 import ldap
 import ldap.filter
 
+from linotp.lib.cache_utils import cache_in_request
 from linotp.lib.util import get_log_level
 
 try:
@@ -680,6 +681,7 @@ class IdResolver(UserIdResolver):
             username = l_user[self.loginnameattribute]
         return username
 
+    @cache_in_request
     def getUserLDAPInfo(self, userid, attrlist=None):
         """
         getUserLDAPInfo(UserId)
@@ -796,6 +798,7 @@ class IdResolver(UserIdResolver):
 
         return userinfo
 
+    @cache_in_request
     def getUserInfo(self, userid):
         """
         return all user related information

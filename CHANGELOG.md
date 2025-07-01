@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - unhandled errors are now logged with traceback and returned in the response
 - Manage-UI shows info-box (success/error) for operation `Set PIN`
+- Caching of UserInfo per request to decrease request time of e.g. `/validate/check` to about half
 
 ### Changed
 
@@ -19,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - the provided `pin` is validated against the following policies: `otp_pin_minlength`, `otp_pin_maxlength` and `otp_pin_contents`
 - `userservice/enroll` response for HOTP/TOTP/mOTP tokens now includes a new field: `detail.enrollment_url`, which currently mirrors `detail.googleurl` property
 - `userservice/enroll` requests for mOTP tokens may now omit the `otpkey` parameter, which will cause a random `otpkey` to be assigned by LinOTP. Clients can find out about this from the response.
-- Setting `WORKER_THREADS` to `auto` (or not setting it at all) will use “2 * number of CPU cores + 1” threads.
+- Setting `WORKER_THREADS` to `auto` (or not setting it at all) will use “2 \* number of CPU cores + 1” threads.
 
 ### Security
 

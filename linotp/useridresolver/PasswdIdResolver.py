@@ -46,6 +46,7 @@ from passlib.hash import (
     sha512_crypt,
 )
 
+from linotp.lib.cache_utils import cache_in_request
 from linotp.lib.config.util import expand_here
 
 from . import resolver_registry
@@ -303,6 +304,7 @@ class IdResolver(UserIdResolver):
 
         return False  # pragma: no cover
 
+    @cache_in_request
     def getUserInfo(self, userId, no_passwd=False):
         """
         get some info about the user
