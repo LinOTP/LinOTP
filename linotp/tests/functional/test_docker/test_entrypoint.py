@@ -7,6 +7,9 @@ import pytest
 # Get the absolute path of the entrypoint script relative to the test file
 TEST_DIR = Path(__file__).resolve().parent
 ENTRYPOINT_SCRIPT = TEST_DIR.parent.parent.parent.parent / "docker/linotp/entrypoint.sh"
+WAIT_FOR_DB_SCRIPT = (
+    TEST_DIR.parent.parent.parent.parent / "docker/linotp/wait_for_db.py"
+)
 
 # Mock commands called in entrypoint to avoid failure
 MOCK_DOAS = 'doas() { echo "Mocked doas: $@";}'
@@ -33,6 +36,10 @@ class TestDockerLinotpEntrypoint:
         FAIL_COMMANDS=({" ".join(fail_commands_escaped)})
         
         linotp() {{
+            if [[ "$*" = "config show --values DATABASE_URI" ]]; then
+                echo $LINOTP_DATABASE_URI
+                return 0
+            fi
             for fail_command in "${{FAIL_COMMANDS[@]}}"; do
                 if [[ "$@" == *"$fail_command"* ]]; then
                     echo >&2 "failed on: $fail_command"
@@ -70,6 +77,7 @@ class TestDockerLinotpEntrypoint:
 
         test_script = f"""
         #!/bin/bash
+        export WAIT_FOR_DB_SCRIPT={WAIT_FOR_DB_SCRIPT}
         {mock_commands_str}
         source "{ENTRYPOINT_SCRIPT}" {entry_point_args}
         """

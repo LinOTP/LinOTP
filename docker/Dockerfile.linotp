@@ -156,7 +156,7 @@ ENV LINOTP_USER=linotp \
 # Copy artifacts from builder
 COPY --from=builder $VENV_ROOT $VENV_ROOT
 COPY --from=builder $TRANSLATIONS_DIR $TRANSLATIONS_DIR
-COPY linotpapp.py docker/linotp/entrypoint.sh docker/linotp/symlink_custom_assets.py ./
+COPY linotpapp.py docker/linotp/entrypoint.sh docker/linotp/wait_for_db.py docker/linotp/symlink_custom_assets.py ./
 COPY docker/linotp/install-ca-certificates.sh /usr/local/sbin/install-ca-certificates
 COPY docker/linotp/doas.conf /etc/doas.conf
 

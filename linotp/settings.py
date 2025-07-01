@@ -122,6 +122,18 @@ def check_absolute_pathname():
     return f
 
 
+class DBURI(str):
+    """This ensures that DB URIs that start with `postgres://` are
+    considered equivalent to DB URIs that start with `postgresql://`.
+    """
+
+    @staticmethod
+    def from_string(s):
+        if s.startswith("postgres://"):
+            return "postgresql://" + s.removeprefix("postgres://")
+        return s
+
+
 @dataclass
 class ConfigItem:
     """This class represents individual configuration settings. A
@@ -458,7 +470,8 @@ _config_schema = ConfigSchema(
         ),
         ConfigItem(
             "DATABASE_URI",
-            str,
+            DBURI,
+            convert=DBURI.from_string,
             default="sqlite:///{}",
             help=("Contains uri to your database."),
         ),
@@ -475,7 +488,8 @@ _config_schema = ConfigSchema(
         ),
         ConfigItem(
             "AUDIT_DATABASE_URI",
-            str,
+            DBURI,
+            convert=DBURI.from_string,
             default="SHARED",
             help=(
                 "Determines the method used for audit logging. Valid "
