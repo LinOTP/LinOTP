@@ -24,14 +24,13 @@
 #    Support: www.linotp.de
 #
 # German translations for LinOTP
-# michael <michael.weber@netgo.de>, 2025.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 3\n"
 "Report-Msgid-Bugs-To: info@linotp.de\n"
-"PO-Revision-Date: 2025-06-27 09:19+0200\n"
-"Last-Translator: michael <michael.weber@netgo.de>\n"
+"PO-Revision-Date: 2025-07-01 09:17+0200\n"
+"Last-Translator: lukas <lukas.engelter@netgo.de>\n"
 "Language-Team: German - Germany <support@linotp.de>\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
@@ -2387,7 +2386,7 @@ msgid "SMS Token"
 msgstr "SMS-Token"
 
 msgid "SMS token settings"
-msgstr "RADIUS-Token-Einstellungen"
+msgstr "SMS-Token-Einstellungen"
 
 msgid "SQL"
 msgstr "SQL"
@@ -4588,9 +4587,6 @@ msgstr "WebUI generiert"
 
 #~ msgid "Default QR suite"
 #~ msgstr "Standard QR-Suite"
-
-#~ msgid "Default Values:"
-#~ msgstr "Standardwerte:"
 
 #~ msgid "DefaultChallengeValidityTime"
 #~ msgstr "Standardwert des Gültigkeitszeitraums einer Challenge"
