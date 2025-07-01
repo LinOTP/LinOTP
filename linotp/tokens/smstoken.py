@@ -685,7 +685,7 @@ class SmsTokenClass(HmacTokenClass):
                 _sms_ret, message = get_auth_smstext(realm=realms[0])
 
             if "user" in options:
-                user = options.get("user", None)
+                user = options.get("user")
                 if user:
                     _sms_ret, message = get_auth_smstext(realm=user.realm)
             realms = self.getRealms()

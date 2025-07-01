@@ -659,7 +659,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
             options = {}
 
         otp = passw
-        self.transId = options.get("transactionid", options.get("state", None))
+        self.transId = options.get("transactionid", options.get("state"))
 
         (otpcount, matching_challenges) = self.checkResponse4Challenge(
             user, otp, options=options, challenges=challenges
@@ -1119,7 +1119,7 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
             param = {}
 
         storeHashed = True
-        enc = param.get("encryptpin", None)
+        enc = param.get("encryptpin")
         if enc is not None and enc.lower() == "true":
             storeHashed = False
 

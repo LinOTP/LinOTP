@@ -1185,7 +1185,7 @@ class Ocra2TokenClass(TokenClass):
         maxRequests = int(getFromConfig("Ocra2MaxChallengeRequests", "3"))
 
         if "transactionid" in options:
-            transid = options.get("transactionid", None)
+            transid = options.get("transactionid")
             challs = Challenges.lookup_challenges(serial=serial, transid=transid)
             for chall in challs:
                 if chall.is_open():
