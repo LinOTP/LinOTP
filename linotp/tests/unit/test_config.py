@@ -141,6 +141,13 @@ def schema():
             default=0,
             help="help for CVT",
         ),
+        s.ConfigItem(
+            "DBURI",
+            s.DBURI,
+            convert=s.DBURI.from_string,
+            default="",
+            help="help for DBURI",
+        ),
     ]
 
 
@@ -178,36 +185,67 @@ def test_configschema_find_item(schema, key, result):
 
 
 @pytest.mark.parametrize(
-    "key,value,refuse_unknown,result,result_value",
+    "key,value,refuse_unknown,result,result_value,warning",
     [
-        ("FOO", "bar", False, "OK", "bar"),
-        ("BAZ", "456", False, "OK", 456),
-        ("BAZ", 456, False, "OK", 456),
-        ("XYZ", "666", False, "OK", "666"),
+        ("FOO", "bar", False, "OK", "bar", None),
+        ("BAZ", "456", False, "OK", 456, None),
+        ("BAZ", 456, False, "OK", 456, None),
+        ("XYZ", "666", False, "OK", "666", None),
         (
             "XYZ",
             "666",
             True,
             s.LinOTPConfigKeyError,
             "Unknown configuration item 'XYZ'",
+            None,
         ),
-        ("CVT", "123", False, "OK", 124),
+        ("CVT", "123", False, "OK", 124, None),
         (
             "POS",
             "-123",
             False,
             s.LinOTPConfigValueError,
             "POS is -123 but must be at least 0",
+            None,
+        ),
+        (
+            "DBURI",
+            "postgresql://foo/bar",
+            False,
+            "OK",
+            "postgresql://foo/bar",
+            None,
+        ),
+        (
+            "DBURI",
+            "postgres://foo/bar",
+            False,
+            "OK",
+            "postgresql://foo/bar",
+            r"^Rewriting DB URI 'postgres://.*' to 'postgresql://'$",
         ),
     ],
 )
 def test_configschema_check_item(
-    schema, key, value, refuse_unknown, result, result_value
+    schema,
+    caplog,
+    key,
+    value,
+    refuse_unknown,
+    result,
+    result_value,
+    warning,
 ):
     cs = s.ConfigSchema(schema=schema, refuse_unknown=refuse_unknown)
     if result == "OK":
         value = cs.check_item(key, value)
         assert value == result_value
+        if warning:
+            assert len(caplog.records) == 1
+            rec = caplog.records[0]
+            assert re.match(warning, rec.message), "Not the expected warning"
+        else:
+            assert not caplog.records, "Didn't expect a warning but got one"
     else:
         with pytest.raises(result) as ex:
             cs.check_item(key, value)
@@ -357,6 +395,26 @@ def test_efc_dunder_setitem_schema(schema, key, value, result, result_value):
         with pytest.raises(result) as ex:
             efc[key] = value
         assert result_value in str(ex.value)
+
+
+@pytest.mark.parametrize(
+    "from_uri,to_uri,expect_warning",
+    [
+        ("postgresql://foo/bar", "postgresql://foo/bar", False),
+        ("postgres://foo/bar", "postgresql://foo/bar", True),
+    ],
+)
+def test_efc_dburi_get(schema, caplog, from_uri, to_uri, expect_warning):
+    cs = s.ConfigSchema(schema=schema)
+    efc = ExtFlaskConfig("/", config_schema=cs)
+    efc["DBURI"] = from_uri
+    assert efc["DBURI"] == to_uri
+    if expect_warning:
+        assert len(caplog.records) == 1
+        rec = caplog.records[0]
+        assert rec.message.startswith("Rewriting DB URI '"), "Not the expected warning"
+    else:
+        assert not caplog.records, "Didn't expect a warning but got one"
 
 
 def test_efc_from_env_variables(monkeypatch, schema):
