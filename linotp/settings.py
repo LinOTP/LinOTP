@@ -1,5 +1,6 @@
 import builtins
 import json
+import logging
 import os
 import textwrap
 from collections.abc import Callable
@@ -14,6 +15,8 @@ from jsonschema import Draft4Validator
 from .lib.security import provider
 from .lib.security.pkcs11 import Pkcs11SecurityModule
 from .lib.type_utils import boolean as to_boolean
+
+logger = logging.getLogger(__name__)
 
 basedir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
@@ -130,6 +133,7 @@ class DBURI(str):
     @staticmethod
     def from_string(s):
         if s.startswith("postgres://"):
+            logger.warning("Rewriting DB URI '%s' to 'postgresql://'", s)
             return "postgresql://" + s.removeprefix("postgres://")
         return s
 
