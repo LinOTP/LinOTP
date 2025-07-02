@@ -43,9 +43,9 @@ except (NoSuchModuleError, OperationalError) as ex:
         punt(ABORT, "Given database name does not exist in LINOTP_DATABASE_URI")
     if "t load plugin: sqlalchemy.dialects:" in err_msg:
         punt(ABORT, "Invalid dialect in LINOTP_DATABASE_URI")
-    punt(UNKNOWN, "Unexpected Error: {err_msg}")
+    punt(UNKNOWN, f"Unexpected Error: {err_msg}")
 except Exception as ex:
     err_msg = str(ex).lower()
-    punt(UNKNOWN, "Unexpected Error: {err_msg}")
+    punt(UNKNOWN, f"Unexpected Error: {err_msg}")
 
 sys.exit(SUCCESS)
