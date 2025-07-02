@@ -30,6 +30,8 @@ import json
 import os
 from unittest.mock import patch
 
+from flask import g
+
 from linotp.useridresolver.SQLIdResolver import IdResolver as SQLResolver
 
 
@@ -92,6 +94,9 @@ class TestSQLResolverSensitiveData:
         """SQL: test the userinfo does not return sensitive data."""
 
         with base_app.app_context():
+            # setup a request context for `cache_in_request` decorator
+            g.request_context = {}
+
             resolver = self.load_resolver()
 
             res = resolver.getUserId("user1")
@@ -115,6 +120,9 @@ class TestSQLResolverSensitiveData:
         """SQL: Check the password of user1 and user 2 still works."""
 
         with base_app.app_context():
+            # setup a request context for `cache_in_request` decorator
+            g.request_context = {}
+
             resolver = self.load_resolver()
 
             assert resolver.checkPass(resolver.getUserId("user1"), "password")
