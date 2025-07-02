@@ -45,6 +45,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import expression
 from sqlalchemy.sql import text as sql_text
 
+from linotp.lib.cache_utils import cache_in_request
 from linotp.lib.type_utils import encrypted_data
 from linotp.model import db
 from linotp.useridresolver.UserIdResolver import (
@@ -838,6 +839,7 @@ class IdResolver(UserIdResolver):
 
         return userName
 
+    @cache_in_request
     def getUserInfo(self, userId, suppress_password=True):
         """
         return all user related information

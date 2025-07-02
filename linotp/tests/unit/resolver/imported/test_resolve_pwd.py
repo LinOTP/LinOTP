@@ -29,9 +29,17 @@
 import tempfile
 
 import pytest
+from flask import g
 
 from linotp.useridresolver.PasswdIdResolver import IdResolver as PasswdResolver
 from linotp.useridresolver.UserIdResolver import ResolverLoadConfigError
+
+
+@pytest.fixture
+def create_request_context(app):
+    with app.app_context():
+        g.request_context = {}
+        yield
 
 
 @pytest.fixture
@@ -52,7 +60,7 @@ user2:.4UO1mxvTmdM6:11:11:User Zwei:Irgendwas:Nochmal"""
         yield y
 
 
-def test_getUserId(passwd_resolver):
+def test_getUserId(passwd_resolver, create_request_context):
     """test the existance of the user1 and user2"""
     y = passwd_resolver
 
@@ -91,7 +99,7 @@ def test_checkpass(passwd_resolver):
     assert y.checkPass(y.getUserId("user2"), "pwU2")
 
 
-def test_getUserList(passwd_resolver):
+def test_getUserList(passwd_resolver, create_request_context):
     """
     testing the userlist
     """

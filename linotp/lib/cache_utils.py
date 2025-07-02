@@ -76,20 +76,19 @@ def cache_in_request(
         @functools.wraps(func_to_cache)
         def request_cacher(*args, **kwargs):
             cache_name = func_to_cache.__name__ + "_cache"
-            if not request_context.get(cache_name, None):
-                request_context[cache_name] = {}
+            functions_cache: dict = request_context.setdefault(cache_name, {})
 
-            cache_key = key_generator(*args, **kwargs)
+            cache_key = f"{key_generator(*args, **kwargs)}"
 
             log_prefix = f"[{func_to_cache.__name__}]"
-            if cache_key not in request_context[cache_name]:
-                log.debug("%s: output values not in cache", log_prefix)
+            if result := functions_cache.get(cache_key):
+                log.debug("%s: output values already in cache", log_prefix)
+                return result
 
-                request_context[cache_name][cache_key] = func_to_cache(*args, **kwargs)
-            else:
-                log.debug("%s: getting output values from cache", log_prefix)
-
-            return request_context[cache_name][cache_key]
+            log.debug("%s: output values not in cache", log_prefix)
+            result = func_to_cache(*args, **kwargs)
+            functions_cache[cache_key] = result
+            return result
 
         return request_cacher
 
