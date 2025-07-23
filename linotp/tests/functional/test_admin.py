@@ -813,7 +813,7 @@ class TestAdminController(TestController):
         response = self.make_admin_request("setPin", params={"serial": "setpin_01"})
 
         assert '"status": false' in response, response
-        assert '"code": 77' in response, response
+        assert "Missing parameter: 'userpin'" in response, response
 
     def test_set_misc(self):
         """

@@ -1149,7 +1149,7 @@ class AdminController(BaseController, JWTMixin):
         !!! For setting the OTP PIN, use the function /admin/set!
 
         :param serial: (required) the token serial
-        :param userpin: (optional)  store the userpin
+        :param userpin: (required)  store the userpin
 
         :return:
             a json result with a boolean status and request result
@@ -1159,13 +1159,8 @@ class AdminController(BaseController, JWTMixin):
 
         """
         res = {}
-        count = 0
+        msg = "setting userPin failed"
 
-        description = "setPin: parameters are\
-        serial\
-        userpin\
-        "
-        msg = "setting Pin failed"
         try:
             param = getLowerParams(self.request_params)
 
@@ -1181,29 +1176,22 @@ class AdminController(BaseController, JWTMixin):
             g.audit["user"] = token.getUsername()
             g.audit["realm"] = ", ".join(token.getRealms())
 
-            # # if there is a pin
-            if "userpin" in param:
-                msg = "setting userPin failed"
-                try:
-                    userPin = param["userpin"]
-                except KeyError as exx:
-                    msg = "Missing parameter: 'userpin'"
-                    raise ParameterError(msg) from exx
+            try:
+                userpin = param["userpin"]
+                g.audit["userpin"] = userpin
+            except KeyError as exx:
+                msg = "Missing parameter: 'userpin'"
+                raise ParameterError(msg) from exx
 
-                # check admin authorization
-                checkPolicyPre("admin", "setPin", param)
+            # check admin authorization
+            checkPolicyPre("admin", "setPin", param)
 
-                log.info("[setPin] setting userPin for token with serial %s", serial)
-                ret = setPinUser(userPin, serial)
-                res["set userpin"] = ret
-                count = count + 1
-                g.audit["action_detail"] += "userpin, "
+            log.info("[setPin] setting userPin for token with serial %s", serial)
+            ret = setPinUser(userpin, serial)
+            res["set userpin"] = ret
 
-            if count == 0:
-                db.session.rollback()
-                return sendError(ParameterError(f"Usage: {description}", id=77))
-
-            g.audit["success"] = count
+            g.audit["action_detail"] += "userpin, "
+            g.audit["success"] = bool(ret)
             token = get_token(serial)
             g.audit["token_type"] = token.type
             g.audit["user"] = token.getUsername()
@@ -1212,10 +1200,10 @@ class AdminController(BaseController, JWTMixin):
             db.session.commit()
             return sendResult(res, 1)
 
-        except PolicyException as pe:
-            log.error("[setPin] policy failed %r, %r", msg, pe)
+        except PolicyException as pex:
+            log.error("[setPin] policy failed %r, %r", msg, pex)
             db.session.rollback()
-            return sendError(pe, 1)
+            return sendError(pex, 1)
 
         except Exception as exx:
             log.error("[setPin] %s :%r", msg, exx)
