@@ -1060,17 +1060,6 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
     def getSerial(self):
         return self.token.getSerial()
 
-    def setSoPin(self, soPin):
-        """
-        set the soPin of the token
-            the soPin is encrypted and the encrypte value is stored in the
-            Token model
-
-        :param soPin: the special so pin
-        """
-        iv, enc_soPin = SecretObj.encrypt(soPin, hsm=context.get("hsm"))
-        self.token.setSoPin(enc_soPin, iv)
-
     def setUserPin(self, userPin):
         """
         set the userPin of the token

@@ -70,7 +70,6 @@ from linotp.lib.token import (
     getTokenRealms,
     resetToken,
     setPin,
-    setPinSo,
     setPinUser,
     setRealms,
 )
@@ -1145,13 +1144,12 @@ class AdminController(BaseController, JWTMixin):
     def setPin(self):
         """
 
-        This function sets the smartcard PINs of a eTokenNG OTP.
+        This function sets the userPin of tokens.
         The userpin is used to store the mOTP PIN of mOTP tokens!
         !!! For setting the OTP PIN, use the function /admin/set!
 
         :param serial: (required) the token serial
         :param userpin: (optional)  store the userpin
-        :param sopin: (optional)  store the sopin
 
         :return:
             a json result with a boolean status and request result
@@ -1166,7 +1164,6 @@ class AdminController(BaseController, JWTMixin):
         description = "setPin: parameters are\
         serial\
         userpin\
-        sopin\
         "
         msg = "setting Pin failed"
         try:
@@ -1201,23 +1198,6 @@ class AdminController(BaseController, JWTMixin):
                 res["set userpin"] = ret
                 count = count + 1
                 g.audit["action_detail"] += "userpin, "
-
-            if "sopin" in param:
-                msg = "setting soPin failed"
-                try:
-                    soPin = param["sopin"]
-                except KeyError as exx:
-                    msg = "Missing parameter: 'userpin'"
-                    raise ParameterError(msg) from exx
-
-                # check admin authorization
-                checkPolicyPre("admin", "setPin", param)
-
-                log.info("[setPin] setting soPin for token with serial %s", serial)
-                ret = setPinSo(soPin, serial)
-                res["set sopin"] = ret
-                count = count + 1
-                g.audit["action_detail"] += "sopin, "
 
             if count == 0:
                 db.session.rollback()

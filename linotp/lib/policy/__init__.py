@@ -927,27 +927,6 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
                     % serial
                 )
 
-        if "sopin" in param:
-            # check admin authorization
-            policies = getAdminPolicies("setSCPIN")
-            if policies["active"] and not checkAdminAuthorization(
-                policies, serial, User("", "", "")
-            ):
-                log.warning(
-                    "the admin >%s< is not allowed to setPIN for token %s.",
-                    policies["admin"],
-                    serial,
-                )
-
-                raise PolicyException(
-                    _(
-                        "You do not have the administrative "
-                        "right to set Smartcard PIN for "
-                        "token %s. Check the policies."
-                    )
-                    % serial
-                )
-
     elif method == "set":
         if "pin" in param:
             policies = getAdminPolicies("setOTPPIN")

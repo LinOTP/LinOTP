@@ -2115,28 +2115,6 @@ def setPinUser(userPin, serial):
     return len(tokenList)
 
 
-###############################################################################
-#  LinOtpTokenPinSO
-###############################################################################
-
-
-def setPinSo(soPin, serial):
-    user = None
-
-    if serial is None:
-        msg = "Parameter 'serial' is required!"
-        raise ParameterError(msg, id=1212)
-
-    log.debug("[setPinSo] setting Pin for serial %r", serial)
-    tokenList = get_tokens(user, serial)
-
-    for token in tokenList:
-        token.setSoPin(soPin)
-        token.addToSession()
-
-    return len(tokenList)
-
-
 def resetToken(user=None, serial=None):
     if (user is None) and (serial is None):
         log.warning("[resetToken] Parameter serial or user required!")
