@@ -393,12 +393,10 @@ class TestAdminController(TestController):
         parameters = {
             "serial": "003e808e",
             "userpin": "123456",
-            "sopin": "123234",
         }
         response = self.make_admin_request("setPin", params=parameters)
         # log.error("response %s\n",response)
         # Test response...
-        assert '"set sopin": 1' in response, response
         assert '"set userpin": 1' in response, response
 
         self.delete_token("003e808e")
@@ -815,13 +813,7 @@ class TestAdminController(TestController):
         response = self.make_admin_request("setPin", params={"serial": "setpin_01"})
 
         assert '"status": false' in response, response
-        assert '"code": 77' in response, response
-
-        response = self.make_admin_request(
-            "setPin", params={"serial": "setpin_01", "sopin": "geheim"}
-        )
-
-        assert '"set sopin": 1' in response, response
+        assert "Missing parameter: 'userpin'" in response, response
 
     def test_set_misc(self):
         """

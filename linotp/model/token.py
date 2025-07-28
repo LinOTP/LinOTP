@@ -186,10 +186,6 @@ class Token(TokenSchema):
             ret = True
         return ret
 
-    def setSoPin(self, enc_soPin: bytes, iv: bytes) -> None:
-        self.LinOtpTokenPinSO = binascii.hexlify(enc_soPin).decode("utf-8")
-        self.LinOtpTokenPinSOIV = binascii.hexlify(iv).decode("utf-8")
-
     def __str__(self) -> str:
         return self.LinOtpTokenDesc
 
@@ -232,7 +228,6 @@ class Token(TokenSchema):
         ret["LinOtp.TokenType"] = self.LinOtpTokenType or "hmac"
         ret["LinOtp.TokenInfo"] = self._fix_spaces(self.LinOtpTokenInfo or "")
         # ret['LinOtpTokenPinUser']   = self.LinOtpTokenPinUser
-        # ret['LinOtpTokenPinSO']     = self.LinOtpTokenPinSO
 
         ret["LinOtp.IdResolver"] = self.LinOtpIdResolver or ""
         ret["LinOtp.IdResClass"] = self.LinOtpIdResClass or ""

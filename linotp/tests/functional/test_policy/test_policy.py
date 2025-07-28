@@ -206,7 +206,7 @@ class TestPolicies(TestPoliciesBase):
             "name": "adm201c",
             "scope": "admin",
             "realm": "*",
-            "action": "setOTPPIN, setMOTPPIN, setSCPIN",
+            "action": "setOTPPIN, setMOTPPIN",
             "user": "admin_setpin",
         }
         response = self.make_system_request(
