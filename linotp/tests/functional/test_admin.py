@@ -392,12 +392,12 @@ class TestAdminController(TestController):
         # test resync of token 2
         parameters = {
             "serial": "003e808e",
-            "userpin": "123456",
+            "pin": "123456",
         }
-        response = self.make_admin_request("setPin", params=parameters)
+        response = self.make_admin_request("set", params=parameters)
         # log.error("response %s\n",response)
         # Test response...
-        assert '"set userpin": 1' in response, response
+        assert '"set pin": 1' in response, response
 
         self.delete_token("003e808e")
 
@@ -805,7 +805,13 @@ class TestAdminController(TestController):
         Testing setting empty PIN and SO PIN
         """
         response = self.make_admin_request(
-            "init", params={"serial": "setpin_01", "type": "spass"}
+            "init",
+            params={
+                "serial": "setpin_01",
+                "otpkey": "1234123412341234",
+                "otppin": "m",
+                "type": "mOTP",
+            },
         )
 
         assert '"value": true' in response, response
@@ -1233,14 +1239,6 @@ class TestAdminController(TestController):
                     "success": "1",
                     "serial": "unique_serial",
                 },
-            },
-            "setPin": {
-                "request_params": {
-                    "serial": params["serial"],
-                    "userpin": "123",
-                },
-                "expected_audit": expected_audit,
-                "expected_audit_faulty": expected_audit_faulty,
             },
             "setValidity": {
                 "request_params": {

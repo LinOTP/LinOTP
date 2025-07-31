@@ -906,14 +906,20 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
 
     elif method == "setPin":
         if "userpin" in param:
+            tokentype = linotp.lib.token.getTokenType(serial)
+            policies = {}
             # check admin authorization
-            policies = getAdminPolicies("setMOTPPIN")
+            if tokentype == "mOTP":
+                policies = getAdminPolicies("setMOTPPIN")
+            elif tokentype == "ocra2":
+                policies = getAdminPolicies("setOCRAPIN")
+
             _usr = User("", "", "")
             if policies["active"] and not (
                 checkAdminAuthorization(policies, serial, _usr)
             ):
                 log.warning(
-                    "the admin >%s< is not allowed to set MOTP PIN for token %s.",
+                    "the admin >%s< is not allowed to set this type of PIN for the token %s.",
                     policies["admin"],
                     serial,
                 )
@@ -921,10 +927,10 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
                 raise PolicyException(
                     _(
                         "You do not have the administrative "
-                        "right to set MOTP PIN "
+                        "right to set %s PIN "
                         "for token %s. Check the policies."
                     )
-                    % serial
+                    % (tokentype, serial)
                 )
 
     elif method == "set":

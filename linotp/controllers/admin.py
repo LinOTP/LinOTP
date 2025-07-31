@@ -1145,7 +1145,8 @@ class AdminController(BaseController, JWTMixin):
         """
 
         This function sets the userPin of tokens.
-        The userpin is used to store the mOTP PIN of mOTP tokens!
+        The userpin is used to store the mOTP PIN of mOTP tokens
+        or the OCRA PIN of OCRA tokens!
         !!! For setting the OTP PIN, use the function /admin/set!
 
         :param serial: (required) the token serial
@@ -1172,6 +1173,10 @@ class AdminController(BaseController, JWTMixin):
                 raise ParameterError(msg) from exx
 
             token = get_token(serial)
+            if token.type not in ("mOTP", "ocra2"):
+                msg = f"This type of pin cannot be set for a {token.type} token."
+                raise Exception(msg)
+
             g.audit["token_type"] = token.type
             g.audit["user"] = token.getUsername()
             g.audit["realm"] = ", ".join(token.getRealms())

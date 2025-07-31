@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - unhandled errors are now logged with traceback and returned in the response
 - Manage-UI shows info-box (success/error) for operation `Set PIN`
 - Caching of UserInfo per request to decrease request time of e.g. `/validate/check` to about half
+- a new `setOCRAPIN` admin policy is introduced that works exactly like `setMOTPPIN` and can only be used for ocra2 tokens
 
 ### Changed
 
@@ -50,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Don't reject empty string as `pin` when `otp_pin_contents=+`
 - To set the motp pin via `/admin/setPin`, the admin policy `setMOTPPIN` is sufficient
 - Setting OCRA PIN via Manage-UI
+- `setMOTPPIN` admin policy only allows setting userpin for motp tokens, not ocra2 or any other token type
 
 ## [3.4.4-1] - 2025-06-18
 

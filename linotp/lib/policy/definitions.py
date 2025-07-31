@@ -71,6 +71,7 @@ POLICY_DEFINTIONS = {
         "set": {"type": "bool"},
         "setOTPPIN": {"type": "bool"},
         "setMOTPPIN": {"type": "bool"},
+        "setOCRAPIN": {"type": "bool"},
         "resync": {"type": "bool"},
         "reset": {"type": "bool"},
         "assign": {"type": "bool"},
