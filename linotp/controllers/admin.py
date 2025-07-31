@@ -1171,12 +1171,12 @@ class AdminController(BaseController, JWTMixin):
             except KeyError as exx:
                 msg = "Missing parameter: 'serial'"
                 raise ParameterError(msg) from exx
-            
+
             token = get_token(serial)
             if token.type not in ("mOTP", "ocra2"):
                 msg = f"This type of pin cannot be set for a {token.type} token."
                 raise Exception(msg)
-            
+
             g.audit["token_type"] = token.type
             g.audit["user"] = token.getUsername()
             g.audit["realm"] = ", ".join(token.getRealms())

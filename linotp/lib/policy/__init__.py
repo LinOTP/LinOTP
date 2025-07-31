@@ -913,12 +913,11 @@ def _checkAdminPolicyPre(method, param=None, authUser=None, user=None):
                 policies = getAdminPolicies("setMOTPPIN")
             elif tokentype == "ocra2":
                 policies = getAdminPolicies("setOCRAPIN")
-            
+
             _usr = User("", "", "")
             if policies["active"] and not (
                 checkAdminAuthorization(policies, serial, _usr)
             ):
-
                 log.warning(
                     "the admin >%s< is not allowed to set this type of PIN for the token %s.",
                     policies["admin"],
