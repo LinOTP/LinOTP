@@ -165,7 +165,7 @@ class TestPolicies(TestPoliciesBase):
             "name": "adm201",
             "scope": "admin",
             "realm": "*",
-            "action": ("initSPASS, initHMAC, initETNG, initSMS, initMOTP"),
+            "action": ("initSPASS, initHMAC, initETNG, initSMS, initMOTP, initOCRA2"),
             "user": "admin_init",
         }
         response = self.make_system_request(
@@ -206,7 +206,7 @@ class TestPolicies(TestPoliciesBase):
             "name": "adm201c",
             "scope": "admin",
             "realm": "*",
-            "action": "setOTPPIN, setMOTPPIN",
+            "action": "setOTPPIN, setMOTPPIN, setOCRAPIN",
             "user": "admin_setpin",
         }
         response = self.make_system_request(
@@ -427,6 +427,30 @@ class TestPolicies(TestPoliciesBase):
 
         assert response.json["result"]["status"], response
 
+        parameters = {
+            "serial": "test_token_motp",
+            "otpkey": "1234123412341234",
+            "otppin": "m",
+            "type": "mOTP",
+        }
+        response = self.make_admin_request(
+            action="init", params=parameters, auth_user="admin_init"
+        )
+
+        assert response.json["result"]["status"], response
+
+        params = {
+            "serial": "test_token_ocra",
+            "user": "horst",
+            "type": "ocra2",
+            "sharedsecret": "1",
+            "genkey": "1",
+            "ocrasuite": "OCRA-1:HOTP-SHA256-8:C-QN08",
+        }
+
+        response = self.make_admin_request("init", params, auth_user="admin_init")
+        assert "false" not in response
+
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles", "enroll_tokens")
     def test_203_enable_disbale(self):
         """
@@ -499,7 +523,7 @@ class TestPolicies(TestPoliciesBase):
         Policy 205: setting PIN. "admin_setpin" is allowed, "admin_set" not!
         """
         parameters = {
-            "serial": "test_token_001",
+            "serial": "test_token_motp",
             "userpin": "test",
         }
         response = self.make_admin_request(
@@ -509,7 +533,27 @@ class TestPolicies(TestPoliciesBase):
         assert not response.json["result"]["status"], response
 
         parameters = {
-            "serial": "test_token_001",
+            "serial": "test_token_ocra",
+            "userpin": "test",
+        }
+        response = self.make_admin_request(
+            action="setPin", params=parameters, auth_user="admin_set"
+        )
+
+        assert not response.json["result"]["status"], response
+
+        parameters = {
+            "serial": "test_token_motp",
+            "userpin": "test",
+        }
+        response = self.make_admin_request(
+            action="setPin", params=parameters, auth_user="admin_setpin"
+        )
+
+        assert response.json["result"]["status"], response
+
+        parameters = {
+            "serial": "test_token_ocra",
             "userpin": "test",
         }
         response = self.make_admin_request(
@@ -537,6 +581,34 @@ class TestPolicies(TestPoliciesBase):
         )
 
         assert response.json["result"]["status"], response
+
+    @pytest.mark.usefixtures("realms_and_resolver", "admin_roles", "enroll_tokens")
+    def test_205_setPin_on_ocra_with_setMOTPPIN(self):
+        """
+        assure the setMOTPPIN policy cannot be used to set the userpin for the ocra token
+        """
+        setPolicyParams = {
+            "name": "adm201c",
+            "scope": "admin",
+            "realm": "*",
+            "action": "setOTPPIN, setMOTPPIN",
+            "user": "admin_setpin",
+        }
+        response = self.make_system_request(
+            action="setPolicy", params=setPolicyParams, auth_user="superadmin"
+        )
+
+        assert response.json["result"]["status"], response
+
+        parameters = {
+            "serial": "test_token_ocra",
+            "userpin": "test",
+        }
+        response = self.make_admin_request(
+            action="setPin", params=parameters, auth_user="admin_setpin"
+        )
+
+        assert not response.json["result"]["status"], response
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles", "enroll_tokens")
     def test_206_resync(self):
