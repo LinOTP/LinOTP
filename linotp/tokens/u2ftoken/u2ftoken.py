@@ -179,7 +179,9 @@ class U2FTokenClass(TokenClass):
             pin = param.get("pin")
             if pin is None:
                 pin = ""
-            if check_pin(self, pin) is False:
+            # This would need a `user` parameter here if otppin=1, but we have
+            # a special exception.
+            if check_pin(self, pin, options={"u2f-registration": True}) is False:
                 msg = "Wrong token pin!"
                 raise ValueError(msg)
         # check for set phases which are not "registration1" or "registration2"
