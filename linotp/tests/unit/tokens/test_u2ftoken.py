@@ -286,7 +286,9 @@ class U2FTokenClassTestCase(unittest.TestCase):
         param = {"description": None, "phase": "registration2", "pin": "test!pin"}
         self.u2f_token.update(param)
         self.u2f_token.getFromTokenInfo.assert_called_once_with("phase", None)
-        check_pin_mock.assert_called_once_with(self.u2f_token, "test!pin")
+        check_pin_mock.assert_called_once_with(
+            self.u2f_token, "test!pin", options={"u2f-registration": True}
+        )
         patcher.stop()
 
     def test_update_requested_phase_registration2_current_phase_registration_wrong_pin(
@@ -305,7 +307,9 @@ class U2FTokenClassTestCase(unittest.TestCase):
             self.u2f_token.update(param)
         assert "Wrong token pin!" in str(excinfo.value)
         self.u2f_token.getFromTokenInfo.assert_called_once_with("phase", None)
-        check_pin_mock.assert_called_once_with(self.u2f_token, "test!pin")
+        check_pin_mock.assert_called_once_with(
+            self.u2f_token, "test!pin", options={"u2f-registration": True}
+        )
         patcher.stop()
 
     def test_update_requested_phase_registration2_current_phase_authentication(
@@ -358,6 +362,16 @@ class U2FTokenClassTestCase(unittest.TestCase):
             excinfo.value
         )
         self.u2f_token.getFromTokenInfo.assert_called_once_with("phase", None)
+
+    # _checkClientData
+
+    def test_checkClientData_no_type(self):
+        """
+        Client data must contain either `typ` or `type`.
+        """
+        with pytest.raises(Exception) as ex:
+            self.u2f_token._checkClientData("{}", "", "")
+        assert "Client data must contain either `typ` or `type`" in str(ex.value)
 
 
 if __name__ == "__main__":
