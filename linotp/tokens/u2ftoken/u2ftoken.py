@@ -179,7 +179,9 @@ class U2FTokenClass(TokenClass):
             pin = param.get("pin")
             if pin is None:
                 pin = ""
-            if check_pin(self, pin) is False:
+            # This would need a `user` parameter here if otppin=1, but we have
+            # a special exception.
+            if check_pin(self, pin, options={"u2f-registration": True}) is False:
                 msg = "Wrong token pin!"
                 raise ValueError(msg)
         # check for set phases which are not "registration1" or "registration2"
@@ -371,12 +373,16 @@ class U2FTokenClass(TokenClass):
             raise Exception(msg) from exx
 
         try:
-            cdType = clientData["typ"]
+            if not (cdType := clientData.get("typ")) and not (
+                cdType := clientData.get("type")
+            ):
+                msg = "Client data must contain either `typ` or `type`"
+                raise KeyError(msg)
             cdChallenge = clientData["challenge"]
             cdOrigin = clientData["origin"]
             # TODO: Check for optional cid_pubkey
         except KeyError as exx:
-            msg = "Wrong client data format!"
+            msg = f"Wrong client data format: {exx!s}"
             raise Exception(msg) from exx
 
         # validate typ
@@ -385,7 +391,9 @@ class U2FTokenClass(TokenClass):
                 msg = "Incorrect client data object received!"
                 raise Exception(msg)
         elif clientDataType == "authentication":
-            if cdType != "navigator.id.getAssertion":
+            # We need to include `webauthn.get` here because of FIDO2 API
+            # results masquerading as FIDO U2F.
+            if cdType not in ("navigator.id.getAssertion", "webauthn.get"):
                 msg = "Incorrect client data object received!"
                 raise Exception(msg)
         else:
@@ -394,7 +402,12 @@ class U2FTokenClass(TokenClass):
             raise Exception(msg)
 
         # validate challenge
-        if cdChallenge != challenge:
+        # Note that the challenge in `clientData` may or may not have
+        # Base64 padding at the end, while the challenge on record in
+        # LinOTP definitely has, so, to be safe, we remove any padding
+        # from both before doing the comparison.
+
+        if cdChallenge.rstrip("=") != challenge.rstrip("="):
             log.debug(
                 "Challenge mismatch - The received challenge in the received client \
                        data object does not match the sent challenge!"

@@ -100,6 +100,26 @@ def check_pin(token, passw, user=None, options=None):
 
     otppin_mode = _get_otppin_mode(get_pin_policies(user))
 
+    # If `otppin=1` is set, which is typically used by the LinOTP IdP,
+    # then a FIDO U2F token would have to pass a `user` object during
+    # token registration but doesn't. This makes the registration fail
+    # because there is no user whose password could be checked. To
+    # enable FIDO U2F token registrations to succeed even without a
+    # user, we enable a special exception for this case which will
+    # fall back to the default behaviour (`otppin=0`), which works.
+    # (Note that `otppin=0` enables a token PIN for FIDO U2F tokens,
+    # which works fine with the LinOTP IdP, but the mode is not very
+    # useful.)
+
+    if (
+        options is not None
+        and options.pop("u2f-registration", False)
+        and token.type == "u2f"
+        and user is None
+        and otppin_mode == 1
+    ):
+        otppin_mode = 0
+
     if otppin_mode == 1:
         # We check the Users Password as PIN
         log.debug("pin policy=1: checking the users password as pin")
