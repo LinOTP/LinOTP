@@ -1792,14 +1792,8 @@ class UserserviceController(BaseController):
                 raise ParameterError(msg)
 
             # -------------------------------------------------------------- --
-
-            # check for invalid params
-
-            supported_params = ["serial", "transactionid", "otp", "session"]
-            unknown_params = [p for p in params if p not in supported_params]
-            if len(unknown_params) > 0:
-                msg = f"unsupported parameters: {unknown_params!r}"
-                raise ParameterError(msg)
+            supported = {"serial", "transactionid", "otp", "session"}
+            params = {k: v for k, v in params.items() if k in supported}
 
             # -------------------------------------------------------------- --
 
