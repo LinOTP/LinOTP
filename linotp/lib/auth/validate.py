@@ -958,5 +958,41 @@ class ValidationHandler:
 
         return res, opt
 
+    def update_audit_with_challenges(
+        self, transid, challenge_ongoing=False, details=None
+    ):
+        """
+        Helper to collect challenge-related token info and update audit/request context.
+
+        :param transid: Transaction ID to look up challenges
+        :param challenge_ongoing: True if challenge available to resolve
+        :param details: contains details on the challenge
+        """
+        serials = []
+        types = []
+        owner = None
+        challenges = Challenges.lookup_challenges(transid=transid)
+
+        for ch in challenges:
+            tokens = get_tokens(serial=ch.getTokenSerial())
+            for token in tokens:
+                serials.append(token.getSerial())
+                types.append(token.getType())
+                if not owner:
+                    owner = get_token_owner(token)
+
+        if owner:
+            context["RequestUser"] = owner
+            g.audit["user"] = g.audit["user"] or owner.login
+            g.audit["realm"] = g.audit["realm"] or owner.realm
+
+        g.audit["serial"] = " ".join(serials)
+        g.audit["token_type"] = " ".join(types)
+        context["TokenSerial"] = " ".join(serials)
+        context["TokenType"] = " ".join(types)
+
+        g.audit["success"] = challenge_ongoing
+        g.audit["info"] = str(details)
+
 
 # eof###########################################################################
