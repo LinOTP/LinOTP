@@ -421,15 +421,17 @@ class ValidationHandler:
             if user and user != owner:
                 continue
 
-            # we only check the user password / token pin if the user
-            # paranmeter is given
-            if user and owner:
-                pin_match = check_pin(token, password, user=owner, options=None)
-            else:
-                pin_match = token.checkPin(password)
+            # In case the user is authenticated we don't need to check the pin
+            if context.get("selfservice", {}).get("state") != "authenticated":
+                # we only check the user password / token pin if the user
+                # paranmeter is given
+                if user and owner:
+                    pin_match = check_pin(token, password, user=owner, options=None)
+                else:
+                    pin_match = token.checkPin(password)
 
-            if not pin_match:
-                continue
+                if not pin_match:
+                    continue
 
             trans_dict = {
                 "received_count": ch.received_count,
