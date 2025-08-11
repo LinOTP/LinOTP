@@ -421,15 +421,17 @@ class ValidationHandler:
             if user and user != owner:
                 continue
 
-            # we only check the user password / token pin if the user
-            # paranmeter is given
-            if user and owner:
-                pin_match = check_pin(token, password, user=owner, options=None)
-            else:
-                pin_match = token.checkPin(password)
+            # In case the user is authenticated we don't need to check the pin
+            if context.get("selfservice", {}).get("state") != "authenticated":
+                # we only check the user password / token pin if the user
+                # paranmeter is given
+                if user and owner:
+                    pin_match = check_pin(token, password, user=owner, options=None)
+                else:
+                    pin_match = token.checkPin(password)
 
-            if not pin_match:
-                continue
+                if not pin_match:
+                    continue
 
             trans_dict = {
                 "received_count": ch.received_count,
@@ -957,6 +959,42 @@ class ValidationHandler:
                 opt = {"user": user.login, "realm": user.realm}
 
         return res, opt
+
+    def update_audit_with_challenges(
+        self, transid, challenge_ongoing=False, details=None
+    ):
+        """
+        Helper to collect challenge-related token info and update audit/request context.
+
+        :param transid: Transaction ID to look up challenges
+        :param challenge_ongoing: True if challenge available to resolve
+        :param details: contains details on the challenge
+        """
+        serials = []
+        types = []
+        owner = None
+        challenges = Challenges.lookup_challenges(transid=transid)
+
+        for ch in challenges:
+            tokens = get_tokens(serial=ch.getTokenSerial())
+            for token in tokens:
+                serials.append(token.getSerial())
+                types.append(token.getType())
+                if not owner:
+                    owner = get_token_owner(token)
+
+        if owner:
+            context["RequestUser"] = owner
+            g.audit["user"] = g.audit["user"] or owner.login
+            g.audit["realm"] = g.audit["realm"] or owner.realm
+
+        g.audit["serial"] = " ".join(serials)
+        g.audit["token_type"] = " ".join(types)
+        context["TokenSerial"] = " ".join(serials)
+        context["TokenType"] = " ".join(types)
+
+        g.audit["success"] = challenge_ongoing
+        g.audit["info"] = str(details)
 
 
 # eof###########################################################################

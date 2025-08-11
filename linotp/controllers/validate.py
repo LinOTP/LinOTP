@@ -36,7 +36,6 @@ from flask_babel import gettext as _
 from linotp.controllers.base import BaseController
 from linotp.lib import deprecated_methods
 from linotp.lib.auth.validate import ValidationHandler
-from linotp.lib.challenges import Challenges
 from linotp.lib.config import getFromConfig
 from linotp.lib.context import request_context
 from linotp.lib.error import ParameterError, ValidateError
@@ -51,7 +50,7 @@ from linotp.lib.policy import (
 )
 from linotp.lib.realm import getDefaultRealm
 from linotp.lib.reply import apply_detail_policies, sendQRImageResult, sendResult
-from linotp.lib.token import get_token, get_token_owner, get_tokens
+from linotp.lib.token import get_token, get_tokens
 from linotp.lib.user import User, getUserId, getUserInfo
 from linotp.model import db
 
@@ -277,8 +276,8 @@ class ValidateController(BaseController):
 
             use_offline = "use_offline" in param
 
-            va = ValidationHandler()
-            ok, opt = va.check_status(
+            vh = ValidationHandler()
+            ok, opt = vh.check_status(
                 transid=transid,
                 user=user,
                 serial=serial,
@@ -286,33 +285,7 @@ class ValidateController(BaseController):
                 use_offline=use_offline,
             )
 
-            serials = []
-            types = []
-            owner = None
-            challenges = Challenges.lookup_challenges(transid=transid)
-
-            for ch in challenges:
-                tokens = get_tokens(serial=ch.getTokenSerial())
-
-                for token in tokens:
-                    serials.append(token.getSerial())
-                    types.append(token.getType())
-
-                    if not owner:
-                        owner = get_token_owner(token)
-
-            if owner:
-                request_context["RequestUser"] = owner
-                g.audit["user"] = g.audit["user"] or owner.login
-                g.audit["realm"] = g.audit["realm"] or owner.realm
-
-            g.audit["serial"] = " ".join(serials)
-            g.audit["token_type"] = " ".join(types)
-            request_context["TokenSerial"] = " ".join(serials)
-            request_context["TokenType"] = " ".join(types)
-
-            g.audit["success"] = ok
-            g.audit["info"] = str(opt)
+            vh.update_audit_with_challenges(transid, challenge_ongoing=ok, details=opt)
 
             db.session.commit()
             return sendResult(ok, 0, opt=opt)

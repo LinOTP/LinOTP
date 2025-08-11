@@ -89,6 +89,8 @@ from linotp.lib.support import LicenseException
 from linotp.lib.token import (
     TokenHandler,
     get_multi_otp,
+    get_token,
+    get_token_owner,
     get_tokens,
     getTokenRealms,
     getTokenType,
@@ -176,6 +178,7 @@ def get_auth_user(request):
 
     if selfservice_cookie:
         user, _client, state, _state_data = get_cookie_authinfo(selfservice_cookie)
+        request_context.setdefault("selfservice", {})["state"] = state
         auth_type = "user_selfservice"
 
         return auth_type, user, state
@@ -191,6 +194,7 @@ def get_auth_user(request):
         user, _client, state, _state_data = get_cookie_authinfo(
             remote_selfservice_cookie
         )
+        request_context.setdefault("selfservice", {})["state"] = state
         auth_type = "userservice"
 
         return auth_type, user, state
@@ -1792,14 +1796,8 @@ class UserserviceController(BaseController):
                 raise ParameterError(msg)
 
             # -------------------------------------------------------------- --
-
-            # check for invalid params
-
-            supported_params = ["serial", "transactionid", "otp", "session"]
-            unknown_params = [p for p in params if p not in supported_params]
-            if len(unknown_params) > 0:
-                msg = f"unsupported parameters: {unknown_params!r}"
-                raise ParameterError(msg)
+            supported = {"serial", "transactionid", "otp", "session"}
+            params = {k: v for k, v in params.items() if k in supported}
 
             # -------------------------------------------------------------- --
 
@@ -1997,6 +1995,134 @@ class UserserviceController(BaseController):
             log.error("error verifying token with serial %s: %r", serial, exx)
             db.session.rollback()
             return sendError(exx, 1)
+
+    @methods(["POST"])
+    def activate_init(self):
+        """
+        activate_init - initialize the activation of a QR or Push token by triggering a challenge.
+        They are considered activated once the challenge has been successfully answered.
+
+        :param serial: the serial of the token you want to activate
+
+        :return: the usual validate/check response except it contains details regarding the challenge
+
+            {
+                "jsonrpc": "2.0802",
+                "result": {
+                    "status": true,
+                    "value": true
+                },
+                "version": "LinOTP 4.0.0.dev0",
+                "versionNumber": "4.0.0.dev0",
+                "id": 0,
+                "detail": {
+                    "transactionid": "60310817541239899",
+                    "message": "lseqr://chal/AQEAAACewSN3gT4TCo63C0E4Fyzzz6U7WrJNHMmiweWTDQ3tb-FVSaCn1gw61HwBoUydI7PAy52Ih_hDwhJckFx-EBUM3j0SRfmLhrTxUygItaHMXxh7QnPinlp1FG8CZrJ1mSPPzkgyP5zfktTdjpY3wN_KAEZA-7C9x9YY2S6cXVKGjh_kprOslhTt2S97M6d8dTLTTmADtYM",
+                    "linotp_tokenserial": "LSQR00103565",
+                    "linotp_tokentype": "qr",
+                    "linotp_tokendescription": "Created via SelfService"
+                }
+            }
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
+
+        """
+
+        params = self.request_params
+        serial = params["serial"]
+        try:
+            token = get_token(serial)
+            owner = get_token_owner(token)
+            if owner != g.authUser:
+                errmsg = "User is not the token owner"
+                raise Exception(errmsg)
+
+            if token.type not in ["qr", "push"]:
+                errmsg = f"Token type {token.type} not supported for activation"
+                raise ParameterError(errmsg)
+
+            (ok, opt) = Challenges.create_challenge(token, options={"data": serial})
+            ValidationHandler().update_audit_with_challenges(
+                opt.get("transactionid"), challenge_ongoing=ok, details=opt
+            )
+
+            db.session.commit()
+            return sendResult(ok, 0, opt=opt)
+
+        except Exception as exx:
+            log.error("activate failed: %r", exx)
+            g.audit["info"] = str(exx)
+            db.session.rollback()
+            return sendResult(False, 0)
+
+    @methods(["POST"])
+    def activate_check_status(self):
+        """
+        activate_check_status - called from the new selfservice web ui to check
+                                whether a challenge for a QR or Push token has
+                                been resolved
+
+        :param transactionid: the transaction id of the challenge we want to check the status for
+        :param use_offline: (optional) on success, the offline info is returned (applicable to token types that use `support_offline` policy)
+
+        :return: the usual validate/check response except it contains details
+                regarding the challenge
+
+                {
+                    "jsonrpc": "2.0802",
+                    "result": {
+                        "status": true,
+                        "value": true
+                    },
+                    "version": "LinOTP 4.0.0.dev0",
+                    "versionNumber": "4.0.0.dev0",
+                    "id": 0,
+                    "detail": {
+                        "transactions": {
+                            "58933395003611723": {
+                                "received_count": 1,
+                                "received_tan": true,
+                                "valid_tan": true,
+                                "message": "lseqr://chal/AQEAAACQvBNbX5Y4INrH3V-gAb5AGeFU3GoTEZU_T2bJeqGCXnQAWtPQyPrJbAqEwHGDauLmEWfffbTQVIhqnYj-79VK_Aram8Vm5-d779w4WAyww0CIXsXKOinMSjgktwIWB7yKgvHPnSrZGCBcP9hGDdURYOXB9oV7IxLJVCNyjCQkG4vRsqAd6t7Plh7N37Ql1PM6yE6IFTA",
+                                "status": "closed",
+                                "token": {
+                                "serial": "LSQR00531447",
+                                "type": "qr"
+                                }
+                            }
+                        }
+                    }
+                }
+
+        :raises Exception:
+            if an error occurs an exception is serialized and returned
+
+        """
+
+        params = self.request_params
+        transid = params["transactionid"]
+        use_offline = params.get("use_offline")
+        try:
+            vh = ValidationHandler()
+            ok, opt = vh.check_status(
+                transid=transid,
+                user=g.authUser,
+                serial=None,
+                password="",
+                use_offline=use_offline,
+            )
+
+            vh.update_audit_with_challenges(transid, challenge_ongoing=ok, details=opt)
+
+            db.session.commit()
+            return sendResult(ok, 0, opt=opt)
+
+        except Exception as exx:
+            log.error("activate failed: %r", exx)
+            g.audit["info"] = str(exx)
+            db.session.rollback()
+            return sendResult(False, 0)
 
     @methods(["POST"])
     def assign(self):

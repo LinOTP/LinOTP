@@ -352,34 +352,6 @@ class TestUserserviceTokenTest(TestUserserviceController):
 
         # ------------------------------------------------------------------ --
 
-        # verification with wrong parameters
-
-        otp = get_otp(seed2, counter=1, digits=6)
-
-        params = {"serial": "token_1", "oktop": otp}
-        response = self.make_userselfservice_request(
-            "verify", params=params, auth_user=auth_user
-        )
-
-        assert "false" in response
-        assert "unsupported parameters" in response
-
-        # ------------------------------------------------------------------ --
-
-        # verification with additional, not specified, parameters
-
-        otp = get_otp(seed2, counter=1, digits=6)
-
-        params = {"serial": "token_1", "otp": otp, "no": "doubt"}
-        response = self.make_userselfservice_request(
-            "verify", params=params, auth_user=auth_user
-        )
-
-        assert "false" in response
-        assert "unsupported parameters" in response
-
-        # ------------------------------------------------------------------ --
-
         # check for execption if selfservice 'verify' policy is not defined
 
         response = self.make_system_request("delPolicy", params={"name": "T1"})
@@ -738,7 +710,7 @@ class TestUserserviceTokenTest(TestUserserviceController):
         # for verification we can use tan or sig
 
         message = detail.get("message")
-        challenge, _sig, tan = QR.claculate_challenge_response(
+        challenge, _sig, tan = QR.calculate_challenge_response(
             message, token_info, secret_key
         )
 
@@ -802,7 +774,7 @@ class TestUserserviceTokenTest(TestUserserviceController):
         # for verification we can use tan or sig
 
         message = detail.get("transactionData")
-        challenge, _sig, tan = QR.claculate_challenge_response(
+        challenge, _sig, tan = QR.calculate_challenge_response(
             message, token_info, secret_key
         )
 

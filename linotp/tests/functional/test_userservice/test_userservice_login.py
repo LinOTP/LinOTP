@@ -65,19 +65,9 @@ class TestUserserviceLogin(TestUserserviceController):
 
     def setUp(self):
         # clean setup
-        self.delete_all_policies()
-        self.delete_all_token()
-        self.delete_all_realms()
-        self.delete_all_resolvers()
-
+        TestUserserviceController.setUp(self)
         response = self.make_system_request("setConfig", params={"splitAtSign": "true"})
         assert "false" not in response.body
-
-        TestUserserviceController.setUp(self)
-
-        # create the common resolvers and realm
-        self.create_common_resolvers()
-        self.create_common_realms()
 
     def tearDown(self):
         TestUserserviceController.tearDown(self)
@@ -638,7 +628,7 @@ class TestUserserviceLogin(TestUserserviceController):
         # for verification we can use tan or sig
 
         message = detail.get("message")
-        challenge, _sig, tan = QR.claculate_challenge_response(
+        challenge, _sig, tan = QR.calculate_challenge_response(
             message, token_info, secret_key
         )
 
@@ -1102,7 +1092,7 @@ class TestUserserviceLogin(TestUserserviceController):
         # - for verification we can use tan or sig as signature
 
         message = detail.get("transactionData")
-        challenge, _sig, tan = QR.claculate_challenge_response(
+        challenge, _sig, tan = QR.calculate_challenge_response(
             message, token_info, secret_key
         )
 
@@ -1239,7 +1229,7 @@ class TestUserserviceLogin(TestUserserviceController):
         # - for verification we can use tan or sig as signature
 
         message = detail.get("transactionData")
-        challenge, sig, tan = QR.claculate_challenge_response(
+        challenge, sig, tan = QR.calculate_challenge_response(
             message, token_info, secret_key
         )
 

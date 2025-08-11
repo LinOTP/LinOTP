@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Manage-UI shows info-box (success/error) for operation `Set PIN`
 - Caching of UserInfo per request to decrease request time of e.g. `/validate/check` to about half
 - a new `setOCRAPIN` admin policy is introduced that works exactly like `setMOTPPIN` and can only be used for ocra2 tokens
+- activation endpoints for qr and push tokens using the session for authentication instead of user credentials
 
 ### Changed
 
