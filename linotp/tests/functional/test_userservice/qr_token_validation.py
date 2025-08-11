@@ -133,7 +133,7 @@ class QR_Token_Validation:
         return ret
 
     @staticmethod
-    def claculate_challenge_response(challenge_url, token_info, secret_key):
+    def calculate_challenge_response(challenge_url, token_info, secret_key):
         return QR_Token_Validation.decrypt_and_verify_challenge(
             challenge_url, token_info, secret_key
         )
