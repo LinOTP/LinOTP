@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Caching of UserInfo per request to decrease request time of e.g. `/validate/check` to about half
 - a new `setOCRAPIN` admin policy is introduced that works exactly like `setMOTPPIN` and can only be used for ocra2 tokens
 - activation endpoints for qr and push tokens using the session for authentication instead of user credentials
+- Allow `type` parameter in FIDO U2F client data as a synonym of `typ`.
+- Allow `webauthn.get` assertions during FIDO U2F token authentication in
+  addition to `navigator.id.getAssertion`. This is because no modern browser
+  supports the FIDO U2F API, and we need to make do with FIDO2 instead.
 
 ### Changed
 
@@ -53,6 +57,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - To set the motp pin via `/admin/setPin`, the admin policy `setMOTPPIN` is sufficient
 - Setting OCRA PIN via Manage-UI
 - `setMOTPPIN` admin policy only allows setting userpin for motp tokens, not ocra2 or any other token type
+- If `otppin=1` policy is set when trying to enrol an FIDO U2F token, assume `otppin=0`
+  instead
 
 ## [3.4.4-1] - 2025-06-18
 
