@@ -403,8 +403,8 @@ def _checkSelfservicePolicyPost(method, param=None, user=None):
     if user is None:
         user = _getUserFromParam()
 
-    if method == "enroll":
-        # check if we are supposed to genereate a random OTP PIN
+    if method == "enroll" and "pin" not in param:
+        # check if we are supposed to generate a random OTP PIN given the user has not set one
         randomPINLength = _getRandomOTPPINLength(user)
 
         if randomPINLength > 0:
