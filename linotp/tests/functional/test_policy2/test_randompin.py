@@ -51,7 +51,7 @@ class TestRandompinController(TestController):
             "type": "hmac",
             "serial": None,
             "otplen": 6,
-            "pin": "123456",  # FIXME: Rewrite tests to make sense once fixed in LINOTP-2294 - LinOTP 4.0 currently requires a PIN to be set when setOTPPIN is active, yet it is overwritten by the random PIN
+            "pin": "123456",
             "otps": deque(
                 [
                     "755224",
@@ -255,22 +255,22 @@ class TestRandompinController(TestController):
         token2 = deepcopy(self.tokens[0])
 
         # Enroll first token without otp_pin_random policy
+        token1.pop("pin")
         self._enroll_token_in_selfservice(user, pwd, token1)
         # Login with only OTP succeeds
-        self._validate_check_s(
-            token1["serial"], token1["pin"] + token1["otps"].popleft()
-        )
+        self._validate_check_s(token1["serial"], token1["otps"].popleft())
 
         self.create_policy(self.randompin_policy)
 
-        # Enroll second token with otp_pin_random policy
+        # Enroll second token with otp_pin_random policy without setotppin
+        token2.pop("pin")
         self._enroll_token_in_selfservice(user, pwd, token2)
-        # Login with only OTP fails (because PIN is unknown)
+        # Login with OTP does not work (because PIN is random)
         self._validate_check_s(
             token2["serial"], token2["otps"].popleft(), expected="value-false"
         )
 
-        self.create_policy(self.setotppin_policy)
+        self._create_setotppin_policy("myDefRealm")
 
         # Enroll second token with otp_pin_random policy with setotppin
         self._enroll_token_in_selfservice(user, pwd, token3)
@@ -468,8 +468,8 @@ class TestRandompinController(TestController):
         )
 
         content = response.json
-        assert content["result"]["status"]
-        assert content["result"]["value"]
+        assert content["result"]["status"], content
+        assert content["result"]["value"], content
         token["serial"] = content["detail"]["serial"]
 
     def _enroll_token(self, token, user=None):
