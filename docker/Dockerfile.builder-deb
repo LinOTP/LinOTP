@@ -32,7 +32,11 @@ FROM $BASE_IMAGE
 
 ARG DEBIAN_MIRROR=deb.debian.org
 
-RUN sed -i "s#http://deb\.debian\.org/#http://${DEBIAN_MIRROR}/#" /etc/apt/sources.list \
+RUN \
+    # Use Debian archive for buster (EOL)
+    echo "deb http://archive.debian.org/debian buster main" > /etc/apt/sources.list \
+    && echo "deb http://archive.debian.org/debian-security buster/updates main" >> /etc/apt/sources.list \
+    && echo "deb http://archive.debian.org/debian buster-updates main" >> /etc/apt/sources.list \
     && apt-get update \
     && apt-get --no-install-recommends --yes install \
         build-essential devscripts equivs libfile-fcntllock-perl rename git git-buildpackage
