@@ -14,31 +14,30 @@ ARG DEBIAN_MIRROR=deb.debian.org
 ENV TZ="Europe/Berlin" \
     PYTESTARGS=
 
-RUN echo 'APT::Install-Recommends "0"; \n\
-            APT::Get::Assume-Yes "true"; \n\
-            APT::Install-Suggests "0";' \
-            > /etc/apt/apt.conf.d/01buildconfig \
-    && sed -i "s#http://deb\.debian\.org/#http://${DEBIAN_MIRROR}/#" \
-        /etc/apt/sources.list \
+RUN  \
+    # Use Debian archive for buster (EOL)
+    echo "deb http://archive.debian.org/debian buster main" > /etc/apt/sources.list \
+    && echo "deb http://archive.debian.org/debian-security buster/updates main" >> /etc/apt/sources.list \
+    && echo "deb http://archive.debian.org/debian buster-updates main" >> /etc/apt/sources.list \
     # Use eatmydata to speed up apt-get and pip operations \
     && echo "deb [trusted=yes] http://debs-devel.corp.linotp.de/linotp3 buster linotp" > /etc/apt/sources.list.d/linotp-org.list \
     && apt-get update \
-    && apt-get install eatmydata \
+    && apt-get install -y --no-install-recommends eatmydata \
     && for F in apt-get apache2 mariadb-server; do ln -s /usr/bin/eatmydata /usr/local/bin/$F; done
 
 # Install services that should be available on the machine before upgades are attempted
-RUN apt-get install \
-        apache2 \
-        dbconfig-common \
-        mariadb-server \
-        postgresql \
-        python3-pycryptodome \
-        python3-flask \
-        python3-flask-babel \
-        python3-pip \
-        python3-setuptools \
-        python3-wheel \
-        wget \
+RUN apt-get install -y --no-install-recommends \
+    apache2 \
+    dbconfig-common \
+    mariadb-server \
+    postgresql \
+    python3-pycryptodome \
+    python3-flask \
+    python3-flask-babel \
+    python3-pip \
+    python3-setuptools \
+    python3-wheel \
+    wget \
     && a2enmod -q auth_digest \
     && a2dismod -q unique_id \
     && a2dismod -q autoindex -f \

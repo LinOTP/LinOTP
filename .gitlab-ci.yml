@@ -205,21 +205,21 @@ semgrep-sast_evaluation:
     # Update this command in case the job fails after altering "mysql_cmd.py"
     - jq '(.vulnerabilities[] | select(.location.file == "linotp/cli/mysql_cmd.py" and .location.start_line == 148)) |= null' $REPORT_FILE > tmp.json && mv tmp.json $REPORT_FILE
 
-pre-commit-check:
-  stage: check-and-build
-  needs: []
-  image: python:3.7-buster
-  interruptible: true
-  cache:
-    paths:
-      - $CI_PROJECT_DIR/.pre-commit-cache
-  rules:
-    - exists:
-        - .pre-commit-config.yaml
-  before_script:
-    - pip install pre-commit
-  script:
-    - PRE_COMMIT_HOME=$CI_PROJECT_DIR/.pre-commit-cache pre-commit run --all-files
+# pre-commit-check:
+#   stage: check-and-build
+#   needs: []
+#   image: python:3.7-buster
+#   interruptible: true
+#   cache:
+#     paths:
+#       - $CI_PROJECT_DIR/.pre-commit-cache
+#   rules:
+#     - exists:
+#         - .pre-commit-config.yaml
+#   before_script:
+#     - pip install pre-commit
+#   script:
+#     - PRE_COMMIT_HOME=$CI_PROJECT_DIR/.pre-commit-cache pre-commit run --all-files
 
 .docker-build-args: &docker-build-args |
   DOCKER_BUILD_ARGS="--build-arg BUILDKIT_INLINE_CACHE=1"

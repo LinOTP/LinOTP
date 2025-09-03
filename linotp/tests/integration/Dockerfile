@@ -14,15 +14,15 @@ ENV LINOTP_HOST=linotp \
 	PYTEST_ADDOPTS="-o cache_dir=/dev/null"
 
 RUN apt-get update && \
-	apt-get install \
-		make \
-		python3-pytest-flask \
-		python3-pytest-cov \
-		python3-flaky \
-		python3-selenium \
-		python3-packaging \
-		python3-pip \
-		python3-wheel
+	apt-get install -y --no-install-recommends \
+	make \
+	python3-pytest-flask \
+	python3-pytest-cov \
+	python3-flaky \
+	python3-selenium \
+	python3-packaging \
+	python3-pip \
+	python3-wheel
 
 RUN pip3 install pytest-testconfig
 
@@ -34,11 +34,11 @@ RUN update-ca-certificates
 WORKDIR /opt/linotp/tests/integration
 
 ENTRYPOINT [ \
-		"/usr/local/bin/dockerfy", \
-			"--template", "docker_cfg.ini.tmpl:/tmp/server_cfg.ini", \
-			"--wait", "tcp://{{ .Env.SELENIUM_HOST }}:{{ .Env.SELENIUM_PORT }}", "--timeout", "60s", \
-			"--wait", "tcp://{{ .Env.LINOTP_HOST }}:{{ .Env.LINOTP_PORT }}", "--timeout", "60s", \
-			"--" \
+	"/usr/local/bin/dockerfy", \
+	"--template", "docker_cfg.ini.tmpl:/tmp/server_cfg.ini", \
+	"--wait", "tcp://{{ .Env.SELENIUM_HOST }}:{{ .Env.SELENIUM_PORT }}", "--timeout", "60s", \
+	"--wait", "tcp://{{ .Env.LINOTP_HOST }}:{{ .Env.LINOTP_PORT }}", "--timeout", "60s", \
+	"--" \
 	]
 
 CMD [ "/usr/bin/make", "integrationtests", "TCFILE=/tmp/server_cfg.ini" ]
