@@ -1308,10 +1308,10 @@ class UserserviceController(BaseController):
             db.session.commit()
             return sendResult(res, 1)
 
-        except PolicyException as pe:
-            log.error("[enable] policy failed %r", pe)
+        except PolicyException as pol_ex:
+            log.error("[enable] policy failed %r", pol_ex)
             db.session.rollback()
-            return sendError(pe, 1)
+            return sendError(pol_ex, 1)
 
         except LicenseException as lex:
             log.error("[enable] license exception: %r", lex)
@@ -1370,10 +1370,10 @@ class UserserviceController(BaseController):
             db.session.commit()
             return sendResult(res, 1)
 
-        except PolicyException as pe:
-            log.error("policy failed %r", pe)
+        except PolicyException as pol_ex:
+            log.error("policy failed %r", pol_ex)
             db.session.rollback()
-            return sendError(pe, 1)
+            return sendError(pol_ex, 1)
 
         except Exception as e:
             log.error("failed: %r", e)
@@ -1426,10 +1426,10 @@ class UserserviceController(BaseController):
             db.session.commit()
             return sendResult(res, 1)
 
-        except PolicyException as pe:
-            log.error("[userdelete] policy failed: %r", pe)
+        except PolicyException as pol_ex:
+            log.error("[userdelete] policy failed: %r", pol_ex)
             db.session.rollback()
-            return sendError(pe, 1)
+            return sendError(pol_ex, 1)
 
         except Exception as e:
             log.error(
@@ -1482,10 +1482,10 @@ class UserserviceController(BaseController):
             db.session.commit()
             return sendResult(res, 1)
 
-        except PolicyException as pe:
-            log.error("policy failed: %r", pe)
+        except PolicyException as pol_ex:
+            log.error("policy failed: %r", pol_ex)
             db.session.rollback()
-            return sendError(pe, 1)
+            return sendError(pol_ex, 1)
 
         except Exception as e:
             log.error("error resetting token with serial %s: %r", serial, e)
@@ -1545,10 +1545,10 @@ class UserserviceController(BaseController):
             db.session.commit()
             return sendResult(res, 1)
 
-        except PolicyException as pe:
-            log.error("policy failed: %r", pe)
+        except PolicyException as pol_ex:
+            log.error("policy failed: %r", pol_ex)
             db.session.rollback()
-            return sendError(pe, 1)
+            return sendError(pol_ex, 1)
 
         except Exception as e:
             log.error("unassigning token %s of user %s failed! %r", serial, c.user, e)
@@ -1615,10 +1615,10 @@ class UserserviceController(BaseController):
             db.session.commit()
             return sendResult(res, 1)
 
-        except PolicyException as pex:
-            log.error("policy failed: %r", pex)
+        except PolicyException as pol_ex:
+            log.error("policy failed: %r", pol_ex)
             db.session.rollback()
-            return sendError(pex, 1)
+            return sendError(pol_ex, 1)
 
         except Exception as exx:
             log.error("Error setting OTP PIN: %r", exx)
@@ -1668,10 +1668,10 @@ class UserserviceController(BaseController):
             db.session.commit()
             return sendResult(res, 1)
 
-        except PolicyException as pex:
-            log.error("policy failed: %r", pex)
+        except PolicyException as pol_ex:
+            log.error("policy failed: %r", pol_ex)
             db.session.rollback()
-            return sendError(pex, 1)
+            return sendError(pol_ex, 1)
 
         except Exception as exx:
             log.error("Error setting the mOTP PIN %r", exx)
@@ -1728,10 +1728,10 @@ class UserserviceController(BaseController):
             db.session.commit()
             return sendResult(res, 1)
 
-        except PolicyException as pe:
-            log.error("policy failed: %r", pe)
+        except PolicyException as pol_ex:
+            log.error("policy failed: %r", pol_ex)
             db.session.rollback()
-            return sendError(pe, 1)
+            return sendError(pol_ex, 1)
 
         except Exception as e:
             log.error("error resyncing token with serial %s:%r", serial, e)
@@ -1985,10 +1985,10 @@ class UserserviceController(BaseController):
                 db.session.commit()
                 return sendResult(False, opt=detail_response)
 
-        except PolicyException as pe:
-            log.error("policy failed: %r", pe)
+        except PolicyException as pol_ex:
+            log.error("policy failed: %r", pol_ex)
             db.session.rollback()
-            return sendError(pe)
+            return sendError(pol_ex)
 
         except Exception as exx:
             g.audit["success"] = False
@@ -2059,10 +2059,10 @@ class UserserviceController(BaseController):
             db.session.commit()
             return sendResult(ok, 0, opt=opt)
 
-        except PolicyException as pe:
-            log.error("[activate_init] policy failed: %r", pe)
+        except PolicyException as pol_ex:
+            log.error("[activate_init] policy failed: %r", pol_ex)
             db.session.rollback()
-            return sendError(pe, 1)
+            return sendError(pol_ex, 1)
         except Exception as exx:
             log.error("activate failed: %r", exx)
             g.audit["info"] = str(exx)
@@ -2220,10 +2220,10 @@ class UserserviceController(BaseController):
             db.session.commit()
             return sendResult(res, 1)
 
-        except PolicyException as pe:
-            log.error("[userassign] policy failed: %r", pe)
+        except PolicyException as pol_ex:
+            log.error("[userassign] policy failed: %r", pol_ex)
             db.session.rollback()
-            return sendError(pe, 1)
+            return sendError(pol_ex, 1)
 
         except Exception as exx:
             log.error("[userassign] token assignment failed! %r", exx)
@@ -2276,10 +2276,10 @@ class UserserviceController(BaseController):
             db.session.commit()
             return sendResult(res, 1)
 
-        except PolicyException as pe:
-            log.error("policy failed: %r", pe)
+        except PolicyException as pol_ex:
+            log.error("policy failed: %r", pol_ex)
             db.session.rollback()
-            return sendError(pe, 1)
+            return sendError(pol_ex, 1)
 
         except Exception as exx:
             log.error("token getSerialByOtp failed! %r", exx)
@@ -2488,10 +2488,10 @@ class UserserviceController(BaseController):
             else:
                 return sendResult(ret, opt=response_detail)
 
-        except PolicyException as pe:
-            log.error("[userinit] policy failed: %r", pe)
+        except PolicyException as pol_ex:
+            log.error("[userinit] policy failed: %r", pol_ex)
             db.session.rollback()
-            return sendError(pe, 1)
+            return sendError(pol_ex, 1)
 
         except LicenseException as lex:
             log.error("[enroll] license exception: %r", lex)
@@ -2565,10 +2565,10 @@ class UserserviceController(BaseController):
             db.session.commit()
             return sendResult(ret, 0)
 
-        except PolicyException as pe:
-            log.error("[usergetmultiotp] policy failed: %r", pe)
+        except PolicyException as pol_ex:
+            log.error("[usergetmultiotp] policy failed: %r", pol_ex)
             db.session.rollback()
-            return sendError(pe, 1)
+            return sendError(pol_ex, 1)
 
         except Exception as e:
             log.error("[usergetmultiotp] gettoken/getmultiotp failed: %r", e)
@@ -2638,10 +2638,10 @@ class UserserviceController(BaseController):
             db.session.commit()
             return json.dumps(res, indent=3)
 
-        except PolicyException as pe:
-            log.error("[search] policy failed: %r", pe)
+        except PolicyException as pol_ex:
+            log.error("[search] policy failed: %r", pol_ex)
             db.session.rollback()
-            return sendError(pe, 1)
+            return sendError(pol_ex, 1)
 
         except Exception as exx:
             log.error("[search] audit/search failed: %r", exx)
@@ -2736,10 +2736,10 @@ class UserserviceController(BaseController):
             db.session.commit()
             return sendResult({"activate": True, "ocratoken": ret})
 
-        except PolicyException as pe:
-            log.error("policy failed: %r", pe)
+        except PolicyException as pol_ex:
+            log.error("policy failed: %r", pol_ex)
             db.session.rollback()
-            return sendError(pe, 1)
+            return sendError(pol_ex, 1)
 
         except Exception as exx:
             log.error("token initialization failed! %r", exx)
@@ -2810,10 +2810,10 @@ class UserserviceController(BaseController):
             db.session.commit()
             return sendResult(value, opt)
 
-        except PolicyException as pe:
-            log.error("[userfinishocra2token] policy failed: %r", pe)
+        except PolicyException as pol_ex:
+            log.error("[userfinishocra2token] policy failed: %r", pol_ex)
             db.session.rollback()
-            return sendError(pe, 1)
+            return sendError(pol_ex, 1)
 
         except Exception as e:
             error = f"[userfinishocra2token] token initialization failed! {e!r}"
@@ -2877,10 +2877,10 @@ class UserserviceController(BaseController):
             db.session.commit()
             return sendResult(res, 1)
 
-        except PolicyException as pex:
-            log.error("[setdescription] policy failed")
+        except PolicyException as pol_ex:
+            log.error("[setdescription] policy failed: %r", pol_ex)
             db.session.rollback()
-            return sendError(pex, 1)
+            return sendError(pol_ex, 1)
 
         except Exception as exx:
             log.error("failed: %r", exx)
