@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - a new `setOCRAPIN` admin policy is introduced that works exactly like `setMOTPPIN` and can only be used for ocra2 tokens
 - Activation challenges for QR and Push tokens can be triggered by users via `/userservice/activate_init`.
   This allows for a better UX, as an authenticated user does not have to provide their credentials again (current workflow `/validate`).
+  Users need to have selfservice policies `activate_PushToken` or `activate_QRToken` respectively to be allowed to do so.
 - Allow `type` parameter in FIDO U2F client data as a synonym of `typ`.
 - Allow `webauthn.get` assertions during FIDO U2F token authentication in
   addition to `navigator.id.getAssertion`. This is because no modern browser
