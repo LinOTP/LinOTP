@@ -1525,6 +1525,33 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
             _("The policy settings do not allow you to issue this request!")
         )
 
+    elif method == "useractivateqrtoken":
+        if get_selfservice_actions(authUser, "activate_QRToken"):
+            return ret
+
+        log.warning(
+            "user %r@%r is not allowed to call this function!",
+            authUser.login,
+            authUser.realm,
+        )
+
+        raise PolicyException(
+            _("The policy settings do not allow you to issue this request!")
+        )
+    elif method == "useractivatepushtoken":
+        if get_selfservice_actions(authUser, "activate_PushToken"):
+            return ret
+
+        log.warning(
+            "user %r@%r is not allowed to call this function!",
+            authUser.login,
+            authUser.realm,
+        )
+
+        raise PolicyException(
+            _("The policy settings do not allow you to issue this request!")
+        )
+
     elif method == "userassign":
         if not get_selfservice_actions(authUser, "assign"):
             log.warning(

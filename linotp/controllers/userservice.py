@@ -2042,6 +2042,15 @@ class UserserviceController(BaseController):
                 errmsg = f"Token type {token.type} not supported for activation"
                 raise ParameterError(errmsg)
 
+            # check selfservice authorization
+            policy_to_check = (
+                "useractivatepushtoken"
+                if token.type == "push"
+                else "useractivateqrtoken"
+            )
+            checkPolicyPre("selfservice", policy_to_check, params, g.authUser)
+
+            # create challenge
             (ok, opt) = Challenges.create_challenge(token, options={"data": serial})
             ValidationHandler().update_audit_with_challenges(
                 opt.get("transactionid"), challenge_ongoing=ok, details=opt
@@ -2050,6 +2059,10 @@ class UserserviceController(BaseController):
             db.session.commit()
             return sendResult(ok, 0, opt=opt)
 
+        except PolicyException as pe:
+            log.error("[activate_init] policy failed: %r", pe)
+            db.session.rollback()
+            return sendError(pe, 1)
         except Exception as exx:
             log.error("activate failed: %r", exx)
             g.audit["info"] = str(exx)
