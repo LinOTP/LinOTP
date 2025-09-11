@@ -261,10 +261,10 @@ class TokensController(BaseController):
             db.session.commit()
             return sendResult(result)
 
-        except PolicyException as pe:
-            log.exception("[get_tokens] policy failed: %r", pe)
+        except PolicyException as pol_ex:
+            log.exception("[get_tokens] policy failed: %r", pol_ex)
             db.session.rollback()
-            error = sendError(pe)
+            error = sendError(pol_ex)
             error.status_code = 403
             return error
 
@@ -361,10 +361,10 @@ class TokensController(BaseController):
             db.session.commit()
             return sendResult(formatted_token)
 
-        except PolicyException as pe:
-            log.exception("[get_token_by_serial] policy failed: %r", pe)
+        except PolicyException as pol_ex:
+            log.exception("[get_token_by_serial] policy failed: %r", pol_ex)
             db.session.rollback()
-            error = sendError(pe)
+            error = sendError(pol_ex)
             error.status_code = 403
             return error
 

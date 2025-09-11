@@ -29,6 +29,35 @@ class TestActivate(TestUserserviceController):
         # necessary for rendering the qr code in the selfservice
         assert "message" in jresp["detail"]
 
+    def test_activate_init_fails_without_policy(self):
+        # GIVEN: No selfservice policy `activate_QRToken`
+        # Overwrite `enroll_policy` (from `self.setup_token_policies`) to disallow activation
+        params = {
+            "name": "enroll_policy",
+            "scope": "selfservice",
+            "action": "enrollQR",
+            "realm": "*",
+            "user": "*",
+        }
+        self.make_system_request(action="setPolicy", params=params)
+
+        # WHEN: Trying to activate the QR_Token
+        params = {"serial": SERIAL}
+        response = self.make_userservice_request(
+            "activate_init",
+            params=params,
+            auth_user=AUTH_USER,
+        )
+
+        # THEN: Activation fails
+        jresp = response.json
+        assert not jresp["result"]["status"]
+        assert (
+            jresp["result"]["error"]["message"]
+            == "ERR410: The policy settings do not allow you to issue this request!"
+        )
+        assert "detail" not in jresp
+
     def test_activate_init_invalid_token_type(self):
         params = {"serial": SERIAL}
         response = self.make_userservice_request(

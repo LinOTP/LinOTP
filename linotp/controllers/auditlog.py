@@ -172,10 +172,10 @@ class AuditlogController(BaseController):
 
         try:
             checkPolicyPre("audit", "view")
-        except PolicyException as pe:
-            log.error("[getAuditEntries] policy failed: %r", pe)
+        except PolicyException as pol_ex:
+            log.error("[getAuditEntries] policy failed: %r", pol_ex)
             db.session.rollback()
-            error = sendError(pe)
+            error = sendError(pol_ex)
             error.status_code = 403
             return error
 

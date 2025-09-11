@@ -176,10 +176,10 @@ class ReportingController(BaseController):
             }
             return sendResult(result)
 
-        except PolicyException as policy_exception:
-            log.error(policy_exception)
+        except PolicyException as pol_ex:
+            log.error(pol_ex)
             db.session.rollback()
-            return sendError(policy_exception, 1)
+            return sendError(pol_ex, 1)
 
         except Exception as exc:
             log.error(exc)
@@ -290,10 +290,10 @@ class ReportingController(BaseController):
 
             return sendResult(result)
 
-        except PolicyException as policy_exception:
-            log.error(policy_exception)
+        except PolicyException as pol_ex:
+            log.error(pol_ex)
             db.session.rollback()
-            return sendError(policy_exception, 1)
+            return sendError(pol_ex, 1)
 
         except Exception as exc:
             log.error(exc)
@@ -350,10 +350,10 @@ class ReportingController(BaseController):
             db.session.commit()
             return sendResult(result)
 
-        except PolicyException as policy_exception:
-            log.error(policy_exception)
+        except PolicyException as pol_ex:
+            log.error(pol_ex)
             db.session.rollback()
-            return sendError(policy_exception, 1)
+            return sendError(pol_ex, 1)
 
         except Exception as exc:
             log.error(exc)
@@ -402,10 +402,10 @@ class ReportingController(BaseController):
             db.session.commit()
             return sendResult(result)
 
-        except PolicyException as policy_exception:
-            log.error(policy_exception)
+        except PolicyException as pol_ex:
+            log.error(pol_ex)
             db.session.rollback()
-            return sendError(policy_exception, 1)
+            return sendError(pol_ex, 1)
 
         except ValueError as value_error:
             log.error(value_error)
@@ -505,10 +505,10 @@ class ReportingController(BaseController):
                     mimetype="application/json",
                 )
 
-        except PolicyException as policy_exception:
-            log.error(policy_exception)
+        except PolicyException as pol_ex:
+            log.error(pol_ex)
             db.session.rollback()
-            return sendError(policy_exception, 1)
+            return sendError(pol_ex, 1)
 
         except ValueError as value_error:
             log.error(value_error)

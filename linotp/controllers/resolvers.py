@@ -135,10 +135,10 @@ class ResolversController(BaseController):
             # gets translated into system/read
             checkPolicyPre("system", "getResolvers")
 
-        except PolicyException as pe:
-            log.error("[get_resolvers] policy failed: %r", pe)
+        except PolicyException as pol_ex:
+            log.error("[get_resolvers] policy failed: %r", pol_ex)
             db.session.rollback()
-            error = sendError(pe)
+            error = sendError(pol_ex)
             error.status_code = 403
             return error
 

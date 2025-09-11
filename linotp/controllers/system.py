@@ -537,10 +537,10 @@ class SystemController(BaseController):
             db.session.commit()
             return sendResult(realms, 1)
 
-        except PolicyException as pex:
-            log.error("[getRealms] policy exception: %r", pex)
+        except PolicyException as pol_ex:
+            log.error("[getRealms] policy exception: %r", pol_ex)
             db.session.rollback()
-            return sendError(pex)
+            return sendError(pol_ex)
 
         except Exception as exx:
             log.error("[getRealms] error getting realms: %r", exx)
@@ -2256,10 +2256,10 @@ class SystemController(BaseController):
 
             db.session.commit()
             return sendResult(statuses)
-        except PolicyException as policy_exception:
-            log.error(policy_exception)
+        except PolicyException as pol_ex:
+            log.error(pol_ex)
             db.session.rollback()
-            return sendError(policy_exception, 1)
+            return sendError(pol_ex, 1)
         except Exception as exc:
             log.error(exc)
             db.session.rollback()

@@ -389,12 +389,12 @@ class ToolsController(BaseController):
 
             return sendResult(result)
 
-        except PolicyException as pexx:
-            log.error("Error during user import: %r", pexx)
+        except PolicyException as pol_ex:
+            log.error("Error during user import: %r", pol_ex)
 
             db.session.rollback()
 
-            return sendError(f"{pexx!r}", 1)
+            return sendError(f"{pol_ex!r}", 1)
 
         except Exception as exx:
             log.error("Error during user import: %r", exx)

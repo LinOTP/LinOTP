@@ -200,10 +200,10 @@ class ManageController(BaseController):
             ren = render("/manage/manage-base.mako")
             return ren
 
-        except PolicyException as pe:
-            log.error("[index] Error during checking policies: %r", pe)
+        except PolicyException as pol_ex:
+            log.error("[index] Error during checking policies: %r", pol_ex)
             db.session.rollback()
-            return sendError(pe, 1)
+            return sendError(pol_ex, 1)
 
         except Exception as ex:
             log.error("[index] failed! %r", ex)
@@ -429,10 +429,10 @@ class ManageController(BaseController):
             # The flexi handler should support std LinOTP output
             return sendResult(res)
 
-        except PolicyException as pe:
-            log.error("[tokenview_flexi] Error during checking policies: %r", pe)
+        except PolicyException as pol_ex:
+            log.error("[tokenview_flexi] Error during checking policies: %r", pol_ex)
             db.session.rollback()
-            return sendError(pe, 1)
+            return sendError(pol_ex, 1)
 
         except Exception as exx:
             log.error("[tokenview_flexi] failed: %r", exx)
@@ -564,10 +564,10 @@ class ManageController(BaseController):
             db.session.commit()
             return sendResult(res)
 
-        except PolicyException as pe:
-            log.error("[userview_flexi] Error during checking policies: %r", pe)
+        except PolicyException as pol_ex:
+            log.error("[userview_flexi] Error during checking policies: %r", pol_ex)
             db.session.rollback()
-            return sendError(pe, 1)
+            return sendError(pol_ex, 1)
 
         except Exception as exx:
             log.error("[userview_flexi] failed: %r", exx)
@@ -630,10 +630,10 @@ class ManageController(BaseController):
 
             return render("/manage/tokeninfo.mako").decode("utf-8")
 
-        except PolicyException as pe:
-            log.error("[tokeninfo] Error during checking policies: %r", pe)
+        except PolicyException as pol_ex:
+            log.error("[tokeninfo] Error during checking policies: %r", pol_ex)
             db.session.rollback()
-            return sendError(pe, 1)
+            return sendError(pol_ex, 1)
 
         except Exception as exx:
             log.error("[tokeninfo] failed! %r", exx)

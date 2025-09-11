@@ -161,10 +161,10 @@ class AuditController(BaseController):
 
             return streamed_response
 
-        except PolicyException as pe:
-            log.error("[getotp] gettoken/getotp policy failedi: %r", pe)
+        except PolicyException as pol_ex:
+            log.error("[getotp] gettoken/getotp policy failedi: %r", pol_ex)
             db.session.rollback()
-            return sendError(pe, 1)
+            return sendError(pol_ex, 1)
 
         except Exception as exx:
             log.error("[search] audit/search failed: %r", exx)
