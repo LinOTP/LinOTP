@@ -135,14 +135,19 @@ class TestRandompinController(TestController):
             token["otps"].popleft(),
         )
 
+    def test_simple_enroll_random(self):
+        """
+        Negative test for 'test_simple_enroll' with 'randompin_policy'
+        """
         self.create_policy(self.randompin_policy)
 
-        # Enroll new token
-        token2 = deepcopy(self.tokens[0])
-        self._enroll_token(token2, user=user)
+        # Enroll token
+        user = "aἰσχύλος"  # realm myDefRealm  # noqa: RUF001
+        token = deepcopy(self.tokens[0])
+        self._enroll_token(token, user=user)
 
         # Login with only OTP fails
-        self._validate(user, token2["otps"].popleft(), expected="value-false")
+        self._validate(user, token["otps"].popleft(), expected="value-false")
 
     def test_simple_assign(self):
         """
@@ -171,22 +176,27 @@ class TestRandompinController(TestController):
             token["otps"].popleft(),
         )
 
-        self.create_policy(self.randompin_policy)
-
+    def test_simple_assign_random(self):
+        """
+        Same as 'test_simple_assign' but added 'randompin_policy'
+        """
         # Enroll token
         user = "aἰσχύλος"  # realm myDefRealm  # noqa: RUF001
-        token2 = deepcopy(self.tokens[0])
-        self._enroll_token(token2)
+        token = deepcopy(self.tokens[0])
+
+        self.create_policy(self.randompin_policy)
+
+        self._enroll_token(token)
 
         # Login with only OTP fails (PIN unknown)
         self._validate_check_s(
-            token2["serial"], token2["otps"].popleft(), expected="value-false"
+            token["serial"], token["otps"].popleft(), expected="value-false"
         )
 
-        self._assign(token2["serial"], user)
+        self._assign(token["serial"], user)
 
         # Login with only OTP fails (PIN unknown)
-        self._validate(user, token2["otps"].popleft(), expected="value-false")
+        self._validate(user, token["otps"].popleft(), expected="value-false")
 
     def test_multi_assign(self):
         """
@@ -244,40 +254,56 @@ class TestRandompinController(TestController):
 
     def test_selfservice_enroll(self):
         """
-        otp_pin_random sets a random pin when enrolling a token in selfservice
+        Tests enroling a Token in selfservice
         """
 
         self.create_policy(self.enroll_policy)
 
         user = "aἰσχύλος"  # realm myDefRealm  # noqa: RUF001
         pwd = "Πέρσαι"
-        token1 = deepcopy(self.tokens[0])
-        token2 = deepcopy(self.tokens[0])
+        token = deepcopy(self.tokens[0])
 
         # Enroll first token without otp_pin_random policy
-        token1.pop("pin")
-        self._enroll_token_in_selfservice(user, pwd, token1)
+        token.pop("pin")
+        self._enroll_token_in_selfservice(user, pwd, token)
         # Login with only OTP succeeds
-        self._validate_check_s(token1["serial"], token1["otps"].popleft())
+        self._validate_check_s(token["serial"], token["otps"].popleft())
 
+    def test_selfservice_enroll_random(self):
+        """
+        Tests enroling a Token in selfservice with no pin and 'randompin_policy'
+        """
+        user = "aἰσχύλος"  # realm myDefRealm  # noqa: RUF001
+        pwd = "Πέρσαι"
+        token = deepcopy(self.tokens[0])
+
+        self.create_policy(self.enroll_policy)
         self.create_policy(self.randompin_policy)
 
         # Enroll second token with otp_pin_random policy without setotppin
-        token2.pop("pin")
-        self._enroll_token_in_selfservice(user, pwd, token2)
+        token.pop("pin")
+        self._enroll_token_in_selfservice(user, pwd, token)
         # Login with OTP does not work (because PIN is random)
         self._validate_check_s(
-            token2["serial"], token2["otps"].popleft(), expected="value-false"
+            token["serial"], token["otps"].popleft(), expected="value-false"
         )
 
-        self._create_setotppin_policy("myDefRealm")
+    def test_selfservice_enroll_random_setpin(self):
+        """
+        Tests enroling a Token in selfservice with pin and 'randompin_policy'
+        """
+        user = "aἰσχύλος"  # realm myDefRealm  # noqa: RUF001
+        pwd = "Πέρσαι"
+        token = deepcopy(self.tokens[0])
+
+        self.create_policy(self.enroll_policy)
+        self.create_policy(self.randompin_policy)
+        self.create_policy(self.setotppin_policy)
 
         # Enroll second token with otp_pin_random policy with setotppin
-        self._enroll_token_in_selfservice(user, pwd, token3)
+        self._enroll_token_in_selfservice(user, pwd, token)
         # Login with Pin and OTP works (because PIN is set)
-        self._validate_check_s(
-            token3["serial"], token3["pin"] + token3["otps"].popleft()
-        )
+        self._validate_check_s(token["serial"], token["pin"] + token["otps"].popleft())
 
     def test_selfservice_assign(self):
         """
