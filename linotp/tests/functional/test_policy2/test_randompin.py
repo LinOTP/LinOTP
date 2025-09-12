@@ -244,6 +244,75 @@ class TestRandompinController(TestController):
             token2["serial"], token2["otps"].popleft(), expected="value-false"
         )
 
+    def test_selfservice_enroll_setpin(self):
+        """
+        selfservice sets a given pin on enroll
+        """
+        self._create_selfservice_policy("myDefRealm")
+
+        # create token data
+        user = "aἰσχύλος"  # realm myDefRealm
+        pwd = "Πέρσαι"
+        pin = "123456"
+        token = deepcopy(self.tokens[0])
+
+        params = {
+            "otpkey": token["key"],
+            "type": token["type"],
+            "otplen": token["otplen"],
+            "pin": pin,
+        }
+
+        # enroll token
+        response = self.make_userservice_request(
+            "enroll", params, auth_user=(user, pwd)
+        )
+
+        # verify response
+        content = response.json
+        assert content["result"]["status"]
+        assert content["result"]["value"]
+        token["serial"] = content["detail"]["serial"]
+        self.token_for_deletion.add(token["serial"])
+
+        # validate token with set pin and otp
+        self._validate_check_s(token["serial"], pin + token["otps"].popleft())
+
+    def test_selfservice_enroll_setpin_random(self):
+        """
+        otp_pin_random sets no random pin when enrolling a token in selfservice when a pin is already given
+        """
+
+        self._create_selfservice_policy("myDefRealm")
+        self._create_randompin_policy("myDefRealm")
+
+        # create token data
+        user = "aἰσχύλος"  # realm myDefRealm
+        pwd = "Πέρσαι"
+        pin = "123456"
+        token = deepcopy(self.tokens[0])
+
+        params = {
+            "otpkey": token["key"],
+            "type": token["type"],
+            "otplen": token["otplen"],
+            "pin": pin,
+        }
+
+        # enroll token
+        response = self.make_userservice_request(
+            "enroll", params, auth_user=(user, pwd)
+        )
+
+        content = response.json
+        assert content["result"]["status"]
+        assert content["result"]["value"]
+        token["serial"] = content["detail"]["serial"]
+        self.token_for_deletion.add(token["serial"])
+
+        # validate token with set pin and otp
+        self._validate_check_s(token["serial"], pin + token["otps"].popleft())
+
     def test_selfservice_assign(self):
         """
         userservice/assign is not affected by otp_pin_random
@@ -543,9 +612,7 @@ class TestRandompinController(TestController):
             err_msg=err_msg,
         )
 
-    def _validate_base(
-        self, params, action="check", expected="success", err_msg=None
-    ):
+    def _validate_base(self, params, action="check", expected="success", err_msg=None):
         """
         Base method for /validate/<action> requests
 
