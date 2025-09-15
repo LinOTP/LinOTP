@@ -30,7 +30,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 3\n"
 "Report-Msgid-Bugs-To: info@linotp.de\n"
-"PO-Revision-Date: 2025-09-12 07:37+0200\n"
+"PO-Revision-Date: 2025-09-12 07:43+0200\n"
 "Last-Translator: Michael Weber <michael.weber@netgo.de>\n"
 "Language-Team: German <support@linotp.de>\n"
 "Language: de\n"
@@ -1782,6 +1782,9 @@ msgstr "Anzahl der zu exportierenden Auditeinträge"
 
 msgid "Number of tokens"
 msgstr "Anzahl Tokens"
+
+msgid "Number of users"
+msgstr "Anzahl der Benutzer"
 
 #, python-format
 msgid "Number of users found: %d"

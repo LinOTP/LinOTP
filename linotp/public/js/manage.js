@@ -113,6 +113,7 @@ var support_license_dict = {
     'comment': i18n.gettext('Description'),
     'issuer': i18n.gettext('Issuer'),
     'token-num': i18n.gettext('Number of tokens'),
+    'user-num': i18n.gettext('Number of users'),
     'licensee': i18n.gettext('Licensee'),
     'address': i18n.gettext('Address'),
     'contact-name': i18n.gettext('Contact name'),
