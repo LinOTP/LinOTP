@@ -115,6 +115,7 @@ var support_license_dict = {
     'token-num': i18n.gettext('Number of tokens'),
     'user-num': i18n.gettext('Number of users'),
     'licensee': i18n.gettext('Licensee'),
+    'license-number': i18n.gettext('License number'),
     'address': i18n.gettext('Address'),
     'contact-name': i18n.gettext('Contact name'),
     'contact-email': i18n.gettext('Contact E-Mail'),

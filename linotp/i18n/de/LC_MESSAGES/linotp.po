@@ -30,7 +30,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 3\n"
 "Report-Msgid-Bugs-To: info@linotp.de\n"
-"PO-Revision-Date: 2025-09-12 07:44+0200\n"
+"PO-Revision-Date: 2025-09-12 07:47+0200\n"
 "Last-Translator: Michael Weber <michael.weber@netgo.de>\n"
 "Language-Team: German <support@linotp.de>\n"
 "Language: de\n"
@@ -1513,6 +1513,9 @@ msgstr "LDAP-Resolver"
 
 msgid "License already installed!"
 msgstr "Lizenz ist bereits installiert!"
+
+msgid "License number"
+msgstr "Lizenznummer"
 
 msgid "License reminder:"
 msgstr "Lizenz Erinnerung:"
