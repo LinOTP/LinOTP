@@ -51,7 +51,7 @@ class TestRandompinController(TestController):
             "type": "hmac",
             "serial": None,
             "otplen": 6,
-            "pin": "123456",  # FIXME: Rewrite tests to make sense once fixed in LINOTP-2294 - LinOTP 4.0 currently requires a PIN to be set when setOTPPIN is active, yet it is overwritten by the random PIN
+            "pin": "123456",
             "otps": deque(
                 [
                     "755224",
@@ -68,25 +68,50 @@ class TestRandompinController(TestController):
             ),
         }
     ]
-    # set up in setUp
-    policies_for_deletion = set()
-    token_for_deletion = set()
+    test_realm = "myDefRealm"
+
+    assign_policy = {
+        "name": "enroll",
+        "scope": "selfservice",
+        "action": "assign",
+        "realm": test_realm,
+    }
+
+    enroll_policy = {
+        "name": "assign",
+        "scope": "selfservice",
+        "action": "enrollHMAC",
+        "realm": test_realm,
+    }
+
+    randompin_policy = {
+        "name": "randompin",
+        "scope": "enrollment",
+        "action": "otp_pin_random=12",
+        "realm": test_realm,
+    }
+
+    setotppin_policy = {
+        "name": "setotppin",
+        "scope": "selfservice",
+        "action": "setOTPPIN",
+        "realm": test_realm,
+    }
+    autoassignment_policy = {
+        "name": "autoassignment",
+        "scope": "enrollment",
+        "action": "autoassignment",
+        "realm": test_realm,
+    }
 
     def setUp(self):
         TestController.setUp(self)
         self.create_common_resolvers()
         self.create_common_realms()
-        self.token_for_deletion = set()
-        self.policies_for_deletion = set()
 
     def tearDown(self):
-        # Delete policies
-        for policy in self.policies_for_deletion:
-            self.delete_policy(policy)
-        # Delete token
-        for token in self.token_for_deletion:
-            self.delete_token(token)
-
+        self.delete_all_policies()
+        self.delete_all_token()
         self.delete_all_realms()
         self.delete_all_resolvers()
         TestController.tearDown(self)
@@ -110,14 +135,19 @@ class TestRandompinController(TestController):
             token["otps"].popleft(),
         )
 
-        self._create_randompin_policy("myDefRealm")
+    def test_simple_enroll_random(self):
+        """
+        Negative test for 'test_simple_enroll' with 'randompin_policy'
+        """
+        self.create_policy(self.randompin_policy)
 
-        # Enroll new token
-        token2 = deepcopy(self.tokens[0])
-        self._enroll_token(token2, user=user)
+        # Enroll token
+        user = "aἰσχύλος"  # realm myDefRealm  # noqa: RUF001
+        token = deepcopy(self.tokens[0])
+        self._enroll_token(token, user=user)
 
         # Login with only OTP fails
-        self._validate(user, token2["otps"].popleft(), expected="value-false")
+        self._validate(user, token["otps"].popleft(), expected="value-false")
 
     def test_simple_assign(self):
         """
@@ -146,22 +176,27 @@ class TestRandompinController(TestController):
             token["otps"].popleft(),
         )
 
-        self._create_randompin_policy("myDefRealm")
-
+    def test_simple_assign_random(self):
+        """
+        Same as 'test_simple_assign' but added 'randompin_policy'
+        """
         # Enroll token
         user = "aἰσχύλος"  # realm myDefRealm  # noqa: RUF001
-        token2 = deepcopy(self.tokens[0])
-        self._enroll_token(token2)
+        token = deepcopy(self.tokens[0])
+
+        self.create_policy(self.randompin_policy)
+
+        self._enroll_token(token)
 
         # Login with only OTP fails (PIN unknown)
         self._validate_check_s(
-            token2["serial"], token2["otps"].popleft(), expected="value-false"
+            token["serial"], token["otps"].popleft(), expected="value-false"
         )
 
-        self._assign(token2["serial"], user)
+        self._assign(token["serial"], user)
 
         # Login with only OTP fails (PIN unknown)
-        self._validate(user, token2["otps"].popleft(), expected="value-false")
+        self._validate(user, token["otps"].popleft(), expected="value-false")
 
     def test_multi_assign(self):
         """
@@ -179,7 +214,7 @@ class TestRandompinController(TestController):
         self._validate_check_s(token1["serial"], token1["otps"].popleft())
         self._validate_check_s(token2["serial"], token2["otps"].popleft())
 
-        self._create_randompin_policy("myDefRealm")
+        self.create_policy(self.randompin_policy)
 
         self._assign([token1["serial"], token2["serial"]], user)
 
@@ -195,9 +230,8 @@ class TestRandompinController(TestController):
         """
         Token is enrolled by admin, user logs into selfservice, sets PIN and authenticates successfully
         """
-
-        self._create_randompin_policy("myDefRealm")
-        self._create_selfservice_policy("myDefRealm")
+        self.create_policy(self.randompin_policy)
+        self.create_policy(self.setotppin_policy)
 
         # Enroll token
         user = "aἰσχύλος"  # realm myDefRealm  # noqa: RUF001
@@ -220,31 +254,56 @@ class TestRandompinController(TestController):
 
     def test_selfservice_enroll(self):
         """
-        otp_pin_random sets a random pin when enrolling a token in selfservice
+        Tests enroling a Token in selfservice
         """
 
-        self._create_selfservice_policy("myDefRealm")
+        self.create_policy(self.enroll_policy)
 
         user = "aἰσχύλος"  # realm myDefRealm  # noqa: RUF001
         pwd = "Πέρσαι"
-        token1 = deepcopy(self.tokens[0])
-        token2 = deepcopy(self.tokens[0])
+        token = deepcopy(self.tokens[0])
 
         # Enroll first token without otp_pin_random policy
-        self._enroll_token_in_selfservice(user, pwd, token1)
+        token.pop("pin")
+        self._enroll_token_in_selfservice(user, pwd, token)
         # Login with only OTP succeeds
+        self._validate_check_s(token["serial"], token["otps"].popleft())
+
+    def test_selfservice_enroll_random(self):
+        """
+        Tests enroling a Token in selfservice with no pin and 'randompin_policy'
+        """
+        user = "aἰσχύλος"  # realm myDefRealm  # noqa: RUF001
+        pwd = "Πέρσαι"
+        token = deepcopy(self.tokens[0])
+
+        self.create_policy(self.enroll_policy)
+        self.create_policy(self.randompin_policy)
+
+        # Enroll second token with otp_pin_random policy without setotppin
+        token.pop("pin")
+        self._enroll_token_in_selfservice(user, pwd, token)
+        # Login with OTP does not work (because PIN is random)
         self._validate_check_s(
-            token1["serial"], token1["pin"] + token1["otps"].popleft()
+            token["serial"], token["otps"].popleft(), expected="value-false"
         )
 
-        self._create_randompin_policy("myDefRealm")
+    def test_selfservice_enroll_random_setpin(self):
+        """
+        Tests enroling a Token in selfservice with pin and 'randompin_policy'
+        """
+        user = "aἰσχύλος"  # realm myDefRealm  # noqa: RUF001
+        pwd = "Πέρσαι"
+        token = deepcopy(self.tokens[0])
 
-        # Enroll second token with otp_pin_random policy
-        self._enroll_token_in_selfservice(user, pwd, token2)
-        # Login with only OTP fails (because PIN is unknown)
-        self._validate_check_s(
-            token2["serial"], token2["otps"].popleft(), expected="value-false"
-        )
+        self.create_policy(self.enroll_policy)
+        self.create_policy(self.randompin_policy)
+        self.create_policy(self.setotppin_policy)
+
+        # Enroll second token with otp_pin_random policy with setotppin
+        self._enroll_token_in_selfservice(user, pwd, token)
+        # Login with Pin and OTP works (because PIN is set)
+        self._validate_check_s(token["serial"], token["pin"] + token["otps"].popleft())
 
     def test_selfservice_assign(self):
         """
@@ -260,8 +319,9 @@ class TestRandompinController(TestController):
         # authenticate successfully, no pin set yet
         self._validate_check_s(token["serial"], token["otps"].popleft())
 
-        self._create_selfservice_policy("myDefRealm")
-        self._create_randompin_policy("myDefRealm")
+        self.create_policy(self.setotppin_policy)
+        self.create_policy(self.assign_policy)
+        self.create_policy(self.randompin_policy)
 
         # Assign token to user in selfservice
         self._assign_in_selfservice(user, pwd, token["serial"])
@@ -278,9 +338,8 @@ class TestRandompinController(TestController):
         https://github.com/Pylons/webtest/
                                 commit/8471db1c2dc505c633bca2d39d5713dba0c51a42
         """
-
-        self._create_randompin_policy("myDefRealm")
-        self._create_selfservice_policy("myDefRealm")
+        self.create_policy(self.randompin_policy)
+        self.create_policy(self.setotppin_policy)
 
         # Enroll token
         user = "aἰσχύλος"  # realm myDefRealm  # noqa: RUF001
@@ -328,8 +387,9 @@ class TestRandompinController(TestController):
         https://github.com/Pylons/webtest/
                                 commit/8471db1c2dc505c633bca2d39d5713dba0c51a42
         """
-        self._create_randompin_policy("myDefRealm")
-        self._create_selfservice_policy("myDefRealm")
+        self.create_policy(self.randompin_policy)
+        self.create_policy(self.assign_policy)
+        self.create_policy(self.setotppin_policy)
 
         # Enroll token
         user = "aἰσχύλος"  # realm myDefRealm  # noqa: RUF001
@@ -381,7 +441,7 @@ class TestRandompinController(TestController):
         """
         Enroll with randompin and then autoassign token -> PIN is user password
         """
-        self._create_randompin_policy("myDefRealm")
+        self.create_policy(self.randompin_policy)
 
         token = deepcopy(self.tokens[0])
         self._enroll_token(token)
@@ -392,9 +452,9 @@ class TestRandompinController(TestController):
         )
 
         # Create autoassignment policy
-        self._create_autoassignment_policy("myDefRealm")
+        self.create_policy(self.autoassignment_policy)
         # Set token realm for autoassignment to work
-        self._set_token_realm(token["serial"], "myDefRealm")
+        self._set_token_realm(token["serial"], self.test_realm)
 
         # autoassign the token
         user = "aἰσχύλος"  # noqa: RUF001
@@ -412,51 +472,6 @@ class TestRandompinController(TestController):
             )
 
     # -------- Private helper methods ----- --
-    def _create_randompin_policy(self, realm):
-        """
-        Creates an otp_pin_random policy for 'realm'. Schedules the policy for
-        deletion on tearDown.
-        """
-        policy_name = "randompin"
-        params = {
-            "name": policy_name,
-            "scope": "enrollment",
-            "action": "otp_pin_random=12",
-            "realm": realm,
-        }
-        self.create_policy(params)
-        self.policies_for_deletion.add(policy_name)
-
-    def _create_selfservice_policy(self, realm):
-        """
-        Creates a selfservice policy for 'realm'. Schedules the policy for
-        deletion on tearDown.
-        """
-        policy_name = "selfservice"
-        params = {
-            "name": policy_name,
-            "scope": "selfservice",
-            "action": "setOTPPIN, enrollHMAC, assign",
-            "realm": realm,
-        }
-        self.create_policy(params)
-        self.policies_for_deletion.add(policy_name)
-
-    def _create_autoassignment_policy(self, realm):
-        """
-        Creates an autoassignment policy for 'realm'. Schedules the policy for
-        deletion on tearDown.
-        """
-        policy_name = "autoassignment"
-        params = {
-            "name": policy_name,
-            "scope": "enrollment",
-            "action": "autoassignment",
-            "realm": realm,
-        }
-        self.create_policy(params)
-        self.policies_for_deletion.add(policy_name)
-
     def _enroll_token_in_selfservice(self, user, pwd, token):
         """
         Log into selfservice and enroll token
@@ -479,10 +494,9 @@ class TestRandompinController(TestController):
         )
 
         content = response.json
-        assert content["result"]["status"]
-        assert content["result"]["value"]
+        assert content["result"]["status"], content
+        assert content["result"]["value"], content
         token["serial"] = content["detail"]["serial"]
-        self.token_for_deletion.add(token["serial"])
 
     def _enroll_token(self, token, user=None):
         """
@@ -506,7 +520,6 @@ class TestRandompinController(TestController):
         assert content["result"]["status"]
         assert content["result"]["value"]
         token["serial"] = content["detail"]["serial"]
-        self.token_for_deletion.add(token["serial"])
 
     def _validate(self, user, pwd, expected="success", err_msg=None):
         """

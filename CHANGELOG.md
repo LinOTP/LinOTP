@@ -61,6 +61,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `setMOTPPIN` admin policy only allows setting userpin for motp tokens, not ocra2 or any other token type
 - If `otppin=1` policy is set when trying to enrol an FIDO U2F token, assume `otppin=0`
   instead
+- If `setOTPPIN` and `otp_pin_random` policies are set during selfservice enroll, the pin will no longer be
+  randomized
 
 ## [3.4.4-1] - 2025-06-18
 
