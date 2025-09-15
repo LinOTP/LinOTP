@@ -24,20 +24,21 @@
 #    Support: www.linotp.de
 #
 # German translations for LinOTP
+# Michael Weber <michael.weber@netgo.de>, 2025.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 3\n"
 "Report-Msgid-Bugs-To: info@linotp.de\n"
-"PO-Revision-Date: 2025-07-01 09:17+0200\n"
-"Last-Translator: lukas <lukas.engelter@netgo.de>\n"
+"PO-Revision-Date: 2025-09-12 07:35+0200\n"
+"Last-Translator: Michael Weber <michael.weber@netgo.de>\n"
 "Language-Team: German - Germany <support@linotp.de>\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"X-Generator: Gtranslator 42.0\n"
+"X-Generator: Gtranslator 48.0\n"
 
 msgid ""
 " This is independed of the local sizelimit and does not hinder the "
@@ -1400,8 +1401,8 @@ msgstr ""
 
 msgid ""
 "If you are interested in our MFA platform using LinOTP at its core and want "
-"to know more, feel free to <a href='https://linotp.de/en/contact."
-"html'>contact us</a>."
+"to know more, feel free to <a href='https://linotp.de/en/"
+"contact.html'>contact us</a>."
 msgstr ""
 "Falls Sie sich für die die MFA-Plattform mit LinOTP als Kern interessieren "
 "und weitere Informationen wünschen, können Sie uns gerne <a href=‘https://"
@@ -3772,10 +3773,10 @@ msgstr ""
 
 #, python-format
 msgid ""
-"You do not have the administrative right to set MOTP PIN for token %s. Check "
+"You do not have the administrative right to set %s PIN for token %s. Check "
 "the policies."
 msgstr ""
-"Sie haben nicht die administrativen Rechte zum Setzen der mOTP-PIN für den "
+"Sie haben nicht die administrativen Rechte zum Setzen der %s-PIN für den "
 "Token %s - überprüfen Sie ggf. die Richtlinien."
 
 #, python-format
@@ -5088,6 +5089,14 @@ msgstr "WebUI generiert"
 #~ msgstr ""
 #~ "Sie haben nicht die administrativen Rechte zum Monitoring. Es fehlt dazu "
 #~ "eine Richtlinie mit 'scope=monitoring' und 'action=%s'."
+
+#, python-format
+#~ msgid ""
+#~ "You do not have the administrative right to set MOTP PIN for token %s. "
+#~ "Check the policies."
+#~ msgstr ""
+#~ "Sie haben nicht die administrativen Rechte zum Setzen der mOTP-PIN für "
+#~ "den Token %s - überprüfen Sie ggf. die Richtlinien."
 
 #~ msgid "You do not have the rights to monitor these realms."
 #~ msgstr "Sie haben keine Rechte die folgenden Realms zu monitoren."
