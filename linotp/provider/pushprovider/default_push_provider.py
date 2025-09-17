@@ -252,12 +252,13 @@ class DefaultPushProvider(IPushProvider, ConfigParsingMixin):
         #    "challenge": "string" }
         # }
 
-        params = {}
-        params["transactionId"] = transactionId
-        params["gda"] = gda
-        params["challenge"] = challenge
-
-        json_challenge = {"challenge": params}
+        json_challenge = {
+            "challenge": {
+                "transactionId": transactionId,
+                "gda": gda,
+                "challenge": challenge,
+            }
+        }
 
         #
         # using **args for the timeout parameter
