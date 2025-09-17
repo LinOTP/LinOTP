@@ -118,7 +118,7 @@ var support_license_dict = {
     'license-number': i18n.gettext('License number'),
     'address': i18n.gettext('Address'),
     'contact-name': i18n.gettext('Contact name'),
-    'contact-email': i18n.gettext('Contact E-Mail'),
+    'contact-email': i18n.gettext('Contact email'),
     'contact-phone': i18n.gettext('Contact phone'),
     'date': i18n.gettext('Date'),
     'expire': i18n.gettext('Expiration'),

@@ -30,7 +30,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 3\n"
 "Report-Msgid-Bugs-To: info@linotp.de\n"
-"PO-Revision-Date: 2025-09-12 07:47+0200\n"
+"PO-Revision-Date: 2025-09-16 10:38+0200\n"
 "Last-Translator: Michael Weber <michael.weber@netgo.de>\n"
 "Language-Team: German <support@linotp.de>\n"
 "Language: de\n"
@@ -403,7 +403,7 @@ msgstr "Verbindungstest erfolgreich."
 msgid "Connection to LinOTP failed"
 msgstr "Verbindung zu LinOTP fehlgeschlagen"
 
-msgid "Contact E-Mail"
+msgid "Contact email"
 msgstr "Kontakt-E-Mail"
 
 msgid "Contact name"
@@ -4414,9 +4414,6 @@ msgstr "mOTP-PIN setzen"
 msgid "set token PIN failed"
 msgstr "Setzen der Token-PIN fehlgeschlagen"
 
-msgid "signature could not be verified!"
-msgstr "Die Signatur ist nicht gültig!"
-
 msgid "sms challenge-response token - hmac event based"
 msgstr "SMS-Challenge/Response-Token - HMAC ereignisbasiert"
 
@@ -4569,8 +4566,8 @@ msgstr "WebUI generiert"
 #~ msgid "Comment"
 #~ msgstr "Kommentar"
 
-#~ msgid "Contact Email"
-#~ msgstr "Kontakt Email"
+#~ msgid "Contact E-Mail"
+#~ msgstr "Kontakt-E-Mail"
 
 #~ msgid "Contact Name"
 #~ msgstr "Kontakt"
@@ -5263,6 +5260,9 @@ msgstr "WebUI generiert"
 
 #~ msgid "scope"
 #~ msgstr "Bereich"
+
+#~ msgid "signature could not be verified!"
+#~ msgstr "Die Signatur ist nicht gültig!"
 
 #~ msgid "splitAtSign"
 #~ msgstr "Trenne am @-Zeichen"
