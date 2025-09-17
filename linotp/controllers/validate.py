@@ -224,6 +224,7 @@ class ValidateController(BaseController):
                 return sendResult(ok, 0, opt=opt)
 
         except Exception as exx:
+            exx = exx.__cause__ or exx
             log.error("[check] validate/check failed: %r", exx)
             # If an internal error occurs or the SMS gateway did not send the
             # SMS, we write this to the detail info.

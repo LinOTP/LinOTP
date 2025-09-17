@@ -328,7 +328,7 @@ class DefaultPushProvider(IPushProvider, ConfigParsingMixin):
                 ConnectionError,
                 TooManyRedirects,
             ) as exx:
-                log.error("resource %r not available!", uri)
+                log.debug("resource %r not available: %s", uri, exx)
 
                 # mark the url as blocked
 
@@ -341,16 +341,11 @@ class DefaultPushProvider(IPushProvider, ConfigParsingMixin):
 
         # ------------------------------------------------------------------ --
 
-        # if we reach here, no resource has been availabel
+        # if we reach here, no resource has been available
+        msg = f"None of the resources {self.push_server_urls!r} available!"
+        log.error(msg)
 
-        log.error("non of the resources %r available!", self.push_server_urls)
-
-        if last_exception:
-            log.error("Last Exception was %r", last_exception)
-            raise last_exception
-
-        msg = f"non of the resources {self.push_server_urls!r} available!"
-        raise AllResourcesUnavailable(msg)
+        raise AllResourcesUnavailable(msg) from last_exception
 
 
 def main():
