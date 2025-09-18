@@ -30,11 +30,9 @@ from unittest.mock import patch
 
 import pytest
 import requests
-from requests.exceptions import ConnectionError
 
-from linotp.provider.pushprovider.default_push_provider import (
-    DefaultPushProvider,
-)
+from linotp.lib.resources import AllResourcesUnavailable
+from linotp.provider.pushprovider.default_push_provider import DefaultPushProvider
 from linotp.tests import TestController
 
 """
@@ -348,8 +346,9 @@ class TestPushProviderFailover(TestController):
         """
         verify that a single faiiling server should return failure
         """
-        with pytest.raises(ConnectionError):
+        with pytest.raises(AllResourcesUnavailable) as exx:
             self._test_servers(["https://failing.server/"])
+        assert isinstance(exx.value.__cause__, requests.ConnectionError)
 
     @patch.object(requests, "post", cond_failing_http_response)
     def test_multiple_servers(self):
