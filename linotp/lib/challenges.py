@@ -152,7 +152,7 @@ class Challenges:
                     break
 
             except Exception as exce:
-                log.error("Failed to create challenge: %r", exce)
+                log.debug("Failed to create challenge: %r", exce)
                 reason = f"{exce!r}"
                 ReasonException = exce
 
@@ -210,7 +210,7 @@ class Challenges:
                     ReasonException = Exception(message)
 
         except Exception as exce:
-            log.error("Failed to create challenge: %r", exce)
+            log.debug("Failed to create challenge: %r", exce)
             reason = f"{exce!r}"
             ReasonException = exce
             res = False
@@ -241,7 +241,7 @@ class Challenges:
 
         # in case that create challenge fails, we must raise this reason
         if reason is not None:
-            log.error("Failed to create or init challenge. Reason was %r ", reason)
+            log.error("Failed to create or init challenge")
             raise ReasonException
 
         # prepare the response for the user
