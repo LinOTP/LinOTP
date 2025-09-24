@@ -29,6 +29,7 @@ The `main()` function in this file is installed as a console entry point
 in `setup.py()`, so that the shell command `linotp` calls that function.
 """
 
+import logging
 import os
 import sys
 from datetime import datetime
@@ -64,6 +65,20 @@ class Echo:
 
     def __init__(self, verbosity=0):
         self.verbosity = verbosity
+        self._configure_logging()
+
+    def _configure_logging(self):
+        """Configure logging level based on verbosity for CLI commands only."""
+        log_levels = {
+            -1: logging.CRITICAL,  # -q
+            0: logging.ERROR,  # default
+            1: logging.WARNING,  # -v
+            2: logging.INFO,  # -vv
+            3: logging.DEBUG,  # -vvv
+        }
+        log_level = log_levels.get(self.verbosity, logging.DEBUG)
+        linotp_logger = logging.getLogger(__name__)
+        linotp_logger.setLevel(log_level)
 
     def __call__(self, message, **kwargs):
         """Make instance of echo callable like a function.

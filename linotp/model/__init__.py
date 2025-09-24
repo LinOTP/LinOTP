@@ -49,8 +49,6 @@ import werkzeug.local
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine, inspect
 
-log = logging.getLogger(__name__)
-
 db = SQLAlchemy()
 
 
@@ -161,7 +159,7 @@ def setup_db(app) -> None:
             and temp_engine.url.database != ":memory:"
         ):
             audit_database_uri = audit_database_uri + "_audit"
-            log.warning(
+            app.logger.warning(
                 "The audit database can not share the same"
                 " sqlite database file with the LinOTP database."
                 " Using '%s' instead.",
@@ -187,7 +185,9 @@ def setup_db(app) -> None:
 
     table_names = [tn.lower() for tn in inspect(db.engine).get_table_names()]
     if "config" not in table_names:
-        log.critical("Database schema must be initialised, run `linotp init database`.")
+        app.logger.critical(
+            "Database schema must be initialised, run `linotp init database`."
+        )
         sys.exit(SYS_EXIT_CODE)
 
     if audit_database_uri != "OFF":
@@ -197,13 +197,15 @@ def setup_db(app) -> None:
 
         auditdb_table_names = [tn.lower() for tn in inspect(engine).get_table_names()]
         if AuditTable.__tablename__.lower() not in auditdb_table_names:
-            log.critical(
+            app.logger.critical(
                 "Audit database schema must be initialised, run `linotp init database`."
             )
             sys.exit(SYS_EXIT_CODE)
 
     if not Migration.is_db_model_current():
-        log.critical("Database schema is not current, run `linotp init database`.")
+        app.logger.critical(
+            "Database schema is not current, run `linotp init database`."
+        )
         sys.exit(EXIT_CODE_DB_NOT_CURRENT)
 
 
@@ -222,7 +224,7 @@ def init_db_tables(app, drop_data=False, add_defaults=True):
     echo = getattr(
         app,
         "echo",
-        lambda msg, v=0: log.log(logging.INFO if v else logging.ERROR, msg),
+        lambda msg, v=0: app.logger.log(logging.INFO if v else logging.ERROR, msg),
     )
 
     echo("Setting up database...", v=1)
