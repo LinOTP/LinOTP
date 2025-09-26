@@ -108,6 +108,11 @@ services:
     networks:
       - linotp-net
 
+  blackdog-samba:
+    image: gitbox.corp.linotp.de:5050/docker-images/blackdog-samba/b/main:latest
+    networks:
+      - linotp-net
+
 networks:
   linotp-net:
     driver: bridge
