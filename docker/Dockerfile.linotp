@@ -61,6 +61,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     # required to run the HEALTHCHECK command
     curl
 
+RUN python -m pip install --upgrade pip==25.2
+
 WORKDIR $LINOTP_HOME
 
 
