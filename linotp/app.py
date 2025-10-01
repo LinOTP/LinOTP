@@ -728,19 +728,16 @@ class LinOTPApp(Flask):
     def _check_secret_file(self):
         secret_file = self.config["SECRET_FILE"]
         if not os.path.isfile(secret_file):
-            print(
-                f"CRITICAL: SECRET_FILE does not exist in {secret_file}. Run `linotp init enc-key` to create it.",
-                file=sys.stderr,
-            )
+            msg = f" SECRET_FILE does not exist in {secret_file}. Run `linotp init enc-key` to create it."
+            log.critical(msg)
             sys.exit(SYS_EXIT_CODE)
 
     def _check_audit_keys(self):
         public_key = self.config["AUDIT_PUBLIC_KEY_FILE"]
         private_key = self.config["AUDIT_PRIVATE_KEY_FILE"]
         if not os.path.isfile(public_key) or not os.path.isfile(private_key):
-            print(
-                "CRITICAL: Audit log keypair does not exist; use `linotp init audit-keys` to generate one.",
-                file=sys.stderr,
+            log.critical(
+                "Audit log keypair does not exist; use `linotp init audit-keys` to generate one."
             )
             sys.exit(SYS_EXIT_CODE)
 
@@ -935,9 +932,8 @@ def _configure_app(
             # (e.g., when checking `/foo/linotp.cfg` but `/foo` doesn't
             # exist).
             for fn0 in sorted(list(fn.resolve().parent.glob(fn.name)) or [str(fn)]):
-                if app.config.from_pyfile(fn0, silent=True):
-                    print(f"Configuration loaded from {fn0!s}", file=sys.stderr)
-                elif warn_on_error:
+                cfg_file_loaded = app.config.from_pyfile(fn0, silent=True)
+                if cfg_file_loaded is False and warn_on_error:
                     print(
                         f"Configuration from {fn0!s} failed"
                         " (check location and permissions)",
