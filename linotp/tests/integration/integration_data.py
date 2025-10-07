@@ -32,6 +32,8 @@ This file contains sample data for the integration tests
 # This is the "O = LinOTP-DE, CN = LinOTP-DE Root CA" certificate
 # used by the new blackdog-ldap container.
 
+import json
+
 ldap_ca_cert = """-----BEGIN CERTIFICATE-----
 MIIBojCCAUmgAwIBAgIQPlwfzlZDQsPhD1rWE9Ux3TAKBggqhkjOPQQDAjAwMRIw
 EAYDVQQKEwlMaW5PVFAtREUxGjAYBgNVBAMTEUxpbk9UUC1ERSBSb290IENBMB4X
@@ -115,3 +117,46 @@ sepasswd_resolver = {
     "filename": "/etc/se_mypasswd",
     "expected_users": 3,
 }
+
+samba_user_map = {
+    "username": "sAMAccountName",
+    "phone": "telephoneNumber",
+    "mobile": "mobile",
+    "email": "mail",
+    "surname": "sn",
+    "givenname": "givenName",
+}
+
+# Base Samba resolver configuration
+_samba_base_config = {
+    "BINDDN": "CN=admin,CN=Users,DC=corp,DC=lsexperts,DC=de",
+    "BINDPW": "Test123!",
+    "LDAPBASE": "dc=corp,dc=lsexperts,dc=de",
+    "LDAPURI": "ldap://blackdog-samba",
+    "CACERTIFICATE": "",
+    "LOGINNAMEATTRIBUTE": "sAMAccountName",
+    "LDAPSEARCHFILTER": "(sAMAccountName=*)",
+    "LDAPFILTER": "(sAMAccountName=%s)",
+    "USERINFO": json.dumps(samba_user_map),
+    "TIMEOUT": "5",
+    "SIZELIMIT": "500",
+    "NOREFERRALS": "True",
+    "type": "ldapresolver",
+    "EnforceTLS": "False",
+}
+
+
+def create_samba_resolver(name: str, uid_type: str) -> dict:
+    config = _samba_base_config.copy()
+    config.update(
+        {
+            "name": name,
+            "UIDTYPE": uid_type,
+        }
+    )
+    return config
+
+
+# Specific resolver instances
+samba_dn_resolver = create_samba_resolver("test", "dn")
+samba_guid_resolver = create_samba_resolver("corp", "objectGUID")
