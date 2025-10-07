@@ -28,8 +28,7 @@
 ldap resolver tests
 """
 
-import json
-
+import integration_data
 import pytest
 
 from linotp.tests import TestController
@@ -37,73 +36,24 @@ from linotp.tests import TestController
 # from linotp.tests import TestController
 
 
-@pytest.mark.usefixtures("app")
 class TestLDAPResolver(TestController):
-    def define_ldap_resolver(
-        self,
-        name,
-        base_dn="dc=corp,dc=lsexperts,dc=de",
-        manager_dn="CN=admin,CN=Users,DC=corp,DC=lsexperts,DC=de",
-        ldap_uri="ldap://blackdog-samba",
-        params=None,
-    ):
-        u_map = {
-            "username": "sAMAccountName",
-            # "username": "dn",
-            "phone": "telephoneNumber",
-            "mobile": "mobile",
-            "email": "mail",
-            "surname": "sn",
-            "givenname": "givenName",
-        }
-
-        iparams = {
-            "name": name,
-            "BINDDN": manager_dn,
-            "BINDPW": "Test123!",
-            "LDAPBASE": base_dn,
-            "LDAPURI": ldap_uri,
-            "CACERTIFICATE": "",
-            "LOGINNAMEATTRIBUTE": "sAMAccountName",
-            # "LOGINNAMEATTRIBUTE": "cn",
-            # 'LDAPSEARCHFILTER': '(sAMAccountName=*)(objectClass=user)',
-            "LDAPSEARCHFILTER": "(sAMAccountName=*)",
-            # "LDAPSEARCHFILTER": "(cn=*)",
-            # 'LDAPFILTER': '(&(sAMAccountName=%s)(objectClass=user))',
-            "LDAPFILTER": "(sAMAccountName=%s)",
-            # "LDAPFILTER": "(cn=%s)",
-            "UIDTYPE": "dn",
-            "USERINFO": json.dumps(u_map),
-            "TIMEOUT": "5",
-            "SIZELIMIT": "500",
-            "NOREFERRALS": "True",
-            "type": "ldapresolver",
-            "EnforceTLS": "False",
-        }
-
-        if params:
-            iparams.update(params)
-
-        response = self.make_system_request("setResolver", params=iparams)
-        assert response.json["result"]["value"]
-
-        return response, iparams
-
     @pytest.fixture
     def ldap_realm_test(self):
         """
         Fixture to provide a test LDAP resolver in realm 'test'
         """
         # define the resolver 'test'
+        data = integration_data.samba_dn_resolver
 
-        resolver_name = "test"
+        resolver_name = data["name"]
         realm_name = "test"
 
         # define the realm 'test'
         resolver_base = "useridresolver.LDAPIdResolver.IdResolver."
         resolver_list = [resolver_base + resolver_name]
 
-        (response, _params) = self.define_ldap_resolver(resolver_name)
+        response = self.make_system_request("setResolver", params=data)
+        assert response.json["result"]["value"]
         assert '"value": true' in response
 
         response = self.create_realm(realm_name, resolver_list)
@@ -115,15 +65,14 @@ class TestLDAPResolver(TestController):
         Fixture to provide a test LDAP resolver in realm 'corp'
         with the uidType: objectGUID
         """
-        # define the resolver 'test'
+        # define the resolver 'corp'
+        data = integration_data.samba_guid_resolver
 
-        resolver_name = "corp"
+        resolver_name = data["name"]
         realm_name = "corp"
 
-        (response, _params) = self.define_ldap_resolver(
-            resolver_name,
-            params={"UIDTYPE": "objectGUID"},
-        )
+        response = self.make_system_request("setResolver", params=data)
+        assert response.json["result"]["value"]
         assert '"value": true' in response
 
         # define the realm 'test'
