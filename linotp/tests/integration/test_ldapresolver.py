@@ -30,172 +30,146 @@ ldap resolver tests
 
 import integration_data
 import pytest
+import requests
+from linotp_selenium_helper.auth_ui import AuthUi
+from linotp_selenium_helper.helper import BackendException
+from linotp_selenium_helper.policy import Policy
+from linotp_selenium_helper.test_case import TestCase
+from requests.auth import HTTPDigestAuth
 
-from linotp.tests import TestController
 
-# from linotp.tests import TestController
+def make_api_v2_request(testcase, url, params=None):
+    auth = HTTPDigestAuth(testcase.http_username, testcase.http_password)
+    response = requests.get(
+        params=params,
+        url=url,
+        cookies={"access_token_cookie": testcase.manage_ui._jwt_session},
+        headers={"X-CSRF-TOKEN": testcase.manage_ui._jwt_csrf_token},
+        auth=auth,
+    )
+    response.raise_for_status()
+    json = response.json()
+
+    if not response.ok or json["result"]["status"] is False:
+        raise BackendException(response, url=url)
+    return json
 
 
-class TestLDAPResolver(TestController):
-    @pytest.fixture
-    def ldap_realm_test(self):
-        """
-        Fixture to provide a test LDAP resolver in realm 'test'
-        """
-        # define the resolver 'test'
-        data = integration_data.samba_dn_resolver
+def _create_ldap_realm(testcase: TestCase, resolver_data: dict, realm_name: str):
+    """Helper function to create LDAP resolver and realm"""
+    resolver_name = resolver_data["name"]
+    resolver_list = ["useridresolver.LDAPIdResolver.IdResolver." + resolver_name]
 
-        resolver_name = data["name"]
-        realm_name = "test"
+    # Create resolver if it doesn't exist
+    resolver_manager = testcase.useridresolver_manager
+    existing_resolver = resolver_manager.get_resolver_params_via_api(resolver_name)
+    resolver_exists = existing_resolver and existing_resolver["type"]
+    if not resolver_exists:
+        resolver_manager.create_resolver_via_api(resolver_data)
 
-        # define the realm 'test'
-        resolver_base = "useridresolver.LDAPIdResolver.IdResolver."
-        resolver_list = [resolver_base + resolver_name]
+    # Create realm if it doesn't exist
+    realm_manager = testcase.manage_ui.realm_manager
+    existing_realms = realm_manager.get_realms_via_api()
+    if realm_name not in existing_realms:
+        realm_manager.create_via_api(realm_name, resolver_list)
 
-        response = self.make_system_request("setResolver", params=data)
-        assert response.json["result"]["value"]
-        assert '"value": true' in response
 
-        response = self.create_realm(realm_name, resolver_list)
-        assert '"value": true' in response
+def _test_ldap_authentication(
+    testcase: TestCase, realm: str, user: str = "Johann.Bach"
+):
+    """Helper function to test LDAP authentication"""
+    user_view = testcase.manage_ui.user_view
 
-    @pytest.fixture
-    def ldap_realm_corp(self):
-        """
-        Fixture to provide a test LDAP resolver in realm 'corp'
-        with the uidType: objectGUID
-        """
-        # define the resolver 'corp'
-        data = integration_data.samba_guid_resolver
+    # Verify user count and existence
+    # there are actually 5570 users, but the UI can only show 500
+    assert user_view.get_num_users(realm) == 500
+    assert user_view.user_exists(username=user)
 
-        resolver_name = data["name"]
-        realm_name = "corp"
+    # Create and assign token
+    serial = testcase.manage_ui.token_enroll.create_static_password_token(
+        password="geheim1"
+    )
+    user_view.select_user(user)
+    testcase.manage_ui.token_view.assign_token(serial, pin="geheim1")
 
-        response = self.make_system_request("setResolver", params=data)
-        assert response.json["result"]["value"]
-        assert '"value": true' in response
+    # Set authentication policy
+    Policy(
+        testcase.manage_ui,
+        "pin_policy",
+        "authentication",
+        "otppin=password",
+        "*",
+        "*",
+    )
 
-        # define the realm 'test'
-        resolver_base = "useridresolver.LDAPIdResolver.IdResolver."
-        resolver_list = [resolver_base + resolver_name]
+    # Test authentication
+    auth = AuthUi(testcase)
+    assert (
+        auth.auth_using_index(f"{user}@{realm}", "Test123!", "geheim1")
+        == auth.AUTH_SUCCESS
+    )
 
-        response = self.create_realm(realm_name, resolver_list)
-        assert '"value": true' in response
 
-    @pytest.mark.usefixtures("ldap_realm_test")
-    def test_ldap_dn(self):
-        """search in ldapresolver pointing to ad with uid type: dn"""
+@pytest.fixture
+def ldap_realm_test(testcase: TestCase):
+    """Fixture to provide a test LDAP resolver in realm 'test'"""
+    _create_ldap_realm(
+        testcase=testcase,
+        resolver_data=integration_data.samba_dn_resolver,
+        realm_name="test",
+    )
 
-        realm = "test"
-        user = "Johann.Bach"
 
-        params = {"realm": realm}
-        response = self.make_admin_request("userlist", params=params)
+@pytest.fixture
+def ldap_realm_corp(testcase: TestCase):
+    """Fixture to provide a test LDAP resolver in realm 'corp' with uidType: objectGUID"""
+    _create_ldap_realm(
+        testcase=testcase,
+        resolver_data=integration_data.samba_guid_resolver,
+        realm_name="corp",
+    )
 
-        usernames = [u["username"] for u in response.json["result"]["value"]]
 
-        assert user in usernames
-        assert len(usernames) == 5570, len(usernames)
+@pytest.mark.usefixtures("ldap_realm_test")
+def test_ldap_dn(testcase: TestCase):
+    """Test LDAP resolver with DN type uid"""
+    _test_ldap_authentication(testcase=testcase, realm="test")
 
-        params = {
-            "user": user,
-            "type": "pw",
-            "otpkey": "geheim1",
-            "realm": realm,
-        }
 
-        response = self.make_admin_request("init", params=params)
-        assert "detail" in response
+@pytest.mark.usefixtures("ldap_realm_corp")
+def test_ldap_objectGUID(testcase: TestCase):
+    """Test LDAP resolver with objectGUID type uid"""
+    _test_ldap_authentication(testcase=testcase, realm="corp")
 
-        params = {
-            "name": "pin_policy",
-            "scope": "authentication",
-            "active": True,
-            "client": "*",
-            "realm": "*",
-            "user": "*",
-            "action": "otppin=password",
-        }
-        response = self.make_system_request("setPolicy", params=params)
-        assert "false" not in response
 
-        params = {"user": user, "realm": realm, "pass": "Test123!geheim1"}
-        response = self.make_validate_request("check", params=params)
-        assert "false" not in response
+@pytest.mark.usefixtures("ldap_realm_test")
+def test_user_of_LDAP_resolver_with_DN_type_uid(testcase: TestCase):
+    url = f"{testcase.base_url}/api/v2/resolvers/test/users/cn=Johann%20Sebastian%20Bach,cn=Users,dc=corp,dc=lsexperts,dc=de"
+    json = make_api_v2_request(testcase=testcase, url=url)
+    username = json["result"]["value"]["username"]
+    assert username == "Johann.Bach", username
 
-    @pytest.mark.usefixtures("ldap_realm_corp")
-    def test_ldap_objectGUID(self):
-        """search in ldapresolver pointing to ad with uid type: objectGUID"""
 
-        realm = "corp"
-        user = "Johann.Bach"
+@pytest.mark.usefixtures("ldap_realm_corp")
+def test_user_of_LDAP_resolver_with_GUID_type_uid(testcase: TestCase):
+    url = f"{testcase.base_url}/api/v2/resolvers/corp/users/595474e4-8fca-454b-b08e-ec3c275a52bd"
+    json = make_api_v2_request(testcase=testcase, url=url)
+    username = json["result"]["value"]["username"]
+    assert username == "Johann.Bach", username
 
-        params = {"realm": realm}
-        response = self.make_admin_request("userlist", params=params)
 
-        usernames = [u["username"] for u in response.json["result"]["value"]]
-
-        assert user in usernames
-        assert len(usernames) == 5570, len(usernames)
-
-        params = {
-            "user": user,
-            "type": "pw",
-            "otpkey": "geheim1",
-            "realm": realm,
-        }
-        response = self.make_admin_request("init", params=params)
-        assert "detail" in response
-
-        params = {
-            "name": "pin_policy",
-            "scope": "authentication",
-            "active": True,
-            "client": "*",
-            "realm": "*",
-            "user": "*",
-            "action": "otppin=password",
-        }
-        response = self.make_system_request("setPolicy", params=params)
-        assert "false" not in response
-
-        params = {"user": user, "realm": realm, "pass": "Test123!geheim1"}
-        response = self.make_validate_request("check", params=params)
-        assert "false" not in response
-
-    @pytest.mark.usefixtures("ldap_realm_test")
-    def test_user_of_LDAP_resolver_with_DN_type_uid(self):
-        response = self.make_api_v2_request(
-            "/resolvers/test/users/cn=Johann%20Sebastian%20Bach,cn=Users,dc=corp,dc=lsexperts,dc=de",
-            auth_user="admin",
-        )
-        assert response.json["result"]["status"], response.json["result"]
-        user = response.json["result"]["value"]
-        assert user["username"] == "Johann.Bach", user["username"]
-
-    @pytest.mark.usefixtures("ldap_realm_corp")
-    def test_user_of_LDAP_resolver_with_GUID_type_uid(self):
-        response = self.make_api_v2_request(
-            "/resolvers/corp/users/595474e4-8fca-454b-b08e-ec3c275a52bd",
-            auth_user="admin",
-        )
-        assert response.json["result"]["status"]
-        user = response.json["result"]["value"]
-        assert user["username"] == "Johann.Bach"
-
-    @pytest.mark.usefixtures("ldap_realm_test")
-    def test_user_of_LDAP_resolver_with_searchTerm(self):
-        response = self.make_api_v2_request(
-            "/resolvers/test/users",
-            params={"searchTerm": "Elinor"},
-            auth_user="admin",
-        )
-        assert response.json["result"]["status"]
-        username_list = [
-            user["username"] for user in response.json["result"]["value"]["pageRecords"]
-        ]
-        assert username_list == [
-            "Elinor.Jaurigui",
-            "Elinor.Kozlik",
-            "Elinor.Landquist",
-        ], str(username_list)
+@pytest.mark.usefixtures("ldap_realm_test")
+def test_user_of_LDAP_resolver_with_searchTerm(testcase: TestCase):
+    json = make_api_v2_request(
+        testcase=testcase,
+        url=f"{testcase.base_url}/api/v2/resolvers/test/users",
+        params={"searchTerm": "Elinor"},
+    )
+    username_list = [
+        user["username"] for user in json["result"]["value"]["pageRecords"]
+    ]
+    assert username_list == [
+        "Elinor.Jaurigui",
+        "Elinor.Kozlik",
+        "Elinor.Landquist",
+    ], str(username_list)
