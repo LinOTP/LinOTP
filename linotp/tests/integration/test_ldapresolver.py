@@ -56,6 +56,7 @@ class TestLdapResolver:
     GUID_REALM = integration_data.samba_guid_resolver["name"]
 
     # Expected user counts
+    EXPECTED_USER_COUNT_API = 5570
     EXPECTED_USER_COUNT_UI = 500  # UI can only show 500 out of 5570 users
 
     @pytest.fixture(autouse=True)
@@ -193,3 +194,24 @@ class TestLdapResolver:
             "Elinor.Kozlik",
             "Elinor.Landquist",
         ], str(username_list)
+
+    @pytest.mark.parametrize("realm_name", [DN_REALM, GUID_REALM])
+    def test_realm_user_count_via_api_v2(self, realm_name):
+        """Test checking user count via API v2 realms endpoint"""
+        json = self.make_api_v2_request(
+            url=f"{self.testcase.base_url}/api/v2/realms/{realm_name}/users"
+        )
+        user_list = json["result"]["value"]
+        user_count = len(user_list)
+
+        assert user_count == self.EXPECTED_USER_COUNT_API
+
+        # Verify we get a list of user objects
+        assert isinstance(user_list, list), "User list should be a list"
+        if user_list:
+            # Verify user object structure (check first user has expected fields)
+            first_user = user_list[0]
+            expected_fields = {"userId", "username", "resolverName", "resolverClass"}
+            assert expected_fields.issubset(first_user.keys()), (
+                f"User object missing expected fields. Got: {list(first_user.keys())}"
+            )
