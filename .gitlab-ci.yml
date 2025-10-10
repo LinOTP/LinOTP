@@ -15,6 +15,7 @@ variables:
   FF_NETWORK_PER_BUILD: 1
   BLACKDOG_LDAP_IMAGE: $CI_REGISTRY/docker-images/blackdog-ldap/blackdog-ldap:latest
   BLACKDOG_MYSQL_IMAGE: $CI_REGISTRY/docker-images/blackdog-mysql/blackdog-mysql:latest
+  BLACKDOG_SAMBA_IMAGE: $CI_REGISTRY/docker-images/blackdog-samba/blackdog-samba:latest
   PYPI_IMAGE_TAG: $IMAGE_PREFIX_CI/$CI_COMMIT_REF_SLUG-pypi:$CI_PIPELINE_ID
   DOCKER_IMAGE_TAG: $CI_REGISTRY_IMAGE/b/$CI_COMMIT_REF_SLUG:$CI_PIPELINE_ID
   DOCKER_TEST_IMG_IMAGE_TAG: $IMAGE_PREFIX_CI/$CI_COMMIT_REF_SLUG-testimg:$CI_PIPELINE_ID
@@ -468,6 +469,8 @@ functional-test-mysql-lower-case-table-names:
       alias: blackdog-ldap
     - name: $BLACKDOG_MYSQL_IMAGE
       alias: blackdog-mysql
+    - name: $BLACKDOG_SAMBA_IMAGE
+      alias: blackdog-samba
     # Note: after 4.30.0-20250323 Chrome will throw a popup "Change your password" when they found it in a data breach.
     # This popup can't currently be disabled or intercepted -> breaking some tests.
     # What's making it even worse: That popup is not shown in the Screenshots taken by the tests.
