@@ -158,5 +158,5 @@ def create_samba_resolver(name: str, uid_type: str) -> dict:
 
 
 # Specific resolver instances
-samba_dn_resolver = create_samba_resolver("test", "dn")
-samba_guid_resolver = create_samba_resolver("corp", "objectGUID")
+samba_dn_resolver = create_samba_resolver("test_dn", "dn")
+samba_guid_resolver = create_samba_resolver("test_guid", "objectGUID")
