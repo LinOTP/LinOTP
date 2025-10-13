@@ -217,7 +217,7 @@ class User:
                 userid,
             )
             userInfo = y.getUserInfo(userid)
-            self.info[resolver_spec] = userInfo
+            self.info = userInfo
 
         except Exception as exx:
             log.error(

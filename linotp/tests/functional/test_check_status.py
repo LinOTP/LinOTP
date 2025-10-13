@@ -288,6 +288,116 @@ class TestCheckStatus(TestController):
 
             self.delete_token(serial)
 
+    def test_details_on_success(self):
+        """
+        Test that check_status returns correct user details with detail_on_success policy.
+
+        Verifies that the user details returned by check_status:
+        - Are present when detail_on_success policy is active
+        - Contain only expected keys (no internal resolver keys)
+        - Are absent when detail_on_success policy is inactive
+        """
+
+        ###### Helpers to structure the test ######
+        def create_policies(use_detail_policy):
+            policies = [
+                {
+                    "name": "hmac_challenge_response",
+                    "scope": "authentication",
+                    "action": "challenge_response=hmac",
+                    "realm": "*",
+                    "user": "*",
+                },
+                {
+                    "name": "details",
+                    "scope": "authorization",
+                    "active": use_detail_policy,
+                    "realm": "*",
+                    "action": "detail_on_success,detail_on_fail",
+                    "user": "*",
+                    "client": "",
+                },
+            ]
+
+            for pol in policies:
+                response = self.make_system_request(
+                    action="setPolicy", params=pol, auth_user="superadmin"
+                )
+                assert response.json["result"]["status"], (
+                    f"Failed to set policy {pol['name']}: {response}"
+                )
+                assert response.json["result"]["value"][f"setPolicy {pol['name']}"], (
+                    response
+                )
+
+        def trigger_and_validate_challenge(otp):
+            # Trigger Challenge
+            params = {"user": "passthru_user1", "pass": "123!"}
+            response = self.make_validate_request("check", params)
+            assert not response.json["result"]["value"], (
+                f"Challenge should be triggered: {response}"
+            )
+
+            # Extract transactionid
+            transid = response.json["detail"]["transactionid"]
+            assert transid is not None, f"Transaction ID should be present: {response}"
+
+            # Validate Challenge
+            params = {
+                "user": "passthru_user1",
+                "pass": otp,
+                "transactionid": transid,
+            }
+            response = self.make_validate_request("check", params)
+            assert response.json["result"]["value"], (
+                f"Authentication should succeed: {response}"
+            )
+
+            return transid
+
+        def check_status_returns_correct_user_details(transid, use_detail_policy):
+            params = {
+                "user": "passthru_user1",
+                "pass": "123!",
+                "transactionid": transid,
+            }
+            response = self.make_validate_request("check_status", params)
+            assert '"received_tan": true' in response, response
+            assert '"valid_tan": true' in response, response
+
+            # Verify user details based on policy
+            if use_detail_policy:
+                user = response.json["detail"].get("user", {})
+                assert list(user.keys()) == [
+                    "username",
+                    "userid",
+                    "description",
+                    "email",
+                    "givenname",
+                    "surname",
+                    "phone",
+                    "mobile",
+                ]
+            else:
+                assert "user" not in response.json["detail"]
+
+        ###### Actual test ######
+        for use_detail_policy in [True, False]:
+            # GIVEN:
+            # LinOTP with detail_on_success and challenge_response policies and an HMAC token
+            create_policies(use_detail_policy)
+            serial, otps = self.create_hmac_token(user="passthru_user1", pin="123!")
+
+            # WHEN: A challenge is triggered and successfully completed
+            transid = trigger_and_validate_challenge(otps[0])
+
+            # THEN: The check_status response contains appropriate user details
+            check_status_returns_correct_user_details(transid, use_detail_policy)
+
+            # Cleanup
+            self.delete_token(serial)
+            self.delete_all_policies()
+
     def test_multiple_token(self):
         """
         test for check_status with multiple hmac token in challenge response
