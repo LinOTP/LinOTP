@@ -109,6 +109,7 @@ class TestCaching:
 
         # Keeping the original function undecorated to be used later:
         hawaii_pizza_orig = hawaii_pizza
+        cache_key = "lib.test_cache_utils.TestCaching.test_cache_in_request.<locals>.hawaii_pizza_cache"
 
         # Decorating it with cache_in_request
         hawaii_pizza = cache_in_request(hawaii_pizza)
@@ -130,7 +131,7 @@ class TestCaching:
 
         # we expect that the function is called 6 times and 6 values are stored in cache
         assert hawaii_pizza.counter == 6
-        assert len(request_context["hawaii_pizza_cache"]) == 6
+        assert len(request_context[cache_key]) == 6
 
         # (II) now testing the decorator with the 'key_generator' argument.
 
@@ -142,7 +143,7 @@ class TestCaching:
 
         # calling pizzeria few times:
         hawaii_pizza.counter = 0
-        request_context["hawaii_pizza_cache"] = {}
+        request_context[cache_key] = {}
         outputs_defined_keygen = call_pizzeria_few_times(hawaii_pizza)
 
         # Some of the expected outputs are checked here:
@@ -158,4 +159,4 @@ class TestCaching:
 
         # we expect that the function is called 6 times and 6 values are stored in cache
         assert hawaii_pizza.counter == 6
-        assert len(request_context["hawaii_pizza_cache"]) == 6
+        assert len(request_context[cache_key]) == 6

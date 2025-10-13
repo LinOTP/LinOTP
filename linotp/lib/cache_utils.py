@@ -75,7 +75,10 @@ def cache_in_request(
     def cache_in_request_decorator(func_to_cache):
         @functools.wraps(func_to_cache)
         def request_cacher(*args, **kwargs):
-            cache_name = func_to_cache.__name__ + "_cache"
+            functions_module = func_to_cache.__module__
+            functions_qualname = func_to_cache.__qualname__
+            cache_name = f"{functions_module}.{functions_qualname}_cache"
+
             functions_cache: dict = request_context.setdefault(cache_name, {})
 
             cache_key = f"{key_generator(*args, **kwargs)}"
