@@ -109,7 +109,7 @@ services:
       - linotp-net
 
   blackdog-samba:
-    image: gitbox.corp.linotp.de:5050/docker-images/blackdog-samba/b/main:latest
+    image: gitbox.corp.linotp.de:5050/docker-images/blackdog-samba/blackdog-samba:latest
     networks:
       - linotp-net
 
