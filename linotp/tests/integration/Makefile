@@ -52,7 +52,7 @@ integrationtests:
 
 integrationtests-bunch1:
 	# integrationtests - selenium integration tests
-	$(PYTEST) $(PYTESTARGS) --tc-file=$(TCFILE) test_create_useridresolvers.py test_selfservice.py test_token_view.py test_policies.py test_manage.py test_emailtoken.py
+	$(PYTEST) $(PYTESTARGS) --tc-file=$(TCFILE) test_create_useridresolvers.py test_token_view.py test_policies.py test_manage.py test_emailtoken.py
 
 integrationtests-bunch2:
 	# integrationtests - selenium integration tests

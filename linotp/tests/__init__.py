@@ -1065,48 +1065,6 @@ class TestController(TestCase):
 
     # ------------------------------------------------------------------------ -
 
-    def make_selfservice_request(
-        self, action, params=None, auth_user=None, new_auth_cookie=False
-    ):
-        if not params:
-            params = {}
-
-        # ------------------------------------------------------------------ --
-
-        # identify login credentials
-
-        user = auth_user.get("login")
-        password = auth_user.get("password")
-        otp = auth_user.get("otp")
-
-        if new_auth_cookie and user in self.user_service:
-            del self.user_service[user]
-
-        # ------------------------------------------------------------------ --
-
-        if not hasattr(self, "user_selfservice"):
-            self.user_selfservice = {}
-
-        auth_cookie = self.user_selfservice.get(user)
-
-        if not auth_cookie:
-            response, auth_cookie = self._user_service_login(user, password, otp)
-
-            if not auth_cookie or '"value": false' in response.body:
-                return response
-
-            self.user_selfservice[user] = auth_cookie
-
-        params["session"] = auth_cookie
-        # params['user'] = user
-        response = self.client.get(
-            url(controller="selfservice-legacy", action=action),
-            query_string=params,
-        )
-
-        response.body = response.data.decode("utf-8")
-        return response
-
     def get_last_audit_entry(self):
         response = self.make_audit_request("search")
         res = response.json

@@ -13,24 +13,19 @@ def path_equal(loc, path):
     return urlparse(loc).path == path
 
 
-@pytest.mark.app_config(
-    {
-        "ENABLE_CONTROLLERS": "selfservice",
-    }
-)
-def test_redirect_legacy_selfservice(client):
+def test_redirect_manage(client):
     response = client.get("/")
 
     assert response.status_code == 302
-    assert path_equal(response.headers["Location"], "/selfservice-legacy/")
+    assert path_equal(response.headers["Location"], "/manage/")
 
 
 @pytest.mark.app_config(
     {
-        "ENABLE_CONTROLLERS": "selfservice:/my-custom-path",
+        "ENABLE_CONTROLLERS": "manage:/my-custom-path",
     }
 )
-def test_redirect_custom_legacy_selfservice_url(client):
+def test_redirect_custom_manage_url(client):
     response = client.get("/")
 
     assert response.status_code == 302
@@ -40,7 +35,6 @@ def test_redirect_custom_legacy_selfservice_url(client):
 @pytest.mark.app_config(
     {
         "SITE_ROOT_REDIRECT": "/custom-site-redirect",
-        "ENABLE_CONTROLLERS": "selfservice",
     }
 )
 def test_custom_site_root_redirect_config(client):
