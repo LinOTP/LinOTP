@@ -47,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - webprovisionGOOGLE and webprovisionGOOGLEtime policies are removed and migrated to enrollHMAC and enrollTOTP respectively
 - OATHTokenSupport config item is removed and "OATH webprovision" is no longer supported in legacy selfservice
 - `userservice/webprovision` endpoint is removed
+- Legacy selfservice user interface removed
 
 ### Deprecated
 
