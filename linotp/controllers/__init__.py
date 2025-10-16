@@ -49,8 +49,6 @@ communicate with LinOTP. You can use the following controllers:
 +--------------------------------------------+------------------------------------------+
 | :py:class:`linotp.controllers.ocra`        | Ocra token API                           |
 +--------------------------------------------+------------------------------------------+
-| :py:class:`linotp.controllers.selfservice` | the selfservice UI                       |
-+--------------------------------------------+------------------------------------------+
 | :py:class:`linotp.controllers.system`      | to configure the system                  |
 +--------------------------------------------+------------------------------------------+
 | :py:class:`linotp.controllers.tools`       | to access various tools                  |
