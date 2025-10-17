@@ -32,9 +32,7 @@ Dependencies: UserIdResolver
 
 import json
 import logging
-import urllib.error
 import urllib.parse
-import urllib.request
 
 from flask import current_app
 from passlib.context import CryptContext
@@ -256,7 +254,7 @@ def build_simple_connect(
 
     # ------------------------------------------------------------------ --
 
-    # add driver scope as protocoll
+    # add driver scope as protocol
 
     connect.append(f"{driver}://")
 
@@ -695,7 +693,7 @@ class IdResolver(UserIdResolver):
 
                 # ------------------------------------------------------------- --
 
-                # retriev password from Crypted Data object
+                # retrieve password from Crypted Data object
                 passwd = l_config.get("Password").get_unencrypted()
 
                 connect = make_connect(
@@ -716,7 +714,7 @@ class IdResolver(UserIdResolver):
             self.sqlUserInfo = json.loads(userInfo)
 
         except ValueError as exx:
-            msg = f"Invalid userinfo - no json document: {userInfo} {exx!r}"
+            msg = f"Invalid userInfo - no json document: {userInfo} {exx!r}"
             raise ResolverLoadConfigError(msg) from exx
 
         except Exception as exx:
@@ -770,13 +768,13 @@ class IdResolver(UserIdResolver):
 
     def getUserId(self, loginName):
         """
-        return the userId which mappes to a loginname
+        get the userId for a given login name
 
         :param loginName: login name of the user
-        :type loginName:  string
+        :type loginName: string
 
-        :return: userid - unique idenitfier for this unser
-        :rtype:  string
+        :return: userId
+        :rtype: string
         """
 
         log.debug("[getUserId] %r[%s]", loginName, type(loginName))
@@ -811,13 +809,13 @@ class IdResolver(UserIdResolver):
 
     def getUsername(self, userId):
         """
-        get the loginname from the given userid
+        get the login name for a given userId
 
-        :param userId: userid descriptor
+        :param userId: unique identifier of the user
         :type userId: string
 
-        :return: loginname
-        :rtype:  string
+        :return: login name
+        :rtype: string
         """
         log.debug("[getUsername] %r[%s]", userId, type(userId))
 
@@ -1042,7 +1040,7 @@ class IdResolver(UserIdResolver):
                 raise KeyError(msg, column_name)
 
             # more tolerant mapping of column names for some sql dialects
-            # as you can define columnnames in mixed case but table mapping
+            # as you can define column names in mixed case but table mapping
             # might be only available in upper or lower case (s. postgresql)
             for column_name in possible_column_name_list:
                 try:

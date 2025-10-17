@@ -129,7 +129,7 @@ def crypt_password(password):
 
 def compare(one, two):
     """
-    position independend comparison of values
+    position-independent comparison of values
 
     :param one: first value
     :param two: second value
@@ -326,7 +326,7 @@ def encryptPin(cryptPin: bytes, iv=None, hsm=None):
     """Encrypt pin (i.e. token pin)
 
     :param cryptPin: pin to encrypt
-    :param iv: initializain vector
+    :param iv: initialization vector
     :param hsm: hsm security object instance
     :return: return encrypted pin
     """
@@ -391,7 +391,7 @@ def encrypt(data: str, iv: bytes, id: int = 0, hsm=None) -> bytes:
     :param id:    contains the id of which key of the keyset should be used
     :type  id:    int
 
-    :return:      encryted buffer
+    :return:      encrypted buffer
     """
 
     hsm_obj = _get_hsm_obj_from_context(hsm)
@@ -409,7 +409,7 @@ def decrypt(input, iv, id=0, hsm=None):
     :param id:    contains the id of which key of the keyset should be used
     :type  id:    int
 
-    :return:      decryted buffer
+    :return:      decrypted buffer
     """
 
     hsm_obj = _get_hsm_obj_from_context(hsm)
@@ -558,8 +558,8 @@ def geturandom(len=20):
     """
     get random - from the security module
 
-    :param len:  len of the returned bytes - defalt is 20 bytes
-    :tyrpe len:    int
+    :param len: length of the bytes to return - default is 20 bytes
+    :type len: int, optional
 
     :return: buffer of bytes
 
