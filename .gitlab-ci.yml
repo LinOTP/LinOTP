@@ -488,9 +488,6 @@ functional-test-mysql-lower-case-table-names:
         LINOTP_ADMIN_PASSWORD: admin
         LINOTP_LOG_LEVEL: INFO
         LINOTP_SESSION_COOKIE_SECURE: "false"
-        # reenable selfservice for some e2e tests
-        LINOTP_DISABLE_CONTROLLERS: "gettoken"
-        LINOTP_SITE_ROOT_REDIRECT: ""
   script:
     - cd linotp/tests/integration
     - >
