@@ -464,9 +464,3 @@ class TestRolloutToken(TestController):
         )
         assert len(response.json["result"]["value"]) == 2
         assert self.ROLLOUT_TOKEN_SERIAL in response, response
-
-        # verify that the rollout token is not shown in the selfservice UI html
-        response = self.make_selfservice_request(
-            "usertokenlist", None, auth_user=auth_user
-        )
-        assert self.ROLLOUT_TOKEN_SERIAL not in response.body, response

@@ -89,7 +89,6 @@ AVAILABLE_CONTROLLERS = {
     "manage",
     "monitoring",
     "reporting",
-    "selfservice",
     "system",
     "tools",
     "userservice",
@@ -1003,8 +1002,8 @@ def _setup_root_route(app: LinOTPApp):
             if site_root_redirect:
                 return redirect(site_root_redirect)
 
-            if "selfservice" in app.enabled_controllers:
-                return redirect(url_for("selfservice.index"))
+            if "manage" in app.enabled_controllers:
+                return redirect(url_for("manage.index"))
 
         except Exception as exc:
             log.warning("Error handling root route: %r", exc)

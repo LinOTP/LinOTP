@@ -602,7 +602,7 @@ _config_schema = ConfigSchema(
                 "Configure an alternative URL path to get redirected "
                 'to if the site root path ("/") is opened. If not '
                 "configured, the user will be redirected to the "
-                "selfservice controller."
+                "manage controller."
             ),
         ),
         ConfigItem(

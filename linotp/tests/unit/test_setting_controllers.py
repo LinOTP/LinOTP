@@ -30,11 +30,11 @@ def test_all_controllers__are_accessible(client):
 
 @pytest.mark.app_config(
     {
-        "ENABLE_CONTROLLERS": "ALL selfservice:/my-custom-path",
+        "ENABLE_CONTROLLERS": "ALL manage:/my-custom-path",
     }
 )
-def test_all_controllers_and_no_duplicate_selfservice(client):
-    """test: all controllers and no selfservice duplicate error"""
+def test_all_controllers_and_no_duplicate_manage(client):
+    """test: all controllers and no manage duplicate error"""
     response = client.get("/")
 
     assert response.status_code == 302
@@ -46,7 +46,7 @@ def test_all_controllers_and_no_duplicate_selfservice(client):
 
 @pytest.mark.app_config(
     {
-        "ENABLE_CONTROLLERS": "selfservice",
+        "ENABLE_CONTROLLERS": "manage",
     }
 )
 def test_no_other_controller_available(client):
@@ -60,7 +60,6 @@ def test_no_other_controller_available(client):
 @pytest.mark.app_config(
     {
         "ENABLE_CONTROLLERS": "ALL",
-        "DISABLE_CONTROLLERS": "",
     }
 )
 def test_gettoken_controller_accessible(client):

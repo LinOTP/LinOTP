@@ -6,7 +6,6 @@ services:
       LINOTP_ADMIN_PASSWORD: "admin"
       LINOTP_DATABASE_URI: "postgresql://linotpuser:linotppass@linotp-db/linotp_db" #gitleaks:allow
       LINOTP_LOG_LEVEL: "INFO"
-      LINOTP_SITE_ROOT_REDIRECT: "/manage/"
       LINOTP_SESSION_COOKIE_SECURE: false
     command: "--with-bootstrap"
     volumes:
