@@ -1078,5 +1078,20 @@ class TestController(TestCase):
         filtered_entries = [entry for entry in entries if entry[4] == action]
         return filtered_entries[-1]
 
+    def createPWToken(self, serial="TPW", user="root", pin="pin", otpkey="123456"):
+        parameters = {
+            "serial": serial,
+            "type": "pw",
+            "otpkey": otpkey,
+            "otppin": pin,
+            "user": user,
+            "pin": pin,
+            "description": "token_description",
+        }
+
+        response = self.make_admin_request("init", params=parameters)
+        assert '"value": true' in response, response
+        return serial
+
 
 # eof #
