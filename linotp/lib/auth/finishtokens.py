@@ -280,19 +280,31 @@ class FinishTokens:
             # the key is the token type combined with its token serial number
             all_reply = {"challenges": {}}
             transactionid = ""
+            error_serials = []
             for i, challenge_token in enumerate(challenge_tokens, 1):
                 id_postfix = f".{i:02d}"
                 challenge_id = f"{transactionid}{id_postfix}" if transactionid else ""
+                try:
+                    (_res, reply) = Challenges.create_challenge(
+                        challenge_token,
+                        options=options,
+                        challenge_id=challenge_id,
+                        id_postfix=id_postfix,
+                    )
+                    transactionid = reply.get("transactionid").rsplit(".")[0]
+                    key = challenge_token.getSerial()
+                    all_reply["challenges"][key] = reply
+                except Exception as exc:
+                    # mark as failed
+                    error_serials.append(challenge_token.getSerial())
+                    msg = f"Challenge failed for {challenge_token.type} token {challenge_token.getSerial()}: {exc!s}"
+                    log.warning(msg)
+                    continue
 
-                (_res, reply) = Challenges.create_challenge(
-                    challenge_token,
-                    options=options,
-                    challenge_id=challenge_id,
-                    id_postfix=id_postfix,
-                )
-                transactionid = reply.get("transactionid").rsplit(".")[0]
-                key = challenge_token.getSerial()
-                all_reply["challenges"][key] = reply
+            if len(error_serials) == len(challenge_tokens):
+                msg = f"None of the available tokens triggered a challenge: {error_serials}"
+                g.audit["action_detail"] = msg
+                raise Exception(msg)
 
             # finally add the root challenge response with top transaction id
             # and message, that indicates that 'multiple challenges have been
@@ -300,8 +312,9 @@ class FinishTokens:
 
             all_reply["transactionid"] = transactionid
             all_reply["message"] = "Multiple challenges submitted."
-
-            log.debug("Multiple challenges submitted: %d", len(challenge_tokens))
+            log.debug("Multiple challenges submitted: %d", len(all_reply["challenges"]))
+            if len(error_serials) > 0:
+                g.audit["info"] = f"Failed for {error_serials}"
 
             return (False, all_reply, action_detail)
 
