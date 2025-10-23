@@ -339,13 +339,16 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
         :return: true or false
         """
 
-        request_is_valid = False
-
         pin_match = check_pin(self, passw, user=user, options=options)
-        if pin_match is True and ("data" in options or "challenge" in options):
-            request_is_valid = True
 
-        return request_is_valid
+        if pin_match and not ("data" in options or "challenge" in options):
+            log.info(
+                "Not triggering challenge for %s: No `data` or `challenge` param",
+                self.getSerial(),
+            )
+            return False
+
+        return pin_match
 
     def is_challenge_response(self, passw, user, options=None, challenges=None):
         """

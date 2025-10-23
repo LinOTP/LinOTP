@@ -1037,6 +1037,11 @@ class Ocra2TokenClass(TokenClass):
             # missing password, if there is a challenge or data in the request
             if "data" in options or "challenge" in options:
                 request_is_valid = True
+            else:
+                log.info(
+                    "Not triggering challenge for %s: No `data` or `challenge` param",
+                    self.getSerial(),
+                )
         else:
             tok = super()
             request_is_valid = tok.is_challenge_request(passw, user, options=options)
