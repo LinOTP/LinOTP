@@ -1530,5 +1530,79 @@ class TestPushToken(TestController):
         assert not status
         assert not value
 
+    def test_partial_challenge_submission(self):
+        """
+        A validate/check request should not fail for all
+        tokens just because the challenge for the pushtoken could
+        not be submitted.
+        """
+
+        self.execute_correct_pairing(serial="pushserial", pin="pin", user="root")
+        self.createPWToken(pin="pin", serial="TPW")
+
+        params = {
+            "scope": "authentication",
+            "action": "challenge_response=* ",
+            "realm": "*",
+            "user": "*",
+            "name": "challenge_response",
+        }
+        self.create_policy(params)
+
+        params = {"user": "root", "pass": "pin", "data": "pin"}
+        response = self.make_validate_request("check", params)
+
+        response_dict = json.loads(response.body)
+        assert "result" in response_dict
+        result = response_dict["result"]
+
+        assert result["status"] is True
+        assert result["value"] is False
+
+        detail = response_dict.get("detail", {})
+        assert "challenges" in detail
+        challenges = detail["challenges"]
+
+        # Challenge for push failed while for pw it did not
+        assert "pushserial" not in challenges
+        assert "Please enter your otp value: " in challenges["TPW"]["message"]
+
+    def test_challenge_submission_failure_two_push(self):
+        """
+        A validate/check request should fail and
+        include the token serials in the response.
+        """
+        push_serial = "pushserial"
+        push_serial2 = "pushserial2"
+
+        self.execute_correct_pairing(serial=push_serial, pin="pin", user="root")
+        self.execute_correct_pairing(serial=push_serial2, pin="pin", user="root")
+
+        params = {
+            "scope": "authorization",
+            "action": "detail_on_fail",
+            "realm": "*",
+            "user": "*",
+            "name": "detail_on_fail",
+        }
+        self.create_policy(params)
+
+        params = {"user": "root", "pass": "pin", "data": "pin"}
+        response = self.make_validate_request("check", params)
+
+        response_dict = json.loads(response.body)
+        assert "result" in response_dict
+        result = response_dict["result"]
+
+        assert result["status"] is True
+        assert result["value"] is False
+
+        detail = response_dict.get("detail", {})
+        assert "challenges" not in detail
+
+        assert "None of the available tokens triggered a challenge:" in detail["error"]
+        assert push_serial in detail["error"]
+        assert push_serial2 in detail["error"]
+
 
 # -------------------------------------------------------------------------- --

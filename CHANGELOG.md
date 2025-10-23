@@ -65,6 +65,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - If `setOTPPIN` and `otp_pin_random` policies are set during selfservice enroll, the pin will no longer be
   randomized
 - English and german text for license fields in Manage-UI
+- multi-challenge request does not fail entirely if one challenge fails
 
 ## [3.4.4-1] - 2025-06-18
 
