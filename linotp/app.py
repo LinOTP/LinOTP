@@ -4,10 +4,8 @@
 # that order):
 #
 #   - Hard-coded defaults in one of the configuration classes in
-#     `linotp3.settings`, selected by the content of the `LINOTP3_CONFIG`
-#     environment variable (if it exists) or else the content of the
-#     `FLASK_ENV` environment variable (if it exists; the only official
-#     values are `development` and `production`) or else `default`.
+#     `linotp3.settings`, selected by the content of the `LINOTP_CONFIG`
+#     environment variable (if it exists) or else `default`.
 #
 #   - Settings in the file whose name is given by the content of the
 #     `LINOTP3_CONFIG_FILE` environment variable (if it exists) or else
@@ -890,7 +888,7 @@ def _configure_app(
 
     # Use production as default environment if not specified
     if config_name is None:
-        config_name = os.getenv("FLASK_ENV", "production")
+        config_name = os.getenv("LINOTP_CONFIG", "default")
 
     app.config.from_object(configs[config_name])
     configs[config_name].init_app(app)
