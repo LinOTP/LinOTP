@@ -56,7 +56,7 @@ class TestPrecontext(unittest.TestCase):
 
         mock_get_version.return_value = "version"
         mock_get_copyright_info.return_value = "copyright"
-        mock_get_realms.return_value = "realms"
+        mock_get_realms.return_value = {}
         mock_getDefaultRealm.return_value = "realm"
         mock_getRealmBox.return_value = True
         mock_get_selfservice_action_value.side_effect = [
@@ -74,7 +74,7 @@ class TestPrecontext(unittest.TestCase):
         assert get_pre_context(client) == {
             "version": "version",
             "copyright": "copyright",
-            "realms": "realms",
+            "realms": {},
             "settings": {
                 "default_realm": "realm",
                 "realm_box": True,

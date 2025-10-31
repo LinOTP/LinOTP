@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `userservice/enroll` response for HOTP/TOTP/mOTP tokens now includes a new field: `detail.enrollment_url`, which currently mirrors `detail.googleurl` property
 - `userservice/enroll` requests for mOTP tokens may now omit the `otpkey` parameter, which will cause a random `otpkey` to be assigned by LinOTP. Clients can find out about this from the response.
 - Setting `WORKER_THREADS` to `auto` (or not setting it at all) will use “2 \* number of CPU cores + 1” threads.
+- The `userservice/context` and `userservice/pre_context` endpoints no longer expose internal realm or resolver details. They now only return the necessary fields (`realmname` and `default`, which is now a boolean) to improve security. This is breaking change. 
 
 ### Security
 
