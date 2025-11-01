@@ -104,11 +104,18 @@ class TestUserserviceLogin(TestUserserviceController):
         # fetch the pre_context with imprint, privacy and footer
 
         response = self.client.post("userservice/pre_context")
+
         settings = response.json["detail"]["settings"]
 
         assert settings["imprint_url"] == imprint_url
         assert settings["privacy_notice_url"] == privacy_notice_url
         assert settings["footer_text"] == footer_text
+
+        # verify that the realm definitions contains only "realmname"
+        # and "default" and no other sensitive information
+        realms = response.json["detail"]["realms"]
+        for realmDefintions in realms.values():
+            assert realmDefintions.keys() == {"realmname", "default"}
 
     def test_no_audit_precontext(self):
         self.test_pre_context()
