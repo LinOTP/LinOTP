@@ -310,7 +310,7 @@ def get_pre_context(client):
     return {
         "version": get_version(),
         "copyright": get_copyright_info(),
-        "realms": _get_realms_(),
+        "realms": _map_realms_for_pre_context(_get_realms_()),
         "settings": {
             "default_realm": getDefaultRealm(),
             "realm_box": getRealmBox(),
@@ -503,3 +503,19 @@ def get_transaction_detail(transactionid):
     }
 
     return details
+
+
+def _map_realms_for_pre_context(realms: dict) -> dict:
+    """
+    Map the realms for the pre-context. We dont want to expose all realms
+    details in userservice endpoint. We only need the realmname and if its the default realm.
+    We also convert the default value to boolean for consistency.
+    """
+
+    return {
+        k: {
+            "realmname": v["realmname"],
+            "default": v.get("default", "").lower() == "true",
+        }
+        for k, v in realms.items()
+    }
