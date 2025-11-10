@@ -53,6 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Deprecated
 
 - The `detail.googleurl` property in the `userservice/enroll` response will be removed in a future major release. Please update your integrations to use `detail.enrollment_url` instead.
+- The `FLASK_ENV` environment variable is deprecated. Please use `LINOTP_CONFIG` to select the configuration environment instead.
+- The `DEBUG` configuration setting has been removed. To enable the Flask debugger, use the `FLASK_DEBUG` environment variable.
 
 ### Fixed
 
@@ -67,6 +69,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   randomized
 - English and german text for license fields in Manage-UI
 - multi-challenge request does not fail entirely if one challenge fails
+- The `LINOTP_CONFIG` environment variable correctly sets the selected configuration environment.
 
 ## [3.4.4-1] - 2025-06-18
 

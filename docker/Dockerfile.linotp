@@ -151,7 +151,7 @@ ENV LINOTP_USER=linotp \
     CUSTOM_ASSETS_DIR=/custom-assets \
     LINOTP_DISABLE_CONTROLLERS="gettoken" \
     FLASK_APP=linotp.app \
-    FLASK_ENV=production \
+    LINOTP_CONFIG=production \
     REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 
 # Copy artifacts from builder

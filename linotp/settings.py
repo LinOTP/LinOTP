@@ -930,7 +930,6 @@ Config = type("Config", (object,), _attrs)
 
 
 class DevelopmentConfig(Config):
-    DEBUG = True
     SESSION_COOKIE_SECURE = False
     LOG_LEVEL = "DEBUG"
     LOG_FILE_LEVEL = LOG_LEVEL

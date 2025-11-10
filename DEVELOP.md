@@ -129,16 +129,14 @@ Configuration settings are hard-coded in `linotp/settings.py`, which also
 defines a small set of "environments" that pre-cook basic configurations:
 
 - _development_ is aimed at LinOTP developers running LinOTP on their
-  local machine. It enables debugging (including copious log messages,
-  auto-reload if source code files change, and the interactive Flask
-  debugger) and defaults to using a local SQLite database. _This is
-  not safe to use in a production setting._
+  local machine. It enables copious log messages and defaults to using a local SQLite database.
+  _This is not safe to use in a production setting._
 - _testing_ is an environment that facilitates running system
   tests. Like _development_, it enables more prolific logging output.
 - _production_ is a more streamlined and secure setup to be used on
   productive servers.
 
-One of these environments can be selected by setting the `FLASK_ENV`
+One of these environments can be selected by setting the `LINOTP_CONFIG`
 variable to `development`, `testing`, or `production`. If unset, it
 defaults to `default`, which is identical to `development`.
 
@@ -291,7 +289,7 @@ linotp run
 ```
 
 will launch the Flask development server. (You can still use
-`FLASK_ENV` to specify the desired environment.)
+`LINOTP_CONFIG` to specify the desired environment.)
 
 This starts the Flask development server. Unless you specify otherwise
 using the `--host` and `--port` options, the development server will
@@ -304,6 +302,10 @@ LinOTP's management interface:
 linotp local-admins add <your_username>
 linotp local-admins password -p <your_password> <your_username>
 ```
+
+It is possible to enable the Flask debugger (auto-reload on source code changes and
+the interactive debugger) by setting the environment variable `FLASK_DEBUG=1` or by
+running the `linotp run` command with the `--debug` flag.
 
 ## Run unit, functional, and integration tests
 

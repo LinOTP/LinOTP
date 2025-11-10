@@ -135,6 +135,14 @@ class LinOTPGroup(FlaskGroup):
                 break
 
 
+def make_create_app():
+    def factory():
+        config_name = os.getenv("LINOTP_CONFIG", "default")
+        return create_app(config_name)
+
+    return factory
+
+
 # Main command group for the application. Here's where we end up when
 # the user gives the `linotp` command on the command line. We rely on
 # Click to dispatch to subcommands in their respective groups. Note that
@@ -143,7 +151,7 @@ class LinOTPGroup(FlaskGroup):
 
 
 @click.version_option(message="LinOTP %(version)s")
-@click.group(name="linotp", cls=LinOTPGroup, create_app=create_app)
+@click.group(name="linotp", cls=LinOTPGroup, create_app=make_create_app())
 @click.option(
     "--verbose",
     "-v",
