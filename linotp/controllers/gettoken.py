@@ -91,7 +91,7 @@ class GettokenController(BaseController):
         """
         This function is used to retrieve multiple otp values for a given user
         or a given serial. If the user has more than one token, the list of
-        the tokens is returend.
+        the tokens is returned.
 
         :param serial: the serial number of the token
         :param count: number of otp values to return
@@ -154,7 +154,7 @@ class GettokenController(BaseController):
         """
         This function is used to retrieve the current otp value for a given
         user or a given serial. If the user has more than one token, the list
-        of the tokens is returend.
+        of the tokens is returned.
 
         :param user: username / loginname
         :param realm: additional realm to match the user to a useridresolver
