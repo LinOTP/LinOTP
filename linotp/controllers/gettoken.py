@@ -27,6 +27,7 @@
 gettoken controller - to retrieve OTP values
 """
 
+import base64
 import logging
 
 from flask import current_app, g, request
@@ -41,10 +42,8 @@ from linotp.lib.policy import PolicyException, checkPolicyPre
 from linotp.lib.reply import sendError, sendResult
 from linotp.lib.token import get_multi_otp, get_tokens, getOtp, getTokenType
 from linotp.lib.type_utils import boolean
-from linotp.lib.user import (
-    getUserFromRequest,
-)
-from linotp.lib.util import getParam
+from linotp.lib.user import getUserFromRequest
+from linotp.lib.util import get_version, getParam
 from linotp.model import db
 
 optional = True
@@ -134,6 +133,8 @@ class GettokenController(BaseController):
 
             if view:
                 c.ret = ret
+                c.version = get_version()
+                c.version_ref = base64.encodebytes(c.version.encode())[:6]
                 return render("/manage/multiotp_view.mako")
             else:
                 return sendResult(ret, 0)
