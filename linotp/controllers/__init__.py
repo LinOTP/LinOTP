@@ -28,38 +28,44 @@
 This is the controller module. The controllers provide the Web API to
 communicate with LinOTP. You can use the following controllers:
 
-+--------------------------------------------+------------------------------------------+
-| :py:class:`linotp.controllers.admin`       | API to manage the tokens                 |
-+--------------------------------------------+------------------------------------------+
-| :py:class:`linotp.controllers.audit`       | to search the audit trail                |
-+--------------------------------------------+------------------------------------------+
-| :py:class:`linotp.controllers.auth`        | to do authentication tests               |
-+--------------------------------------------+------------------------------------------+
-| :py:class:`linotp.controllers.error`       | to display errors                        |
-+--------------------------------------------+------------------------------------------+
-| :py:class:`linotp.controllers.gettoken`    | to retrieve OTP values                   |
-+--------------------------------------------+------------------------------------------+
-| :py:class:`linotp.controllers.maintenance` | for internal maintenance purposes        |
-+--------------------------------------------+------------------------------------------+
-| :py:class:`linotp.controllers.manage`      | the Web UI                               |
-+--------------------------------------------+------------------------------------------+
-| :py:class:`linotp.controllers.monitoring`  | for system monitoring                    |
-+--------------------------------------------+------------------------------------------+
-| :py:class:`linotp.controllers.system`      | to configure the system                  |
-+--------------------------------------------+------------------------------------------+
-| :py:class:`linotp.controllers.tools`       | to access various tools                  |
-+--------------------------------------------+------------------------------------------+
-| :py:class:`linotp.controllers.u2f`         | U2F token API                            |
-+--------------------------------------------+------------------------------------------+
-| :py:class:`linotp.controllers.userservice` | user API, used by selfservice frontend   |
-+--------------------------------------------+------------------------------------------+
-| :py:class:`linotp.controllers.validate`    | for authenticating / OTP checking        |
-+--------------------------------------------+------------------------------------------+
++--------------------------------------------+-------------------------------------------+
+| :py:class:`linotp.controllers.admin`       | API to manage the tokens                  |
++--------------------------------------------+-------------------------------------------+
+| :py:class:`linotp.controllers.audit`       | to search the audit trail                 |
++--------------------------------------------+-------------------------------------------+
+| :py:class:`linotp.controllers.auth`        | to do authentication tests                |
++--------------------------------------------+-------------------------------------------+
+| :py:class:`linotp.controllers.error`       | to display errors                         |
++--------------------------------------------+-------------------------------------------+
+| :py:class:`linotp.controllers.gettoken`    | to retrieve OTP values                    |
++--------------------------------------------+-------------------------------------------+
+| :py:class:`linotp.controllers.maintenance` | for internal maintenance purposes         |
++--------------------------------------------+-------------------------------------------+
+| :py:class:`linotp.controllers.manage`      | the Web UI                                |
++--------------------------------------------+-------------------------------------------+
+| :py:class:`linotp.controllers.migrate`.    | service controller for re-encrypting data |
++--------------------------------------------+-------------------------------------------+
+| :py:class:`linotp.controllers.monitoring`  | for system monitoring                     |
++--------------------------------------------+-------------------------------------------+
+| :py:class:`linotp.controllers.reporting`.  | to query reports.                         |
++--------------------------------------------+-------------------------------------------+
+| :py:class:`linotp.controllers.system`      | to configure the system                   |
++--------------------------------------------+-------------------------------------------+
+| :py:class:`linotp.controllers.tools`       | to access various tools                   |
++--------------------------------------------+-------------------------------------------+
+| :py:class:`linotp.controllers.u2f`         | U2F token API                             |
++--------------------------------------------+-------------------------------------------+
+| :py:class:`linotp.controllers.userservice` | user API, used by selfservice frontend    |
++--------------------------------------------+-------------------------------------------+
+| :py:class:`linotp.controllers.validate`    | for authenticating / OTP checking         |
++--------------------------------------------+-------------------------------------------+
 
 Additionally there is a new set of controllers accessible under /api/v2, providing the
 same functionality as some of the previous controllers, but with a more RESTful
 interface:
 
++--------------------------------------------+-------------------------------------------+
+| :py:class:`linotp.controllers.auditlog`    | API to search the audit trail             |
 +--------------------------------------------+-------------------------------------------+
 | :py:class:`linotp.controllers.tokens`      | API to manage tokens                      |
 +--------------------------------------------+-------------------------------------------+
