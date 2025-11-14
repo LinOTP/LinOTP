@@ -27,20 +27,48 @@
  *    Support: www.linotp.de
  *
 </%doc>
+
+<%
+    type = c.ret.get('type', "")
+    otps = c.ret.get('otp', {})
+    serial = c.ret.get('serial', "")
+%>
+
 <html>
 
 <head>
     <title>${_("OTP values")}</title>
 
-    <link type="text/css" rel="stylesheet" href="/static/selfservice/style.css?ref=${c.version_ref}">
+    <style>
+        table.getotp {
+            color: #121212;
+            border: 1px solid #AAAAAA;
+            margin: 1em .5em;
+            border-spacing: 2px;
+        }
+
+        table.getotp td {
+            color: #121212;
+            border: 1px solid #AAAAAA;
+            padding: .5em 1em;
+        }
+
+        table.getotp td.value {
+            font-weight: bold;
+        }
+
+        .getotp-print-button {
+            margin: 1em .5em;
+        }
+
+        @media print {
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+
     <link type="text/css" rel="stylesheet" href="/static/custom/selfservice-style.css?ref=${c.version_ref}">
-
-    <%
-        type=c.ret.get('type',"")
-        otps=c.ret.get('otp',{})
-        serial=c.ret.get('serial',"")
-    %>
-
 </head>
 
 <body>

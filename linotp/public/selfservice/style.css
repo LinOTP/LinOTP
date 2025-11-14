@@ -163,27 +163,6 @@ div#header {
   text-shadow: black 2px 1px 2px;
 }
 
-table.getotp {
-  color: #121212;
-  border: 1px solid #AAAAAA;
-  margin: 1em .5em;
-  border-spacing: 2px;
-}
-
-table.getotp td {
-  color: #121212;
-  border: 1px solid #AAAAAA;
-  padding: .5em 1em;
-}
-
-table.getotp td.value {
-  font-weight: bold;
-}
-
-.getotp-print-button {
-  margin: 1em .5em;
-}
-
 label.error {
   color: red;
 }
