@@ -27,6 +27,7 @@
 gettoken controller - to retrieve OTP values
 """
 
+import base64
 import logging
 
 from flask import current_app, g, request
@@ -41,10 +42,8 @@ from linotp.lib.policy import PolicyException, checkPolicyPre
 from linotp.lib.reply import sendError, sendResult
 from linotp.lib.token import get_multi_otp, get_tokens, getOtp, getTokenType
 from linotp.lib.type_utils import boolean
-from linotp.lib.user import (
-    getUserFromRequest,
-)
-from linotp.lib.util import getParam
+from linotp.lib.user import getUserFromRequest
+from linotp.lib.util import get_version, getParam
 from linotp.model import db
 
 optional = True
@@ -92,7 +91,7 @@ class GettokenController(BaseController):
         """
         This function is used to retrieve multiple otp values for a given user
         or a given serial. If the user has more than one token, the list of
-        the tokens is returend.
+        the tokens is returned.
 
         :param serial: the serial number of the token
         :param count: number of otp values to return
@@ -134,7 +133,9 @@ class GettokenController(BaseController):
 
             if view:
                 c.ret = ret
-                return render("/selfservice/multiotp_view.mako").decode("utf-8")
+                c.version = get_version()
+                c.version_ref = base64.encodebytes(c.version.encode())[:6]
+                return render("/manage/multiotp_view.mako")
             else:
                 return sendResult(ret, 0)
 
@@ -153,7 +154,7 @@ class GettokenController(BaseController):
         """
         This function is used to retrieve the current otp value for a given
         user or a given serial. If the user has more than one token, the list
-        of the tokens is returend.
+        of the tokens is returned.
 
         :param user: username / loginname
         :param realm: additional realm to match the user to a useridresolver

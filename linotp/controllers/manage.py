@@ -58,12 +58,7 @@ from linotp.lib.token import getTokenType
 # Our Token stuff
 from linotp.lib.tokeniterator import TokenIterator
 from linotp.lib.type_utils import boolean
-from linotp.lib.user import (
-    User,
-    get_userinfo,
-    getUserFromRequest,
-    getUserList,
-)
+from linotp.lib.user import User, get_userinfo, getUserFromRequest, getUserList
 from linotp.lib.util import get_copyright_info, get_version, remove_empty_lines
 from linotp.model import db
 from linotp.tokens import tokenclass_registry
@@ -234,7 +229,7 @@ class ManageController(BaseController):
 
         c.tokeninfo = ttinfo
 
-        return render("/manage/tokentypeinfo.mako").decode("utf-8")
+        return render("/manage/tokentypeinfo.mako")
 
     @deprecated_methods(["POST"])
     def policies(self):
@@ -242,7 +237,7 @@ class ManageController(BaseController):
         This is the template for the policies TAB
         """
         c.title = "LinOTP Management - Policies"
-        return render("/manage/policies.mako").decode("utf-8")
+        return render("/manage/policies.mako")
 
     @deprecated_methods(["POST"])
     def audittrail(self):
@@ -250,7 +245,7 @@ class ManageController(BaseController):
         This is the template for the audit trail TAB
         """
         c.title = "LinOTP Management - Audit Trail"
-        return render("/manage/audit.mako").decode("utf-8")
+        return render("/manage/audit.mako")
 
     @deprecated_methods(["POST"])
     def tokenview(self):
@@ -269,7 +264,7 @@ class ManageController(BaseController):
         """
         c.title = "LinOTP Management"
         c.tokenArray = []
-        return render("/manage/userview.mako").decode("utf-8")
+        return render("/manage/userview.mako")
 
     @deprecated_methods(["POST"])
     def custom_style(self):
@@ -628,7 +623,7 @@ class ManageController(BaseController):
                             c.tokeninfo["LinOtp.TokenInfo"]
                         )
 
-            return render("/manage/tokeninfo.mako").decode("utf-8")
+            return render("/manage/tokeninfo.mako")
 
         except PolicyException as pol_ex:
             log.error("[tokeninfo] Error during checking policies: %r", pol_ex)
@@ -759,12 +754,16 @@ def _getTokenTypeConfig(section="config"):
             try:
                 page = conf.get("page")
                 c.scope = page.get("scope")
-                p_html = render(os.path.sep + page.get("html")).decode("utf-8")
+                p_html = render(os.path.sep + page.get("html"))
+                if isinstance(p_html, bytes):
+                    p_html = p_html.decode()
                 p_html = remove_empty_lines(p_html)
 
                 tab = conf.get("title")
                 c.scope = tab.get("scope")
-                t_html = render(os.path.sep + tab.get("html")).decode("utf-8")
+                t_html = render(os.path.sep + tab.get("html"))
+                if isinstance(t_html, bytes):
+                    t_html = t_html.decode()
                 t_html = remove_empty_lines(t_html)
 
             except CompileException as exx:
