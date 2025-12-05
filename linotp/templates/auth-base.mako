@@ -38,8 +38,8 @@
 
 	<link rel="icon" type="image/x-icon" href="/static/favicon.ico">
 
-	<link type="text/css" rel="stylesheet" href="/static/selfservice/style.css">
-	<link type="text/css" rel="stylesheet" href="/static/selfservice/auth.css">
+	<link type="text/css" rel="stylesheet" href="/static/css/auth-controller/style.css">
+	<link type="text/css" rel="stylesheet" href="/static/css/auth-controller/auth.css">
 	<link type="text/css" rel="stylesheet" href="/static/custom/selfservice-style.css">
 
 	<script type="text/javascript" src="/static/js/jquery-3.6.0.min.js"></script>
