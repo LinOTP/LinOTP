@@ -32,8 +32,6 @@ import logging
 import secrets
 
 # for the temporary rendering context, we use 'c'
-from linotp.flap import render_mako as render
-from linotp.flap import tmpl_context as c
 from linotp.lib.challenges import Challenges
 from linotp.lib.config import getFromConfig
 from linotp.lib.context import request_context
@@ -52,7 +50,6 @@ from linotp.lib.type_utils import DEFAULT_TIMEFORMAT as TIMEFORMAT
 from linotp.lib.type_utils import parse_duration
 from linotp.lib.user import User, get_userinfo, getRealmBox
 from linotp.lib.util import get_copyright_info, get_request_param, get_version
-from linotp.tokens import tokenclass_registry
 
 log = logging.getLogger(__name__)
 

@@ -243,7 +243,7 @@ def dec(h, p):
 
 
 def int2beint64(i):
-    hex_counter = hex(int(i))[2:]
+    hex_counter = f"{int(i):x}"
     hex_counter = "0" * (16 - len(hex_counter)) + hex_counter
     bin_counter = binascii.unhexlify(hex_counter)
     return bin_counter
@@ -491,7 +491,7 @@ class OcraSuite:
 
             # now encode the challenge acordingly
             if self.Q[0] == "N":
-                Q = hex(int(Q))[2:]
+                Q = f"{int(Q):x}"
                 Q += "0" * (len(Q) % 2)
                 Q = bytes.fromhex(Q)
             elif self.Q[0] == "H":

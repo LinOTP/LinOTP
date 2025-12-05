@@ -154,6 +154,7 @@ lint.select = [
 lint.ignore = [
   "E501",    # line too long
   "RUF012",  # ignore `mutable class default` for now
+  "RUF059",  # ignore `Unpacked variable is never used` for now
   "PLW0602", # Using global for {name} but no assignment is done
   "PLW0603", # Using the global statement to update {name} is discouraged
   "PLR0911", # Too many return statements ({returns} > {max_returns})

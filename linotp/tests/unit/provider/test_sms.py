@@ -104,7 +104,7 @@ class TestSMS(TestCase):
 
         with pytest.raises(
             Exception,
-            match="Connection refused|Cannot assign requested address",
+            match=r"Connection refused|Cannot assign requested address",
         ):
             sms.submitMessage(phone, message)
 
