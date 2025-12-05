@@ -375,8 +375,7 @@ class TestPolicies(TestPoliciesBase):
         assert not response.json["result"]["status"], response
 
     @pytest.fixture
-    @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
-    def enroll_tokens(self):
+    def enroll_tokens(self, realms_and_resolver, admin_roles):
         """
         Policy 202: Init tokens in different with different admins
                     "admin_init" is allowed to do so, "admin_reset" not.
@@ -964,8 +963,7 @@ class TestPolicies(TestPoliciesBase):
         assert msg in response.json["result"]["error"]["message"], response
 
     @pytest.fixture
-    @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
-    def selfservice_policies(self):
+    def selfservice_policies(self, realms_and_resolver, admin_roles):
         """Define a set of selfservice policies."""
 
         # ----------------------------------------------------------------- --
@@ -2475,8 +2473,7 @@ class TestPolicies(TestPoliciesBase):
         assert response.json["result"]["status"], response
 
     @pytest.fixture
-    @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
-    def userlist_admins(self):
+    def userlist_admins(self, realms_and_resolver, admin_roles):
         """
         Policy 501: check the userlisting for admins. Set up the policies
         """
@@ -2825,8 +2822,7 @@ class TestPolicies(TestPoliciesBase):
             assert response.json["result"]["status"], response
 
     @pytest.fixture
-    @pytest.mark.usefixtures("realms_and_resolver", "admin_roles", "enroll_tokens")
-    def otppin_policies(self):
+    def otppin_policies(self, realms_and_resolver, admin_roles, enroll_tokens):
         """
         Policy 601: set policy to allow setting OTP PIN
         """
@@ -2894,8 +2890,7 @@ class TestPolicies(TestPoliciesBase):
         assert response.json["result"]["status"], response
 
     @pytest.fixture
-    @pytest.mark.usefixtures("realms_and_resolver", "admin_roles", "enroll_tokens")
-    def otppin_contents(self):
+    def otppin_contents(self, realms_and_resolver, admin_roles, enroll_tokens):
         """
         Policy 605: testing contents of pin: set policy contents=c
         """
