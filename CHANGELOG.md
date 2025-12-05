@@ -29,14 +29,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `userservice/enroll` response for HOTP/TOTP/mOTP tokens now includes a new field: `detail.enrollment_url`, which currently mirrors `detail.googleurl` property
 - `userservice/enroll` requests for mOTP tokens may now omit the `otpkey` parameter, which will cause a random `otpkey` to be assigned by LinOTP. Clients can find out about this from the response.
 - Setting `WORKER_THREADS` to `auto` (or not setting it at all) will use “2 \* number of CPU cores + 1” threads.
-- The `userservice/context` and `userservice/pre_context` endpoints no longer expose internal realm or resolver details. They now only return the necessary fields (`realmname` and `default`, which is now a boolean) to improve security. This is breaking change. 
+- The `userservice/context` and `userservice/pre_context` endpoints no longer expose internal realm or resolver details. They now only return the necessary fields (`realmname` and `default`, which is now a boolean) to improve security. This is breaking change.
 
 ### Security
 
 - Update `flask` to version 3.1.1 to address known vulnerability:
   - CVE-2023-30861
-- Update `werkzeug` to version 3.1.3 to address multiple known vulnerabilities:
-  - CVE-2024-34069, CVE-2024-49766, CVE-2024-49767
+- Update `werkzeug` to version 3.1.4 to address multiple known vulnerabilities:
+  - CVE-2024-34069, CVE-2024-49766, CVE-2024-49767, CVE-2025-66221
 - Update `cryptography` to version 45.0.3 to address multiple known vulnerabilities:
   - CVE-2023-0286, CVE-2023-50782, CVE-2023-23931, CVE-2023-49083, CVE-2024-0727, GHSA-5cpq-8wj7-hf2v, GHSA-jm77-qphf-c4w8, GHSA-v8gr-m533-ghj9
 - Remove `setuptools` from container to address multiple known vulnerabilities:
