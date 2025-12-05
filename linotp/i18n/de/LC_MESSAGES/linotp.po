@@ -97,14 +97,8 @@ msgstr "- Temporären Tokentyp wählen -"
 msgid "- Select scope -"
 msgstr "- Bereich auswählen -"
 
-msgid "1. Enter the activation code :"
-msgstr "1. Geben Sie bitte den Aktivierungscode ein:"
-
 msgid "10 digits"
 msgstr "10 Stellen"
-
-msgid "2. Enter your confirmation code:"
-msgstr "2. Bitte geben Sie den Bestätigungscode ein:"
 
 msgid "6 digits"
 msgstr "6 Stellen"
@@ -128,11 +122,6 @@ msgstr ""
 "Dies ist der Zeitraum für die manuelle oder automatische Synchronisation "
 "neuer Token."
 
-msgid "A push notification has been sent. Please check your mobile phone."
-msgstr ""
-"Eine Pushbenachrichtigung wurde verschickt. Bitte werfen Sie einen Blick auf "
-"Ihr Smartphone."
-
 msgid "About LinOTP"
 msgstr "Über LinOTP"
 
@@ -141,18 +130,6 @@ msgstr "Aktion"
 
 msgid "Action Detail"
 msgstr "Aktion Details"
-
-msgid "Activate Push Token"
-msgstr "Aktivieren Sie Ihren PushToken"
-
-msgid "Activate token"
-msgstr "Token aktivieren"
-
-msgid "Activate your OCRA2 Token"
-msgstr "Aktivieren Sie Ihren OCRA2-Token"
-
-msgid "Activate your QRToken"
-msgstr "Aktivieren Sie Ihren QRToken"
 
 msgid "Active"
 msgstr "Aktiv"
@@ -197,9 +174,6 @@ msgstr ""
 
 msgid "Assign"
 msgstr "Zuweisen"
-
-msgid "Assign OTP Token"
-msgstr "OTP-Token zuweisen"
 
 msgid "Assign Token"
 msgstr "Token zuweisen"
@@ -280,12 +254,6 @@ msgstr "Sperrzeit für Challenges (Sek.)"
 
 msgid "Challenge expiration time (sec)"
 msgstr "Gültigkeitszeitfenster für Challenges (Sek.)"
-
-msgid "Challenge sent"
-msgstr "Challenge wurde verschickt"
-
-msgid "Challenge triggered successfully"
-msgstr "Challenge wurde erfolgreich angefordert"
 
 msgid "Change password"
 msgstr "Passwort ändern"
@@ -382,12 +350,6 @@ msgstr "Änderungen bestätigen"
 msgid "Confirm new password"
 msgstr "Neues Passwort bestätigen"
 
-msgid "Confirm using mobile"
-msgstr "Änderungen über ihr Handy bestätigen"
-
-msgid "Connection Error during login"
-msgstr "Verbindungsfehler während der Anmeldung"
-
 msgid "Connection Test: successful"
 msgstr "Verbindungstest: erfolgreich"
 
@@ -433,9 +395,6 @@ msgstr ""
 
 msgid "Count Window"
 msgstr "Zählerfenster"
-
-msgid "Counter"
-msgstr "Zähler"
 
 msgid "Counter Window"
 msgstr "Zählerfenster"
@@ -572,14 +531,8 @@ msgstr "Beschreibung"
 msgid "Details"
 msgstr "Details"
 
-msgid "Determine Serial Number"
-msgstr "Seriennummer bestimmen"
-
 msgid "Disable"
 msgstr "Deaktivieren"
-
-msgid "Disable OTP Token"
-msgstr "OTP-Token deaktivieren"
 
 msgid "Disable Token"
 msgstr "Token deaktivieren"
@@ -684,84 +637,17 @@ msgstr "Ablaufdatum"
 msgid "Enroll"
 msgstr "Ausrollen"
 
-msgid "Enroll EMail Token"
-msgstr "E-Mail-Token ausrollen"
-
-msgid "Enroll FIDO U2F Token"
-msgstr "FIDO-U2F-Token ausrollen"
-
-msgid "Enroll HOTP Token"
-msgstr "HOTP-Token ausrollen"
-
-msgid "Enroll Password Token"
-msgstr "Passwort Token ausrollen"
-
-msgid "Enroll Push Token"
-msgstr "PushToken ausrollen"
-
-msgid "Enroll TOTP Token"
-msgstr "TOTP-Token ausrollen"
-
 msgid "Enroll Token"
 msgstr "Token ausrollen"
-
-msgid "Enroll YubiKey"
-msgstr "YubiKey ausrollen"
-
-msgid "Enroll static password token"
-msgstr "Erstellen Sie Ihren Passworttoken"
-
-msgid "Enroll token"
-msgstr "Token ausrollen"
-
-msgid "Enroll your HOTP token"
-msgstr "Rollen Sie Ihren HOTP-Token aus"
-
-msgid "Enroll your OCRA2 Token"
-msgstr "Rollen Sie Ihren OCRA2-Token aus"
-
-msgid "Enroll your QRToken"
-msgstr "Rollen Sie Ihren QRToken aus"
-
-msgid "Enroll your TOTP token"
-msgstr "Rollen Sie Ihren TOTP-Token aus"
-
-msgid "Enroll your YubiKey"
-msgstr "Rollen Sie Ihren YubiKey aus"
-
-msgid "Enroll your email token"
-msgstr "Rollen Sie Ihren E-Mail-Token aus"
 
 msgid "Enrolled the token"
 msgstr "Der Token"
 
-msgid "Enter OTP"
-msgstr "OTP eingeben"
-
 msgid "Enter PIN"
 msgstr "PIN eingeben"
 
-msgid "Enter TOTP"
-msgstr "TOTP eingeben"
-
-msgid "Enter activation credentials: "
-msgstr "Geben Sie das Aktivierungskennwort ein: "
-
 msgid "Enter seed"
 msgstr "Seed eingeben"
-
-msgid "Enter seed for the new OCRA2 token:"
-msgstr "Geben Sie das Seed für den neuen OCRA2-Token ein:"
-
-msgid "Enter static password:"
-msgstr "Statisches Passwort eingeben:"
-
-msgid ""
-"Enter the Token ID of your YubiKey. Simply insert the YubiKey and press the "
-"button."
-msgstr ""
-"Geben Sie die Token-ID Ihres YubiKeys ein. Stecken Sie einfach Ihren Yubikey "
-"ein und drücken Sie den Knopf."
 
 msgid "Enter the number of audit entries you want to export."
 msgstr ""
@@ -777,9 +663,6 @@ msgid "Enter the page of the audit entries you want to export."
 msgstr ""
 "Bitte geben Sie die Auditseite mit den Auditeinträgen an, die Sie "
 "exportieren wollen."
-
-msgid "Enter token seed"
-msgstr "Tokenseed eingeben"
 
 msgid "Enter your Yubico API key:"
 msgstr "Geben Sie ihren Yubico API Key ein:"
@@ -809,18 +692,6 @@ msgstr ""
 "Geben Sie Ihren Benutzernamen, die OTP-PIN und den Text für die Challenge "
 "ein."
 
-msgid "Error"
-msgstr "Fehler"
-
-msgid "Error "
-msgstr "Fehler "
-
-msgid "Error assigning Token: "
-msgstr "Fehler bei der Zuweisung des Tokens: "
-
-msgid "Error calling token:"
-msgstr "Fehler beim Tokenaufruf:"
-
 msgid "Error changing password"
 msgstr "Fehler beim Ändern des Passworts"
 
@@ -830,24 +701,15 @@ msgstr "Fehler beim Erzeugen des Tokens"
 msgid "Error deleting provider"
 msgstr "Fehler beim Löschen des Providers"
 
-msgid "Error disabling Token!\n"
-msgstr "Fehler bei der Tokendeaktivierung\n"
-
 msgid "Error during import users request."
 msgstr "Fehler während des Userimports."
 
 msgid "Error during import users request: "
 msgstr "Fehler während des User-Imports: "
 
-msgid "Error during login"
-msgstr "Fehler während der Anmeldung"
-
 msgid "Error during token type change processing for type \"\".<br><pre></pre>"
 msgstr ""
 "Fehler bei der Bearbeitung der Tokentypänderung für Typ \"\".<br><pre></pre>"
-
-msgid "Error enabling Token!\n"
-msgstr "Fehler bei der Tokenaktivierung\n"
 
 #, python-format
 msgid ""
@@ -863,12 +725,6 @@ msgstr "Fehler beim Abrufen der Liste!"
 msgid "Error finding a token to this OTP value."
 msgstr "Fehler beim Ermitteln eines Tokens zu diesem OTP-Wert."
 
-msgid "Error getting otp values"
-msgstr "Fehler bei Abfrage des OTP-Wertes"
-
-msgid "Error getting serial: "
-msgstr "Fehler beim Ermitteln der Seriennummer: "
-
 msgid "Error loading HTTP resolver"
 msgstr "Fehler beim Laden des HTTP-Resolvers"
 
@@ -878,17 +734,11 @@ msgstr "Fehler beim Laden des LDAP-Resolvers"
 msgid "Error loading SQL resolver"
 msgstr "Fehler beim Laden des SQL-Resolvers"
 
-msgid "Error loading history:\n"
-msgstr "Fehler beim Laden der Historie:\n"
-
 msgid "Error loading token info"
 msgstr "Fehler beim Laden der Token-Information"
 
 msgid "Error occurred during processing"
 msgstr "Fehler bei der Verarbeitung"
-
-msgid "Error resyncing Token: "
-msgstr "Fehler beim Synchronisieren des Tokens: "
 
 msgid ""
 "Error saving SMS configuration. Please check your configuration and your "
@@ -929,20 +779,11 @@ msgstr ""
 "Fehler beim Speichern der Systemkonfiguration. Bitte überprüfen Sie die "
 "Konfiguration auf dem Server"
 
-msgid "Error setting PIN: "
-msgstr "Fehler beim Setzen der PIN: "
-
 msgid "Error setting Token realms"
 msgstr "Fehler beim Setzen der Tokenrealms"
 
 msgid "Error setting default provider"
 msgstr "Fehler beim Setzen des Standardproviders"
-
-msgid "Error setting mOTP PIN: "
-msgstr "Fehler beim Setzen des mOTP-PINs: "
-
-msgid "Error unassigning Token!\n"
-msgstr "Fehler beim Aufheben der Tokenzuweisung\n"
 
 msgid "Error while fetching the tokentype"
 msgstr "Fehler beim Bestimmen des Tokentyps"
@@ -978,9 +819,6 @@ msgstr "Erweiterte Suche"
 msgid "FailCounterIncOnFalsePin"
 msgstr "Den Fehlzähler bei falscher PIN hochzählen"
 
-msgid "Failcounter resetted successfully"
-msgstr "Der Fehlzähler wurde erfolgreich zurückgesetzt"
-
 msgid "Failed"
 msgstr "Fehlgeschlagen"
 
@@ -1000,9 +838,6 @@ msgstr "Fehler beim Löschen des Providers"
 msgid "Failed to delete provider %s"
 msgstr "Fehler beim Löschen des Providers %s"
 
-msgid "Failed to delete token!\n"
-msgstr "Fehler beim Löschen des Tokens\n"
-
 msgid "Failed to enable token, please contact your administrator"
 msgstr ""
 "Fehler beim Aktivieren des Tokens. Bitte kontaktieren Sie ihren Administrator"
@@ -1010,15 +845,9 @@ msgstr ""
 msgid "Failed to enroll token"
 msgstr "Ausrollen des Tokens fehlgeschlagen"
 
-msgid "Failed to enroll token!"
-msgstr "Ausrollen des Tokens fehlgeschlagen!"
-
 msgid "Failed to enroll token, please contact your administrator"
 msgstr ""
 "Fehler beim Ausrollen des Tokens. Bitte kontaktieren Sie ihren Administrator"
-
-msgid "Failed to enroll token: "
-msgstr "Ausrollen des Tokens fehlgeschlagen: "
 
 msgid "Failed to import policies"
 msgstr "Import der Richtlinien fehlgeschlagen"
@@ -1026,17 +855,8 @@ msgstr "Import der Richtlinien fehlgeschlagen"
 msgid "Failed to import token"
 msgstr "Import der Token fehlgeschlagen"
 
-msgid "Failed to load form"
-msgstr "Formular konnte nicht geladen werden"
-
 msgid "Failed to load support subscription"
 msgstr "Die Registrierung der Supportdaten ist fehlgeschlagen"
-
-msgid "Failed to reset failcounter!\n"
-msgstr "Fehler beim Zurücksetzen des Fehlzählers\n"
-
-msgid "Failed to resync Token"
-msgstr "Fehler beim Synchronisieren des Tokens"
 
 msgid "Failed to retrieve the OTP values of your token:"
 msgstr "Das Anfordern der OTP-Werte ist fehlgeschlagen:"
@@ -1115,9 +935,6 @@ msgstr "Für Support- und Subskriptions Fragen erreichen Sie uns unter"
 msgid "Form Validation Error"
 msgstr "Fehler in der Formulareingabe"
 
-msgid "Form data not valid."
-msgstr "Die Formulardaten sind ungültig."
-
 msgid "Forwarding Token"
 msgstr "Forwarding-Token"
 
@@ -1135,9 +952,6 @@ msgstr "GUI-Einstellungen"
 
 msgid "Generate OCRA2 key."
 msgstr "OCRA2-Key vom Server generieren lassen."
-
-msgid "Generate OCRA2 seed"
-msgstr "OCRA2-Key vom Server generieren lassen"
 
 msgid "Generate random seed"
 msgstr "Ein zufälliges Seed generieren"
@@ -1468,17 +1282,8 @@ msgstr "Fehlerhafte oder fehlende Angaben in"
 msgid "Info"
 msgstr "Info"
 
-msgid "Init Secret of motp-Token"
-msgstr "Initialisierungs-Seed des mOTP-Token"
-
 msgid "Init secret"
 msgstr "Init Seed"
-
-msgid "Input data is not valid!"
-msgstr "Die Formulardaten sind ungültig!"
-
-msgid "Invalid session - please try again."
-msgstr "Ungültige Session - bitte versuchen Sie es nochmal."
 
 msgid "Invalid time period"
 msgstr "Ungültige Zeitspanne"
@@ -1544,12 +1349,6 @@ msgstr "LinOTP Push-Token Login"
 msgid "LinOTP QR Token Login"
 msgstr "LinOTP QR-Token Login"
 
-msgid "LinOTP Self Service"
-msgstr "LinOTP-Self-Service"
-
-msgid "LinOTP Self Service Login"
-msgstr "LinOTP-Self-Service-Anmeldung"
-
 msgid "LinOTP Server"
 msgstr "LinOTP Server"
 
@@ -1590,9 +1389,6 @@ msgstr "Fehlgeschlagene Loginversuche"
 
 msgid "Login Name"
 msgstr "Login Name"
-
-msgid "Login failed"
-msgstr "Anmeldung fehlgeschlagen"
 
 #, python-format
 msgid "Login failed. Reason: %s"
@@ -1710,9 +1506,6 @@ msgstr "Neues Passwort"
 msgid "No"
 msgstr "Nein"
 
-msgid "No Token with this OTP value found!"
-msgstr "Kein Token mit diesem OTP-Wert gefunden!"
-
 msgid "No active token found"
 msgstr "Kein aktives Token gefunden"
 
@@ -1777,9 +1570,6 @@ msgstr ""
 msgid "Number"
 msgstr "Nummer"
 
-msgid "Number of OTP values to retrieve"
-msgstr "Anzahl der anzufragenden OTP-Werte"
-
 msgid "Number of audit entries to export"
 msgstr "Anzahl der zu exportierenden Auditeinträge"
 
@@ -1802,15 +1592,8 @@ msgstr "OATH-CSV-Tokendatei"
 msgid "OATH Soft Token"
 msgstr "OATH-Softtoken"
 
-#, python-format
-msgid "OCRA rollout for token %s completed!"
-msgstr "Rollout des OCRA-Tokens %s abgeschlossen!"
-
 msgid "OCRA suite"
 msgstr "OCRA-Suite"
-
-msgid "OCRA token rollout failed! Please retry"
-msgstr "Rollout des OCRA-Tokens fehlgeschlagen. Bitte versuchen Sie es erneut"
 
 msgid "OCRA2"
 msgstr "OCRA2"
@@ -1851,12 +1634,6 @@ msgstr "OTP-PIN"
 msgid "OTP PIN and OTP value"
 msgstr "OTP-PIN und OTP-Wert"
 
-msgid "OTP Validation failed"
-msgstr "OTP Validierung fehlgeschlagen"
-
-msgid "OTP Value: "
-msgstr "OTP-Wert: "
-
 msgid "OTP digits"
 msgstr "OTP Ziffern"
 
@@ -1871,9 +1648,6 @@ msgstr "OTP-Wert"
 
 msgid "OTP values"
 msgstr "OTP-Werte"
-
-msgid "OTP values for token "
-msgstr "OTP-Werte für Token "
 
 msgid "OTPAuth Url"
 msgstr "OTPAuth URL"
@@ -1890,17 +1664,11 @@ msgstr "Altes Passwort"
 msgid "Only allow system-trusted certificates"
 msgstr "Nur vom System als vertrauenswürdig eingestufte Zertifikate zulassen"
 
-msgid "Otp Value"
-msgstr "OTP-Wert"
-
 msgid "Override authentication client"
 msgstr "Authentisierenden Client überschreiben"
 
 msgid "PIN (again)"
 msgstr "PIN (wiederholen)"
-
-msgid "PIN set successfully"
-msgstr "PIN erfolgreich gesetzt"
 
 msgid "PIN type"
 msgstr "PIN-Typ"
@@ -1984,23 +1752,10 @@ msgstr ""
 "anfängt"
 
 msgid ""
-"Please enter a valid init secret. It may only contain numbers and the "
-"letters A-F."
-msgstr ""
-"Bitte geben Sie ein gültiges Initialisierungsseed ein. Es darf nur Nummern "
-"und die Buchstaben A bis F enthalten."
-
-msgid ""
 "Please enter a valid ldap uri. It needs to start with ldap:// or ldaps://"
 msgstr ""
 "Bitte geben Sie eine gültige LDAP-URI ein, die mit ldap:// oder ldaps:// "
 "anfängt"
-
-msgid ""
-"Please enter a valid phone number. It may only contain numbers and + or /."
-msgstr ""
-"Bitten geben Sie eine gültige Telefonnummer ein. Diese darf nur Ziffer, das "
-"+ und / enthalten."
 
 msgid ""
 "Please enter a valid provider name. It may contain characters, numbers and "
@@ -2090,13 +1845,6 @@ msgstr ""
 
 msgid "Please scan the provided qr code"
 msgstr "Bitte scannen Sie den QR-Code"
-
-msgid ""
-"Please scan the qr code and submit your response or enter the otp value in "
-"the form below."
-msgstr ""
-"Bitte scannen Sie den QR-Code und senden die Antwort oder geben den OTP-Wert "
-"im Formular ein."
 
 msgid "Please select at least one UserIdResolver from the list"
 msgstr "Bitte wählen Sie mindestens einen Resolver aus der Liste"
@@ -2278,18 +2026,6 @@ msgstr ""
 "Fehler im regulären Ausdruck des Realms. Sie dürfen nur einen Realm "
 "auswählen, um diesen zum Standardrealm zu machen."
 
-msgid "Register SMS"
-msgstr "SMS-Token registrieren"
-
-msgid "Register mOTP"
-msgstr "mOTP-Token registrieren"
-
-msgid "Register your SMS OTP Token / mobileTAN"
-msgstr "Registrieren Sie Ihren SMS-OTP-Token / mobileTAN"
-
-msgid "Register your mOTP Token"
-msgstr "mOTP-Token registrieren"
-
 msgid "Remote OTP len"
 msgstr "Remote OTP-Länge"
 
@@ -2326,12 +2062,6 @@ msgstr "Realm des remote Benutzers"
 msgid "Reset Failcounter"
 msgstr "Fehlzähler zurücksetzen"
 
-msgid "Reset OTP PIN"
-msgstr "OTP-PIN zurücksetzen"
-
-msgid "Reset mOTP PIN"
-msgstr "mOTP-PIN zurücksetzen"
-
 msgid "Resolver"
 msgstr "Resolver"
 
@@ -2358,9 +2088,6 @@ msgstr "Zielpfad:"
 
 msgid "Resync"
 msgstr "Synchronisieren"
-
-msgid "Resync OTP Token"
-msgstr "OTP-Token synchronisieren"
 
 msgid "Resync Token"
 msgstr "Token synchronisieren"
@@ -2428,9 +2155,6 @@ msgstr "Konfiguration speichern"
 msgid "Save config"
 msgstr "Konfiguration speichern"
 
-msgid "Scan QR code"
-msgstr "Scannen Sie den QR-Code"
-
 msgid "Scan the QR code and comfirm on your mobile or submit below"
 msgstr ""
 "Scannen Sie den QR-Code und bestätigen Sie auf Ihrem Handy bzw geben Sie "
@@ -2447,12 +2171,6 @@ msgstr "Bereich"
 
 msgid "Searchfilter"
 msgstr "Suchfilter"
-
-msgid "Select Push Token: "
-msgstr "Push-Token auswählen: "
-
-msgid "Select QRToken: "
-msgstr "Ausgewählter QRToken: "
 
 msgid "Select resolver"
 msgstr "Resolver auswählen"
@@ -2500,15 +2218,6 @@ msgstr "Self-Service-Portal"
 msgid "Selfservice portal"
 msgstr "Self-Service-Portal"
 
-msgid "Send OTP by SMS"
-msgstr "OTP via SMS verschickt"
-
-msgid "Send OTP by e-mail"
-msgstr "OTP via Email verschickt"
-
-msgid "Send OTP by voice call"
-msgstr "OTP via Voice Call verschickt"
-
 msgid "Serial"
 msgstr "Seriennummer"
 
@@ -2520,9 +2229,6 @@ msgstr "Seriennummer, Seed, Typ, OCRA-Suite"
 
 msgid "Serial number, Seed, Type, [OTP length], [Time step], [hashlib]"
 msgstr "Seriennummer, Seed, Typ, [OTP-Länge], [Zeitschritt], [Hashfunktion]"
-
-msgid "Serialnumber of new Token"
-msgstr "Seriennummer des neuen OTP-Tokens"
 
 msgid "Server"
 msgstr "Server"
@@ -2716,18 +2422,8 @@ msgstr ""
 "Der Google Authenticator unterstützt nur 6 Ziffern und den SHA1 Hash "
 "Algorithmus."
 
-msgid ""
-"The Google Authenticator supports only 6 digits, SHA1 hashing and time step "
-"30."
-msgstr ""
-"Der Google Authenticator unterstützt nur 6 Ziffern, den SHA1 Hash "
-"Algorithmus und einen Zeitschritt von 30 Sekunden."
-
 msgid "The OATH token seed for installing the token using manual input."
 msgstr "Der OATH-Token-Seed zur manuellen Eingabe."
-
-msgid "The OTP value of the Token to assign"
-msgstr "OTP-Wert des Tokens, der zugewiesen werden soll"
 
 msgid ""
 "The PIN can either be verified on this local LinOTP server or forwarded to "
@@ -2889,9 +2585,6 @@ msgid ""
 msgstr ""
 "Das Passwort muss {0} der folgenden Elemente enthalten: Kleinbuchstaben, "
 "Großbuchstaben, Sonderzeichen, Zahlen, Länge von mindestens 12 Zeichen"
-
-msgid "The passwords do not match!"
-msgstr "Die Passwörter sind nicht gleicht!"
 
 msgid "The policy settings do not allow you to issue this request!"
 msgstr "Die Richtlinieneinstellungen unterbinden diese Abfrage!"
@@ -3145,13 +2838,6 @@ msgid "This realm is used to authenticate LinOTP administrators."
 msgstr ""
 "Dieser Realm wird zur Authentifizierung von LinOTP-Administratoren verwendet."
 
-msgid ""
-"This resets the mOTP PIN, which is the PIN that is entered in the motp "
-"application on your phone."
-msgstr ""
-"Dies setzt die mOTP-PIN zurück. Diese PIN geben Sie in der mOTP-App auf "
-"Ihrem Telefon ein."
-
 msgid "This resolver contains locally managed users, managed by LinOTP."
 msgstr ""
 "Dieser Resolver enthält lokale Benutzer, die von LinOTP verwaltetet werden."
@@ -3241,38 +2927,14 @@ msgstr "Token-Passwort:"
 msgid "Token Pin:"
 msgstr "Token-PIN:"
 
-msgid "Token Seed:"
-msgstr "Tokenschlüssel:"
-
 msgid "Token Self Service - LinOTP"
 msgstr "Token-Self-Service - LinOTP"
-
-msgid "Token Settings:"
-msgstr "Tokeneinstellungen:"
 
 msgid "Token Type"
 msgstr "Tokentyp"
 
 msgid "Token View"
 msgstr "Tokenansicht"
-
-msgid "Token assigned successfully"
-msgstr "Der Token wurde erfolgreich zugewiesen"
-
-msgid "Token deleted successfully"
-msgstr "Token erfolgreich gelöscht"
-
-msgid "Token description"
-msgstr "Tokenbeschreibung"
-
-msgid "Token disabled successfully"
-msgstr "Token erfolgreich deaktiviert"
-
-msgid "Token enabled successfully"
-msgstr "Token erfolgreich aktiviert"
-
-msgid "Token enrolled successfully "
-msgstr "Der Token wurde erfolgreich ausgerollt "
 
 #, python-format
 msgid ""
@@ -3287,14 +2949,8 @@ msgstr ""
 "Der temporärer Token wurde ausgerollt. Der Benutzer soll seine alte PIN "
 "zusammen mit dem neuen Passwort verwenden."
 
-msgid "Token enrollment result"
-msgstr "Ergebnis des Tokenausrollprozesses"
-
 msgid "Token import result"
 msgstr "Ergebnis des Tokenimports"
-
-msgid "Token resynced successfully"
-msgstr "Der Token wurde erfolgreich synchronisiert"
 
 msgid "Token seed:"
 msgstr "Tokenseed:"
@@ -3310,15 +2966,6 @@ msgstr "Tokeneinstellungen:"
 
 msgid "Token type"
 msgstr "Tokentyp"
-
-msgid "Token unassigned successfully"
-msgstr "Tokenzuweisung erfolgreich aufgehoben"
-
-msgid "Token-PIN"
-msgstr "Token PIN"
-
-msgid "Token-PIN (again)"
-msgstr "Token PIN (wiederholen)"
 
 msgid "Tokens for user:"
 msgstr "Token des Benutzers:"
@@ -3400,12 +3047,6 @@ msgstr "Anzahl der Verwendung"
 
 msgid "Use STARTTLS for 'ldap://' connections"
 msgstr "STARTTLS für 'ldap://'-Verbindungen verwenden"
-
-msgid "Use Yubikey"
-msgstr "YubiKey benutzen"
-
-msgid "Use mOTP token"
-msgstr "mOTP-Token benutzen"
 
 msgid "User"
 msgstr "Benutzer"
@@ -3498,9 +3139,6 @@ msgstr "Wir freuen uns auf Ihre Kommentare und Ideen zu LinOTP."
 msgid "Welcome to LinOTP"
 msgstr "Willkommen bei LinOTP"
 
-msgid "Welcome to the LinOTP Selfservice Portal"
-msgstr "Willkommen im LinOTP-Self-Service-Portal"
-
 msgid "Welcome to your fresh LinOTP installation."
 msgstr "Willkommen zu Ihrer neuen LinOTP Installation."
 
@@ -3544,12 +3182,6 @@ msgstr "Ja"
 
 msgid "You are creating a new realm."
 msgstr "Sie legen hier einen neuen Realm an."
-
-msgid ""
-"You are going to assign a new token to you. Is this the correct serial: "
-msgstr ""
-"Sie weisen sich gerade einen neuen Token zu. Ist dies die richtige "
-"Seriennummer: "
 
 msgid "You are required to log in again. Redirecting…"
 msgstr "Sie müssen sich erneut anmelden. Weiterleitung…"
@@ -3860,15 +3492,6 @@ msgstr ""
 "Sie können Resolver hinzufügen, indem Sie die Strg-Taste halten und mit der "
 "linken Maustaste beliebig viele Einträge selektieren."
 
-msgid ""
-"You may either assign the token by entering the serial number or you can "
-"enter an OTP value of the token and the system will try to identify the "
-"token for you."
-msgstr ""
-"Sie können entweder einen Token zuweisen, indem Sie direkt die Seriennummer "
-"eingeben, oder Sie können den Token über einen OTP-Wert bestimmen und dann "
-"zuweisen."
-
 msgid "You may get OTP values for token:"
 msgstr "Für diesen Token können Sie OTP-Werte anfragen:"
 
@@ -3917,9 +3540,6 @@ msgstr ""
 "Sie müssen Javascript aktivieren, um die Authentisierungsformulare verwenden "
 "zu können."
 
-msgid "You need to enter a serial number"
-msgstr "Geben sie eine Seriennummer an"
-
 msgid "You need to enter a valid API id"
 msgstr "Sie müssen eine gültige API-ID angeben"
 
@@ -3928,9 +3548,6 @@ msgstr "Sie müssen einen gültigen API Key eingeben"
 
 msgid "You need to enter a valid Yubico url"
 msgstr "Sie müssen eine gültige Yubico-URL angeben"
-
-msgid "You need to enter an OTP value"
-msgstr "Sie müssen einen OTP-Wert angeben"
 
 msgid "You need to enter the YubiKey token ID"
 msgstr "Sie müssen die YubiKey-Token-ID eingeben"
@@ -3948,9 +3565,6 @@ msgstr ""
 msgid "You need to enter the server like myradius:1812"
 msgstr "Sie müssen den Server mit Port im Format 'radiusserver:1812' angeben"
 
-msgid "You need to select a Token and enter two OTP values."
-msgstr "Wählen Sie ein Token aus und geben sie zwei OTP-Werte an."
-
 msgid ""
 "You selected more than one user. If you want to assign the token to a user "
 "during enrollment, you need to select only one user.  Anyhow, you can assign "
@@ -3963,9 +3577,6 @@ msgstr ""
 
 msgid "Your LinOTP support subscription"
 msgstr "Ihr LinOTP Support und Subskription"
-
-msgid "Your OCRA2 Token :"
-msgstr "Ihr OCRA2-Token:"
 
 msgid ""
 "Your connection will be vulnerable to security attacks if you disable "
@@ -3990,9 +3601,6 @@ msgstr ""
 "noch wenige Tage. Für Lizenzen zum produktiven Einsatz, oder einen "
 "verlängerten Testzeitraum, "
 
-msgid "Your email address"
-msgstr "E-Mail-Adresse"
-
 #, python-format
 msgid ""
 "Your installation of LinOTP was updated to version %s. You can find the "
@@ -4001,14 +3609,8 @@ msgstr ""
 "Ihre LinOTP Installation wurde auf Version %s aktualisiert. Weitere "
 "Informationen sowie den Changelog finden Sie unter:"
 
-msgid "Your mobile phone number"
-msgstr "Ihre Mobiltelefonnummer"
-
 msgid "Your session expired"
 msgstr "Ihre Sitzung ist abgelaufen"
-
-msgid "Your session has expired!"
-msgstr "Ihre Sitzung ist abgelaufen!"
 
 msgid "Your token"
 msgstr "Ihr Token"
@@ -4021,9 +3623,6 @@ msgstr "YubiKey-CSV"
 
 msgid "YubiKey CSV Token File"
 msgstr "YubiKey-CSV-Tokendatei"
-
-msgid "YubiKey TokenId"
-msgstr "YubiKey Token-ID"
 
 msgid "Yubico"
 msgstr "Yubico"
@@ -4048,12 +3647,6 @@ msgstr "Yubico-Einstellungen"
 
 msgid "[?]"
 msgstr "[?]"
-
-msgid "activate token"
-msgstr "Token aktivieren"
-
-msgid "activate your OCRA2 Token"
-msgstr "Aktivieren Sie Ihren OCRA2-Token"
 
 msgid "activate your PushToken"
 msgstr "Aktivieren Sie Ihren PushToken"
@@ -4107,56 +3700,20 @@ msgstr ""
 msgid "delete Token"
 msgstr "Token löschen"
 
-msgid "disable Token"
-msgstr "Token deaktivieren"
-
 msgid "eToken DAT File"
 msgstr "eToken .dat Datei"
 
 msgid "enable Token"
 msgstr "Token aktivieren"
 
-msgid "enroll TOTP token"
-msgstr "TOTP-Token ausrollen"
-
-msgid "enroll email token"
-msgstr "E-Mail-Token ausrollen"
-
-msgid "enroll hmac token"
-msgstr "HMAC-Token ausrollen"
-
-msgid "enroll ocra2 token"
-msgstr "OCRA2-Token ausrollen"
-
-msgid "enroll password token"
-msgstr "erstellen Sie Ihren Passwort-Token"
-
-msgid "enroll pushtoken"
-msgstr "PushToken ausrollen"
-
-msgid "enroll qrtoken"
-msgstr "QRToken ausrollen"
-
-msgid "enroll yubico token"
-msgstr "Yubikey ausrollen"
-
 msgid "enter PIN"
 msgstr "PIN setzen"
-
-msgid "enter token seed"
-msgstr "Tokenseed eingeben"
 
 msgid "expired - valid till"
 msgstr "abgelaufen - gültig bis"
 
 msgid "filename"
 msgstr "Dateiname"
-
-msgid "finalize activation"
-msgstr "Aktivierung abschließen"
-
-msgid "finish your OCRA2 Token"
-msgstr "OCRA2-Token fertigstellen"
 
 msgid "for user"
 msgstr "wurde ausgerollt für Benutzer"
@@ -4169,9 +3726,6 @@ msgstr "ein zufälliges Seed generieren"
 
 msgid "get OTP values"
 msgstr "OTP-Werte anfragen"
-
-msgid "get OTP values from Token"
-msgstr "OTP-Werte vom Token anfragen"
 
 msgid "get challenge"
 msgstr "Hole Challenge"
@@ -4237,34 +3791,14 @@ msgstr "Verlorener Token konnte nicht erfolgreich ausgerollt werden"
 msgid "mOTP - mobile otp"
 msgstr "mOTP - Mobiler OTP"
 
-msgid "mOTP PIN"
-msgstr "mOTP-PIN"
-
-msgid "mOTP PIN (again)"
-msgstr "mOTP-PIN (wiederholen)"
-
-msgid "mOTP PIN set successfully"
-msgstr "mOTP-PIN erfolgreich gesetzt"
-
 msgid "mOTP Token Settings"
 msgstr "mOTP-Token-Einstellungen"
 
 msgid "managed"
 msgstr "intern verwaltet"
 
-#, python-brace-format
-msgid "maximum length must be lower than {0}"
-msgstr "Die Länge muss kürzer als {0} sein."
-
 msgid "message / data"
 msgstr "Nachricht / data"
-
-msgid "minimum length must be greater than 10"
-msgstr "Die minimale Länge muss größer als 10 sein"
-
-#, python-brace-format
-msgid "minimum length must be greater than {0}"
-msgstr "Die Länge muss größer als {0} sein."
 
 msgid "mobile phone number"
 msgstr "Mobiltelefonnummer"
@@ -4320,29 +3854,8 @@ msgstr "Mit Preshared-Key verschlüsselt"
 msgid "realm"
 msgstr "Realm"
 
-msgid "register SMS Token"
-msgstr "SMS-Token registrieren"
-
-msgid "register mOTP Token"
-msgstr "mOTP-Token registrieren"
-
 msgid "remotely"
 msgstr "entfernt"
-
-msgid "repeat PIN"
-msgstr "PIN wiederholen"
-
-msgid "repeat mOTP PIN"
-msgstr "mOTP-PIN wiederholen"
-
-msgid "required input field"
-msgstr "Benötigtes Eingabefeld"
-
-msgid "reset Failcounter"
-msgstr "Fehlzähler zurücksetzen"
-
-msgid "resync OTP"
-msgstr "OTP synchronisieren"
 
 msgid "seconds"
 msgstr "Sekunden"
@@ -4355,9 +3868,6 @@ msgstr "siehe Richtliniendefinition."
 
 msgid "selected Token"
 msgstr "ausgewählter Token"
-
-msgid "self enrolled"
-msgstr "selbst erstellt"
 
 #, python-format
 msgid "selfservice/usergetmultiotp failed: %r"
@@ -4414,14 +3924,14 @@ msgstr "mOTP-PIN setzen"
 msgid "set token PIN failed"
 msgstr "Setzen der Token-PIN fehlgeschlagen"
 
+msgid "signature could not be verified!"
+msgstr "Die Signatur ist nicht gültig!"
+
 msgid "sms challenge-response token - hmac event based"
 msgstr "SMS-Challenge/Response-Token - HMAC ereignisbasiert"
 
 msgid "submit"
 msgstr "Absenden"
-
-msgid "there is no user_selfservice cookie"
-msgstr "Cookie user_selfservice ist nicht gesetzt"
 
 msgid "time lookup window"
 msgstr "Zeitfenster"
@@ -4493,6 +4003,9 @@ msgstr "WebUI generiert"
 #~ "(FreeOTP, Google Authenticator oder eine anderer OATH-kompatible "
 #~ "Softtoken App)"
 
+#~ msgid "1. Enter the activation code :"
+#~ msgstr "1. Geben Sie bitte den Aktivierungscode ein:"
+
 #~ msgid ""
 #~ "1. You first need to install the google authenticator to your Android or "
 #~ "iPhone."
@@ -4503,6 +4016,9 @@ msgstr "WebUI generiert"
 #~ msgid "1. You first need to install the oathtoken to your iPhone."
 #~ msgstr ""
 #~ "1. Sie müssen zuerst die OATH-Token-App auf Ihrem iPhone installieren."
+
+#~ msgid "2. Enter your confirmation code:"
+#~ msgstr "2. Bitte geben Sie den Bestätigungscode ein:"
 
 #~ msgid "2. Then you may create a profile."
 #~ msgstr "2. Dann können Sie Ihren Token/das Profil erzeugen."
@@ -4520,6 +4036,11 @@ msgstr "WebUI generiert"
 #~ "<p>Die Anzahl der Token, die Sie verwalten, überschreitet die Anzahl der "
 #~ "lizensierte Token.<br>Bitte aktualisieren Sie Ihre Lizenz.<br></p>"
 
+#~ msgid "A push notification has been sent. Please check your mobile phone."
+#~ msgstr ""
+#~ "Eine Pushbenachrichtigung wurde verschickt. Bitte werfen Sie einen Blick "
+#~ "auf Ihr Smartphone."
+
 #~ msgid "A resolver with name"
 #~ msgstr "Ein Resolver mit Name"
 
@@ -4532,23 +4053,44 @@ msgstr "WebUI generiert"
 #~ msgid "Action detail"
 #~ msgstr "Aktionen"
 
+#~ msgid "Activate Push Token"
+#~ msgstr "Aktivieren Sie Ihren PushToken"
+
+#~ msgid "Activate token"
+#~ msgstr "Token aktivieren"
+
 #~ msgid "Activate your OCRA Token"
 #~ msgstr "Aktivieren Sie Ihren OCRA-Token"
 
 #~ msgid "Activate your OCRA token"
 #~ msgstr "OCRA-Token aktivieren"
 
+#~ msgid "Activate your OCRA2 Token"
+#~ msgstr "Aktivieren Sie Ihren OCRA2-Token"
+
 #~ msgid "Activate your QR token"
 #~ msgstr "Aktivieren Sie Ihren QR-Token"
 
+#~ msgid "Activate your QRToken"
+#~ msgstr "Aktivieren Sie Ihren QRToken"
+
 #~ msgid "Alert"
 #~ msgstr "Achtung"
+
+#~ msgid "Assign OTP Token"
+#~ msgstr "OTP-Token zuweisen"
 
 #~ msgid "CA Certificate"
 #~ msgstr "CA-Zertifikat"
 
 #~ msgid "Challenge Timeout"
 #~ msgstr "Challenge Timeout"
+
+#~ msgid "Challenge sent"
+#~ msgstr "Challenge wurde verschickt"
+
+#~ msgid "Challenge triggered successfully"
+#~ msgstr "Challenge wurde erfolgreich angefordert"
 
 #~ msgid "Choose your token profile "
 #~ msgstr "Bitte wählen Sie Ihren Tokentyp "
@@ -4566,11 +4108,20 @@ msgstr "WebUI generiert"
 #~ msgid "Comment"
 #~ msgstr "Kommentar"
 
+#~ msgid "Confirm using mobile"
+#~ msgstr "Änderungen über ihr Handy bestätigen"
+
+#~ msgid "Connection Error during login"
+#~ msgstr "Verbindungsfehler während der Anmeldung"
+
 #~ msgid "Contact E-Mail"
 #~ msgstr "Kontakt-E-Mail"
 
 #~ msgid "Contact Name"
 #~ msgstr "Kontakt"
+
+#~ msgid "Counter"
+#~ msgstr "Zähler"
 
 #~ msgid "Counter Login"
 #~ msgstr "Zähler Login"
@@ -4586,6 +4137,12 @@ msgstr "WebUI generiert"
 
 #~ msgid "DefaultChallengeValidityTime"
 #~ msgstr "Standardwert des Gültigkeitszeitraums einer Challenge"
+
+#~ msgid "Determine Serial Number"
+#~ msgstr "Seriennummer bestimmen"
+
+#~ msgid "Disable OTP Token"
+#~ msgstr "OTP-Token deaktivieren"
 
 #~ msgid "Discard Changes"
 #~ msgstr "Änderungen Verwerfen"
@@ -4622,11 +4179,20 @@ msgstr "WebUI generiert"
 #~ msgid "Enforce STARTTLS"
 #~ msgstr "STARTTLS erzwingen"
 
+#~ msgid "Enroll EMail Token"
+#~ msgstr "E-Mail-Token ausrollen"
+
+#~ msgid "Enroll FIDO U2F Token"
+#~ msgstr "FIDO-U2F-Token ausrollen"
+
 #~ msgid "Enroll Google Authenticator"
 #~ msgstr "Google Authenticator ausrollen"
 
 #~ msgid "Enroll HOTP"
 #~ msgstr "HOTP ausrollen"
+
+#~ msgid "Enroll HOTP Token"
+#~ msgstr "HOTP-Token ausrollen"
 
 #~ msgid "Enroll OATH soft token"
 #~ msgstr "OATH-Softtoken ausrollen"
@@ -4634,17 +4200,120 @@ msgstr "WebUI generiert"
 #~ msgid "Enroll OATH token"
 #~ msgstr "OATH-Token ausrollen"
 
+#~ msgid "Enroll Password Token"
+#~ msgstr "Passwort Token ausrollen"
+
+#~ msgid "Enroll Push Token"
+#~ msgstr "PushToken ausrollen"
+
+#~ msgid "Enroll TOTP Token"
+#~ msgstr "TOTP-Token ausrollen"
+
+#~ msgid "Enroll YubiKey"
+#~ msgstr "YubiKey ausrollen"
+
+#~ msgid "Enroll static password token"
+#~ msgstr "Erstellen Sie Ihren Passworttoken"
+
+#~ msgid "Enroll token"
+#~ msgstr "Token ausrollen"
+
+#~ msgid "Enroll your HOTP token"
+#~ msgstr "Rollen Sie Ihren HOTP-Token aus"
+
+#~ msgid "Enroll your OCRA2 Token"
+#~ msgstr "Rollen Sie Ihren OCRA2-Token aus"
+
+#~ msgid "Enroll your QRToken"
+#~ msgstr "Rollen Sie Ihren QRToken aus"
+
 #~ msgid "Enroll your TOTP Token"
 #~ msgstr "Rollen Sie Ihren HOTP Token aus"
+
+#~ msgid "Enroll your TOTP token"
+#~ msgstr "Rollen Sie Ihren TOTP-Token aus"
+
+#~ msgid "Enroll your YubiKey"
+#~ msgstr "Rollen Sie Ihren YubiKey aus"
+
+#~ msgid "Enroll your email token"
+#~ msgstr "Rollen Sie Ihren E-Mail-Token aus"
+
+#~ msgid "Enter OTP"
+#~ msgstr "OTP eingeben"
+
+#~ msgid "Enter TOTP"
+#~ msgstr "TOTP eingeben"
+
+#~ msgid "Enter activation credentials: "
+#~ msgstr "Geben Sie das Aktivierungskennwort ein: "
 
 #~ msgid "Enter pin: "
 #~ msgstr "PIN setzen:"
 
+#~ msgid "Enter seed for the new OCRA2 token:"
+#~ msgstr "Geben Sie das Seed für den neuen OCRA2-Token ein:"
+
+#~ msgid "Enter static password:"
+#~ msgstr "Statisches Passwort eingeben:"
+
+#~ msgid ""
+#~ "Enter the Token ID of your YubiKey. Simply insert the YubiKey and press "
+#~ "the button."
+#~ msgstr ""
+#~ "Geben Sie die Token-ID Ihres YubiKeys ein. Stecken Sie einfach Ihren "
+#~ "Yubikey ein und drücken Sie den Knopf."
+
 #~ msgid "Enter the realm, the tokens should part of:"
 #~ msgstr "Zu welchem Realm sollen die Token zugeordnet werden:"
 
+#~ msgid "Enter token seed"
+#~ msgstr "Tokenseed eingeben"
+
+#~ msgid "Error"
+#~ msgstr "Fehler"
+
+#~ msgid "Error "
+#~ msgstr "Fehler "
+
+#~ msgid "Error assigning Token: "
+#~ msgstr "Fehler bei der Zuweisung des Tokens: "
+
+#~ msgid "Error calling token:"
+#~ msgstr "Fehler beim Tokenaufruf:"
+
+#~ msgid "Error disabling Token!\n"
+#~ msgstr "Fehler bei der Tokendeaktivierung\n"
+
+#~ msgid "Error during login"
+#~ msgstr "Fehler während der Anmeldung"
+
+#~ msgid "Error enabling Token!\n"
+#~ msgstr "Fehler bei der Tokenaktivierung\n"
+
+#~ msgid "Error getting otp values"
+#~ msgstr "Fehler bei Abfrage des OTP-Wertes"
+
+#~ msgid "Error getting serial: "
+#~ msgstr "Fehler beim Ermitteln der Seriennummer: "
+
 #~ msgid "Error in regular expression for"
 #~ msgstr "Fehler im regulären Ausdruck für"
+
+#~ msgid "Error loading history:\n"
+#~ msgstr "Fehler beim Laden der Historie:\n"
+
+#~ msgid "Error resyncing Token: "
+#~ msgstr "Fehler beim Synchronisieren des Tokens: "
+
+#~ msgid "Error setting PIN: "
+#~ msgstr "Fehler beim Setzen der PIN: "
+
+#~ msgid "Error setting mOTP PIN: "
+#~ msgstr "Fehler beim Setzen des mOTP-PINs: "
+
+#~ msgid "Error unassigning Token!\n"
+#~ msgstr "Fehler beim Aufheben der Tokenzuweisung\n"
 
 #~ msgid "Expire"
 #~ msgstr "Ablaufdatum"
@@ -4652,20 +4321,44 @@ msgstr "WebUI generiert"
 #~ msgid "Export token information"
 #~ msgstr "Tokeninformationen exportieren"
 
+#~ msgid "Failcounter resetted successfully"
+#~ msgstr "Der Fehlzähler wurde erfolgreich zurückgesetzt"
+
 #~ msgid "Failed to activate token! \n"
 #~ msgstr "Fehler bei der Tokenaktivierung\n"
+
+#~ msgid "Failed to delete token!\n"
+#~ msgstr "Fehler beim Löschen des Tokens\n"
+
+#~ msgid "Failed to enroll token!"
+#~ msgstr "Ausrollen des Tokens fehlgeschlagen!"
 
 #~ msgid "Failed to enroll token!\n"
 #~ msgstr "Fehler beim Ausrollen des Tokens\n"
 
+#~ msgid "Failed to enroll token: "
+#~ msgstr "Ausrollen des Tokens fehlgeschlagen: "
+
 #~ msgid "Failed to import license"
 #~ msgstr "Import der Lizenz fehlgeschlagen"
+
+#~ msgid "Failed to load form"
+#~ msgstr "Formular konnte nicht geladen werden"
+
+#~ msgid "Failed to reset failcounter!\n"
+#~ msgstr "Fehler beim Zurücksetzen des Fehlzählers\n"
+
+#~ msgid "Failed to resync Token"
+#~ msgstr "Fehler beim Synchronisieren des Tokens"
 
 #~ msgid "File configuration"
 #~ msgstr "Dateikonfiguration"
 
 #~ msgid "For professional LinOTP support and enterprise subscription, "
 #~ msgstr "Zum Erwerb von "
+
+#~ msgid "Form data not valid."
+#~ msgstr "Die Formulardaten sind ungültig."
 
 #~ msgid "Generate HMAC key"
 #~ msgstr "Generiere HMAC Key"
@@ -4675,6 +4368,9 @@ msgstr "WebUI generiert"
 
 #~ msgid "Generate OCRA key."
 #~ msgstr "OCRA-Key vom Server generieren lassen."
+
+#~ msgid "Generate OCRA2 seed"
+#~ msgstr "OCRA2-Key vom Server generieren lassen"
 
 #~ msgid "Google Authenticator token successfully created!"
 #~ msgstr "Google Authenticator Token wurde erfolgreich angelegt!"
@@ -4722,11 +4418,20 @@ msgstr "WebUI generiert"
 #~ msgid "Import tokens from Vasco DPX file"
 #~ msgstr "VASCO-DPX-Tokendatei importieren"
 
+#~ msgid "Init Secret of motp-Token"
+#~ msgstr "Initialisierungs-Seed des mOTP-Token"
+
+#~ msgid "Input data is not valid!"
+#~ msgstr "Die Formulardaten sind ungültig!"
+
 #~ msgid "Install your soft token profile"
 #~ msgstr "Installieren Sie Ihren Softtokentyp"
 
 #~ msgid "Invalid License"
 #~ msgstr "ungültige Lizenz"
+
+#~ msgid "Invalid session - please try again."
+#~ msgstr "Ungültige Session - bitte versuchen Sie es nochmal."
 
 #~ msgid "LDAP attributes"
 #~ msgstr "LDAP-Attribute"
@@ -4752,6 +4457,12 @@ msgstr "WebUI generiert"
 #~ msgid "LinOTP 2 User self service"
 #~ msgstr "LinOTP Selbstverwaltungsportal"
 
+#~ msgid "LinOTP Self Service"
+#~ msgstr "LinOTP-Self-Service"
+
+#~ msgid "LinOTP Self Service Login"
+#~ msgstr "LinOTP-Self-Service-Anmeldung"
+
 #~ msgid "LinOTP Support Info"
 #~ msgstr "LinOTP Support Information"
 
@@ -4760,6 +4471,9 @@ msgstr "WebUI generiert"
 
 #~ msgid "Load your Google Authenticator profile:"
 #~ msgstr "Laden des Google Authenticator Profils:"
+
+#~ msgid "Login failed"
+#~ msgstr "Anmeldung fehlgeschlagen"
 
 #~ msgid "Lost token"
 #~ msgstr "Verlorener Token"
@@ -4776,11 +4490,17 @@ msgstr "WebUI generiert"
 #~ msgid "Missing required parameter \"serial\" or \"user\"!"
 #~ msgstr "Fehlender benötigter Parameter \"serial\" oder \"user\"!"
 
+#~ msgid "No Token with this OTP value found!"
+#~ msgstr "Kein Token mit diesem OTP-Wert gefunden!"
+
 #~ msgid "No valid authentication session %r"
 #~ msgstr "Keine gültige Authentisierungs-Session %r"
 
 #~ msgid "No valid session!"
 #~ msgstr "Keine gültige Session!"
+
+#~ msgid "Number of OTP values to retrieve"
+#~ msgstr "Anzahl der anzufragenden OTP-Werte"
 
 #~ msgid "OCRA - challenge/response Token"
 #~ msgstr "OCRA - Challenge/Response-Token"
@@ -4797,16 +4517,36 @@ msgstr "WebUI generiert"
 #~ msgid "OCRA key"
 #~ msgstr "OCRA-Key"
 
+#, python-format
+#~ msgid "OCRA rollout for token %s completed!"
+#~ msgstr "Rollout des OCRA-Tokens %s abgeschlossen!"
+
 #~ msgid "OCRA settings"
 #~ msgstr "OCRA Einstellungen"
 
+#~ msgid "OCRA token rollout failed! Please retry"
+#~ msgstr ""
+#~ "Rollout des OCRA-Tokens fehlgeschlagen. Bitte versuchen Sie es erneut"
+
 #~ msgid "OCRA token settings"
 #~ msgstr "OCRA2-Token-Einstellungen"
+
+#~ msgid "OTP Validation failed"
+#~ msgstr "OTP Validierung fehlgeschlagen"
+
+#~ msgid "OTP Value: "
+#~ msgstr "OTP-Wert: "
+
+#~ msgid "OTP values for token "
+#~ msgstr "OTP-Werte für Token "
 
 #~ msgid "Or you can scan the QR code below your iPhone to import the secret."
 #~ msgstr ""
 #~ "Alternativ scannen Sie den unten angezeigten QR Code mit Ihrem Handy, um "
 #~ "den Token zu initialisieren."
+
+#~ msgid "Otp Value"
+#~ msgstr "OTP-Wert"
 
 #~ msgid "OtpAuth Softtoken Url"
 #~ msgstr "OtpAuth Softtoken Url"
@@ -4823,11 +4563,27 @@ msgstr "WebUI generiert"
 #~ msgid "PIN"
 #~ msgstr "PIN"
 
+#~ msgid "PIN set successfully"
+#~ msgstr "PIN erfolgreich gesetzt"
+
 #~ msgid "Pin"
 #~ msgstr "PIN"
 
 #~ msgid "Please choose the license file"
 #~ msgstr "Bitte wählen Sie eine Lizenzdatei"
+
+#~ msgid ""
+#~ "Please enter a valid init secret. It may only contain numbers and the "
+#~ "letters A-F."
+#~ msgstr ""
+#~ "Bitte geben Sie ein gültiges Initialisierungsseed ein. Es darf nur "
+#~ "Nummern und die Buchstaben A bis F enthalten."
+
+#~ msgid ""
+#~ "Please enter a valid phone number. It may only contain numbers and + or /."
+#~ msgstr ""
+#~ "Bitten geben Sie eine gültige Telefonnummer ein. Diese darf nur Ziffer, "
+#~ "das + und / enthalten."
 
 #~ msgid ""
 #~ "Please enter a valid searchfilter like this: \n"
@@ -4861,6 +4617,13 @@ msgstr "WebUI generiert"
 #~ msgid "Please enter or copy the OCRA key."
 #~ msgstr "Bitte geben Sie den OCRA-Key ein."
 
+#~ msgid ""
+#~ "Please scan the qr code and submit your response or enter the otp value "
+#~ "in the form below."
+#~ msgstr ""
+#~ "Bitte scannen Sie den QR-Code und senden die Antwort oder geben den OTP-"
+#~ "Wert im Formular ein."
+
 #~ msgid "Preset attributes for LDAP"
 #~ msgstr "Werte vorbelegen für LDAP"
 
@@ -4888,11 +4651,32 @@ msgstr "WebUI generiert"
 #~ msgid "REMOTE token"
 #~ msgstr "REMOTE token"
 
+#~ msgid "Register SMS"
+#~ msgstr "SMS-Token registrieren"
+
+#~ msgid "Register mOTP"
+#~ msgstr "mOTP-Token registrieren"
+
 #~ msgid "Register totp"
 #~ msgstr "TOTP registrieren"
 
+#~ msgid "Register your SMS OTP Token / mobileTAN"
+#~ msgstr "Registrieren Sie Ihren SMS-OTP-Token / mobileTAN"
+
+#~ msgid "Register your mOTP Token"
+#~ msgstr "mOTP-Token registrieren"
+
 #~ msgid "Replace"
 #~ msgstr "Ersetzen"
+
+#~ msgid "Reset OTP PIN"
+#~ msgstr "OTP-PIN zurücksetzen"
+
+#~ msgid "Reset mOTP PIN"
+#~ msgstr "mOTP-PIN zurücksetzen"
+
+#~ msgid "Resync OTP Token"
+#~ msgstr "OTP-Token synchronisieren"
 
 #~ msgid "SMS OTP Token"
 #~ msgstr "SMS OTP Token"
@@ -4903,11 +4687,20 @@ msgstr "WebUI generiert"
 #~ msgid "SQL attributes"
 #~ msgstr "SQL-Attribute"
 
+#~ msgid "Scan QR code"
+#~ msgstr "Scannen Sie den QR-Code"
+
 #~ msgid "Seed for HOTP token"
 #~ msgstr "Seed des HOTP Token"
 
 #~ msgid "Seed for TOTP token"
 #~ msgstr "Seed des TOTP Token"
+
+#~ msgid "Select Push Token: "
+#~ msgstr "Push-Token auswählen: "
+
+#~ msgid "Select QRToken: "
+#~ msgstr "Ausgewählter QRToken: "
 
 #~ msgid "Selected token"
 #~ msgstr "ausgewählter Token"
@@ -4915,8 +4708,20 @@ msgstr "WebUI generiert"
 #~ msgid "Selected tokens"
 #~ msgstr "ausgewählte Token"
 
+#~ msgid "Send OTP by SMS"
+#~ msgstr "OTP via SMS verschickt"
+
+#~ msgid "Send OTP by e-mail"
+#~ msgstr "OTP via Email verschickt"
+
+#~ msgid "Send OTP by voice call"
+#~ msgstr "OTP via Voice Call verschickt"
+
 #~ msgid "Serial number, Seed, Type, OTP length, Time step"
 #~ msgstr "Seriennummer, Seed, Typ, OTP-Länge, Zeitschritt"
+
+#~ msgid "Serialnumber of new Token"
+#~ msgstr "Seriennummer des neuen OTP-Tokens"
 
 #~ msgid "Server config"
 #~ msgstr "Serverkonfiguration"
@@ -4975,6 +4780,16 @@ msgstr "WebUI generiert"
 #~ msgstr "Teste LDAP-Verbindung..."
 
 #~ msgid ""
+#~ "The Google Authenticator supports only 6 digits, SHA1 hashing and time "
+#~ "step 30."
+#~ msgstr ""
+#~ "Der Google Authenticator unterstützt nur 6 Ziffern, den SHA1 Hash "
+#~ "Algorithmus und einen Zeitschritt von 30 Sekunden."
+
+#~ msgid "The OTP value of the Token to assign"
+#~ msgstr "OTP-Wert des Tokens, der zugewiesen werden soll"
+
+#~ msgid ""
 #~ "The maximum allowed number of tokens for the realm %s (%s) was reached. "
 #~ "You can not assign any more tokens. Check the policies."
 #~ msgstr ""
@@ -4986,6 +4801,9 @@ msgstr "WebUI generiert"
 #~ msgstr ""
 #~ "Die Maximalzahl der unterstützten Token wurde überschritten - prüfen Sie "
 #~ "ggf. die Richtlinien."
+
+#~ msgid "The passwords do not match!"
+#~ msgstr "Die Passwörter sind nicht gleicht!"
 
 #~ msgid "There is an error in the realm name!"
 #~ msgstr "Fehler im Realmnamen!"
@@ -5013,6 +4831,13 @@ msgstr "WebUI generiert"
 #~ "Dies ist die standardmäßige OCRA-Suite für einen neu ausgerollten OCRA-"
 #~ "Token. Standard: OCRA-1:HOTP-SHA256-8:C-QA08"
 
+#~ msgid ""
+#~ "This resets the mOTP PIN, which is the PIN that is entered in the motp "
+#~ "application on your phone."
+#~ msgstr ""
+#~ "Dies setzt die mOTP-PIN zurück. Diese PIN geben Sie in der mOTP-App auf "
+#~ "Ihrem Telefon ein."
+
 #~ msgid "Time between SMS (sec.)"
 #~ msgstr "Zeit zwischen SMS (Sek.)"
 
@@ -5031,11 +4856,50 @@ msgstr "WebUI generiert"
 #~ "Um den Token in Ihrem Mobilgerät zu installieren, scannen Sie bitte den "
 #~ "unten stehenden QRCode ein oder folgen Sie dem Link"
 
+#~ msgid "Token Seed:"
+#~ msgstr "Tokenschlüssel:"
+
+#~ msgid "Token Settings:"
+#~ msgstr "Tokeneinstellungen:"
+
+#~ msgid "Token assigned successfully"
+#~ msgstr "Der Token wurde erfolgreich zugewiesen"
+
 #~ msgid "Token defaults"
 #~ msgstr "Token-Standardwerte"
 
+#~ msgid "Token deleted successfully"
+#~ msgstr "Token erfolgreich gelöscht"
+
+#~ msgid "Token description"
+#~ msgstr "Tokenbeschreibung"
+
+#~ msgid "Token disabled successfully"
+#~ msgstr "Token erfolgreich deaktiviert"
+
+#~ msgid "Token enabled successfully"
+#~ msgstr "Token erfolgreich aktiviert"
+
+#~ msgid "Token enrolled successfully "
+#~ msgstr "Der Token wurde erfolgreich ausgerollt "
+
+#~ msgid "Token enrollment result"
+#~ msgstr "Ergebnis des Tokenausrollprozesses"
+
 #~ msgid "Token info"
 #~ msgstr "Tokeninfo"
+
+#~ msgid "Token resynced successfully"
+#~ msgstr "Der Token wurde erfolgreich synchronisiert"
+
+#~ msgid "Token unassigned successfully"
+#~ msgstr "Tokenzuweisung erfolgreich aufgehoben"
+
+#~ msgid "Token-PIN"
+#~ msgstr "Token PIN"
+
+#~ msgid "Token-PIN (again)"
+#~ msgstr "Token PIN (wiederholen)"
 
 #~ msgid "Tokentype"
 #~ msgstr "Token Typ"
@@ -5045,6 +4909,12 @@ msgstr "WebUI generiert"
 
 #~ msgid "URL for google Authenticator"
 #~ msgstr "URL für Google Authenticator"
+
+#~ msgid "Use Yubikey"
+#~ msgstr "YubiKey benutzen"
+
+#~ msgid "Use mOTP token"
+#~ msgstr "mOTP-Token benutzen"
 
 #~ msgid ""
 #~ "Using the QR Code you can directly go to install the oath token on your "
@@ -5068,6 +4938,15 @@ msgstr "WebUI generiert"
 
 #~ msgid "Vasco Token"
 #~ msgstr "Vasco-Token"
+
+#~ msgid "Welcome to the LinOTP Selfservice Portal"
+#~ msgstr "Willkommen im LinOTP-Self-Service-Portal"
+
+#~ msgid ""
+#~ "You are going to assign a new token to you. Is this the correct serial: "
+#~ msgstr ""
+#~ "Sie weisen sich gerade einen neuen Token zu. Ist dies die richtige "
+#~ "Seriennummer: "
 
 #~ msgid ""
 #~ "You are using the open source version with community support. For "
@@ -5108,6 +4987,15 @@ msgstr "WebUI generiert"
 #~ msgstr "Sie können Ihren eigenen API Key auf der Yubico Webseite erhalten "
 
 #~ msgid ""
+#~ "You may either assign the token by entering the serial number or you can "
+#~ "enter an OTP value of the token and the system will try to identify the "
+#~ "token for you."
+#~ msgstr ""
+#~ "Sie können entweder einen Token zuweisen, indem Sie direkt die "
+#~ "Seriennummer eingeben, oder Sie können den Token über einen OTP-Wert "
+#~ "bestimmen und dann zuweisen."
+
+#~ msgid ""
 #~ "You may resync the token <span id=tokenid_resync></span>. Therefor please "
 #~ "enter two OTP values."
 #~ msgstr ""
@@ -5121,8 +5009,32 @@ msgstr "WebUI generiert"
 #~ "Sie müssen einen OATH-kompatible Softtoken-App auf Ihrem Handy "
 #~ "installiert haben."
 
+#~ msgid "You need to enter a serial number"
+#~ msgstr "Geben sie eine Seriennummer an"
+
+#~ msgid "You need to enter an OTP value"
+#~ msgstr "Sie müssen einen OTP-Wert angeben"
+
+#~ msgid "You need to select a Token and enter two OTP values."
+#~ msgstr "Wählen Sie ein Token aus und geben sie zwei OTP-Werte an."
+
 #~ msgid "Your OCRA Token :"
 #~ msgstr "Ihr OCRA-Token:"
+
+#~ msgid "Your OCRA2 Token :"
+#~ msgstr "Ihr OCRA2-Token:"
+
+#~ msgid "Your email address"
+#~ msgstr "E-Mail-Adresse"
+
+#~ msgid "Your mobile phone number"
+#~ msgstr "Ihre Mobiltelefonnummer"
+
+#~ msgid "Your session has expired!"
+#~ msgstr "Ihre Sitzung ist abgelaufen!"
+
+#~ msgid "YubiKey TokenId"
+#~ msgstr "YubiKey Token-ID"
 
 #~ msgid "Yubikey csv"
 #~ msgstr "Yubikey CSV"
@@ -5130,8 +5042,14 @@ msgstr "WebUI generiert"
 #~ msgid "__undefined__"
 #~ msgstr "__inaktiv__"
 
+#~ msgid "activate token"
+#~ msgstr "Token aktivieren"
+
 #~ msgid "activate your OCRA Token"
 #~ msgstr "Aktivieren Sie Ihren OCRA-Token"
+
+#~ msgid "activate your OCRA2 Token"
+#~ msgstr "Aktivieren Sie Ihren OCRA2-Token"
 
 #~ msgid "activate your qr token"
 #~ msgstr "Aktivieren Sie Ihren QR-Token"
@@ -5166,6 +5084,9 @@ msgstr "WebUI generiert"
 #~ msgid "delete"
 #~ msgstr "löschen"
 
+#~ msgid "disable Token"
+#~ msgstr "Token deaktivieren"
+
 #~ msgid "enroll"
 #~ msgstr "ausrollen"
 
@@ -5178,8 +5099,29 @@ msgstr "WebUI generiert"
 #~ msgid "enroll TOTP Token"
 #~ msgstr "TOTP Token ausrollen"
 
+#~ msgid "enroll TOTP token"
+#~ msgstr "TOTP-Token ausrollen"
+
+#~ msgid "enroll email token"
+#~ msgstr "E-Mail-Token ausrollen"
+
+#~ msgid "enroll hmac token"
+#~ msgstr "HMAC-Token ausrollen"
+
 #~ msgid "enroll it!"
 #~ msgstr "rollen Sie ihn aus!"
+
+#~ msgid "enroll ocra2 token"
+#~ msgstr "OCRA2-Token ausrollen"
+
+#~ msgid "enroll password token"
+#~ msgstr "erstellen Sie Ihren Passwort-Token"
+
+#~ msgid "enroll pushtoken"
+#~ msgstr "PushToken ausrollen"
+
+#~ msgid "enroll qrtoken"
+#~ msgstr "QRToken ausrollen"
 
 #~ msgid "enroll your event based token"
 #~ msgstr "erstellen Sie Ihren ereignisbasierten Token"
@@ -5190,17 +5132,32 @@ msgstr "WebUI generiert"
 #~ msgid "enroll your token"
 #~ msgstr "erstellen Sie Ihren Token"
 
+#~ msgid "enroll yubico token"
+#~ msgstr "Yubikey ausrollen"
+
+#~ msgid "enter token seed"
+#~ msgstr "Tokenseed eingeben"
+
 #~ msgid "event based"
 #~ msgstr "ereignisbasiert"
 
 #~ msgid "feel free to contact "
 #~ msgstr "professionellen LinOTP Support und Subskription für Unternehmen"
 
+#~ msgid "finalize activation"
+#~ msgstr "Aktivierung abschließen"
+
 #~ msgid "finish your OCRA Token"
 #~ msgstr "OCRA-Token fertigstellen"
 
+#~ msgid "finish your OCRA2 Token"
+#~ msgstr "OCRA2-Token fertigstellen"
+
 #~ msgid "for support agreement purchase."
 #~ msgstr "können Sie und gerne kontaktieren"
+
+#~ msgid "get OTP values from Token"
+#~ msgstr "OTP-Werte vom Token anfragen"
 
 #~ msgid "in loginname"
 #~ msgstr "in Loginname"
@@ -5219,6 +5176,26 @@ msgstr "WebUI generiert"
 
 #~ msgid "mOTP"
 #~ msgstr "mOTP"
+
+#~ msgid "mOTP PIN"
+#~ msgstr "mOTP-PIN"
+
+#~ msgid "mOTP PIN (again)"
+#~ msgstr "mOTP-PIN (wiederholen)"
+
+#~ msgid "mOTP PIN set successfully"
+#~ msgstr "mOTP-PIN erfolgreich gesetzt"
+
+#, python-brace-format
+#~ msgid "maximum length must be lower than {0}"
+#~ msgstr "Die Länge muss kürzer als {0} sein."
+
+#~ msgid "minimum length must be greater than 10"
+#~ msgstr "Die minimale Länge muss größer als 10 sein"
+
+#, python-brace-format
+#~ msgid "minimum length must be greater than {0}"
+#~ msgstr "Die Länge muss größer als {0} sein."
 
 #~ msgid "no"
 #~ msgstr "Nein"
@@ -5246,14 +5223,35 @@ msgstr "WebUI generiert"
 #~ msgid "realms"
 #~ msgstr "Realms"
 
+#~ msgid "register SMS Token"
+#~ msgstr "SMS-Token registrieren"
+
+#~ msgid "register mOTP Token"
+#~ msgstr "mOTP-Token registrieren"
+
 #~ msgid "remote otp len"
 #~ msgstr "otp Länge des entfernten Tokens"
 
 #~ msgid "remote server"
 #~ msgstr "Remote Server"
 
+#~ msgid "repeat PIN"
+#~ msgstr "PIN wiederholen"
+
+#~ msgid "repeat mOTP PIN"
+#~ msgstr "mOTP-PIN wiederholen"
+
+#~ msgid "required input field"
+#~ msgstr "Benötigtes Eingabefeld"
+
+#~ msgid "reset Failcounter"
+#~ msgstr "Fehlzähler zurücksetzen"
+
 #~ msgid "reset failcounter"
 #~ msgstr "Fehlzähler zurücksetzen"
+
+#~ msgid "resync OTP"
+#~ msgstr "OTP synchronisieren"
 
 #~ msgid "sales@lsexperts.de"
 #~ msgstr "sales@lsexperts.de"
@@ -5261,8 +5259,8 @@ msgstr "WebUI generiert"
 #~ msgid "scope"
 #~ msgstr "Bereich"
 
-#~ msgid "signature could not be verified!"
-#~ msgstr "Die Signatur ist nicht gültig!"
+#~ msgid "self enrolled"
+#~ msgstr "selbst erstellt"
 
 #~ msgid "splitAtSign"
 #~ msgstr "Trenne am @-Zeichen"
@@ -5274,6 +5272,9 @@ msgstr "WebUI generiert"
 #~ msgstr ""
 #~ "Die Maximalzahl an lizensierten Token wurde überschritten - überprüfen "
 #~ "Sie ggf. die Richtlinien."
+
+#~ msgid "there is no user_selfservice cookie"
+#~ msgstr "Cookie user_selfservice ist nicht gesetzt"
 
 #~ msgid "time based"
 #~ msgstr "zeitbasiert"
