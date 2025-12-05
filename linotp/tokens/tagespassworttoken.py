@@ -168,6 +168,9 @@ class TagespasswortTokenClass(TokenClass):
             "type": "dpw",
             "title": "Tagespasswort Token",
             "description": ("A token uses a new password every day."),
+            "selfservice": {
+                "enroll": {}  # keep for dynamic policy definitions
+            },
             "init": {
                 "page": {
                     "html": "tagespassworttoken.mako",
@@ -179,7 +182,6 @@ class TagespasswortTokenClass(TokenClass):
                 },
             },
             "config": {},
-            "selfservice": {},
             "policy": {},
         }
 

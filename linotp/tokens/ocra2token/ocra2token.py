@@ -367,6 +367,9 @@ class Ocra2TokenClass(TokenClass):
             "type": "ocra2",
             "title": _("OCRA2 Token"),
             "description": _("ocra challenge-response token - hmac event based"),
+            "selfservice": {
+                "enroll": {}  # keep for dynamic policy definitions
+            },
             "init": {
                 "title": {
                     "html": "ocra2token/ocra2token.mako",
@@ -385,28 +388,6 @@ class Ocra2TokenClass(TokenClass):
                 "page": {
                     "html": "ocra2token/ocra2token.mako",
                     "scope": "config",
-                },
-            },
-            "selfservice": {
-                "enroll": {
-                    "title": {
-                        "html": "ocra2token/ocra2token.mako",
-                        "scope": "selfservice.title.enroll",
-                    },
-                    "page": {
-                        "html": "ocra2token/ocra2token.mako",
-                        "scope": "selfservice.enroll",
-                    },
-                },
-                "activate_OCRA2": {
-                    "title": {
-                        "html": "ocra2token/ocra2token.mako",
-                        "scope": "selfservice.title.activate",
-                    },
-                    "page": {
-                        "html": "ocra2token/ocra2token.mako",
-                        "scope": "selfservice.activate",
-                    },
                 },
             },
             "policy": {

@@ -118,6 +118,9 @@ class RemoteTokenClass(TokenClass):
                 "REMOTE token to forward the authentication"
                 " request to another LinOTP server"
             ),
+            "selfservice": {
+                "enroll": {}  # keep for dynamic policy definitions
+            },
             "init": {
                 "page": {
                     "html": "remotetoken.mako",
@@ -138,7 +141,6 @@ class RemoteTokenClass(TokenClass):
                     "scope": "config.title",
                 },
             },
-            "selfservice": {},
             "policy": {},
         }
 

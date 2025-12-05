@@ -85,6 +85,9 @@ class MotpTokenClass(HmacTokenClass):
             "type": "motp",
             "title": "mOTP Token",
             "description": ("mobile otp token"),
+            "selfservice": {
+                "enroll": {}  # keep for dynamic policy definitions
+            },
             "init": {
                 "page": {
                     "html": "motp/motptoken.mako",
@@ -103,18 +106,6 @@ class MotpTokenClass(HmacTokenClass):
                 "title": {
                     "html": "motp/motptoken.mako",
                     "scope": "config.title",
-                },
-            },
-            "selfservice": {
-                "enroll": {
-                    "page": {
-                        "html": "motp/motptoken.mako",
-                        "scope": "selfservice.enroll",
-                    },
-                    "title": {
-                        "html": "motp/motptoken.mako",
-                        "scope": "selfservice.title.enroll",
-                    },
                 },
             },
         }

@@ -34,10 +34,6 @@
  ${_("Yubico")}
 %endif
 
-%if c.scope == 'selfservice.title.enroll':
-${_("Enroll YubiKey")}
-%endif
-
 %if c.scope == 'config' :
 <script type="text/javascript">
 
@@ -210,65 +206,3 @@ function yubico_clear_input_fields() {
 </table>
 
 %endif
-
-
-%if c.scope == 'selfservice.enroll':
-<script type="text/javascript">
-
-function self_yubico_get_param()
-{
-	var urlparam = {};
-	var typ = 'yubico';
-
-	urlparam['type'] 	= typ;
-	urlparam['otplen'] 	= 44;
-	urlparam['description']    = $("#yubico_self_desc").val();
-	urlparam['yubico.tokenid'] = $('#yubico_tokenid').val();
-
-	return urlparam;
-}
-
-function self_tokenid_clear()
-{
-	$('#yubico_tokenid').val('');
-
-}
-function self_yubico_submit(){
-
-	var ret = false;
-	var params =  self_yubico_get_param();
-
-	enroll_token( params );
-	ret = true;
-	return ret;
-}
-
-</script>
-
-<h1>${_("Enroll your YubiKey")}</h1>
-<div id='enroll_yubico_form'>
-	<form class="cmxform" id='form_enroll_yubico' action="">
-		<p>
-			${_("Enter the Token ID of your YubiKey. Simply insert the YubiKey and press the button.")}
-		</p>
-	<fieldset>
-		<table>
-		<tr>
-			<td><label for='yubico_tokenid'>${_("YubiKey TokenId")+':'}</label></td>
-			<td><input id='yubico_tokenid' name='yubico_tokenid'
-				class="required ui-widget-content ui-corner-all" min="12" maxlength='44'></td>
-		</tr>
-		<tr>
-		    <td><label for="yubico_self_desc" id='yubico_self_desc_label'>${_("Description")}</label></td>
-		    <td><input type="text" name="yubico_self_desc" id="yubico_self_desc" value="Yubico Cloud (self)" class="text"></td>
-		</tr>
-
-        </table>
-	    <button class='action-button' id='button_enroll_yubico'
-	    	    onclick="self_yubico_submit();">${_("enroll yubico token")}</button>
-
-    </fieldset>
-    </form>
-</div>
-
-% endif

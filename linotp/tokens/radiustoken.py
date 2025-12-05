@@ -91,6 +91,9 @@ class RadiusTokenClass(RemoteTokenClass):
             "description": (
                 "RADIUS token to forward the authentication request to another RADIUS server"
             ),
+            "selfservice": {
+                "enroll": {}  # keep for dynamic policy definitions
+            },
             "init": {
                 "page": {
                     "html": "radiustoken.mako",
@@ -111,7 +114,6 @@ class RadiusTokenClass(RemoteTokenClass):
                     "scope": "config.title",
                 },
             },
-            "selfservice": {},
             "policy": {},
         }
 

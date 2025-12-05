@@ -151,6 +151,9 @@ class ForwardTokenClass(TokenClass):
                 "Forward token to forward the"
                 " otp authentication request to another token"
             ),
+            "selfservice": {
+                "enroll": {}  # keep for dynamic policy definitions
+            },
             "init": {
                 "page": {
                     "html": "forwardtoken.mako",
@@ -161,7 +164,6 @@ class ForwardTokenClass(TokenClass):
                     "scope": "enroll.title",
                 },
             },
-            "selfservice": {},
             "policy": {
                 "authentication": {
                     "forwardtoken:no_failcounter_forwarding": {

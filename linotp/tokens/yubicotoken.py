@@ -134,6 +134,9 @@ class YubicoTokenClass(TokenClass):
                 "Yubico token to forward the authentication "
                 "request to the Yubico Cloud authentication"
             ),
+            "selfservice": {
+                "enroll": {}  # keep for dynamic policy definitions
+            },
             "init": {
                 "page": {
                     "html": "yubicotoken.mako",
@@ -152,18 +155,6 @@ class YubicoTokenClass(TokenClass):
                 "title": {
                     "html": "yubicotoken.mako",
                     "scope": "config.title",
-                },
-            },
-            "selfservice": {
-                "enroll": {
-                    "page": {
-                        "html": "yubicotoken.mako",
-                        "scope": "selfservice.enroll",
-                    },
-                    "title": {
-                        "html": "yubicotoken.mako",
-                        "scope": "selfservice.title.enroll",
-                    },
                 },
             },
             "policy": {},

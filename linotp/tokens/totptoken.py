@@ -194,6 +194,9 @@ class TimeHmacTokenClass(HmacTokenClass):
             "type": "totp",
             "title": "HMAC Time Token",
             "description": ("time based otp token using the hmac algorithm"),
+            "selfservice": {
+                "enroll": {}  # keep for dynamic policy definitions
+            },
             "init": {
                 "page": {
                     "html": "totptoken.mako",
@@ -212,18 +215,6 @@ class TimeHmacTokenClass(HmacTokenClass):
                 "title": {
                     "html": "totptoken.mako",
                     "scope": "config.title",
-                },
-            },
-            "selfservice": {
-                "enroll": {
-                    "page": {
-                        "html": "totptoken.mako",
-                        "scope": "selfservice.enroll",
-                    },
-                    "title": {
-                        "html": "totptoken.mako",
-                        "scope": "selfservice.title.enroll",
-                    },
                 },
             },
             "policy": {
