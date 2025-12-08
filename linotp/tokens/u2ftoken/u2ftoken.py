@@ -122,18 +122,6 @@ class U2FTokenClass(TokenClass):
             ),
             "init": {},
             "config": {},
-            "selfservice": {
-                "enroll": {
-                    "title": {
-                        "html": "u2ftoken/u2ftoken.mako",
-                        "scope": "selfservice.title.enroll",
-                    },
-                    "page": {
-                        "html": "u2ftoken/u2ftoken.mako",
-                        "scope": "selfservice.enroll",
-                    },
-                }
-            },
             "policy": {
                 "enrollment": {
                     "u2f_valid_facets": {"type": "str"},

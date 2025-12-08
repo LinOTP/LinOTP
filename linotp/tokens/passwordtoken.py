@@ -85,6 +85,9 @@ class PasswordTokenClass(HmacTokenClass):
                 "with the OTP PIN. Is used for the lost token "
                 "scenario."
             ),
+            "selfservice": {
+                "enroll": {}  # keep for dynamic policy definitions
+            },
             "init": {
                 "page": {
                     "html": "passwordtoken.mako",
@@ -103,18 +106,6 @@ class PasswordTokenClass(HmacTokenClass):
                 "title": {
                     "html": "passwordtoken.mako",
                     "scope": "config.title",
-                },
-            },
-            "selfservice": {
-                "enroll": {
-                    "page": {
-                        "html": "passwordtoken.mako",
-                        "scope": "selfservice.enroll",
-                    },
-                    "title": {
-                        "html": "passwordtoken.mako",
-                        "scope": "selfservice.title.enroll",
-                    },
                 },
             },
             "policy": {},

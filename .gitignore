@@ -50,7 +50,9 @@ data/testdata/testlicense*.pem
 
 # LinOTP generated files for default configuration
 linotp.sqlite
+linotp-dev.sqlite
 linotp.sqlite_audit
+linotp-dev.sqlite_audit
 linotp/audit-private.pem
 linotp/audit-public.pem
 linotp/encKey

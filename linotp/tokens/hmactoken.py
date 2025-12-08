@@ -95,6 +95,9 @@ class HmacTokenClass(TokenClass):
             "type": "hmac",
             "title": "HMAC Event Token",
             "description": ("event based otp token using the hmac algorithm"),
+            "selfservice": {
+                "enroll": {}  # keep for dynamic policy definitions
+            },
             "init": {
                 "page": {
                     "html": "hmactoken.mako",
@@ -113,18 +116,6 @@ class HmacTokenClass(TokenClass):
                 "title": {
                     "html": "hmactoken.mako",
                     "scope": "config.title",
-                },
-            },
-            "selfservice": {
-                "enroll": {
-                    "page": {
-                        "html": "hmactoken.mako",
-                        "scope": "selfservice.enroll",
-                    },
-                    "title": {
-                        "html": "hmactoken.mako",
-                        "scope": "selfservice.title.enroll",
-                    },
                 },
             },
             "policy": {

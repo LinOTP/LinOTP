@@ -271,6 +271,273 @@ class TestPolicies(TestPoliciesBase):
 
         assert response.json["result"]["status"], response
 
+    @pytest.fixture
+    def enroll_tokens(self, realms_and_resolver, admin_roles):
+        """
+        Policy 202: Init tokens in different with different admins
+                    "admin_init" is allowed to do so, "admin_reset" not.
+        """
+
+        parameters = {
+            "serial": "test_token_001",
+            "type": "spass",
+        }
+        response = self.make_admin_request(
+            action="init", params=parameters, auth_user="admin_init"
+        )
+
+        assert response.json["result"]["status"], response
+
+        parameters = {
+            "serial": "test_token_002",
+            "type": "spass",
+            "otpkey": "geheim",
+        }
+        response = self.make_admin_request(
+            action="init", params=parameters, auth_user="admin_reset"
+        )
+
+        assert not response.json["result"]["status"], response
+
+        parameters = {
+            "serial": "test_token_003",
+            "type": "spass",
+            "otpkey": "geheim",
+        }
+        response = self.make_admin_request(
+            action="init", params=parameters, auth_user="admin_init"
+        )
+
+        assert response.json["result"]["status"], response
+
+        parameters = {
+            "serial": "test_token_004",
+            "user": "root@myDefRealm",
+            "otpkey": "1234123412341234",
+            "otppin": "1234",
+        }
+        auth_user = "superadmin"
+        response = self.make_admin_request(
+            action="init", params=parameters, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+
+        parameters = {
+            "serial": "test_token_motp",
+            "otpkey": "1234123412341234",
+            "otppin": "m",
+            "type": "mOTP",
+        }
+        response = self.make_admin_request(
+            action="init", params=parameters, auth_user="admin_init"
+        )
+
+        assert response.json["result"]["status"], response
+
+        params = {
+            "serial": "test_token_ocra",
+            "user": "horst",
+            "type": "ocra2",
+            "sharedsecret": "1",
+            "genkey": "1",
+            "ocrasuite": "OCRA-1:HOTP-SHA256-8:C-QN08",
+        }
+
+        response = self.make_admin_request("init", params, auth_user="admin_init")
+        assert "false" not in response
+
+    @pytest.fixture
+    def selfservice_policies(self, realms_and_resolver, admin_roles):
+        """Define a set of selfservice policies."""
+
+        # ----------------------------------------------------------------- --
+        # Policy 41: Test several self service policies
+        # ----------------------------------------------------------------- --
+
+        parameters = {
+            "name": "self_01",
+            "scope": "selfservice",
+            "realm": "myDefRealm",
+            "action": "enrollSMS, enrollMOTP, assign",
+        }
+        response = self.make_system_request(
+            action="setPolicy", params=parameters, auth_user="superadmin"
+        )
+
+        assert response.json["result"]["status"], response
+
+        parameters = {
+            "name": "self_02",
+            "scope": "selfservice",
+            "realm": "myOtherRealm",
+            "action": "enrollMOTP, disable, resync, setOTPPIN, setMOTPPIN",
+        }
+        response = self.make_system_request(
+            action="setPolicy", params=parameters, auth_user="superadmin"
+        )
+
+        assert response.json["result"]["status"], response
+
+        parameters = {
+            "name": "self_03",
+            "scope": "selfservice",
+            "realm": "myMixRealm",
+            "action": "enrollHMAC",
+        }
+        response = self.make_system_request(
+            action="setPolicy", params=parameters, auth_user="superadmin"
+        )
+
+        assert response.json["result"]["status"], response
+
+        # ----------------------------------------------------------------- --
+        # Policy 420: test enrolling of tokens in the selfservice portal
+        # ----------------------------------------------------------------- --
+
+        parameters = {
+            "type": "motp",
+            "serial": "self001",
+            "otpkey": "1234123412341234",
+            "otppin": "1234",
+        }
+        auth_user = ("horst@myDefRealm", "test123")
+        response = self.make_userservice_request(
+            action="enroll", params=parameters, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+
+        parameters = {
+            "type": "motp",
+            "serial": "self002",
+            "otpkey": "1234123412341234",
+            "otppin": "1234",
+            "pin": "",
+        }
+        auth_user = ("postgres@myOtherRealm", "test123")
+        response = self.make_userservice_request(
+            action="enroll", params=parameters, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+
+        # ----------------------------------------------------------------- --
+        # Users in myMixRealm are not allowed to init a token
+        # ----------------------------------------------------------------- --
+
+        parameters = {
+            "type": "motp",
+            "serial": "self003",
+            "otpkey": "1234123412341234",
+            "otppin": "1234",
+        }
+        auth_user = ("horst@myMixRealm", "test123")
+        response = self.make_userservice_request(
+            action="enroll", params=parameters, auth_user=auth_user
+        )
+
+        assert not response.json["result"]["status"], response
+
+    @pytest.fixture
+    def userlist_admins(self, realms_and_resolver, admin_roles):
+        """
+        Policy 501: check the userlisting for admins. Set up the policies
+        """
+
+        parameters = {
+            "name": "501_user1",
+            "scope": "admin",
+            "realm": "MyDefRealm",
+            "user": "501_admin_def",
+            "action": "userlist",
+        }
+        auth_user = "superadmin"
+        response = self.make_system_request(
+            action="setPolicy", params=parameters, auth_user=auth_user
+        )
+
+        pkey = "setPolicy {}".format(parameters.get("name"))
+        values = set(response.json["result"]["value"][pkey].values())
+        assert False not in values, response
+
+        parameters = {
+            "name": "501_user2",
+            "scope": "admin",
+            "realm": "MyOtherRealm",
+            "user": "501_admin_other",
+            "action": "userlist",
+        }
+        auth_user = "superadmin"
+        response = self.make_system_request(
+            action="setPolicy", params=parameters, auth_user=auth_user
+        )
+
+        pkey = "setPolicy {}".format(parameters.get("name"))
+        values = set(response.json["result"]["value"][pkey].values())
+        assert False not in values, response
+
+    @pytest.fixture
+    def otppin_contents(self, realms_and_resolver, admin_roles, enroll_tokens):
+        """
+        Policy 605: testing contents of pin: set policy contents=c
+        """
+        parameters = {
+            "name": "self_pin02",
+            "scope": "selfservice",
+            "realm": "myDefRealm",
+            "action": "otp_pin_contents=c",
+        }
+        auth_user = "superadmin"
+        response = self.make_system_request(
+            action="setPolicy", params=parameters, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+
+        """
+        Policy 606: testing contents of pin: wrong pin
+        """
+        # PIN wrong
+        parameters = {"serial": "test_token_004", "userpin": "123456"}
+        auth_user = ("root@myDefRealm", "test123")
+        response = self.make_userservice_request(
+            action="setpin", params=parameters, auth_user=auth_user
+        )
+
+        assert not response.json["result"]["status"], response
+
+    @pytest.fixture
+    def otppin_policies(self, realms_and_resolver, admin_roles, enroll_tokens):
+        """
+        Policy 601: set policy to allow setting OTP PIN
+        """
+        parameters = {
+            "name": "self_01",
+            "scope": "selfservice",
+            "realm": "myDefRealm",
+            "action": "setOTPPIN",
+        }
+        auth_user = "superadmin"
+        response = self.make_system_request(
+            action="setPolicy", params=parameters, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+
+        parameters = {
+            "name": "self_pin01",
+            "scope": "selfservice",
+            "realm": "myDefRealm",
+            "action": "otp_pin_maxlength=8, otp_pin_minlength=4 ",
+        }
+        auth_user = "superadmin"
+        response = self.make_system_request(
+            action="setPolicy", params=parameters, auth_user=auth_user
+        )
+
+        assert response.json["result"]["status"], response
+
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
     def test_06setPolicy_System(self):
         """
@@ -373,83 +640,6 @@ class TestPolicies(TestPoliciesBase):
         )
 
         assert not response.json["result"]["status"], response
-
-    @pytest.fixture
-    @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
-    def enroll_tokens(self):
-        """
-        Policy 202: Init tokens in different with different admins
-                    "admin_init" is allowed to do so, "admin_reset" not.
-        """
-
-        parameters = {
-            "serial": "test_token_001",
-            "type": "spass",
-        }
-        response = self.make_admin_request(
-            action="init", params=parameters, auth_user="admin_init"
-        )
-
-        assert response.json["result"]["status"], response
-
-        parameters = {
-            "serial": "test_token_002",
-            "type": "spass",
-            "otpkey": "geheim",
-        }
-        response = self.make_admin_request(
-            action="init", params=parameters, auth_user="admin_reset"
-        )
-
-        assert not response.json["result"]["status"], response
-
-        parameters = {
-            "serial": "test_token_003",
-            "type": "spass",
-            "otpkey": "geheim",
-        }
-        response = self.make_admin_request(
-            action="init", params=parameters, auth_user="admin_init"
-        )
-
-        assert response.json["result"]["status"], response
-
-        parameters = {
-            "serial": "test_token_004",
-            "user": "root@myDefRealm",
-            "otpkey": "1234123412341234",
-            "otppin": "1234",
-        }
-        auth_user = "superadmin"
-        response = self.make_admin_request(
-            action="init", params=parameters, auth_user=auth_user
-        )
-
-        assert response.json["result"]["status"], response
-
-        parameters = {
-            "serial": "test_token_motp",
-            "otpkey": "1234123412341234",
-            "otppin": "m",
-            "type": "mOTP",
-        }
-        response = self.make_admin_request(
-            action="init", params=parameters, auth_user="admin_init"
-        )
-
-        assert response.json["result"]["status"], response
-
-        params = {
-            "serial": "test_token_ocra",
-            "user": "horst",
-            "type": "ocra2",
-            "sharedsecret": "1",
-            "genkey": "1",
-            "ocrasuite": "OCRA-1:HOTP-SHA256-8:C-QN08",
-        }
-
-        response = self.make_admin_request("init", params, auth_user="admin_init")
-        assert "false" not in response
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles", "enroll_tokens")
     def test_203_enable_disbale(self):
@@ -962,99 +1152,6 @@ class TestPolicies(TestPoliciesBase):
 
         msg = "No key 'license' in the upload request"
         assert msg in response.json["result"]["error"]["message"], response
-
-    @pytest.fixture
-    @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
-    def selfservice_policies(self):
-        """Define a set of selfservice policies."""
-
-        # ----------------------------------------------------------------- --
-        # Policy 41: Test several self service policies
-        # ----------------------------------------------------------------- --
-
-        parameters = {
-            "name": "self_01",
-            "scope": "selfservice",
-            "realm": "myDefRealm",
-            "action": "enrollSMS, enrollMOTP, assign",
-        }
-        response = self.make_system_request(
-            action="setPolicy", params=parameters, auth_user="superadmin"
-        )
-
-        assert response.json["result"]["status"], response
-
-        parameters = {
-            "name": "self_02",
-            "scope": "selfservice",
-            "realm": "myOtherRealm",
-            "action": "enrollMOTP, disable, resync, setOTPPIN, setMOTPPIN",
-        }
-        response = self.make_system_request(
-            action="setPolicy", params=parameters, auth_user="superadmin"
-        )
-
-        assert response.json["result"]["status"], response
-
-        parameters = {
-            "name": "self_03",
-            "scope": "selfservice",
-            "realm": "myMixRealm",
-            "action": "enrollHMAC",
-        }
-        response = self.make_system_request(
-            action="setPolicy", params=parameters, auth_user="superadmin"
-        )
-
-        assert response.json["result"]["status"], response
-
-        # ----------------------------------------------------------------- --
-        # Policy 420: test enrolling of tokens in the selfservice portal
-        # ----------------------------------------------------------------- --
-
-        parameters = {
-            "type": "motp",
-            "serial": "self001",
-            "otpkey": "1234123412341234",
-            "otppin": "1234",
-        }
-        auth_user = ("horst@myDefRealm", "test123")
-        response = self.make_userservice_request(
-            action="enroll", params=parameters, auth_user=auth_user
-        )
-
-        assert response.json["result"]["status"], response
-
-        parameters = {
-            "type": "motp",
-            "serial": "self002",
-            "otpkey": "1234123412341234",
-            "otppin": "1234",
-            "pin": "",
-        }
-        auth_user = ("postgres@myOtherRealm", "test123")
-        response = self.make_userservice_request(
-            action="enroll", params=parameters, auth_user=auth_user
-        )
-
-        assert response.json["result"]["status"], response
-
-        # ----------------------------------------------------------------- --
-        # Users in myMixRealm are not allowed to init a token
-        # ----------------------------------------------------------------- --
-
-        parameters = {
-            "type": "motp",
-            "serial": "self003",
-            "otpkey": "1234123412341234",
-            "otppin": "1234",
-        }
-        auth_user = ("horst@myMixRealm", "test123")
-        response = self.make_userservice_request(
-            action="enroll", params=parameters, auth_user=auth_user
-        )
-
-        assert not response.json["result"]["status"], response
 
     # ----------------------------------------------------------------- --
     # Check the self services
@@ -2474,45 +2571,6 @@ class TestPolicies(TestPoliciesBase):
 
         assert response.json["result"]["status"], response
 
-    @pytest.fixture
-    @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
-    def userlist_admins(self):
-        """
-        Policy 501: check the userlisting for admins. Set up the policies
-        """
-
-        parameters = {
-            "name": "501_user1",
-            "scope": "admin",
-            "realm": "MyDefRealm",
-            "user": "501_admin_def",
-            "action": "userlist",
-        }
-        auth_user = "superadmin"
-        response = self.make_system_request(
-            action="setPolicy", params=parameters, auth_user=auth_user
-        )
-
-        pkey = "setPolicy {}".format(parameters.get("name"))
-        values = set(response.json["result"]["value"][pkey].values())
-        assert False not in values, response
-
-        parameters = {
-            "name": "501_user2",
-            "scope": "admin",
-            "realm": "MyOtherRealm",
-            "user": "501_admin_other",
-            "action": "userlist",
-        }
-        auth_user = "superadmin"
-        response = self.make_system_request(
-            action="setPolicy", params=parameters, auth_user=auth_user
-        )
-
-        pkey = "setPolicy {}".format(parameters.get("name"))
-        values = set(response.json["result"]["value"][pkey].values())
-        assert False not in values, response
-
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles", "userlist_admins")
     def test_502_check_userlist(self):
         """
@@ -2824,38 +2882,6 @@ class TestPolicies(TestPoliciesBase):
 
             assert response.json["result"]["status"], response
 
-    @pytest.fixture
-    @pytest.mark.usefixtures("realms_and_resolver", "admin_roles", "enroll_tokens")
-    def otppin_policies(self):
-        """
-        Policy 601: set policy to allow setting OTP PIN
-        """
-        parameters = {
-            "name": "self_01",
-            "scope": "selfservice",
-            "realm": "myDefRealm",
-            "action": "setOTPPIN",
-        }
-        auth_user = "superadmin"
-        response = self.make_system_request(
-            action="setPolicy", params=parameters, auth_user=auth_user
-        )
-
-        assert response.json["result"]["status"], response
-
-        parameters = {
-            "name": "self_pin01",
-            "scope": "selfservice",
-            "realm": "myDefRealm",
-            "action": "otp_pin_maxlength=8, otp_pin_minlength=4 ",
-        }
-        auth_user = "superadmin"
-        response = self.make_system_request(
-            action="setPolicy", params=parameters, auth_user=auth_user
-        )
-
-        assert response.json["result"]["status"], response
-
     @pytest.mark.usefixtures(
         "realms_and_resolver",
         "admin_roles",
@@ -2892,37 +2918,6 @@ class TestPolicies(TestPoliciesBase):
         )
 
         assert response.json["result"]["status"], response
-
-    @pytest.fixture
-    @pytest.mark.usefixtures("realms_and_resolver", "admin_roles", "enroll_tokens")
-    def otppin_contents(self):
-        """
-        Policy 605: testing contents of pin: set policy contents=c
-        """
-        parameters = {
-            "name": "self_pin02",
-            "scope": "selfservice",
-            "realm": "myDefRealm",
-            "action": "otp_pin_contents=c",
-        }
-        auth_user = "superadmin"
-        response = self.make_system_request(
-            action="setPolicy", params=parameters, auth_user=auth_user
-        )
-
-        assert response.json["result"]["status"], response
-
-        """
-        Policy 606: testing contents of pin: wrong pin
-        """
-        # PIN wrong
-        parameters = {"serial": "test_token_004", "userpin": "123456"}
-        auth_user = ("root@myDefRealm", "test123")
-        response = self.make_userservice_request(
-            action="setpin", params=parameters, auth_user=auth_user
-        )
-
-        assert not response.json["result"]["status"], response
 
     @pytest.mark.usefixtures(
         "realms_and_resolver",

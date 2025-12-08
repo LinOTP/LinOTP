@@ -201,32 +201,7 @@ class PushTokenClass(TokenClass, StatefulTokenMixin):
         }
 
         info["config"] = config_dict
-
-        ss_enroll = {}
-        ss_enroll["title"] = {
-            "html": "pushtoken/pushtoken.mako",
-            "scope": "selfservice.title.enroll",
-        }
-        ss_enroll["page"] = {
-            "html": "pushtoken/pushtoken.mako",
-            "scope": "selfservice.enroll",
-        }
-
-        ss_activate = {}
-        ss_activate["title"] = {
-            "html": "pushtoken/pushtoken.mako",
-            "scope": "selfservice.title.activate",
-        }
-        ss_activate["page"] = {
-            "html": "pushtoken/pushtoken.mako",
-            "scope": "selfservice.activate",
-        }
-
-        selfservice_dict = {}
-        selfservice_dict["enroll"] = ss_enroll
-        selfservice_dict["activate_PushToken"] = ss_activate
-
-        info["selfservice"] = selfservice_dict
+        info["selfservice"] = {"enroll": {}}  # keep for dynamic policy definitions
 
         # ------------------------------------------------------------------- --
 

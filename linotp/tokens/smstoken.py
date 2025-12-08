@@ -272,6 +272,9 @@ class SmsTokenClass(HmacTokenClass):
             "type": "sms",
             "title": _("SMS Token"),
             "description": _("sms challenge-response token - hmac event based"),
+            "selfservice": {
+                "enroll": {}  # keep for dynamic policy definitions
+            },
             "init": {
                 "title": {
                     "html": "smstoken.mako",
@@ -290,18 +293,6 @@ class SmsTokenClass(HmacTokenClass):
                 "page": {
                     "html": "smstoken.mako",
                     "scope": "config",
-                },
-            },
-            "selfservice": {
-                "enroll": {
-                    "title": {
-                        "html": "smstoken.mako",
-                        "scope": "selfservice.title.enroll",
-                    },
-                    "page": {
-                        "html": "smstoken.mako",
-                        "scope": "selfservice.enroll",
-                    },
                 },
             },
             "policy": {

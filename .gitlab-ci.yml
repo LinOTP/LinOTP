@@ -83,11 +83,11 @@ build-docker:
       "
 
       # Build all images with the same labels
-      docker build -t "$DOCKER_IMAGE_TAG" $LABEL_ARGS -f docker/Dockerfile.linotp .
+      docker buildx build --provenance false -t "$DOCKER_IMAGE_TAG" $LABEL_ARGS -f docker/Dockerfile.linotp .
       docker push "$DOCKER_IMAGE_TAG"
-      docker build -t "$DOCKER_TEST_ENV_IMAGE_TAG" $LABEL_ARGS --target testenv -f docker/Dockerfile.linotp .
+      docker buildx build --provenance false -t "$DOCKER_TEST_ENV_IMAGE_TAG" $LABEL_ARGS --target testenv -f docker/Dockerfile.linotp .
       docker push "$DOCKER_TEST_ENV_IMAGE_TAG"
-      docker build -t "$DOCKER_TEST_IMG_IMAGE_TAG" $LABEL_ARGS --target testimg -f docker/Dockerfile.linotp .
+      docker buildx build --provenance false -t "$DOCKER_TEST_IMG_IMAGE_TAG" $LABEL_ARGS --target testimg -f docker/Dockerfile.linotp .
       docker push "$DOCKER_TEST_IMG_IMAGE_TAG"
 
 container_scanning:
@@ -577,7 +577,6 @@ apidocs:
     paths:
       - api-docs
     expire_in: 2 weeks
-
 # Upload container image
 
 # upload-container-image:

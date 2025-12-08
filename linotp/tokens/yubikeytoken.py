@@ -79,9 +79,9 @@ class YubikeyTokenClass(TokenClass):
             "type": "yubikey",
             "title": "YubiKey in Yubico Mode",
             "description": ("Yubico token to run the AES OTP mode."),
+            "selfservice": {},  # keep for dynamic policy definitions
             "init": {},
             "config": {},
-            "selfservice": {},
             "policy": {},
         }
 

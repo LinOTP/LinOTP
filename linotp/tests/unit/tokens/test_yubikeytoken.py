@@ -299,10 +299,10 @@ class YubikeyTokenClassTestCase(unittest.TestCase):
         """
 
         full_class_info = {
-            "selfservice": {},
-            "description": "Yubico token to run the AES OTP mode.",
-            "title": "YubiKey in Yubico Mode",
             "type": "yubikey",
+            "title": "YubiKey in Yubico Mode",
+            "description": "Yubico token to run the AES OTP mode.",
+            "selfservice": {},
             "init": {},
             "policy": {},
             "config": {},

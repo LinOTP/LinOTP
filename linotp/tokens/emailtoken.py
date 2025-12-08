@@ -138,6 +138,9 @@ class EmailTokenClass(HmacTokenClass):
             "type": "email",
             "title": "E-mail Token",
             "description": "An e-mail token.",
+            "selfservice": {
+                "enroll": {}  # keep for dynamic policy definitions
+            },
             "init": {
                 "page": {
                     "html": "emailtoken.mako",
@@ -156,18 +159,6 @@ class EmailTokenClass(HmacTokenClass):
                 "page": {
                     "html": "emailtoken.mako",
                     "scope": "config",
-                },
-            },
-            "selfservice": {
-                "enroll": {
-                    "page": {
-                        "html": "emailtoken.mako",
-                        "scope": "selfservice.enroll",
-                    },
-                    "title": {
-                        "html": "emailtoken.mako",
-                        "scope": "selfservice.title.enroll",
-                    },
                 },
             },
             "policy": {

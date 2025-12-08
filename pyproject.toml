@@ -42,7 +42,7 @@ dependencies = [
   "passlib",
   "pysodium",
   "python-ldap",
-  "bcrypt",
+  "bcrypt<5.0",         # Pinned due to `Passing hashpw a password longer than 72 bytes now raises a ValueError`
   "cryptography",
   "click<8.2",          # Click is pinned, because 8.2 is not compatible with Flask 2.1.x.
   "urllib3>=2.5.0",     # Lower bound due to CVEs (is pinned to 2.4.0 in selenium==4.33.0)
@@ -154,6 +154,7 @@ lint.select = [
 lint.ignore = [
   "E501",    # line too long
   "RUF012",  # ignore `mutable class default` for now
+  "RUF059",  # ignore `Unpacked variable is never used` for now
   "PLW0602", # Using global for {name} but no assignment is done
   "PLW0603", # Using the global statement to update {name} is discouraged
   "PLR0911", # Too many return statements ({returns} > {max_returns})

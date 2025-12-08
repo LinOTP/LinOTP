@@ -32,8 +32,6 @@ import logging
 import secrets
 
 # for the temporary rendering context, we use 'c'
-from linotp.flap import render_mako as render
-from linotp.flap import tmpl_context as c
 from linotp.lib.challenges import Challenges
 from linotp.lib.config import getFromConfig
 from linotp.lib.context import request_context
@@ -52,7 +50,6 @@ from linotp.lib.type_utils import DEFAULT_TIMEFORMAT as TIMEFORMAT
 from linotp.lib.type_utils import parse_duration
 from linotp.lib.user import User, get_userinfo, getRealmBox
 from linotp.lib.util import get_copyright_info, get_request_param, get_version
-from linotp.tokens import tokenclass_registry
 
 log = logging.getLogger(__name__)
 
@@ -380,95 +377,6 @@ def get_context(config, user: User, client: str):
 
 
 ##############################################################################
-
-
-def add_dynamic_selfservice_enrollment(config, actions):
-    """
-    add_dynamic_actions - load the html of the dynamic tokens
-        according to the policy definition
-
-    :param actions: the allowd policy actions for the current scope
-    :type  actions: array of actions names
-
-    :return: hash of {tokentype : html for tab}
-    """
-
-    dynanmic_actions = {}
-
-    def _add_to_dynanmic_actions(action: str):
-        service = selfservice.get(action)
-        tab = service.get("title")
-        c.scope = tab.get("scope")
-        t_file = tab.get("html")
-        t_html = render(t_file).decode().strip()
-        e_name = f"{tok}.selfservice.{action}"
-        dynanmic_actions[e_name] = t_html
-
-    for tclass_object in set(tokenclass_registry.values()):
-        if hasattr(tclass_object, "getClassInfo"):
-            tok = tclass_object.getClassType()
-            try:
-                selfservice = tclass_object.getClassInfo("selfservice", ret=None)
-                # # check if we have a policy in the token definition for the enroll
-                if (
-                    selfservice is not None
-                    and "enroll" in selfservice
-                    and "enroll" + tok.upper() in actions
-                ):
-                    _add_to_dynanmic_actions("enroll")
-
-                # # check if there are other selfserive policy actions
-                policy = tclass_object.getClassInfo("policy", ret=None)
-                if policy is not None and "selfservice" in policy:
-                    selfserv_policies = list(policy.get("selfservice").keys())
-                    for action in actions:
-                        if action in selfserv_policies:
-                            # # now lookup, if there is an additional section
-                            # # in the selfservice to render
-                            _add_to_dynanmic_actions(action)
-
-            except Exception as exx:
-                log.info(
-                    "[_add_dynamic_actions] no policy for tokentype %r found (%r)",
-                    tok,
-                    exx,
-                )
-
-    return dynanmic_actions
-
-
-def add_dynamic_selfservice_policies(config, actions):
-    """
-    add_dynamic_actions - load the html of the dynamic tokens
-        according to the policy definition
-
-    :param actions: the allowd policy actions for the current scope
-    :type  actions: array of actions names
-
-    :return: hash of {tokentype : html for tab}
-    """
-
-    dynamic_policies = set()
-
-    defined_policies = {pol.split("=")[0] for pol in actions if "=" in pol}
-
-    for tok in tokenclass_registry:
-        tclt = tokenclass_registry.get(tok)
-        if hasattr(tclt, "getClassInfo"):
-            # # check if we have a policy in the token definition
-            try:
-                policy = tclt.getClassInfo("policy", ret=None)
-                if policy is not None and "selfservice" in policy:
-                    local_policies = policy["selfservice"].keys()
-                    dynamic_policies.update(local_policies)
-            except Exception as exx:
-                log.info(
-                    "[_add_dynamic_actions] no policy for tokentype %r found (%r)",
-                    tok,
-                    exx,
-                )
-
-    return list(dynamic_policies - defined_policies)
 
 
 def add_local_policies():
