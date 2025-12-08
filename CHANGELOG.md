@@ -41,6 +41,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - CVE-2023-0286, CVE-2023-50782, CVE-2023-23931, CVE-2023-49083, CVE-2024-0727, GHSA-5cpq-8wj7-hf2v, GHSA-jm77-qphf-c4w8, GHSA-v8gr-m533-ghj9
 - Remove `setuptools` from container to address multiple known vulnerabilities:
   - CVE-2024-6345, CVE-2025-47273
+- Update `urllib3` to version 2.6.0 to address multiple known vulnerabilities:
+  - CVE-2025-66418, CVE-2025-66471
 - Update SQLAlchemy library to version 2.x
 
 ### Removed
