@@ -42,7 +42,7 @@ On macOS, install the following dependencies to run LinOTP natively
 and build LinOTP via containers:
 
 ```terminal
-brew install libsodium coreutils
+brew install libsodium coreutils mysql-client
 ```
 
 LinOTP can use a variety of SQL databases but MySQL/MariaDB is most
@@ -88,7 +88,7 @@ uv sync --all-groups --upgrade
 For a quickstart using the default configuration, run:
 
 ```terminal
-mkdir -p linotp/cache linotp/data linotp/logs
+mkdir -p linotp/cache linotp/logs
 linotp init database
 linotp init audit-keys
 linotp init enc-key
