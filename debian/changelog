@@ -1,4 +1,4 @@
-linotp (3.4.5~dev0-1) buster; urgency=medium
+linotp (3.4.5~rc0-1) buster; urgency=medium
 
   Fixes:
   * If `setOTPPIN` and `otp_pin_random` policies are set during selfservice enroll, the pin will no longer be randomized
