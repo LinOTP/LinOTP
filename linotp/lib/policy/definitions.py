@@ -118,13 +118,9 @@ POLICY_DEFINTIONS = {
         "setOTPPIN": {"type": "bool"},
         "setDescription": {"type": "bool"},
         "setMOTPPIN": {"type": "bool"},
-        "getotp": {"type": "bool"},
         "otp_pin_maxlength": {"type": "int", "value": list(range(100))},
         "otp_pin_minlength": {"type": "int", "value": list(range(100))},
         "otp_pin_contents": {"type": "str"},
-        "max_count_dpw": {"type": "int"},
-        "max_count_hotp": {"type": "int"},
-        "max_count_totp": {"type": "int"},
         "history": {
             "type": "bool",
             "desc": "Allow the user to view his own token history",

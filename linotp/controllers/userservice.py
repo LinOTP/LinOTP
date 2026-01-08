@@ -63,7 +63,6 @@ from linotp.lib.audit.base import get_token_num_info
 from linotp.lib.audit.base import search as audit_search
 from linotp.lib.auth.validate import ValidationHandler
 from linotp.lib.challenges import Challenges
-from linotp.lib.config import getFromConfig
 from linotp.lib.context import request_context
 from linotp.lib.error import ParameterError
 from linotp.lib.policy import (
@@ -88,7 +87,6 @@ from linotp.lib.resolver import getResolverObject
 from linotp.lib.support import LicenseException
 from linotp.lib.token import (
     TokenHandler,
-    get_multi_otp,
     get_token,
     get_token_owner,
     get_tokens,
@@ -98,7 +96,6 @@ from linotp.lib.token import (
     setPin,
     setPinUser,
 )
-from linotp.lib.type_utils import boolean
 from linotp.lib.user import (
     User,
     get_userinfo,
@@ -2503,77 +2500,6 @@ class UserserviceController(BaseController):
             log.error("[userinit] token initialization failed! %r", e)
             db.session.rollback()
             return sendError(e, 1)
-
-    @deprecated_methods(["POST"])
-    def getmultiotp(self):
-        """
-        Using this function the user may receive OTP values for his own tokens.
-
-        :param count: number of otp values to return
-
-        :return:
-            a json result with a boolean status and request result
-
-        :raises Exception:
-            if an error occurs an exception is serialized and returned
-
-        """
-
-        getotp_active = boolean(getFromConfig("linotpGetotp.active", False))
-        if not getotp_active:
-            return sendError(_("getotp is not activated."), 0)
-
-        param = self.request_params
-        ret = {}
-
-        try:
-            try:
-                serial = param["serial"]
-                count = int(param["count"])
-            except KeyError as exx:
-                msg = f"Missing parameter: '{exx}'"
-                raise ParameterError(msg) from exx
-
-            curTime = param.get("curTime", None)
-
-            th = TokenHandler()
-            if th.isTokenOwner(serial, g.authUser) is False:
-                error = _("The serial %s does not belong to user %s@%s") % (
-                    serial,
-                    g.authUser.login,
-                    g.authUser.realm,
-                )
-                log.error(error)
-                return sendError(error, 1)
-
-            max_count = checkPolicyPre("selfservice", "max_count", param, g.authUser)
-            log.debug("checkpolicypre returned %s", max_count)
-
-            count = min(count, max_count)
-
-            log.debug("[usergetmultiotp] retrieving OTP value for token %s", serial)
-            ret = get_multi_otp(serial, count=int(count), curTime=curTime)
-            if ret["result"] is False and max_count == -1:
-                ret["error"] = "{} - {}".format(
-                    ret["error"],
-                    _("see policy definition."),
-                )
-
-            ret["serial"] = serial
-            g.audit["success"] = True
-
-            db.session.commit()
-            return sendResult(ret, 0)
-
-        except PolicyException as pol_ex:
-            log.error("[usergetmultiotp] policy failed: %r", pol_ex)
-            db.session.rollback()
-            return sendError(pol_ex, 1)
-
-        except Exception as e:
-            log.error("[usergetmultiotp] gettoken/getmultiotp failed: %r", e)
-            db.session.rollback()
-            return sendError(_("selfservice/usergetmultiotp failed: %r") % e, 0)
 
     @deprecated_methods(["POST"])
     def history(self):
