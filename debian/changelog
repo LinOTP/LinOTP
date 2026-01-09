@@ -1,3 +1,9 @@
+linotp (3.4.5~rc2-1) buster; urgency=medium
+
+  (temporary entry between RCs) fix image info not being shown
+
+ -- LinOTP Packaging <packaging@linotp.de>  Fri, 09 Jan 2029 12:34:56:00 +0200
+
 linotp (3.4.5~rc1-1) buster; urgency=medium
 
   (temporary entry between RCs) fix IMAGE_VERSION for release candidates
