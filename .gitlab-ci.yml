@@ -104,16 +104,16 @@ build-and-upload-docker:
     # removing dev/rc suffixes and padding with .0 as needed.
     - IMAGE_VERSION="$(sed -Ene '/__version__ =/{s/^.*= "(.*)"/\1/;s/\.dev[0-9]+//;s/rc[0-9]+//;s/^([0-9]+)$/\1.0.0/;s/^([0-9]+\.[0-9]+)$/\1.0/;p}' linotp/__init__.py)"
     - DATE=$(date +"%Y%m%d")
-    - docker build
+    - docker buildx build --provenance false
       --label de.linotp.commit-ref="$CI_COMMIT_REF_NAME"
       --label de.linotp.commit-hash="$CI_COMMIT_SHORT_SHA"
       --label de.linotp.image-tag="$IMAGE_VERSION-$DATE"
       --label de.linotp.version="$IMAGE_VERSION"
       -t "$DOCKER_IMAGE_TAG" -f docker/Dockerfile.linotp .
     - docker push "$DOCKER_IMAGE_TAG"
-    - docker build -t "$DOCKER_TEST_ENV_IMAGE_TAG" --build-arg BASE_IMAGE="$DOCKER_IMAGE_TAG" -f docker/Dockerfile.linotp-testenv .
+    - docker buildx build --provenance false -t "$DOCKER_TEST_ENV_IMAGE_TAG" --build-arg BASE_IMAGE="$DOCKER_IMAGE_TAG" -f docker/Dockerfile.linotp-testenv .
     - docker push "$DOCKER_TEST_ENV_IMAGE_TAG"
-    - docker build -t "$DOCKER_TEST_IMG_IMAGE_TAG" --build-arg BASE_IMAGE="$DOCKER_IMAGE_TAG" -f docker/Dockerfile.linotp-testimg .
+    - docker buildx build --provenance false -t "$DOCKER_TEST_IMG_IMAGE_TAG" --build-arg BASE_IMAGE="$DOCKER_IMAGE_TAG" -f docker/Dockerfile.linotp-testimg .
     - docker push "$DOCKER_TEST_IMG_IMAGE_TAG"
 
 container_scanning:
