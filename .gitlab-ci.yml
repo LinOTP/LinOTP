@@ -4,6 +4,8 @@ include:
   - template: Jobs/Secret-Detection.gitlab-ci.yml
   - project: "dev/ext-project-packaging/ci-includes"
     file: "gitbox-deb-ci.yml"
+  - project: "dev/ext-project-packaging/ci-includes"
+    file: "linotp-container-ci-upload.yml"
 
 variables:
   LANG: C.UTF-8
@@ -29,6 +31,10 @@ variables:
   DOCKER_TEST_IMG_IMAGE_TAG: $IMAGE_PREFIX_CI/$CI_COMMIT_REF_SLUG-testimg:$CI_PIPELINE_ID
   DOCKER_TEST_ENV_IMAGE_TAG: $IMAGE_PREFIX_CI/$CI_COMMIT_REF_SLUG-testenv:$CI_PIPELINE_ID
   DOCKER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE/linotp
+  # Name of the image in the registries:
+  REGISTRY_IMAGE_NAME: "linotp/linotp"
+  # The upload stage needs this as `BUILD_IMAGE_TAG`
+  BUILD_IMAGE_TAG: "$DOCKER_IMAGE_TAG"
   # Variables for security scan evaluation
   SECRET_DETECTION_REPORT_FILE: gl-secret-detection-report.json
   SAST_DETECTION_REPORT_FILE: gl-sast-report.json
@@ -55,9 +61,12 @@ stages:
   - lint
   - coverage-report
   - apidocs
-  - upload-image
+  - upload
   - upload-debian-packages
-  - iso
+
+# Docker registry access
+.docker-registry: &docker-registry
+  docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
 build-and-upload-pypi-image-testenv:
   stage: pypi-image
@@ -763,40 +772,3 @@ apidocs:
 upload-debs:
   stage: upload-debian-packages
   extends: .upload-debs
-
-# Upload container image
-
-upload-container-image:
-  stage: upload-image
-  extends: .upload-container-image
-
-# Build and upload are being handled by dev/linotp/sva2/build-isos
-.build-and-upload-iso:
-  stage: iso
-  trigger:
-    project: dev/linotp/sva2/build-isos
-    strategy: depend
-
-build-and-upload-iso:
-  extends: .build-and-upload-iso
-  variables:
-    UPLOAD: "yes"
-  rules:
-    - if: '$CI_COMMIT_TAG =~ /^dev\//' # Release candidate for QA
-      variables:
-        BUILD: golden
-    - if: "$CI_COMMIT_TAG =~ /^release/" # Release version
-      variables:
-        BUILD: release
-
-build-iso:
-  extends: .build-and-upload-iso
-  when: manual
-  allow_failure: true
-  variables:
-    DEB_ARTIFACTS_URL: $DEB_ARTIFACTS_URL
-    BUILD: commit
-    UPLOAD: "no"
-  rules:
-    - if: $CI_PIPELINE_SOURCE == 'schedule' # Nightly/Scheduled pipeline
-    - if: $CI_MERGE_REQUEST_REF_PATH # Commit on branch
