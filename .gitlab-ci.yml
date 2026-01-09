@@ -63,7 +63,6 @@ stages:
   - apidocs
   - upload
   - upload-debian-packages
-  - iso
 
 # Docker registry access
 .docker-registry: &docker-registry
@@ -773,34 +772,3 @@ apidocs:
 upload-debs:
   stage: upload-debian-packages
   extends: .upload-debs
-
-# Build and upload are being handled by dev/linotp/sva2/build-isos
-.build-and-upload-iso:
-  stage: iso
-  trigger:
-    project: dev/linotp/sva2/build-isos
-    strategy: depend
-
-build-and-upload-iso:
-  extends: .build-and-upload-iso
-  variables:
-    UPLOAD: "yes"
-  rules:
-    - if: '$CI_COMMIT_TAG =~ /^dev\//' # Release candidate for QA
-      variables:
-        BUILD: golden
-    - if: "$CI_COMMIT_TAG =~ /^release/" # Release version
-      variables:
-        BUILD: release
-
-build-iso:
-  extends: .build-and-upload-iso
-  when: manual
-  allow_failure: true
-  variables:
-    DEB_ARTIFACTS_URL: $DEB_ARTIFACTS_URL
-    BUILD: commit
-    UPLOAD: "no"
-  rules:
-    - if: $CI_PIPELINE_SOURCE == 'schedule' # Nightly/Scheduled pipeline
-    - if: $CI_MERGE_REQUEST_REF_PATH # Commit on branch
