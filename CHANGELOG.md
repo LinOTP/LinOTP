@@ -47,9 +47,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Selfservice policies removed: `getotp`, `max_count_dpw`, `max_count_hotp`, `max_count_totp`
 - webprovisionGOOGLE and webprovisionGOOGLEtime policies are removed and migrated to enrollHMAC and enrollTOTP respectively
 - OATHTokenSupport config item is removed and "OATH webprovision" is no longer supported in legacy selfservice
 - `userservice/webprovision` endpoint is removed
+- `userservice/getmultiotp` endpoint is removed
 - Legacy selfservice user interface removed
 
 ### Deprecated
