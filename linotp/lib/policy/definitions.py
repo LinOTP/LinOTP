@@ -141,10 +141,6 @@ POLICY_DEFINTIONS = {
             "type": "bool",
             "desc": ("support mfa login if user has no token with password only"),
         },
-        "show_landing_page": {
-            "type": "bool",
-            "desc": "show selfservice landing page as first tab",
-        },
         "footer_text": {
             "type": "str",
             "desc": "Text to show on the selfservice page in the footer"
