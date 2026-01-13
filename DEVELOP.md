@@ -79,6 +79,12 @@ To install all dependencies (e.g. to run tests or build apidocs) run:
 uv sync --all-groups
 ```
 
+To upgrade all dependencies (e.g. to fix CVEs without breaking changes) run:
+
+```terminal
+uv sync --all-groups --upgrade
+```
+
 For a quickstart using the default configuration, run:
 
 ```terminal
