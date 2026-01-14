@@ -519,7 +519,7 @@ realm = realm1
 client = None
 user = maria
 time = None
-action = "max_count_hotp=10, enrollHMAC, getotp, enrollYUBICO, "
+action = " enrollHMAC, enrollYUBICO, "
 scope = selfservice
 [SMS]
 realm = realm1
@@ -533,7 +533,7 @@ realm = realm1
 client = None
 user = None
 time = None
-action = "enrollHMAC, max_count_hotp=5, getotp, assign, enrollSMS, enrollMOTP, setMOTPPIN, history"
+action = "enrollHMAC, assign, enrollSMS, enrollMOTP, setMOTPPIN, history"
 scope = selfservice
 [gettoken]
 realm = *

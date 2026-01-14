@@ -1373,7 +1373,6 @@ def _checkToolsPolicyPre(method, param=None, authUser=None, user=None):
 def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
     ret = {}
     controller = "selfservice"
-    client = _get_client()
 
     if not param:
         param = {}
@@ -1389,53 +1388,7 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
 
     # ---------------------------------------------------------------------- --
 
-    if method.startswith("max_count"):
-        ret = 0
-        serial = param.get("serial")
-        ttype = linotp.lib.token.getTokenType(serial).lower()
-        urealm = authUser.realm
-        pol_action = MAP_TYPE_GETOTP_ACTION.get(ttype, "")
-
-        if pol_action == "":
-            raise PolicyException(
-                _(
-                    "There is no policy selfservice/"
-                    "max_count definable for the token "
-                    "type %s."
-                )
-                % ttype
-            )
-
-        policies = get_client_policy(
-            client,
-            scope="selfservice",
-            action=pol_action,
-            realm=urealm,
-            user=authUser.login,
-            userObj=authUser,
-        )
-
-        log.debug("[max_count] got a policy: %r", policies)
-
-        if policies == {}:
-            raise PolicyException(
-                _(
-                    "There is no policy selfservice/"
-                    "max_count defined for the tokentype "
-                    "%s in realm %s."
-                )
-                % (ttype, urealm)
-            )
-
-        value = get_action_value(
-            policies, scope="selfservice", action=pol_action, default=-1
-        )
-
-        log.debug("[max_count] got all policies: %r: %r", policies, value)
-
-        ret = value
-
-    elif method == "usersetdescription":
+    if method == "usersetdescription":
         if not get_selfservice_actions(authUser, "setDescription"):
             log.warning(
                 "user %s@%s is not allowed to call this function!",
