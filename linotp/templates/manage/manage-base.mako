@@ -579,8 +579,8 @@
                               placeholder=
 '{
   "push_url": "https://<challenge-service>/v1/challenge",
-  "access_certificate": "/etc/linotp/challenge-service-client.pem",
-  "server_certificate": "/etc/linotp/challenge-service-ca.crt"
+  "access_certificate": "/data/challenge-service-client.pem",
+  "server_certificate": "/data/challenge-service-ca.crt"
 }'
                     ></textarea>
                 </td>
