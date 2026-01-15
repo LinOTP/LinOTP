@@ -44,7 +44,6 @@ from linotp.lib.policy.maxtoken import (
     get_maxtoken_for_user_by_type,
 )
 from linotp.lib.realm import getDefaultRealm, getRealms
-from linotp.lib.selfservice import get_imprint
 from linotp.lib.token import get_token_type_list, get_tokens
 from linotp.lib.type_utils import DEFAULT_TIMEFORMAT as TIMEFORMAT
 from linotp.lib.type_utils import parse_duration
@@ -340,7 +339,6 @@ def get_context(config, user: User, client: str):
     context = get_pre_context(client)
 
     context["user"] = get_userinfo(user)
-    context["imprint"] = get_imprint(user.realm)
     context["tokenArray"] = getTokenForUser(user)
 
     token_access = getFromConfig("linotp.token.last_access")
