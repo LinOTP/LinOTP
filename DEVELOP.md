@@ -126,8 +126,8 @@ overriding environment variables or specifying additional configuration files.
 
 To inspect the configuration of your LinOTP instance, run `linotp config show`,
 or `linotp config explain` if you need more information on the configuration
-entries. Both commands accept additional parameters, which you can look up in
-**linotp-config(1)**.
+entries. Both commands accept additional parameters, which you can look up by
+appending `--help`.
 
 ### Configuration presets
 
@@ -192,8 +192,7 @@ LinOTP distribution package for that distribution. These include:
   `app.root_path`, IOW the directory where LinOTP's `app.py` file is
   located. As mentioned above, the value of `ROOT_DIR` is prepended to
   the values of other configuration settings for files and directories
-  if these are relative path names. A distribution will set this to
-  something more useful such as `/etc/linotp`.
+  if these are relative path names.
 
 - `CACHE_DIR`: This directory is used for temporary storage of LinOTP
   data. It defaults to `ROOT_DIR/cache`, but in a distribution will
@@ -209,16 +208,6 @@ LinOTP distribution package for that distribution. These include:
   to a file (which is something LinOTP does by default). By default
   this is `ROOT_DIR/logs` but distribution packages will probably wish
   to use something like `/var/log/linotp`.
-
-If you're making a distribution package, don't edit LinOTP's
-`settings.py` file to adapt the values of these directories. Instead,
-make a new configuration file and put it in a reasonable place such as
-`/usr/share/linotp/linotp.cfg`. A suitable defaults file for Debian
-based distributions is available at `config/linotp.cfg`. The default
-configuration path can be set by placing a file with the name
-`linotp-cfg-default` in the same directory as the main `app.py`. The
-configuration path for Debian can be found in the file
-`config/linotp-cfg-default`.
 
 ## Run the LinOTP development server
 
