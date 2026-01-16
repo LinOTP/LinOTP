@@ -2646,10 +2646,6 @@ msgstr "Der Realm, für den die Richtlinie gelten soll"
 msgid "The resolver %s was successfully updated."
 msgstr "Der Resolver %s wurde erfolgreich geändert."
 
-#, python-format
-msgid "The serial %s does not belong to user %s@%s"
-msgstr "Die Seriennummer %s gehört nicht zu dem Benutzer %s@%s"
-
 msgid ""
 "The subject that will be send via email for an email token. Use <otp> and "
 "<serial> as parameters."
@@ -2751,19 +2747,6 @@ msgstr ""
 #, python-format
 msgid "There is no policy gettoken/max_count definable for the tokentype %r"
 msgstr "Es gibt keine Richtlinie 'gettoken/maxcount' für den Tokentyp %r"
-
-#, python-format
-msgid ""
-"There is no policy selfservice/max_count definable for the token type %s."
-msgstr "Es gibt keine Richtlinie selfservice/max_count für Tokentyp %s."
-
-#, python-format
-msgid ""
-"There is no policy selfservice/max_count defined for the tokentype %s in "
-"realm %s."
-msgstr ""
-"Es ist keine Policy selfservice/max_count definiert für Tokentyp %s im Realm "
-"%s."
 
 msgid "Therefor please enter two OTP values."
 msgstr "Hierzu geben Sie bitte zwei aufeinanderfolgende OTP-Werte ein."
@@ -3746,9 +3729,6 @@ msgstr ""
 "getTokenOwner: Der Benutzer  %(uid)s/%(resolver)s und der Token %(serial)s "
 "sind in mehreren Realms enthalten: %(realms)s!"
 
-msgid "getotp is not activated."
-msgstr "'getotp' ist nicht aktiv."
-
 # TODO
 msgid "hashlib"
 msgstr "Hash-Algorithmus"
@@ -3863,15 +3843,8 @@ msgstr "Sekunden"
 msgid "secure hash"
 msgstr "sicherer Hash"
 
-msgid "see policy definition."
-msgstr "siehe Richtliniendefinition."
-
 msgid "selected Token"
 msgstr "ausgewählter Token"
-
-#, python-format
-msgid "selfservice/usergetmultiotp failed: %r"
-msgstr "Fehler beim Zugriff auf selfservice/usergetmultiotp: %r"
 
 msgid "sending sms failed"
 msgstr "Das Senden der SMS war nicht erfolgreich"
@@ -4805,8 +4778,25 @@ msgstr "WebUI generiert"
 #~ msgid "The passwords do not match!"
 #~ msgstr "Die Passwörter sind nicht gleicht!"
 
+#, python-format
+#~ msgid "The serial %s does not belong to user %s@%s"
+#~ msgstr "Die Seriennummer %s gehört nicht zu dem Benutzer %s@%s"
+
 #~ msgid "There is an error in the realm name!"
 #~ msgstr "Fehler im Realmnamen!"
+
+#, python-format
+#~ msgid ""
+#~ "There is no policy selfservice/max_count definable for the token type %s."
+#~ msgstr "Es gibt keine Richtlinie selfservice/max_count für Tokentyp %s."
+
+#, python-format
+#~ msgid ""
+#~ "There is no policy selfservice/max_count defined for the tokentype %s in "
+#~ "realm %s."
+#~ msgstr ""
+#~ "Es ist keine Policy selfservice/max_count definiert für Tokentyp %s im "
+#~ "Realm %s."
 
 #~ msgid "This is the location of your index.html file on the LinOTP server."
 #~ msgstr ""
@@ -5159,6 +5149,9 @@ msgstr "WebUI generiert"
 #~ msgid "get OTP values from Token"
 #~ msgstr "OTP-Werte vom Token anfragen"
 
+#~ msgid "getotp is not activated."
+#~ msgstr "'getotp' ist nicht aktiv."
+
 #~ msgid "in loginname"
 #~ msgstr "in Loginname"
 
@@ -5259,8 +5252,15 @@ msgstr "WebUI generiert"
 #~ msgid "scope"
 #~ msgstr "Bereich"
 
+#~ msgid "see policy definition."
+#~ msgstr "siehe Richtliniendefinition."
+
 #~ msgid "self enrolled"
 #~ msgstr "selbst erstellt"
+
+#, python-format
+#~ msgid "selfservice/usergetmultiotp failed: %r"
+#~ msgstr "Fehler beim Zugriff auf selfservice/usergetmultiotp: %r"
 
 #~ msgid "splitAtSign"
 #~ msgstr "Trenne am @-Zeichen"
