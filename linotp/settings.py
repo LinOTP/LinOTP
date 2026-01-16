@@ -991,8 +991,12 @@ def config_show_cmd(modified, values, items=None):
 
 
 SAMPLE_CFG_BANNER = """# This is a sample LinOTP configuration file.
-# It contains {0} configuration settings with their hard-coded
-# defaults. Feel free to copy this file and uncomment and edit any of
+# It contains {0} configuration settings with their hard-coded defaults.
+#
+# Deprectation Warning: Soon to be replaced!
+# Use environment variables to override configuration settings.
+#
+# Feel free to copy this file and uncomment and edit any of
 # these (with appropriate caution). The LINOTP_CFG environment variable
 # can be used to specify a list of LinOTP configuration files which
 # will be read in order (the last encountered value for any configuration

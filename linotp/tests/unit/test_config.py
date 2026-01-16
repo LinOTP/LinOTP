@@ -367,8 +367,8 @@ def test_efc_root_dir():
     # Security blanket to make sure asking for `config['ROOT_DIR']`
     # doesn't cause an infinite regression.
     efc = ExtFlaskConfig("/")
-    efc["ROOT_DIR"] = "/etc/linotp"
-    assert efc["ROOT_DIR"] == "/etc/linotp"
+    efc["ROOT_DIR"] = "/data"
+    assert efc["ROOT_DIR"] == "/data"
 
 
 @pytest.mark.parametrize(

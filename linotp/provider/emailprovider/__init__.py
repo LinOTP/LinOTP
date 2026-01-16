@@ -41,7 +41,7 @@ from linotp.provider import provider_registry
 
 DEFAULT_MESSAGE = "<otp>"
 
-EMAIL_PROVIDER_TEMPLATE_ROOT = "/etc/linotp/custom-templates/mailtemplates"
+EMAIL_PROVIDER_TEMPLATE_ROOT = "/custom-templates/mailtemplates"
 EMAIL_PROVIDER_TEMPLATE_KEY = "email_provider_template_root"
 
 LOG = logging.getLogger(__name__)
@@ -185,7 +185,7 @@ class SMTPEmailProvider(IEmailProvider):
             'email_provider_template_root' in linotp.config defined
 
         Fallback is EMAIL_PROVIDER_TEMPLATE_ROOT
-                which is '/etc/linotp/email_provider_templates'
+                which is '/custom-templates/mailtemplates'
 
         :return: the directory where the email provider templates are expected
         """

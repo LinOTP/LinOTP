@@ -46,8 +46,8 @@ class TestProviderTestCase(unittest.TestCase):
             "default": "False",
             "config": "{\n"
             '"push_url": "https://push.keyidentity.com/send",\n'
-            '"access_certificate": "/etc/linotp/push-license.pem",\n'
-            '"server_certificate": "/etc/linotp/push-ca-bundle.crt"\n'
+            '"access_certificate": "/data/push-license.pem",\n'
+            '"server_certificate": "/data/push-ca-bundle.crt"\n'
             "}",
             "timeout": "120",
             "type": "push",

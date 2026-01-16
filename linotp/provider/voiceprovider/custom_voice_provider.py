@@ -57,8 +57,8 @@ class CustomVoiceProvider(ConfigParsingMixin, TwillioMixin):
 
     {
     "server_url": "https://vcs.*/v1/twilio/call"
-    "access_certificate": "/etc/linotp/voice-license.pem",
-    "server_certificate": "/etc/linotp/keyidentity-voice-ca-bundle.crt"
+    "access_certificate": "/data/voice-license.pem",
+    "server_certificate": "/data/keyidentity-voice-ca-bundle.crt"
     'callerNumber': '+4989231234567'
     }
 

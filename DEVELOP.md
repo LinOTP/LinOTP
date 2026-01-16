@@ -115,7 +115,7 @@ or
 export LINOTP_DATABASE_URI="mysql+pymysql://user:pass@host/db_name"       #gitleaks:allow
 ```
 
-Alternatively you can also set this variable in a LinOTP configuration file, as
+Alternatively you can also set this variable in an `.env` file, as
 we explain next.
 
 ## Configure LinOTP
@@ -126,8 +126,8 @@ overriding environment variables or specifying additional configuration files.
 
 To inspect the configuration of your LinOTP instance, run `linotp config show`,
 or `linotp config explain` if you need more information on the configuration
-entries. Both commands accept additional parameters, which you can look up in
-**linotp-config(1)**.
+entries. Both commands accept additional parameters, which you can look up by
+appending `--help`.
 
 ### Configuration presets
 
@@ -148,54 +148,16 @@ defaults to `default`, which is identical to `development`.
 
 ### Customizing the configuration
 
-Additional configuration settings can be made in configuration
-files. LinOTP looks at the configuration files listed in the
-`LINOTP_CFG` environment variable, whose value consists of a list of
-one or more file names separated by colons. For example,
+Additional configuration settings can be made via environment variables.
 
-    LINOTP_CFG=/usr/share/linotp/linotp.cfg:/etc/linotp/linotp.cfg
+We recommend using a `.env` file to store these settings, which will be loaded when
+LinOTP starts.
 
-would read first the `/usr/share/linotp/linotp.cfg` file and then the
-`/etc/linotp/linotp.cfg` file.
-
-Later configuration settings override earlier ones, and settings in
-configuration files override hard-coded default settings in `settings.py`.
-
-Relative file names in `LINOTP_CFG` are interpreted relative to Flask's
-`app.root_path`, which by default points to the `linotp` directory of the
-LinOTP software distribution (where the `app.py` file is). If `LINOTP_CFG` is
-undefined and is not started from a packaged version, it defaults to
-`linotp.cfg`.
-
-The advantage of this approach is that it allows a clean separation between
-configuration settings provided by a distribution-specific LinOTP package and
-configuration settings made by the local system administrator, which would each
-go into separate files. If the package-provided file is changed or updated in a
-future version of the package, the local settings will remain untouched.
-
-#### Format of configuration entries
-
-LinOTP's configuration files are Python code, so you can do whatever
-you can do in a Python program, although it is probably best to
-exercise some restraint. (As a somewhat contrived example, you could
-use the Python `requests` package to download configuration settings
-from a remote HTTP server. But please don't actually do this unless
-you understand the security implications.)
-
-In the simplest case, configuration settings look like assignments to
-Python variables whose names consist strictly of uppercase letters,
-digits, and underscores, as in
-
-    LOG_FILE_DIR = "/var/log/linotp"
-
-(Variables with lowercase letters in their names are ignored when a
-configuration file is scoured for settings, so you could use them as
-scratch variables.) We say "look like" because we actually apply data
-type conversions if necessary to accommodate non-string configuration
-settings like `LOG_FILE_MAX_LENGTH` (which is internally a Python
-`int`), and we perform rudimentary plausibility checks to ensure that
-the value of configuration settings make basic sense (for example, you
-will not be allowed to set `LOG_FILE_MAX_LENGTH` to a negative value).
+If a configuration setting inside LinOTP is named `XYZ`,
+then if an environment variable named `LINOTP_XYZ` is defined,
+its value will be used to set `XYZ`.
+To e.g. set the log level to `WARNING`, define the environment variable
+`LINOTP_LOG_LEVEL=WARNING`.
 
 As a special feature, configuration settings whose names end in `_DIR`
 or `_FILE` are supposed to contain the names of directories or files
@@ -206,9 +168,11 @@ you make changes `ROOT_DIR`, the value assigned there will be the
 effective one even for other earlier settings that use relative path
 names: After
 
-    ROOT_DIR = "/var/foo"
-    LOG_FILE_DIR = "linotp"
-    ROOT_DIR = "/var/bar"
+```env
+ROOT_DIR=/var/foo
+LOG_FILE_DIR=linotp
+ROOT_DIR=/var/bar
+```
 
 the effective value of `LOG_FILE_DIR` will be `/var/bar/./linotp`. (Note
 that we're inserting a `/./` to mark where the implicit value of
@@ -216,27 +180,6 @@ that we're inserting a `/./` to mark where the implicit value of
 only exception to this is `ROOT_DIR` itself, which must always contain
 an absolute directory name, and defaults to Flask's `app.root_path`
 unless it is explicitly set in a configuration file.
-
-Finally, hard-coded configuration defaults as well as settings in
-configuration files can be overridden from the process environment. If
-a configuration setting inside LinOTP is named `XYZ`, then if a
-variable named `LINOTP_XYZ` is defined inside the environment of the
-LinOTP process, its value will be used to set `XYZ`. This is helpful
-in Docker-like setups where configuration files are inconvenient to
-use.
-
-Note that this only works for LinOTP configuration settings that are
-mentioned in `settings.py` (Flask has a bunch of its own configuration
-settings that aren't strictly part of the LinOTP configuration but can
-be set in LinOTP configuration files).
-
-Some configuration settings are supposed to contain non-string data
-such as integers or lists, and LinOTP tries to convert the (string)
-values of environment variables appropriately. For example, the value
-of `LINOTP_LOG_FILE_MAX_LENGTH` will be converted to an integer to set
-the `LOG_FILE_MAX_LENGTH` configuration setting, and you may wish to
-amuse yourself by investigating what happens to the value of
-`LINOTP_LOG_CONFIG`.
 
 ### Predefined directory names
 
@@ -249,8 +192,7 @@ LinOTP distribution package for that distribution. These include:
   `app.root_path`, IOW the directory where LinOTP's `app.py` file is
   located. As mentioned above, the value of `ROOT_DIR` is prepended to
   the values of other configuration settings for files and directories
-  if these are relative path names. A distribution will set this to
-  something more useful such as `/etc/linotp`.
+  if these are relative path names.
 
 - `CACHE_DIR`: This directory is used for temporary storage of LinOTP
   data. It defaults to `ROOT_DIR/cache`, but in a distribution will
@@ -266,16 +208,6 @@ LinOTP distribution package for that distribution. These include:
   to a file (which is something LinOTP does by default). By default
   this is `ROOT_DIR/logs` but distribution packages will probably wish
   to use something like `/var/log/linotp`.
-
-If you're making a distribution package, don't edit LinOTP's
-`settings.py` file to adapt the values of these directories. Instead,
-make a new configuration file and put it in a reasonable place such as
-`/usr/share/linotp/linotp.cfg`. A suitable defaults file for Debian
-based distributions is available at `config/linotp.cfg`. The default
-configuration path can be set by placing a file with the name
-`linotp-cfg-default` in the same directory as the main `app.py`. The
-configuration path for Debian can be found in the file
-`config/linotp-cfg-default`.
 
 ## Run the LinOTP development server
 
@@ -294,8 +226,9 @@ directory.) After this, a simple
 linotp run
 ```
 
-will launch the Flask development server. (You can still use
-`LINOTP_CONFIG` to specify the desired environment.)
+will launch the Flask development server.
+(You can still use environment variables to define the desired environment.
+see [Configure LinOTP](#configure-linotp))
 
 This starts the Flask development server. Unless you specify otherwise
 using the `--host` and `--port` options, the development server will
