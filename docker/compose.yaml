@@ -10,6 +10,7 @@ services:
     command: "--with-bootstrap"
     volumes:
       - linotp_data:/data
+      - linotp_cache:/cache
     depends_on:
       - linotp-db
     ports:
@@ -22,8 +23,9 @@ services:
       POSTGRES_USER: "linotpuser"
       POSTGRES_PASSWORD: "linotppass"
     volumes:
-      - pg_data:/var/lib/postgresql/data
+      - db_data:/var/lib/postgresql/data
 
 volumes:
   linotp_data:
-  pg_data:
+  linotp_cache:
+  db_data:
