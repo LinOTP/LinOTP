@@ -1511,7 +1511,7 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
             )
 
         # Here we check, if the tokennum exceeds the tokens
-        if not _check_token_count():
+        if not _check_token_count(realm=authUser.realm):
             log.error("The maximum token number is reached!")
 
             raise PolicyException(
@@ -1556,6 +1556,22 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
             raise PolicyException(
                 _("The policy settings do not allow you to issue this request!")
             )
+
+        # We need to check which realm the token will be in.
+        token = linotp.lib.token.get_raw_token(serial=param["serial"])
+        if not token.LinOtpIsactive:
+            realmList = token.getRealmNames()
+            for r in realmList:
+                if _check_token_count(realm=r):
+                    continue
+                log.warning("the maximum tokens for the realm %s is exceeded.", r)
+
+                raise PolicyException(
+                    _(
+                        "You may not enable any more tokens. "
+                        "Your maximum token number is reached!"
+                    )
+                )
 
     elif method == "userunassign":
         if not get_selfservice_actions(authUser, "unassign"):
@@ -1625,7 +1641,7 @@ def _checkSelfservicePolicyPre(method, param=None, authUser=None, user=None):
             )
 
         # Here we check, if the tokennum exceeds the allowed tokens
-        if not _check_token_count():
+        if not _check_token_count(realm=authUser.realm):
             log.error("The maximum token number is reached!")
 
             raise PolicyException(
