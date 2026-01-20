@@ -51,6 +51,11 @@ class TestPolicyTokencount(TestController):
         "type": "pw",
         "otpkey": "UNASSIGNED",
     }
+    new_userservice_token_params = {
+        "type": "pw",
+        "otpkey": "newkey",
+        "pin": "newpin",
+    }
 
     def setUp(self):
         TestController.setUp(self)
@@ -70,6 +75,16 @@ class TestPolicyTokencount(TestController):
                 "user": self.auth_user[0],
             }
             _serial = self.enroll_token(token_params=token_params)
+
+        # set up selfservice policy
+        selfservice_policy = {
+            "name": "selfservice_enroll",
+            "scope": "selfservice",
+            "action": "enrollPW, setOTPPIN, enable, assign",
+            "user": "*",
+            "realm": "mydefrealm",
+        }
+        self.create_policy(selfservice_policy)
 
         # set up tokencount policy
         tokencount_policy = {
@@ -91,6 +106,20 @@ class TestPolicyTokencount(TestController):
         assert "value" not in resp_json["result"], resp_json
         msg = "The maximum allowed number of tokens for the realm 'mydefrealm'"
         assert msg in resp_json["result"]["error"]["message"], resp_json
+
+    def assert_userservice_blocked(self, response):
+        """Assert userservice operation was blocked by tokencount policy"""
+        resp_json = response.json
+        assert resp_json["result"]["status"] is False, resp_json
+        assert "value" not in resp_json["result"], resp_json
+        msg_fragments = [
+            "You may not enroll any more tokens",
+            "You may not enable any more tokens",
+            "The maximum allowed number of tokens",
+        ]
+        assert any(
+            msg in resp_json["result"]["error"]["message"] for msg in msg_fragments
+        ), resp_json
 
     def test_tokencount_blocks_enroll_when_at_limit(self):
         """Enrolling a token fails when tokencount limit is reached"""
@@ -191,3 +220,100 @@ class TestPolicyTokencount(TestController):
 
         assert resp_json["result"]["status"] is True, resp_json
         assert resp_json["result"]["value"] is True, resp_json
+
+    def test_tokencount_blocks_userservice_enroll_when_at_limit(self):
+        """Enrolling via userservice fails when tokencount limit is reached"""
+        response = self.make_userservice_request(
+            "enroll", params=self.new_userservice_token_params, auth_user=self.auth_user
+        )
+        self.assert_userservice_blocked(response)
+
+    def test_tokencount_blocks_userservice_enroll_when_at_limit_with_unassigned(self):
+        """Unassigned tokens in realm still count toward tokencount limit"""
+        self.unassign_token("#SETUP1")
+
+        response = self.make_userservice_request(
+            "enroll", params=self.new_userservice_token_params, auth_user=self.auth_user
+        )
+        self.assert_userservice_blocked(response)
+
+    def test_tokencount_allows_userservice_enroll_when_token_disabled(self):
+        """Enrolling a token via userservice succeeds when another token is disabled"""
+        self.disable_token("#SETUP1")
+
+        response = self.make_userservice_request(
+            "enroll", params=self.new_userservice_token_params, auth_user=self.auth_user
+        )
+        resp_json = response.json
+        assert resp_json["result"]["status"] is True, resp_json
+        assert resp_json["result"]["value"] is True, resp_json
+
+    def test_tokencount_blocks_userservice_enable_when_at_limit(self):
+        """Enabling via userservice fails when tokencount limit is reached"""
+        # Reduce tokencount to create a limit scenario
+        self.create_policy(
+            {
+                "name": "token_count_policy",
+                "scope": "enrollment",
+                "action": f"tokencount={self.tokencount - 1}, ",
+                "user": "*",
+                "realm": "mydefrealm",
+            }
+        )
+        self.disable_token("#SETUP1")
+
+        response = self.make_userservice_request(
+            "enable", params={"serial": "#SETUP1"}, auth_user=self.auth_user
+        )
+        self.assert_userservice_blocked(response)
+
+    def test_tokencount_allows_userservice_enable_when_token_disabled(self):
+        """Enabling a token via userservice succeeds when another token is disabled"""
+        self.disable_token("#SETUP1")
+
+        response = self.make_userservice_request(
+            "enable", params={"serial": "#SETUP1"}, auth_user=self.auth_user
+        )
+        resp_json = response.json
+        assert resp_json["result"]["status"] is True, resp_json
+        assert resp_json["result"]["value"]["enable token"] == 1, resp_json
+
+    def test_tokencount_allows_userservice_reenable_of_same_token(self):
+        """Re-enabling an already enabled token via userservice succeeds"""
+        response = self.make_userservice_request(
+            "enable", params={"serial": "#SETUP1"}, auth_user=self.auth_user
+        )
+        resp_json = response.json
+        assert resp_json["result"]["status"] is True, resp_json
+        assert resp_json["result"]["value"]["enable token"] == 1, resp_json
+
+    def test_tokencount_blocks_userservice_assign_when_at_limit(self):
+        """Assigning a token via userservice fails when tokencount limit is reached"""
+        unassigned_serial = self.enroll_token(self.unassigned_token_params)
+
+        response = self.make_userservice_request(
+            "assign", params={"serial": unassigned_serial}, auth_user=self.auth_user
+        )
+        self.assert_userservice_blocked(response)
+
+    def test_tokencount_blocks_userservice_assign_when_at_limit_with_unassigned(self):
+        """Unassigning a token doesn't free up space for assigning a different token via userservice"""
+        self.unassign_token("#SETUP1")
+        unassigned_serial = self.enroll_token(self.unassigned_token_params)
+
+        response = self.make_userservice_request(
+            "assign", params={"serial": unassigned_serial}, auth_user=self.auth_user
+        )
+        self.assert_userservice_blocked(response)
+
+    def test_tokencount_allows_userservice_assign_when_token_disabled(self):
+        """Assigning a new token via userservice succeeds when another token is disabled"""
+        self.disable_token("#SETUP1")
+        unassigned_serial = self.enroll_token(self.unassigned_token_params)
+
+        response = self.make_userservice_request(
+            "assign", params={"serial": unassigned_serial}, auth_user=self.auth_user
+        )
+        resp_json = response.json
+        assert resp_json["result"]["status"] is True, resp_json
+        assert resp_json["result"]["value"] == {"assign token": True}, resp_json
