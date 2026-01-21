@@ -76,6 +76,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - English and german text for license fields in Manage-UI
 - multi-challenge request does not fail entirely if one challenge fails
 - The `LINOTP_CONFIG` environment variable correctly sets the selected configuration environment.
+- Exceptions in AdminController properly return error responses instead of 500 Internal Server Errors.
 
 ## [3.4.4-1] - 2025-06-18
 
