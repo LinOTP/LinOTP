@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Allow `webauthn.get` assertions during FIDO U2F token authentication in
   addition to `navigator.id.getAssertion`. This is because no modern browser
   supports the FIDO U2F API, and we need to make do with FIDO2 instead.
+- Controllers log unknown Exceptions with Stacktrace for better debugging.
 
 ### Changed
 
