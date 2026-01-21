@@ -1093,5 +1093,35 @@ class TestController(TestCase):
         assert '"value": true' in response, response
         return serial
 
+    # Helper methods for common token operations
+
+    def enroll_token(self, token_params: dict) -> str:
+        """
+        Enroll a token via admin API
+        token_params: dict with parameters for token enrollment
+        returns: serial number of the enrolled token
+        """
+        response = self.make_admin_request("init", params=token_params)
+        resp_json = response.json
+
+        assert resp_json["result"]["status"] is True, resp_json
+        assert resp_json["result"]["value"] is True, resp_json
+
+        return resp_json["detail"]["serial"]
+
+    def disable_token(self, serial):
+        """Disable a token and verify success"""
+        response = self.make_admin_request("disable", params={"serial": serial})
+        resp_json = response.json
+        assert resp_json["result"]["status"] is True, resp_json
+        assert resp_json["result"]["value"] == 1, resp_json
+
+    def unassign_token(self, serial):
+        """Unassign a token and verify success"""
+        response = self.make_admin_request("unassign", params={"serial": serial})
+        resp_json = response.json
+        assert resp_json["result"]["status"] is True, resp_json
+        assert resp_json["result"]["value"] is True, resp_json
+
 
 # eof #

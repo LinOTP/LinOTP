@@ -71,6 +71,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   instead
 - If `setOTPPIN` and `otp_pin_random` policies are set during selfservice enroll, the pin will no longer be
   randomized
+- comply with policy `tokencount` in userservice for enroll, enable and assign
+- Enabling an already enabled token does not raise a Policy exception due to `tokencount` anymore
 - English and german text for license fields in Manage-UI
 - multi-challenge request does not fail entirely if one challenge fails
 - The `LINOTP_CONFIG` environment variable correctly sets the selected configuration environment.
