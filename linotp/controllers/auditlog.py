@@ -72,7 +72,7 @@ class AuditlogController(BaseController):
             return response
 
         except Exception as exx:
-            log.error("[__after__::%r] exception %r", action, exx)
+            log.exception("[__after__::%r] exception %r", action, exx)
             db.session.rollback()
             return sendError(exx)
 
@@ -205,7 +205,7 @@ class AuditlogController(BaseController):
             return sendResult(result)
 
         except Exception as ex:
-            log.error("[getAuditEntries] error getting audit entries: %r", ex)
+            log.exception("[getAuditEntries] error getting audit entries: %r", ex)
             db.session.rollback()
             return sendError(ex)
 

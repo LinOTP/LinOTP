@@ -84,7 +84,7 @@ class ReportingController(BaseController):
         try:
             checkAuthorisation(scope="reporting.access", method=action)
         except Exception as exx:
-            log.error("[__before__::%r] exception %r", action, exx)
+            log.exception("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
             return sendError(exx)
 
@@ -107,7 +107,7 @@ class ReportingController(BaseController):
             return response
 
         except Exception as exx:
-            log.error("[__after__::%r] exception %r", action, exx)
+            log.exception("[__after__::%r] exception %r", action, exx)
             db.session.rollback()
             return sendError(exx)
 
@@ -181,10 +181,10 @@ class ReportingController(BaseController):
             db.session.rollback()
             return sendError(pol_ex, 1)
 
-        except Exception as exc:
-            log.error(exc)
+        except Exception as exx:
+            log.exception(exx)
             db.session.rollback()
-            return sendError(exc)
+            return sendError(exx)
 
         finally:
             db.session.close()
@@ -295,10 +295,10 @@ class ReportingController(BaseController):
             db.session.rollback()
             return sendError(pol_ex, 1)
 
-        except Exception as exc:
-            log.error(exc)
+        except Exception as exx:
+            log.exception(exx)
             db.session.rollback()
-            return sendError(exc)
+            return sendError(exx)
 
     @methods(["POST"])
     def delete_all(self):
@@ -355,10 +355,10 @@ class ReportingController(BaseController):
             db.session.rollback()
             return sendError(pol_ex, 1)
 
-        except Exception as exc:
-            log.error(exc)
+        except Exception as exx:
+            log.exception(exx)
             db.session.rollback()
-            return sendError(exc)
+            return sendError(exx)
 
     @methods(["POST"])
     def delete_before(self):
@@ -412,10 +412,10 @@ class ReportingController(BaseController):
             db.session.rollback()
             return sendError(value_error, 1)
 
-        except Exception as exc:
-            log.error(exc)
+        except Exception as exx:
+            log.exception(exx)
             db.session.rollback()
-            return sendError(exc)
+            return sendError(exx)
 
     @deprecated_methods(["POST"])
     def show(self):
@@ -515,7 +515,7 @@ class ReportingController(BaseController):
             db.session.rollback()
             return sendError(value_error, 1)
 
-        except Exception as exc:
-            log.error(exc)
+        except Exception as exx:
+            log.exception(exx)
             db.session.rollback()
-            return sendError(exc)
+            return sendError(exx)

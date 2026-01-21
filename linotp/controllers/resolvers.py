@@ -94,7 +94,7 @@ class ResolversController(BaseController):
             return response
 
         except Exception as exx:
-            log.error("[__after__::%r] exception %r", action, exx)
+            log.exception("[__after__::%r] exception %r", action, exx)
             db.session.rollback()
             return sendError(exx)
 
@@ -151,10 +151,10 @@ class ResolversController(BaseController):
             # return a list of the resolvers
             return sendResult(resolvers)
 
-        except Exception as ex:
-            log.error("[getResolvers] error getting resolvers: %r", ex)
+        except Exception as exx:
+            log.exception("[getResolvers] error getting resolvers: %r", exx)
             db.session.rollback()
-            return sendError(ex)
+            return sendError(exx)
 
     def get_users(self, resolver_name):
         """
@@ -234,13 +234,13 @@ class ResolversController(BaseController):
 
         try:
             resolver: Resolver = get_resolver(resolver_name)
-        except Exception as exception:
-            log.error(
+        except Exception as exx:
+            log.exception(
                 "[get_users] cannot find resolver %s to retrieve its users",
                 resolver_name,
             )
             db.session.rollback()
-            error = sendError(exception)
+            error = sendError(exx)
             error.status_code = 500
             return error
 
@@ -262,10 +262,10 @@ class ResolversController(BaseController):
             error = sendError(PolicyException(exception_description))
             error.status_code = 403
             return error
-        except Exception as exception:
-            log.error("[get_users] failed: %r", exception)
+        except Exception as exx:
+            log.exception("[get_users] failed: %r", exx)
             db.session.rollback()
-            error = sendError(exception)
+            error = sendError(exx)
             error.status_code = 500
             return error
 
@@ -326,10 +326,10 @@ class ResolversController(BaseController):
             db.session.commit()
             return sendResult(res)
 
-        except Exception as exception:
-            log.error("[get_users] failed: %r", exception)
+        except Exception as exx:
+            log.exception("[get_users] failed: %r", exx)
             db.session.rollback()
-            error = sendError(exception)
+            error = sendError(exx)
             error.status_code = 500
             return error
 
@@ -384,13 +384,13 @@ class ResolversController(BaseController):
 
         try:
             resolver: Resolver = get_resolver(resolver_name)
-        except Exception as exception:
-            log.error(
+        except Exception as exx:
+            log.exception(
                 "[get_user] cannot find resolver %s to retrieve its users",
                 resolver_name,
             )
             db.session.rollback()
-            error = sendError(exception)
+            error = sendError(exx)
             error.status_code = 500
             return error
 
@@ -412,10 +412,10 @@ class ResolversController(BaseController):
             error = sendError(PolicyException(exception_description))
             error.status_code = 403
             return error
-        except Exception as exception:
-            log.error("[get_user] failed: %r", exception)
+        except Exception as exx:
+            log.exception("[get_user] failed: %r", exx)
             db.session.rollback()
-            error = sendError(exception)
+            error = sendError(exx)
             error.status_code = 500
             return error
 
@@ -439,9 +439,9 @@ class ResolversController(BaseController):
             error.status_code = 404
             return error
 
-        except Exception as exception:
-            log.error("[get_user] failed: %r", exception)
+        except Exception as exx:
+            log.exception("[get_user] failed: %r", exx)
             db.session.rollback()
-            error = sendError(exception)
+            error = sendError(exx)
             error.status_code = 500
             return error

@@ -140,8 +140,8 @@ class MigrateController(BaseController):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
+            log.exception("[backup] failed: %r", exx)
             db.session.rollback()
-            log.error("[backup] failed: %r", exx)
             return sendError(exx)
 
     @methods(["POST"])
@@ -263,12 +263,12 @@ class MigrateController(BaseController):
 
         except DecryptionError as err:
             decryption_error = True
-            log.error("Error - failed with %r", err)
+            log.exception("[restore] decription failed: %r", err)
             db.session.rollback()
             return sendError(err)
 
         except Exception as err:
-            log.error("Error - failed with %r", err)
+            log.exception("[restore] failed: %r", err)
             db.session.rollback()
             return sendError(err)
 

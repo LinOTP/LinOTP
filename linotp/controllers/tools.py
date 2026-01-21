@@ -79,7 +79,7 @@ class ToolsController(BaseController):
             checkToolsAuthorisation(action, params)
 
         except Exception as exx:
-            log.error("[__before__::%r] exception %r", action, exx)
+            log.exception("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
             return sendError(exx)
 
@@ -101,7 +101,7 @@ class ToolsController(BaseController):
             return response
 
         except Exception as exx:
-            log.error("[__after__::%r] exception %r", action, exx)
+            log.exception("[__after__::%r] exception %r", action, exx)
             db.session.rollback()
             return sendError(exx)
 
@@ -156,9 +156,8 @@ class ToolsController(BaseController):
             )
 
         except Exception as exx:
+            log.exception(exx)
             g.audit["success"] = False
-
-            log.error(exx)
             db.session.rollback()
             return sendError(exx)
 
@@ -205,10 +204,10 @@ class ToolsController(BaseController):
             db.session.commit()
             return sendResult(ret)
 
-        except Exception as e:
-            log.error("migrate resolver failed")
+        except Exception as exx:
+            log.exception("migrate resolver failed")
             db.session.rollback()
-            return sendError(e, 1)
+            return sendError(exx, 1)
 
     @methods(["POST"])
     def import_users(self):
@@ -397,10 +396,8 @@ class ToolsController(BaseController):
             return sendError(f"{pol_ex!r}", 1)
 
         except Exception as exx:
-            log.error("Error during user import: %r", exx)
-
+            log.exception("Error during user import: %r", exx)
             db.session.rollback()
-
             return sendError(exx)
 
         finally:

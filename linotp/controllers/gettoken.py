@@ -145,7 +145,7 @@ class GettokenController(BaseController):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
-            log.error("[getmultiotp] gettoken/getmultiotp failed: %r", exx)
+            log.exception("[getmultiotp] gettoken/getmultiotp failed: %r", exx)
             db.session.rollback()
             return sendError(f"gettoken/getmultiotp failed: {exx!r}", 0)
 
@@ -267,7 +267,7 @@ class GettokenController(BaseController):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
-            log.error("[getotp] gettoken/getotp failed: %r", exx)
+            log.exception("[getotp] gettoken/getotp failed: %r", exx)
             db.session.rollback()
             return sendError(f"gettoken/getotp failed: {exx}", 0)
 

@@ -156,7 +156,7 @@ class AdminController(BaseController, JWTMixin):
             return response
 
         except Exception as exx:
-            log.error("[__after__::%r] exception %r", action, exx)
+            log.exception("[__after__::%r] exception %r", action, exx)
             db.session.rollback()
             return sendError(exx)
 
@@ -198,7 +198,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
-            log.error("Error getting token owner. Exception was %r", exx)
+            log.exception("Error getting token owner. Exception was %r", exx)
             db.session.rollback()
             return sendError(exx, 1)
 
@@ -333,7 +333,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
-            log.error("[show] failed: %r", exx)
+            log.exception("[show] failed: %r", exx)
             db.session.rollback()
             return sendError(exx)
 
@@ -435,7 +435,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
-            log.error("[remove] failed! %r", exx)
+            log.exception("[remove] failed! %r", exx)
             db.session.rollback()
             return sendError(exx)
 
@@ -515,9 +515,8 @@ class AdminController(BaseController, JWTMixin):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
-            log.error("[enable] failed: %r", exx)
+            log.exception("[enable] failed: %r", exx)
             db.session.rollback()
-            log.error("[enable] error enabling token")
             return sendError(exx, 1)
 
     ########################################################
@@ -591,9 +590,9 @@ class AdminController(BaseController, JWTMixin):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
+            log.exception("[getSerialByOtp] error: %r", exx)
             g.audit["success"] = 0
             db.session.rollback()
-            log.error("[getSerialByOtp] error: %r", exx)
             return sendError(exx, 1)
 
     ########################################################
@@ -670,7 +669,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
-            log.error("[disable] failed! %r", exx)
+            log.exception("[disable] failed! %r", exx)
             db.session.rollback()
             return sendError(exx, 1)
 
@@ -718,7 +717,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
-            log.error("[check_serial] failed! %r", exx)
+            log.exception("[check_serial] failed! %r", exx)
             db.session.rollback()
             return sendError(exx)
 
@@ -975,7 +974,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
-            log.error("[init] token initialization failed! %r", exx)
+            log.exception("[init] token initialization failed! %r", exx)
             db.session.rollback()
             return sendError(exx)
 
@@ -1047,7 +1046,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
-            log.error("[unassign] failed! %r", exx)
+            log.exception("[unassign] failed! %r", exx)
             db.session.rollback()
             return sendError(exx, 1)
 
@@ -1135,7 +1134,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
-            log.error("[assign] token assignment failed! %r", exx)
+            log.exception("[assign] token assignment failed! %r", exx)
             db.session.rollback()
             return sendError(exx, 0)
 
@@ -1211,7 +1210,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
-            log.error("[setPin] %s :%r", msg, exx)
+            log.exception("[setPin] %s :%r", msg, exx)
             db.session.rollback()
             return sendError(exx, 0)
 
@@ -1359,14 +1358,13 @@ class AdminController(BaseController, JWTMixin):
             return sendResult(serials, 1)
 
         except PolicyException as pol_ex:
-            log.error("policy failed%r", pol_ex)
+            log.error("[setPin] policy failed: %r", pol_ex)
             db.session.rollback()
             return sendError(pol_ex, 1)
 
         except Exception as exx:
+            log.exception("[setPin] failed: %r", exx)
             g.audit["success"] = False
-
-            log.error("%r", exx)
             db.session.rollback()
             return sendError(exx, 0)
 
@@ -1730,7 +1728,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
-            log.error("%s: %r", msg, exx)
+            log.exception("%s: %r", msg, exx)
             db.session.rollback()
             # as this message is directly returned into the javascript
             # alert as escaped string we remove here all escaping chars
@@ -1827,7 +1825,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
-            log.error("[resync] resyncing token failed %r", exx)
+            log.exception("[resync] resyncing token failed %r", exx)
             db.session.rollback()
             return sendError(exx, 1)
 
@@ -1929,7 +1927,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
-            log.error("[userlist] failed %r", exx)
+            log.exception("[userlist] failed %r", exx)
             db.session.rollback()
             return sendError(exx)
 
@@ -1998,7 +1996,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
-            log.error("[tokenrealm] error setting realms for token %r", exx)
+            log.exception("[tokenrealm] error setting realms for token %r", exx)
             db.session.rollback()
             return sendError(exx, 1)
 
@@ -2070,7 +2068,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
-            log.error("[reset] Error resetting failcounter %r", exx)
+            log.exception("[reset] Error resetting failcounter %r", exx)
             db.session.rollback()
             return sendError(exx)
 
@@ -2148,7 +2146,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
-            log.error("[copyTokenPin] Error copying token pin: %r", exx)
+            log.exception("[copyTokenPin] Error copying token pin: %r", exx)
             db.session.rollback()
             return sendError(exx)
 
@@ -2229,7 +2227,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
-            log.error("[copyTokenUser] Error copying token user: %r", exx)
+            log.exception("[copyTokenUser] Error copying token user: %r", exx)
             db.session.rollback()
             return sendError(exx)
 
@@ -2289,7 +2287,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
-            log.error("[losttoken] Error doing losttoken %r", exx)
+            log.exception("[losttoken] Error doing losttoken %r", exx)
             db.session.rollback()
             return sendError(exx)
 
@@ -2599,7 +2597,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(f"{pol_ex!r}", 1)
 
         except Exception as exx:
-            log.error("[loadtokens] failed! %r", exx)
+            log.exception("[loadtokens] failed! %r", exx)
             db.session.rollback()
             return sendErrorMethod(f"{exx!r}")
 
@@ -2659,7 +2657,7 @@ class AdminController(BaseController, JWTMixin):
             return sendResult(res)
 
         except Exception as exx:
-            log.error("[testresolver] failed: %r", exx)
+            log.exception("[testresolver] failed: %r", exx)
             db.session.rollback()
             return sendError(exx, 1)
 
@@ -2741,7 +2739,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(pol_ex)
 
         except Exception as exx:
-            log.error("[totp_lookup] failed: %r", exx)
+            log.exception("[totp_lookup] failed: %r", exx)
             db.session.rollback()
             return sendError(exx, 0)
 
@@ -2871,7 +2869,7 @@ class AdminController(BaseController, JWTMixin):
             return sendError(pol_ex)
 
         except Exception as exx:
-            log.error("[checkstatus] failed: %r", exx)
+            log.exception("[checkstatus] failed: %r", exx)
             db.session.rollback()
             return sendError(exx, 0)
 
@@ -2935,7 +2933,7 @@ class AdminController(BaseController, JWTMixin):
         # -------------------------------------------------------------------- -
 
         except Exception as exx:
-            log.error("admin/unpair failed: %r", exx)
+            log.exception("[unpair] failed: %r", exx)
             g.audit["info"] = str(exx)
             db.session.rollback()
             return sendResult(False, 0, status=False)

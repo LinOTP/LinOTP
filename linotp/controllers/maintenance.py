@@ -117,8 +117,8 @@ class MaintenanceController(BaseController):
             return sendResult(True)
 
         except Exception as exx:
+            log.exception(exx)
             db.session.rollback()
-            log.error(exx)
             return sendError(exx, 1)
 
     @deprecated_methods(["POST"])
@@ -145,8 +145,8 @@ class MaintenanceController(BaseController):
             return sendResult(True, 0, opt=opt)
 
         except Exception as exx:
+            log.exception(exx)
             db.session.rollback()  # why?
-            log.error(exx)
             raise InternalServerError(str(exx)) from exx
 
 
