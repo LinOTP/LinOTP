@@ -2743,7 +2743,7 @@ class AdminController(BaseController, JWTMixin):
         except Exception as exx:
             log.error("[totp_lookup] failed: %r", exx)
             db.session.rollback()
-            return sendResult(exx, 0)
+            return sendError(exx, 0)
 
     @deprecated_methods(["POST"])
     def checkstatus(self):
@@ -2873,7 +2873,7 @@ class AdminController(BaseController, JWTMixin):
         except Exception as exx:
             log.error("[checkstatus] failed: %r", exx)
             db.session.rollback()
-            return sendResult(exx, 0)
+            return sendError(exx, 0)
 
     # ------------------------------------------------------------------------ -
     @methods(["POST"])

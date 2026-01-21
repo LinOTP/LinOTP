@@ -16,6 +16,7 @@
 # settings are not to be confused with the actual configuration for
 # what LinOTP is doing, which is kept in the SQL database.
 
+import contextlib
 import hashlib
 import importlib
 import logging
@@ -64,7 +65,7 @@ from .lib.security.provider import SecurityProvider
 from .lib.tools.expiring_list import CustomExpiringList
 from .lib.util import get_client, get_log_level
 from .middlewares.trusted_proxy_handler import TrustedProxyHandler
-from .model import SYS_EXIT_CODE, setup_db
+from .model import SYS_EXIT_CODE, db, setup_db
 from .settings import ConfigSchema, configs
 from .tokens import reload_classes as reload_token_classes
 
@@ -960,6 +961,9 @@ def _setup_error_handlers(app: LinOTPApp):
         this handler will be called so that an error response can be
         returned to the user.
         """
+        with contextlib.suppress(Exception):
+            db.session.rollback()
+
         return sendError(linotpError)
 
     @app.errorhandler(HTTPException)
@@ -969,6 +973,9 @@ def _setup_error_handlers(app: LinOTPApp):
 
         Usecase: Do not trigger `default_error_handler` for e.g. 404 errors
         """
+        with contextlib.suppress(Exception):
+            db.session.rollback()
+
         return httpException
 
     @app.errorhandler(Exception)
@@ -980,6 +987,10 @@ def _setup_error_handlers(app: LinOTPApp):
         Logs the Exception with backtrace and returns our error response.
         """
         log.exception(exception)
+
+        with contextlib.suppress(Exception):
+            db.session.rollback()
+
         return sendError(exception)
 
 
