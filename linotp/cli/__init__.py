@@ -35,7 +35,7 @@ import sys
 from datetime import datetime
 
 import click
-from flask import current_app
+from flask import Flask, current_app
 from flask.cli import FlaskGroup, with_appcontext
 
 from linotp.app import create_app
@@ -128,6 +128,16 @@ def get_backup_filename(filename: str, now: datetime | None = None) -> str:
 
 class LinOTPGroup(FlaskGroup):
     def __init__(self, **kwargs):
+        # Check if --help is in the arguments to avoid app initialization
+        if "--help" in sys.argv:
+
+            def minimal_app():
+                """Create a minimal Flask app just for displaying help."""
+                app = Flask("linotp_help")
+                return app
+
+            kwargs["create_app"] = minimal_app
+
         super().__init__(add_version_option=False, **kwargs)
         for arg in sys.argv[1:]:
             if arg[0] != "-":
