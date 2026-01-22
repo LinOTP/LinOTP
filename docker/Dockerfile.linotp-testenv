@@ -26,7 +26,9 @@ RUN \
     && apt update && apt install -y make
 
 # due to incompatibility of funcparserlib using use_2to3:
-RUN pip install wheel "setuptools<58"
+# pin setuptools<58
+# and wheel<0.46 as it removes needed `bdist_wheel`
+RUN pip install "wheel<0.46" "setuptools<58"
 # install test requirements
 COPY requirements-test.txt .
 RUN pip install -r requirements-test.txt
