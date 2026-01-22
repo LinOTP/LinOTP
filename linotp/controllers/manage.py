@@ -101,7 +101,7 @@ class ManageController(BaseController):
             ]
 
         except Exception as exx:
-            log.error("[__before__::%r] exception %r", action, exx)
+            log.exception("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
             return sendError(exx)
 
@@ -200,8 +200,8 @@ class ManageController(BaseController):
             db.session.rollback()
             return sendError(pol_ex, 1)
 
-        except Exception as ex:
-            log.error("[index] failed! %r", ex)
+        except Exception as exx:
+            log.exception("[index] failed! %r", exx)
             db.session.rollback()
             raise
 
@@ -430,7 +430,7 @@ class ManageController(BaseController):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
-            log.error("[tokenview_flexi] failed: %r", exx)
+            log.exception("[tokenview_flexi] failed: %r", exx)
             db.session.rollback()
             return sendError(exx)
 
@@ -565,7 +565,7 @@ class ManageController(BaseController):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
-            log.error("[userview_flexi] failed: %r", exx)
+            log.exception("[userview_flexi] failed: %r", exx)
             db.session.rollback()
             return sendError(exx)
 
@@ -631,7 +631,7 @@ class ManageController(BaseController):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
-            log.error("[tokeninfo] failed! %r", exx)
+            log.exception("[tokeninfo] failed! %r", exx)
             db.session.rollback()
             return sendError(exx)
 
@@ -670,7 +670,7 @@ class ManageController(BaseController):
             return r
 
         except Exception as exx:
-            log.error("[help] Error loading helpfile: %r", exx)
+            log.exception("[help] Error loading helpfile: %r", exx)
             db.session.rollback()
             return sendError(exx)
 
@@ -700,7 +700,7 @@ class ManageController(BaseController):
             return sendResult(True, opt=response_detail)
 
         except Exception as exx:
-            log.error("manage/context failed: %r", exx)
+            log.exception("manage/context failed: %r", exx)
             g.audit["info"] = str(exx)
             db.session.rollback()
             return sendError(exx)

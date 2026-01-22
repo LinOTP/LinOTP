@@ -66,7 +66,7 @@ class RealmsController(BaseController):
             return response
 
         except Exception as exx:
-            log.error("[__after__::%r] exception %r", action, exx)
+            log.exception("[__after__::%r] exception %r", action, exx)
             db.session.rollback()
             return sendError(exx)
 
@@ -132,10 +132,10 @@ class RealmsController(BaseController):
             db.session.commit()
             return sendResult(formatted_realms)
 
-        except Exception as e:
-            log.error("[get_realms] failed: %r", e)
+        except Exception as exx:
+            log.exception("[get_realms] failed: %r", exx)
             db.session.rollback()
-            return sendError(e.message)
+            return sendError(exx)
 
     def get_users(self, realm_name: str):
         """
@@ -205,10 +205,10 @@ class RealmsController(BaseController):
             error = sendError(PolicyException(exception_description))
             error.status_code = 403
             return error
-        except Exception as exception:
-            log.error("[realms.get_users] failed: %r", exception)
+        except Exception as exx:
+            log.exception("[realms.get_users] failed: %r", exx)
             db.session.rollback()
-            error = sendError(exception)
+            error = sendError(exx)
             error.status_code = 500
             return error
 

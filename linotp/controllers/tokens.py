@@ -100,7 +100,7 @@ class TokensController(BaseController):
             return response
 
         except Exception as exx:
-            log.error("[__after__::%r] exception %r", action, exx)
+            log.exception("[__after__::%r] exception %r", action, exx)
             db.session.rollback()
             return sendError(exx)
 
@@ -268,10 +268,10 @@ class TokensController(BaseController):
             error.status_code = 403
             return error
 
-        except Exception as e:
-            log.exception("[get_tokens] failed: %r", e)
+        except Exception as exx:
+            log.exception("[get_tokens] failed: %r", exx)
             db.session.rollback()
-            return sendError(e)
+            return sendError(exx)
 
     def _map_sort_param_to_token_param(self, sort_param: str):
         sortParameterNameMapping = {
@@ -368,10 +368,10 @@ class TokensController(BaseController):
             error.status_code = 403
             return error
 
-        except Exception as e:
-            log.exception("[get_token_by_serial] failed: %r", e)
+        except Exception as exx:
+            log.exception("[get_token_by_serial] failed: %r", exx)
             db.session.rollback()
-            return sendError(e)
+            return sendError(exx)
 
 
 class TokenAdapter:

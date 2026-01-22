@@ -244,10 +244,10 @@ class BaseController(Blueprint, metaclass=ControllerMetaClass):
             cookie_name = current_app.config["JWT_ACCESS_COOKIE_NAME"]
             cookie = request.cookies[cookie_name]
             log.error("jwt_check: could not decode JWT: %r", cookie)
-        except Exception as e:
-            log.error(
+        except Exception as exx:
+            log.exception(
                 "jwt_check: Unknown error when getting identity from JWT: %r",
-                e,
+                exx,
             )
         response = sendError("Not authenticated")
         response.status_code = 401

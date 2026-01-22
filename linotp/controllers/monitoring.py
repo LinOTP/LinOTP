@@ -75,7 +75,7 @@ class MonitoringController(BaseController):
         try:
             checkAuthorisation(scope="monitoring", method=action)
         except Exception as exx:
-            log.error("[__before__::%r] exception %r", action, exx)
+            log.exception("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
             return sendError(exx)
 
@@ -98,7 +98,7 @@ class MonitoringController(BaseController):
             return response
 
         except Exception as exx:
-            log.error("[__after__::%r] exception %r", action, exx)
+            log.exception("[__after__::%r] exception %r", action, exx)
             db.session.rollback()
             return sendError(exx)
 
@@ -175,10 +175,10 @@ class MonitoringController(BaseController):
             db.session.rollback()
             return sendError(pol_ex, 1)
 
-        except Exception as exc:
-            log.error(exc)
+        except Exception as exx:
+            log.exception(exx)
             db.session.rollback()
-            return sendError(exc)
+            return sendError(exx)
 
     @deprecated_methods(["POST"])
     def config(self):
@@ -218,9 +218,9 @@ class MonitoringController(BaseController):
 
             return sendResult(result)
 
-        except Exception as exception:
-            log.error(exception)
-            return sendError(exception)
+        except Exception as exx:
+            log.exception(exx)
+            return sendError(exx)
 
     @deprecated_methods(["POST"])
     def storageEncryption(self):
@@ -254,9 +254,9 @@ class MonitoringController(BaseController):
 
             return sendResult(res, 1)
 
-        except Exception as exception:
-            log.error(exception)
-            return sendError(exception)
+        except Exception as exx:
+            log.exception(exx)
+            return sendError(exx)
 
     @deprecated_methods(["POST"])
     def license(self):
@@ -304,9 +304,9 @@ class MonitoringController(BaseController):
 
             return sendResult(res, 1)
 
-        except Exception as exception:
-            log.error(exception)
-            return sendError(exception)
+        except Exception as exx:
+            log.exception(exx)
+            return sendError(exx)
 
     @deprecated_methods(["POST"])
     def userinfo(self):
@@ -358,10 +358,10 @@ class MonitoringController(BaseController):
             db.session.rollback()
             return sendError(pol_ex, 1)
 
-        except Exception as exc:
-            log.error(exc)
+        except Exception as exx:
+            log.exception(exx)
             db.session.rollback()
-            return sendError(exc)
+            return sendError(exx)
 
     @deprecated_methods(["POST"])
     def activeUsers(self):
@@ -417,7 +417,7 @@ class MonitoringController(BaseController):
             db.session.rollback()
             return sendError(pol_ex, 1)
 
-        except Exception as exc:
-            log.error(exc)
+        except Exception as exx:
+            log.exception(exx)
             db.session.rollback()
-            return sendError(exc)
+            return sendError(exx)

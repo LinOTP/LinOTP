@@ -425,7 +425,7 @@ class UserserviceController(BaseController):
             return response
 
         except Exception as exx:
-            log.error("[__after__::%r] exception %r", action, exx)
+            log.exception("[__after__::%r] exception %r", action, exx)
             db.session.rollback()
             return sendError(exx)
 
@@ -577,9 +577,9 @@ class UserserviceController(BaseController):
             return sendResult(True, 0)
 
         except Exception as exx:
+            log.exception("User authentication failed: %r", exx)
             g.audit["info"] = (f"{exx!r}")[:80]
             g.audit["success"] = False
-
             db.session.rollback()
             return sendError(exx)
 
@@ -1044,7 +1044,7 @@ class UserserviceController(BaseController):
             raise exx
 
         except Exception as exx:
-            log.error("userservice login failed: %r", exx)
+            log.exception("userservice login failed: %r", exx)
 
             g.audit["info"] = (f"{exx!r}")[:80]
             g.audit["success"] = False
@@ -1149,7 +1149,7 @@ class UserserviceController(BaseController):
             return sendResult(tokenArray, 0)
 
         except Exception as exx:
-            log.error("failed with error: %r", exx)
+            log.exception("failed with error: %r", exx)
             db.session.rollback()
             return sendError(exx)
 
@@ -1171,9 +1171,9 @@ class UserserviceController(BaseController):
             return sendResult(uinfo, 0)
 
         except Exception as exx:
-            db.session.rollback()
             error = f"error ({exx!r}) "
-            log.error(error)
+            log.exception(error)
+            db.session.rollback()
             return f"<pre>{error}</pre>"
 
         finally:
@@ -1201,9 +1201,9 @@ class UserserviceController(BaseController):
             return sendResult(True, 0)
 
         except Exception as exx:
-            db.session.rollback()
             error = f"error ({exx!r}) "
-            log.error(error)
+            log.exception(error)
+            db.session.rollback()
             return f"<pre>{error}</pre>"
 
         finally:
@@ -1231,7 +1231,7 @@ class UserserviceController(BaseController):
             return sendResult(True, opt=pre_context)
 
         except Exception as exx:
-            log.error("pre_context failed with error: %r", exx)
+            log.exception("pre_context failed with error: %r", exx)
             db.session.rollback()
             return sendError(exx)
 
@@ -1254,10 +1254,10 @@ class UserserviceController(BaseController):
             context = get_context(config, g.authUser, g.client)
             return sendResult(True, opt=context)
 
-        except Exception as e:
-            log.error("[context] failed with error: %r", e)
+        except Exception as exx:
+            log.exception("[context] failed with error: %r", exx)
             db.session.rollback()
-            return sendError(e)
+            return sendError(exx)
 
     # action hooks for the js methods ########################################
     @methods(["POST"])
@@ -1316,10 +1316,10 @@ class UserserviceController(BaseController):
             msg = _("Failed to enable token, please contact your administrator")
             return sendError(msg, 1)
 
-        except Exception as e:
-            log.error("[enable] failed: %r", e)
+        except Exception as exx:
+            log.exception("[enable] failed: %r", exx)
             db.session.rollback()
-            return sendError(e, 1)
+            return sendError(exx, 1)
 
     ########################################################
     @methods(["POST"])
@@ -1372,10 +1372,10 @@ class UserserviceController(BaseController):
             db.session.rollback()
             return sendError(pol_ex, 1)
 
-        except Exception as e:
-            log.error("failed: %r", e)
+        except Exception as exx:
+            log.exception("failed: %r", exx)
             db.session.rollback()
-            return sendError(e, 1)
+            return sendError(exx, 1)
 
     @methods(["POST"])
     def delete(self):
@@ -1428,14 +1428,14 @@ class UserserviceController(BaseController):
             db.session.rollback()
             return sendError(pol_ex, 1)
 
-        except Exception as e:
-            log.error(
+        except Exception as exx:
+            log.exception(
                 "[userdelete] deleting token %s of user %s failed!",
                 serial,
                 c.user,
             )
             db.session.rollback()
-            return sendError(e, 1)
+            return sendError(exx, 1)
 
     @methods(["POST"])
     def reset(self):
@@ -1484,10 +1484,10 @@ class UserserviceController(BaseController):
             db.session.rollback()
             return sendError(pol_ex, 1)
 
-        except Exception as e:
-            log.error("error resetting token with serial %s: %r", serial, e)
+        except Exception as exx:
+            log.exception("error resetting token with serial %s: %r", serial, exx)
             db.session.rollback()
-            return sendError(e, 1)
+            return sendError(exx, 1)
 
     @methods(["POST"])
     def unassign(self):
@@ -1547,10 +1547,12 @@ class UserserviceController(BaseController):
             db.session.rollback()
             return sendError(pol_ex, 1)
 
-        except Exception as e:
-            log.error("unassigning token %s of user %s failed! %r", serial, c.user, e)
+        except Exception as exx:
+            log.exception(
+                "unassigning token %s of user %s failed! %r", serial, c.user, exx
+            )
             db.session.rollback()
-            return sendError(e, 1)
+            return sendError(exx, 1)
 
     @methods(["POST"])
     def setpin(self):
@@ -1618,7 +1620,7 @@ class UserserviceController(BaseController):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
-            log.error("Error setting OTP PIN: %r", exx)
+            log.exception("Error setting OTP PIN: %r", exx)
             db.session.rollback()
             return sendError(exx, 1)
 
@@ -1671,7 +1673,7 @@ class UserserviceController(BaseController):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
-            log.error("Error setting the mOTP PIN %r", exx)
+            log.exception("Error setting the mOTP PIN %r", exx)
             db.session.rollback()
             return sendError(exx, 1)
 
@@ -1730,10 +1732,10 @@ class UserserviceController(BaseController):
             db.session.rollback()
             return sendError(pol_ex, 1)
 
-        except Exception as e:
-            log.error("error resyncing token with serial %s:%r", serial, e)
+        except Exception as exx:
+            log.exception("error resyncing token with serial %s:%r", serial, exx)
             db.session.rollback()
-            return sendError(e, 1)
+            return sendError(exx, 1)
 
     @deprecated_methods(["GET"])
     def verify(self):
@@ -1988,8 +1990,8 @@ class UserserviceController(BaseController):
             return sendError(pol_ex)
 
         except Exception as exx:
+            log.exception("error verifying token with serial %s: %r", serial, exx)
             g.audit["success"] = False
-            log.error("error verifying token with serial %s: %r", serial, exx)
             db.session.rollback()
             return sendError(exx, 1)
 
@@ -2061,7 +2063,7 @@ class UserserviceController(BaseController):
             db.session.rollback()
             return sendError(pol_ex, 1)
         except Exception as exx:
-            log.error("activate failed: %r", exx)
+            log.exception("activate failed: %r", exx)
             g.audit["info"] = str(exx)
             db.session.rollback()
             return sendResult(False, 0)
@@ -2129,7 +2131,7 @@ class UserserviceController(BaseController):
             return sendResult(ok, 0, opt=opt)
 
         except Exception as exx:
-            log.error("activate failed: %r", exx)
+            log.exception("activate failed: %r", exx)
             g.audit["info"] = str(exx)
             db.session.rollback()
             return sendResult(False, 0)
@@ -2223,7 +2225,7 @@ class UserserviceController(BaseController):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
-            log.error("[userassign] token assignment failed! %r", exx)
+            log.exception("[userassign] token assignment failed! %r", exx)
             db.session.rollback()
             return sendError(exx, 1)
 
@@ -2279,7 +2281,7 @@ class UserserviceController(BaseController):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
-            log.error("token getSerialByOtp failed! %r", exx)
+            log.exception("token getSerialByOtp failed! %r", exx)
             db.session.rollback()
             return sendError(exx, 1)
 
@@ -2496,10 +2498,10 @@ class UserserviceController(BaseController):
             msg = _("Failed to enroll token, please contact your administrator")
             return sendError(msg, 1)
 
-        except Exception as e:
-            log.error("[userinit] token initialization failed! %r", e)
+        except Exception as exx:
+            log.exception("[userinit] token initialization failed! %r", exx)
             db.session.rollback()
-            return sendError(e, 1)
+            return sendError(exx, 1)
 
     @deprecated_methods(["POST"])
     def history(self):
@@ -2570,7 +2572,7 @@ class UserserviceController(BaseController):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
-            log.error("[search] audit/search failed: %r", exx)
+            log.exception("[search] audit/search failed: %r", exx)
             db.session.rollback()
             return sendError(_("audit/search failed: %s") % str(exx), 0)
 
@@ -2668,7 +2670,7 @@ class UserserviceController(BaseController):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
-            log.error("token initialization failed! %r", exx)
+            log.exception("token initialization failed! %r", exx)
             db.session.rollback()
             return sendError(exx, 1)
 
@@ -2741,9 +2743,9 @@ class UserserviceController(BaseController):
             db.session.rollback()
             return sendError(pol_ex, 1)
 
-        except Exception as e:
-            error = f"[userfinishocra2token] token initialization failed! {e!r}"
-            log.error(error)
+        except Exception as exx:
+            error = f"[userfinishocra2token] token initialization failed! {exx!r}"
+            log.exception(error)
             db.session.rollback()
             return sendError(error, 1)
 
@@ -2809,7 +2811,7 @@ class UserserviceController(BaseController):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
-            log.error("failed: %r", exx)
+            log.exception("failed: %r", exx)
             db.session.rollback()
             return sendError(exx, 1)
 

@@ -167,7 +167,7 @@ class AuditController(BaseController):
             return sendError(pol_ex, 1)
 
         except Exception as exx:
-            log.error("[search] audit/search failed: %r", exx)
+            log.exception("[search] audit/search failed: %r", exx)
             db.session.rollback()
             return sendError("audit/search failed", 0)
 

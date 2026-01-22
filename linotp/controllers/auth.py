@@ -76,7 +76,7 @@ class AuthController(BaseController):
             c.realmbox = getRealmBox()
 
         except Exception as exx:
-            log.error("[__before__::%r] exception %r", action, exx)
+            log.exception("[__before__::%r] exception %r", action, exx)
             db.session.rollback()
             return sendError(exx)
 
