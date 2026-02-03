@@ -39,6 +39,7 @@ from flask import Flask, current_app
 from flask.cli import FlaskGroup, with_appcontext
 
 from linotp.app import create_app
+from linotp.settings import LinOTPConfigValueError
 
 
 class Echo:
@@ -148,7 +149,12 @@ class LinOTPGroup(FlaskGroup):
 def make_create_app():
     def factory():
         config_name = os.getenv("LINOTP_CONFIG", "default")
-        return create_app(config_name)
+        try:
+            return create_app(config_name)
+        except LinOTPConfigValueError as e:
+            click.echo("Failed to initialize app configuration", err=True)
+            click.echo(f"Error: {e}", err=True)
+            sys.exit(1)
 
     return factory
 
