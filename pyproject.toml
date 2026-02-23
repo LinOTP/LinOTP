@@ -56,13 +56,14 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-  "pre-commit",
-  "pylint",
   "autopep8",
   "mypy",
-  "sqlalchemy-stubs",
-  "ruff>=0.11.11",
+  "pre-commit",
+  "pylint",
   "python-dotenv",
+  "ruff>=0.11.11",
+  "snakeviz>=2.2.2",
+  "sqlalchemy-stubs",
 ]
 test = [
   "flask_testing",
