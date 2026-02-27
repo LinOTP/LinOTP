@@ -654,6 +654,28 @@ _config_schema = ConfigSchema(
             ),
         ),
         ConfigItem(
+            "FIDO2_RP_ID",
+            str,
+            default="localhost",
+            help=(
+                "The FIDO2/WebAuthn Relying Party ID. This is typically "
+                "the domain name of the LinOTP server (e.g. 'linotp.example.com'). "
+                "It must match the origin used by the browser during WebAuthn "
+                "ceremonies. Changing this after tokens have been enrolled "
+                "will invalidate all existing FIDO2 credentials."
+            ),
+        ),
+        ConfigItem(
+            "FIDO2_RP_NAME",
+            str,
+            default="LinOTP",
+            help=(
+                "A human-readable display name for the FIDO2/WebAuthn "
+                "Relying Party. This is shown to the user by the browser "
+                "or authenticator during registration."
+            ),
+        ),
+        ConfigItem(
             "TLS_CA_CERTIFICATES_FILE",
             str,
             default="/etc/ssl/certs/ca-certificates.crt",
