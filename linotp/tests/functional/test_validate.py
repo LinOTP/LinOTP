@@ -2031,5 +2031,118 @@ class TestValidateController(TestController):
         self.delete_token(target_serial)
         self.delete_token(remote_serial)
 
+    def test_fido2_authentication(self):
+        """
+        Test FIDO2 authentication via validate controller.
+
+        Uses a software FIDO2 authenticator (SoftWebauthnDevice) that
+        generates real ES256 key pairs and signs assertions with real
+        cryptography — no mocking required.
+
+        Flow:
+          1. Enroll a FIDO2 token (phase 1 + phase 2 with SoftWebauthnDevice)
+          2. Trigger a challenge via /validate/check
+          3. Answer the challenge via /validate/check_t with a signed assertion
+        """
+        # Setup policy to allow FIDO2 enrollment and authentication
+        policy = {
+            "name": "enroll_fido2",
+            "action": "enrollFIDO2",
+            "user": "*",
+            "realm": "*",
+            "scope": "selfservice",
+        }
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response, response
+
+        auth_user = {
+            "login": "passthru_user1@myDefRealm",
+            "password": "geheim1",
+        }
+
+        # -- Enroll FIDO2 token ---------------------------------------- --
+        _serial, device = self.enroll_fido2_token(auth_user=auth_user)
+
+        # -- Authenticate ---------------------------------------------- --
+
+        # Step 1: Trigger FIDO2 challenge via validate/check with PIN
+        params = {"user": "passthru_user1", "realm": "myDefRealm", "pass": ""}
+        response = self.make_validate_request("check", params)
+        assert response.json["result"]["status"] is True, response
+        detail = response.json.get("detail", {})
+
+        # The challenge data is directly in 'detail' for a single token
+        assert detail.get("linotp_tokentype") == "fido2", f"Unexpected detail: {detail}"
+        transaction_id = detail.get("transactionid")
+        assert transaction_id, f"No transactionid in detail: {detail}"
+
+        # Step 2: Software authenticator signs the challenge
+        sign_request = detail["signrequest"]
+        assertion_response = device.get(sign_request, origin="https://localhost")
+
+        params = {
+            "transactionid": transaction_id,
+            "pass": json.dumps(assertion_response),
+        }
+        response = self.make_validate_request("check_t", params)
+        assert response.json["result"]["status"] is True, response
+        # check_t returns value as a nested dict {value: True, failcount: 0}
+        result_value = response.json["result"]["value"]
+        assert result_value["value"] is True, response
+
+    def test_fido2_authentication_wrong_key(self):
+        """
+        Test that FIDO2 authentication fails when a different device
+        signs the challenge (wrong private key).
+
+        Flow:
+          1. Enroll a FIDO2 token with device A
+          2. Trigger a challenge via /validate/check
+          3. Sign the challenge with device B
+          4. Assert that /validate/check_t rejects the assertion
+        """
+
+        # Setup policy to allow FIDO2 enrollment
+        policy = {
+            "name": "enroll_fido2",
+            "action": "enrollFIDO2",
+            "user": "*",
+            "realm": "*",
+            "scope": "selfservice",
+        }
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response, response
+
+        auth_user = {
+            "login": "passthru_user1@myDefRealm",
+            "password": "geheim1",
+        }
+
+        # Step 1: Enroll a FIDO2 token with device A
+        _serial_a, _device_a = self.enroll_fido2_token(auth_user=auth_user)
+
+        # Step 2: Trigger FIDO2 challenge
+        params = {"user": "passthru_user1", "realm": "myDefRealm", "pass": ""}
+        response = self.make_validate_request("check", params)
+        transaction_id = response.json["detail"]["transactionid"]
+        sign_request = response.json["detail"]["signrequest"]
+
+        # Step 3: A *different* device (wrong key) signs the challenge
+        _serial_b, device_b = self.enroll_fido2_token(auth_user=auth_user)
+        assertion_response = device_b.get(sign_request)
+
+        # Step 4: Assert that authentication fails with wrong key
+        params = {
+            "transactionid": transaction_id,
+            "pass": json.dumps(assertion_response),
+        }
+        response = self.make_validate_request("check_t", params)
+        assert response.json["result"]["status"] is True, response
+        # Authentication must fail — wrong key
+        result_value = response.json["result"]["value"]
+        assert result_value["value"] is False, (
+            f"Expected authentication to fail with wrong key: {response.json}"
+        )
+
 
 # eof #########################################################################

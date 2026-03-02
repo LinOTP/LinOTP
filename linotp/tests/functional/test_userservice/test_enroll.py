@@ -602,3 +602,32 @@ class TestUserserviceEnrollment(TestController):
 
         for params in tests:
             self._assert_enrollment(params)
+
+    def test_fido2_enrollment(self):
+        """
+        Test FIDO2 token enrollment (phase 1 and 2) via userservice.
+
+        Uses a software FIDO2 authenticator (SoftWebauthnDevice) that
+        generates real ES256 key pairs and produces valid attestation
+        responses — no mocking or patching required.
+        """
+
+        # Setup policy to allow FIDO2 enrollment
+        policy_params = {
+            "name": "enroll_fido2",
+            "scope": "selfservice",
+            "action": "enrollFIDO2",
+            "user": "*",
+            "realm": "*",
+            "active": True,
+        }
+        response = self.make_system_request("setPolicy", policy_params)
+        assert "false" not in response, response
+
+        auth_user = {
+            "login": "passthru_user1@myDefRealm",
+            "password": "geheim1",
+        }
+
+        serial, _device = self.enroll_fido2_token(auth_user=auth_user)
+        assert serial.startswith("FIDO2")

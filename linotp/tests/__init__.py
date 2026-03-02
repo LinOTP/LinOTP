@@ -59,6 +59,7 @@ from flask import current_app, g, request
 from werkzeug.test import TestResponse
 
 from linotp.lib.user import User
+from linotp.tests.functional.fido2_device import DEFAULT_ORIGIN, SoftWebauthnDevice
 
 warnings.filterwarnings(action="ignore", category=DeprecationWarning)
 
@@ -1134,6 +1135,60 @@ class TestController(TestCase):
         resp_json = response.json
         assert resp_json["result"]["status"] is True, resp_json
         assert resp_json["result"]["value"] is True, resp_json
+
+    def enroll_fido2_token(
+        self,
+        auth_user: dict,
+        params: dict | None = None,
+        origin: str = DEFAULT_ORIGIN,
+    ) -> tuple[str, SoftWebauthnDevice]:
+        """Enroll a FIDO2 token via userservice using a software authenticator.
+
+        Performs both enrollment phases (challenge generation + attestation
+        verification) and returns the token serial and the
+        :class:`SoftWebauthnDevice` that holds the private key so it can
+        sign authentication assertions later.
+
+        :param auth_user: ``{"login": …, "password": …}`` dict.
+        :param params: Extra enrollment parameters (e.g. ``pin``,
+            ``description``).  ``type`` is always set to ``"fido2"``.
+        :param origin: RP origin (default ``"https://localhost"``).
+        :return: ``(serial, device)`` tuple.
+        """
+
+        device = SoftWebauthnDevice()
+
+        enroll_params = {"type": "fido2"}
+        if params:
+            enroll_params.update(params)
+
+        # Phase 1 — server generates a registration challenge
+        response = self.make_userselfservice_request(
+            "enroll",
+            params=enroll_params,
+            auth_user=auth_user,
+            new_auth_cookie=True,
+        )
+        assert response.json["result"]["status"] is True, response
+        detail = response.json["detail"]
+        assert "serial" in detail and "registerrequest" in detail
+        serial = detail["serial"]
+
+        # Phase 2 — software authenticator answers the challenge
+        attestation_response = device.create(detail["registerrequest"], origin=origin)
+        response = self.make_userselfservice_request(
+            "fido2_activate_finish",
+            params={
+                "serial": serial,
+                "attestationResponse": attestation_response,
+            },
+            auth_user=auth_user,
+            content_type="application/json",
+        )
+        assert response.json["result"]["status"] is True, response
+        assert response.json["result"]["value"] is True, response
+
+        return serial, device
 
 
 # eof #
