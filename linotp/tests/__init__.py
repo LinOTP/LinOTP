@@ -1018,7 +1018,12 @@ class TestController(TestCase):
         return response, auth_cookie
 
     def make_userselfservice_request(
-        self, action, params=None, auth_user=None, new_auth_cookie=False
+        self,
+        action,
+        params=None,
+        auth_user=None,
+        new_auth_cookie=False,
+        content_type=None,
     ):
         if not params:
             params = {}
@@ -1052,9 +1057,16 @@ class TestController(TestCase):
 
         params["session"] = auth_cookie
         # params['user'] = user
-        response = self.client.post(
-            url(controller="userservice", action=action), data=params
-        )
+        if content_type == "application/json":
+            response = self.client.post(
+                url(controller="userservice", action=action),
+                data=json.dumps(params),
+                content_type="application/json",
+            )
+        else:
+            response = self.client.post(
+                url(controller="userservice", action=action), data=params
+            )
 
         if response.status_code != 200:
             msg = f"Server Error {response.status_code}"
