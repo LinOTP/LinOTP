@@ -952,5 +952,58 @@ class TestUserserviceTokenTest(TestUserserviceController):
 
         assert "false" in response
 
+    def test_fido2_token_verify(self):
+        """
+        Test FIDO2 token verification via userservice.
+
+        Uses a software FIDO2 authenticator (SoftWebauthnDevice) that
+        generates real ES256 key pairs and signs assertions — no mocking.
+        """
+
+        # Setup policy to allow FIDO2 enrollment and verification
+        policy = {
+            "name": "T1_fido2",
+            "action": "enrollFIDO2, verify",
+            "user": "*",
+            "realm": "*",
+            "scope": "selfservice",
+        }
+        response = self.make_system_request("setPolicy", params=policy)
+        assert "false" not in response, response
+
+        auth_user = {
+            "login": "passthru_user1@myDefRealm",
+            "password": "geheim1",
+        }
+
+        # -- Enroll FIDO2 token -------------------------------------------
+        serial, device = self.enroll_fido2_token(auth_user=auth_user)
+
+        # -- Verify the token ---------------------------------------------
+
+        # Trigger a verification challenge
+        params = {"serial": serial}
+        response = self.make_userselfservice_request(
+            "verify", params=params, auth_user=auth_user
+        )
+        # Should return a challenge for FIDO2
+        transaction_id = response.json["detail"]["transactionId"]
+        sign_request = response.json["detail"]["signrequest"]
+
+        # Software authenticator signs the verification challenge
+        assertion_response = device.get(sign_request)
+
+        # Verify the assertion response via userservice
+        params = {
+            "serial": serial,
+            "otp": json.dumps(assertion_response),
+            "transactionid": transaction_id,
+        }
+        response = self.make_userselfservice_request(
+            "verify", params=params, auth_user=auth_user
+        )
+
+        assert response.json["result"]["value"] is True, response
+
 
 # eof

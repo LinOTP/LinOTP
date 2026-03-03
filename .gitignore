@@ -42,6 +42,9 @@ RELEASE/
 
 **/.eggs/
 
+# profiling artifacts
+profile/*
+
 # License file for test cases, never commit!
 data/testdata/testlicense*.pem
 

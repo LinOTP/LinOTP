@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- FIDO2/WebAuthn token support for second-factor authentication using hardware security keys (e.g. YubiKey 5, SoloKeys):
+  - Enrollment is a two-phase process via `/userservice/enroll` and `/userservice/fido2_activate_finish`.
+  - Authentication uses a challenge-response flow via `/validate/check` and `/validate/check_t`.
+  - New selfservice policy action `enrollFIDO2`.
+  - New configuration settings `FIDO2_RP_ID` and `FIDO2_RP_NAME` to configure the WebAuthn Relying Party.
 - unhandled errors are now logged with traceback and returned in the response
 - Manage-UI shows info-box (success/error) for operation `Set PIN`
 - Caching of UserInfo per request to decrease request time of e.g. `/validate/check` to about half

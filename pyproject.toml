@@ -23,46 +23,47 @@ classifiers = [
 ]
 # Core dependencies
 dependencies = [
-  "Flask",
+  "bcrypt<5.0",         # Pinned due to `Passing hashpw a password longer than 72 bytes now raises a ValueError`
+  "beaker",
+  "click<8.2",          # Click is pinned, because 8.2 is not compatible with Flask 2.1.x.
+  "configobj",
+  "cryptography",
+  "docutils",
+  "fido2>=2.1.1",
   "Flask-Babel",
   "flask-jwt-extended",
   "flask-sqlalchemy",
-  "SQLAlchemy",
-  "werkzeug",
+  "Flask",
+  "gunicorn",           # for running LinOTP in production container
+  "httplib2",
+  "jsonschema",
   "mako",
-  "beaker",
-  "docutils",
+  "mysqlclient",
+  "netaddr",
+  "passlib",
+  "psycopg2-binary",
   "pycryptodomex",
   "pyrad",
-  "netaddr",
-  "qrcode[png]",
-  "configobj",
-  "httplib2",
-  "requests",
-  "passlib",
   "pysodium",
   "python-ldap",
-  "bcrypt<5.0",         # Pinned due to `Passing hashpw a password longer than 72 bytes now raises a ValueError`
-  "cryptography",
-  "click<8.2",          # Click is pinned, because 8.2 is not compatible with Flask 2.1.x.
-  "urllib3>=2.5.0",     # Lower bound due to CVEs (is pinned to 2.4.0 in selenium==4.33.0)
-  "jsonschema",
+  "qrcode[png]",
+  "requests",
   "smpplib",
-  "psycopg2-binary",
-  "mysqlclient",
-  # for running LinOTP in production container
-  "gunicorn",
+  "SQLAlchemy",
+  "urllib3>=2.5.0",     # Lower bound due to CVEs (is pinned to 2.4.0 in selenium==4.33.0)
+  "werkzeug",
 ]
 
 [dependency-groups]
 dev = [
-  "pre-commit",
-  "pylint",
   "autopep8",
   "mypy",
-  "sqlalchemy-stubs",
-  "ruff>=0.11.11",
+  "pre-commit",
+  "pylint",
   "python-dotenv",
+  "ruff>=0.11.11",
+  "snakeviz>=2.2.2",
+  "sqlalchemy-stubs",
 ]
 test = [
   "flask_testing",

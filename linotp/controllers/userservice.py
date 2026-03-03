@@ -116,6 +116,7 @@ from linotp.lib.userservice import (
 )
 from linotp.lib.util import get_client
 from linotp.model import db
+from linotp.tokens.fido2token.fido2token import FIDO2_TOKEN_TYPE
 from linotp.tokens.forwardtoken import ForwardTokenClass
 
 log = logging.getLogger(__name__)
@@ -1916,6 +1917,7 @@ class UserserviceController(BaseController):
             elif action == "trigger challenge":
                 transaction_data = None
                 transaction_id = None
+                reply = {}
 
                 # 'authenticate': default for non-challenge response tokens
                 #                 like ['hmac', 'totp', 'motp']
@@ -1971,6 +1973,9 @@ class UserserviceController(BaseController):
 
                 if transaction_data:
                     detail_response["transactionData"] = transaction_data
+
+                if signrequest := reply.get("signrequest"):
+                    detail_response["signrequest"] = signrequest
 
                 if isinstance(token, ForwardTokenClass):
                     # get the target token info.
@@ -2812,6 +2817,176 @@ class UserserviceController(BaseController):
 
         except Exception as exx:
             log.exception("failed: %r", exx)
+            db.session.rollback()
+            return sendError(exx, 1)
+
+    # ------------------------------------------------------------------ --
+    # FIDO2 WebAuthn enrollment endpoints
+    # ------------------------------------------------------------------ --
+
+    @methods(["POST"])
+    def fido2_activate_finish(self):
+        """
+        FIDO2 enrollment phase 2: verify the WebAuthn attestation response
+        from the authenticator and activate the token.
+
+        The external frontend calls this after the user interacted with the
+        security key and ``navigator.credentials.create`` returned.
+
+        :param serial: serial of the token created in phase 1 (required)
+        :param attestationResponse: JSON-encoded attestation response from
+            the browser WebAuthn API (required).  Contains ``id``,
+            ``rawId``, ``clientDataJSON``, ``attestationObject`` and ``type``.
+
+        :return:
+            JSON with ``result.value = true`` on success.  The token is
+            now active and ready for authentication.
+
+        :raises ParameterError: if required parameters are missing
+        :raises PolicyException: if the user is not allowed to enroll
+        :raises Exception: on validation / verification errors
+        """
+        param = self.request_params.copy()
+
+        try:
+            try:
+                serial = param["serial"]
+                attestation_response = param["attestationResponse"]
+            except KeyError as exx:
+                msg = f"Missing parameter: '{exx}'"
+                raise ParameterError(msg) from exx
+
+            # verify the user owns this token
+            token = get_token(serial)
+            owner = get_token_owner(token)
+            if owner != g.authUser:
+                msg = f"User {g.authUser.login!r} is not owner of token {serial}"
+                raise Exception(msg)
+
+            # verify it's a FIDO2 token
+            if token.type != FIDO2_TOKEN_TYPE:
+                msg = f"Token {serial} is not a FIDO2 token (type={token.type})"
+                raise ParameterError(msg)
+            param["type"] = FIDO2_TOKEN_TYPE
+
+            checkPolicyPre("selfservice", "userinit", param, g.authUser)
+
+            # ---- complete registration --------------------------------- --
+
+            param["otpkey"] = attestation_response
+
+            th = TokenHandler()
+            (ret, token_obj) = th.initToken(param, g.authUser)
+
+            response_detail = {}
+            if token_obj is not None and hasattr(token_obj, "getInfo"):
+                response_detail.update(token_obj.getInfo())
+
+            init_detail = token_obj.getInitDetail(param, g.authUser)
+            response_detail.update(init_detail)
+
+            # ------------------------------------------------------------ --
+
+            g.audit["success"] = ret
+            g.audit["serial"] = serial
+            g.audit["info"] = "fido2 enrollment phase 2 completed"
+            g.reporting["realms"] = [g.authUser.realm or "/:no realm:/"]
+
+            checkPolicyPost("selfservice", "enroll", param, user=g.authUser)
+
+            db.session.commit()
+            return sendResult(ret, opt=response_detail)
+
+        except PolicyException as pol_ex:
+            log.error("[fido2_enroll_complete] policy failed: %r", pol_ex)
+            db.session.rollback()
+            return sendError(pol_ex, 1)
+        except Exception as exx:
+            log.exception("[fido2_enroll_complete] failed: %r", exx)
+            db.session.rollback()
+            return sendError(exx, 1)
+
+    @methods(["POST"])
+    def fido2_activate_begin(self):
+        """
+        FIDO2 activation: regenerate registration challenge for fido2 tokens.
+
+        Should the user fail to complete the registration process (e.g. by running into a timeout),
+        this endpoint can be used to regenerate a new registration challenge for the same linotp-token.
+
+        :param serial: serial of the token to activate (required)
+
+        :return:
+            JSON with ``result.value = true`` and ``detail.registerrequest``
+            containing the regenerated WebAuthn ``PublicKeyCredentialCreationOptions``
+
+        :raises ParameterError: if serial is missing or token is not in registration phase
+        :raises PolicyException: if the user is not allowed to activate
+        :raises Exception: if user doesn't own the token or other errors
+        """
+        param = self.request_params.copy()
+
+        try:
+            try:
+                serial = param["serial"]
+            except KeyError as exx:
+                msg = f"Missing parameter: '{exx}'"
+                raise ParameterError(msg) from exx
+
+            # verify the user owns this token
+            token = get_token(serial)
+            owner = get_token_owner(token)
+            if owner != g.authUser:
+                msg = f"User {g.authUser.login!r} is not owner of token {serial}"
+                raise Exception(msg)
+
+            # verify it's a FIDO2 token
+            if token.type != FIDO2_TOKEN_TYPE:
+                msg = f"Token {serial} is not a FIDO2 token (type={token.type})"
+                raise ParameterError(msg)
+            param["type"] = FIDO2_TOKEN_TYPE
+
+            # verify enrollment status is not complete
+            token_obj = get_token(serial)
+            enrollment_status = token_obj.get_enrollment_status()
+            if enrollment_status.get("status") == "complete":
+                msg = f"Token {serial} is already active and paired."
+                raise ParameterError(msg)
+
+            # check selfservice authorization
+            checkPolicyPre("selfservice", "userinit", param, g.authUser)
+
+            # ---- regenerate registration challenge -------------------- --
+
+            th = TokenHandler()
+            (ret, token_obj) = th.initToken(param, g.authUser)
+
+            response_detail = {}
+            if token_obj is not None and hasattr(token_obj, "getInfo"):
+                response_detail.update(token_obj.getInfo())
+
+            # Get the new registration challenge
+            init_detail = token_obj.getInitDetail(param, g.authUser)
+            response_detail.update(init_detail)
+
+            # ------------------------------------------------------------ --
+
+            g.audit["success"] = ret
+            g.audit["serial"] = serial
+            g.audit["info"] = "fido2 activation challenge regenerated"
+            g.reporting["realms"] = [g.authUser.realm or "/:no realm:/"]
+
+            db.session.commit()
+            return sendResult(ret, opt=response_detail)
+
+        except PolicyException as pol_ex:
+            log.error("[fido2_activate_init] policy failed: %r", pol_ex)
+            db.session.rollback()
+            return sendError(pol_ex, 1)
+
+        except Exception as exx:
+            log.exception("[fido2_activate_init] failed: %r", exx)
+            g.audit["info"] = str(exx)
             db.session.rollback()
             return sendError(exx, 1)
 
