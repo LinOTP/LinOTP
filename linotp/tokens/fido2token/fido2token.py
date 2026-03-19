@@ -339,6 +339,16 @@ class Fido2TokenClass(TokenClass):
             "selfservice": {
                 "enroll": {}  # keep for dynamic policy definitions
             },
+            "config": {
+                "title": {
+                    "html": "fido2token/fido2token.mako",
+                    "scope": "config.title",
+                },
+                "page": {
+                    "html": "fido2token/fido2token.mako",
+                    "scope": "config",
+                },
+            },
         }
 
         if key is not None and key in res:
@@ -549,7 +559,9 @@ class Fido2TokenClass(TokenClass):
         )
 
         # Call Fido2Server.register_begin() to generate challenge and options
-        options, state = _get_fido2_server().register_begin(
+        server = _get_fido2_server()
+        server.timeout = self.get_challenge_validity()
+        options, state = server.register_begin(
             user=user_entity,
             user_verification=DEFAULT_USER_VERIFICATION,
             # Only allow cross-platform authenticators for now (hardware security keys)
@@ -777,7 +789,9 @@ class Fido2TokenClass(TokenClass):
         ]
 
         # Call Fido2Server.authenticate_begin() to generate challenge and options
-        options_obj, state = _get_fido2_server().authenticate_begin(
+        server = _get_fido2_server()
+        server.timeout = self.get_challenge_validity()
+        options_obj, state = server.authenticate_begin(
             credentials=allow_credentials,
             user_verification=DEFAULT_USER_VERIFICATION,
         )
