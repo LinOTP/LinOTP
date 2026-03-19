@@ -42,6 +42,7 @@ extract:
 		--output-file=$(I18N_SRC)/linotp.pot \
 		--msgid-bugs-address=info@linotp.de \
 		--copyright-holder="netgo software GmbH" \
+		--no-location \
 		linotp
 	$(foreach lang, \
 		$(I18N_LANGUAGES), \
