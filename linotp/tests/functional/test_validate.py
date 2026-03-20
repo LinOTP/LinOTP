@@ -2045,15 +2045,25 @@ class TestValidateController(TestController):
           3. Answer the challenge via /validate/check_t with a signed assertion
         """
         # Setup policy to allow FIDO2 enrollment and authentication
-        policy = {
-            "name": "enroll_fido2",
-            "action": "enrollFIDO2",
-            "user": "*",
-            "realm": "*",
-            "scope": "selfservice",
-        }
-        response = self.make_system_request("setPolicy", params=policy)
-        assert "false" not in response, response
+        policies = [
+            {
+                "name": "enroll_fido2",
+                "action": "enrollFIDO2",
+                "user": "*",
+                "realm": "*",
+                "scope": "selfservice",
+            },
+            {
+                "name": "fido2_rpid",
+                "action": "fido2_rp_id=localhost",
+                "user": "*",
+                "realm": "*",
+                "scope": "enrollment",
+            },
+        ]
+        for pp in policies:
+            response = self.make_system_request("setPolicy", params=pp)
+            assert "false" not in response, response
 
         auth_user = {
             "login": "passthru_user1@myDefRealm",
@@ -2103,15 +2113,25 @@ class TestValidateController(TestController):
         """
 
         # Setup policy to allow FIDO2 enrollment
-        policy = {
-            "name": "enroll_fido2",
-            "action": "enrollFIDO2",
-            "user": "*",
-            "realm": "*",
-            "scope": "selfservice",
-        }
-        response = self.make_system_request("setPolicy", params=policy)
-        assert "false" not in response, response
+        policies = [
+            {
+                "name": "enroll_fido2",
+                "action": "enrollFIDO2",
+                "user": "*",
+                "realm": "*",
+                "scope": "selfservice",
+            },
+            {
+                "name": "fido2_rpid",
+                "action": "fido2_rp_id=localhost",
+                "user": "*",
+                "realm": "*",
+                "scope": "enrollment",
+            },
+        ]
+        for pp in policies:
+            response = self.make_system_request("setPolicy", params=pp)
+            assert "false" not in response, response
 
         auth_user = {
             "login": "passthru_user1@myDefRealm",
