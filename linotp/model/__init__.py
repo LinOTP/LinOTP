@@ -374,6 +374,15 @@ def set_defaults(app):
     )
 
     set_config(
+        key="FIDO2ChallengeValidityTime",
+        value="120",
+        typ="int",
+        description=(
+            "The time span (in seconds) that a FIDO2 challenge is considered valid."
+        ),
+    )
+
+    set_config(
         key="QRTokenOtpLen",
         value="8",
         typ="int",

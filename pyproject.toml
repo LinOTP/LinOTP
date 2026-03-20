@@ -23,9 +23,9 @@ classifiers = [
 ]
 # Core dependencies
 dependencies = [
-  "bcrypt<5.0",         # Pinned due to `Passing hashpw a password longer than 72 bytes now raises a ValueError`
+  "bcrypt<5.0", # Pinned due to `Passing hashpw a password longer than 72 bytes now raises a ValueError`
   "beaker",
-  "click<8.2",          # Click is pinned, because 8.2 is not compatible with Flask 2.1.x.
+  "click<8.2", # Click is pinned, because 8.2 is not compatible with Flask 2.1.x.
   "configobj",
   "cryptography",
   "docutils",
@@ -34,7 +34,7 @@ dependencies = [
   "flask-jwt-extended",
   "flask-sqlalchemy",
   "Flask",
-  "gunicorn",           # for running LinOTP in production container
+  "gunicorn", # for running LinOTP in production container
   "httplib2",
   "jsonschema",
   "mako",
@@ -50,7 +50,7 @@ dependencies = [
   "requests",
   "smpplib",
   "SQLAlchemy",
-  "urllib3>=2.5.0",     # Lower bound due to CVEs (is pinned to 2.4.0 in selenium==4.33.0)
+  "urllib3>=2.5.0", # Lower bound due to CVEs (is pinned to 2.4.0 in selenium==4.33.0)
   "werkzeug",
 ]
 

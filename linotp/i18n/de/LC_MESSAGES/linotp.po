@@ -30,8 +30,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 3\n"
 "Report-Msgid-Bugs-To: info@linotp.de\n"
+"POT-Creation-Date: 2026-03-19 14:35+0100\n"
 "PO-Revision-Date: 2025-09-16 10:38+0200\n"
-"Last-Translator: Michael Weber <michael.weber@netgo.de>\n"
+"Last-Translator: Anselm Lingnau <anselm.lingnau@netgo.de>\n"
 "Language-Team: German <support@linotp.de>\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
@@ -815,6 +816,12 @@ msgstr "Richtlinien exportieren"
 
 msgid "Extended Search"
 msgstr "Erweiterte Suche"
+
+msgid "FIDO2 Token"
+msgstr "FIDO2-Token"
+
+msgid "FIDO2 Token Settings"
+msgstr "FIDO2-Token-Einstellungen"
 
 msgid "FailCounterIncOnFalsePin"
 msgstr "Den Fehlzähler bei falscher PIN hochzählen"
