@@ -13,7 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Enrollment is a two-phase process via `/userservice/enroll` and `/userservice/fido2_activate_finish`.
   - Authentication uses a challenge-response flow via `/validate/check` and `/validate/check_t`.
   - New selfservice policy action `enrollFIDO2`.
-  - New configuration settings `FIDO2_RP_ID` and `FIDO2_RP_NAME` to configure the WebAuthn Relying Party.
+  - New enrollment policy actions `fido2_rp_id=` and `fido2_rp_name=` used to set
+    FIDO2/WebAuthn Relying Party information. `fido2_rp_id=` is mandatory if you
+    want to use FIDO2/WebAuthn tokens. `fido2_rp_name=` is optional; if it is not
+    given, `tokenissuer=` will be used; if that is not given either, `LinOTP` is
+    the default.
   - FIDO2 token challenge expiration time may be set in the LinOTP web UI as usual.
 - unhandled errors are now logged with traceback and returned in the response
 - Manage-UI shows info-box (success/error) for operation `Set PIN`
