@@ -30,7 +30,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 3\n"
 "Report-Msgid-Bugs-To: info@linotp.de\n"
-"POT-Creation-Date: 2026-03-19 14:35+0100\n"
+"POT-Creation-Date: 2026-03-23 09:55+0100\n"
 "PO-Revision-Date: 2025-09-16 10:38+0200\n"
 "Last-Translator: Anselm Lingnau <anselm.lingnau@netgo.de>\n"
 "Language-Team: German <support@linotp.de>\n"
@@ -2033,6 +2033,12 @@ msgstr ""
 "Fehler im regulären Ausdruck des Realms. Sie dürfen nur einen Realm "
 "auswählen, um diesen zum Standardrealm zu machen."
 
+msgid "Relying Party ID for FIDO2/WebAuthn tokens"
+msgstr "Relying Party ID für FIDO2/WebAuthn-Tokens"
+
+msgid "Relying Party name for FIDO2/WebAuthn tokens"
+msgstr "Relying-Party-Name für FIDO2/WebAuthn-Tokens"
+
 msgid "Remote OTP len"
 msgstr "Remote OTP-Länge"
 
@@ -2889,6 +2895,10 @@ msgstr "Timeout"
 
 msgid "Timeout (sec)"
 msgstr "Timeout (Sek)"
+
+#, python-brace-format
+msgid "To enroll FIDO2 tokens in realm `{0}`, a `{1}=` policy must be defined"
+msgstr "Eine `{1}=`-Policy muss definiert sein, um FIDO2-Tokens im Realm `{0}` auszurollen."
 
 msgid "To resolver"
 msgstr "Zu Resolver"
