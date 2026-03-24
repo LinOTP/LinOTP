@@ -164,16 +164,6 @@ log = logging.getLogger(__name__)
 FIDO2_TOKEN_TYPE = "fido2"
 FIDO2_TOKEN_PREFIX = "FIDO2"
 
-
-def _get_fido2_server(rp_id, rp_name) -> Fido2Server:
-    """Return a :class:`Fido2Server` configured for a given RP."""
-
-    return Fido2Server(
-        rp=PublicKeyCredentialRpEntity(id=rp_id, name=rp_name),
-        attestation=AttestationConveyancePreference.NONE,
-    )
-
-
 # Default configuration values
 DEFAULT_USER_VERIFICATION = UserVerificationRequirement.PREFERRED
 
@@ -381,6 +371,20 @@ class Fido2TokenClass(TokenClass):
     # ---------------------------------------------------------------------- --
     # Helper methods
     # ---------------------------------------------------------------------- --
+
+    def _get_fido2_server(self) -> Fido2Server:
+        """Return a :class:`Fido2Server` configured for the RP associated
+        with the token."""
+
+        rp_id: str = self.getFromTokenInfo(TOKEN_INFO_RP_ID)
+        rp_name: str = self.getFromTokenInfo(TOKEN_INFO_RP_NAME)
+
+        server = Fido2Server(
+            rp=PublicKeyCredentialRpEntity(id=rp_id, name=rp_name),
+            attestation=AttestationConveyancePreference.NONE,
+        )
+        server.timeout = self.get_challenge_validity()
+        return server
 
     def _get_stored_credential(self) -> Fido2Credential:
         """
@@ -652,9 +656,7 @@ class Fido2TokenClass(TokenClass):
         )
 
         # Call Fido2Server.register_begin() to generate challenge and options
-        server = _get_fido2_server(rp_id=rp_id, rp_name=rp_name)
-        server.timeout = self.get_challenge_validity()
-        options, state = server.register_begin(
+        options, state = self._get_fido2_server().register_begin(
             user=user_entity,
             user_verification=DEFAULT_USER_VERIFICATION,
             # Only allow cross-platform authenticators for now (hardware security keys)
@@ -691,16 +693,13 @@ class Fido2TokenClass(TokenClass):
 
         state = self._deserialize_state(state_json)
 
-        rp_id: str = self.getFromTokenInfo(TOKEN_INFO_RP_ID)
-        rp_name: str = self.getFromTokenInfo(TOKEN_INFO_RP_NAME)
-
         # Verify attestation using Fido2Server
         # Response is expected in nested format from client:
         # {id, rawId, type, response: {clientDataJSON, attestationObject}}
         try:
-            auth_data = _get_fido2_server(
-                rp_id=rp_id, rp_name=rp_name
-            ).register_complete(state, attestation_response)
+            auth_data = self._get_fido2_server().register_complete(
+                state, attestation_response
+            )
         except ValueError as exx:
             msg = f"FIDO2 registration verification failed: {exx}"
             raise ParameterError(msg) from exx
@@ -756,7 +755,7 @@ class Fido2TokenClass(TokenClass):
             credential_id=websafe_encode(credential_id),
             public_key=websafe_encode(public_key_cbor),
             sign_count=auth_data.counter,
-            rp_id=rp_id,
+            rp_id=self.getFromTokenInfo(TOKEN_INFO_RP_ID),
             aaguid=aaguid_str,
             attestation_format=attestation_fmt,
             public_key_algorithm=pub_key_alg,
@@ -882,11 +881,7 @@ class Fido2TokenClass(TokenClass):
         ]
 
         # Call Fido2Server.authenticate_begin() to generate challenge and options
-        rp_id: str = self.getFromTokenInfo(TOKEN_INFO_RP_ID)
-        rp_name: str = self.getFromTokenInfo(TOKEN_INFO_RP_NAME)
-        server = _get_fido2_server(rp_id=rp_id, rp_name=rp_name)
-        server.timeout = self.get_challenge_validity()
-        options_obj, state = server.authenticate_begin(
+        options_obj, state = self._get_fido2_server().authenticate_begin(
             credentials=allow_credentials,
             user_verification=DEFAULT_USER_VERIFICATION,
         )
@@ -987,10 +982,8 @@ class Fido2TokenClass(TokenClass):
         # Verify assertion using Fido2Server
         # Response is expected in nested format from client:
         # {id, rawId, type, response: {clientDataJSON, authenticatorData, signature}}
-        rp_id: str = self.getFromTokenInfo(TOKEN_INFO_RP_ID)
-        rp_name: str = self.getFromTokenInfo(TOKEN_INFO_RP_NAME)
         try:
-            _get_fido2_server(rp_id=rp_id, rp_name=rp_name).authenticate_complete(
+            self._get_fido2_server().authenticate_complete(
                 state, [attested_cred], resp_data
             )
         except ValueError as exx:
