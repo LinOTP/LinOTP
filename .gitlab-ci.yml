@@ -92,7 +92,7 @@ build-docker:
 
 container_scanning:
   image:
-    name: docker.io/aquasec/trivy:latest
+    name: docker.io/aquasec/trivy:$TRIVY_IMAGE_VERSION
     entrypoint: [""]
   needs: ["build-docker"]
   variables:
