@@ -961,15 +961,25 @@ class TestUserserviceTokenTest(TestUserserviceController):
         """
 
         # Setup policy to allow FIDO2 enrollment and verification
-        policy = {
-            "name": "T1_fido2",
-            "action": "enrollFIDO2, verify",
-            "user": "*",
-            "realm": "*",
-            "scope": "selfservice",
-        }
-        response = self.make_system_request("setPolicy", params=policy)
-        assert "false" not in response, response
+        policies = [
+            {
+                "name": "T1_fido2",
+                "action": "enrollFIDO2, verify",
+                "user": "*",
+                "realm": "*",
+                "scope": "selfservice",
+            },
+            {
+                "name": "fido2_rpid",
+                "action": "fido2_rp_id=localhost",
+                "user": "*",
+                "realm": "*",
+                "scope": "enrollment",
+            },
+        ]
+        for pp in policies:
+            response = self.make_system_request("setPolicy", params=pp)
+            assert "false" not in response, response
 
         auth_user = {
             "login": "passthru_user1@myDefRealm",

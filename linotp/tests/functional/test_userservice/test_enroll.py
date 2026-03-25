@@ -613,16 +613,27 @@ class TestUserserviceEnrollment(TestController):
         """
 
         # Setup policy to allow FIDO2 enrollment
-        policy_params = {
-            "name": "enroll_fido2",
-            "scope": "selfservice",
-            "action": "enrollFIDO2",
-            "user": "*",
-            "realm": "*",
-            "active": True,
-        }
-        response = self.make_system_request("setPolicy", policy_params)
-        assert "false" not in response, response
+        policy_params = [
+            {
+                "name": "enroll_fido2",
+                "scope": "selfservice",
+                "action": "enrollFIDO2",
+                "user": "*",
+                "realm": "*",
+                "active": True,
+            },
+            {
+                "name": "fido2_rpid",
+                "scope": "enrollment",
+                "action": "fido2_rp_id=localhost",
+                "user": "*",
+                "realm": "*",
+                "active": True,
+            },
+        ]
+        for pp in policy_params:
+            response = self.make_system_request("setPolicy", pp)
+            assert "false" not in response, response
 
         auth_user = {
             "login": "passthru_user1@myDefRealm",

@@ -142,10 +142,14 @@ from fido2.webauthn import (
     PublicKeyCredentialUserEntity,
     UserVerificationRequirement,
 )
-from flask import current_app
+from flask import g
+from flask_babel import gettext as _
 
 from linotp.lib.auth.validate import check_pin
-from linotp.lib.error import ParameterError
+from linotp.lib.context import request_context as context
+from linotp.lib.error import ParameterError, TokenAdminError
+from linotp.lib.policy import get_client_policy
+from linotp.lib.policy.action import get_action_value
 from linotp.tokens import tokenclass_registry
 from linotp.tokens.base import TokenClass
 
@@ -160,18 +164,6 @@ log = logging.getLogger(__name__)
 FIDO2_TOKEN_TYPE = "fido2"
 FIDO2_TOKEN_PREFIX = "FIDO2"
 
-
-def _get_fido2_server() -> Fido2Server:
-    """Return a :class:`Fido2Server` configured from the Flask app config."""
-    rp_id = current_app.config["FIDO2_RP_ID"]
-    rp_name = current_app.config["FIDO2_RP_NAME"]
-
-    return Fido2Server(
-        rp=PublicKeyCredentialRpEntity(id=rp_id, name=rp_name),
-        attestation=AttestationConveyancePreference.NONE,
-    )
-
-
 # Default configuration values
 DEFAULT_USER_VERIFICATION = UserVerificationRequirement.PREFERRED
 
@@ -184,6 +176,13 @@ TOKEN_INFO_COUNTER = "counter"
 TOKEN_INFO_CREDENTIAL = "fido2_credential"
 TOKEN_INFO_LAST_AUTH = "last_auth_at"
 TOKEN_INFO_LAST_AUTH_UV = "last_auth_uv"
+
+# Policy action keys
+POLICY_RP_ID = "fido2_rp_id"
+POLICY_RP_NAME = "fido2_rp_name"
+POLICY_TOKENISSUER = "tokenissuer"  # legacy equivalent for fido2_rp_name
+
+RP_NAME_DEFAULT = "LinOTP"
 
 
 class TokenPhase(str, Enum):
@@ -349,6 +348,18 @@ class Fido2TokenClass(TokenClass):
                     "scope": "config",
                 },
             },
+            "policy": {
+                "enrollment": {
+                    "fido2_rp_id": {
+                        "type": "str",
+                        "desc": _("Relying Party ID for FIDO2/WebAuthn tokens"),
+                    },
+                    "fido2_rp_name": {
+                        "type": "str",
+                        "desc": _("Relying Party name for FIDO2/WebAuthn tokens"),
+                    },
+                },
+            },
         }
 
         if key is not None and key in res:
@@ -360,6 +371,20 @@ class Fido2TokenClass(TokenClass):
     # ---------------------------------------------------------------------- --
     # Helper methods
     # ---------------------------------------------------------------------- --
+
+    def _get_fido2_server(self) -> Fido2Server:
+        """Return a :class:`Fido2Server` configured for the RP associated
+        with the token."""
+
+        rp_id: str = self.getFromTokenInfo(TOKEN_INFO_RP_ID)
+        rp_name: str = self.getFromTokenInfo(TOKEN_INFO_RP_NAME)
+
+        server = Fido2Server(
+            rp=PublicKeyCredentialRpEntity(id=rp_id, name=rp_name),
+            attestation=AttestationConveyancePreference.NONE,
+        )
+        server.timeout = self.get_challenge_validity()
+        return server
 
     def _get_stored_credential(self) -> Fido2Credential:
         """
@@ -528,6 +553,70 @@ class Fido2TokenClass(TokenClass):
 
         return response_detail
 
+    def _get_rp_id_and_name_from_policies(self, user=None) -> dict[str, str]:
+        """Obtain RP ID and RP name from appropriate policies. Returns
+        a dictionary with `rp_id` and `rp_name` items, or an empty
+        dictionary if no RP ID could be located in policies.
+        """
+
+        # The user stuff will also have been checked in the method
+        # `_handle_registration_phase1()` below.  We check it again
+        # here for safety, in case this method is ever called from
+        # elsewhere.
+
+        if not user or not user.login or not user.realm:
+            log.debug("_get_rp_id_and_name_from_policies: user info missing")
+            return {}
+
+        def get_policy_action(action: str) -> str:
+            """Find the value of a suitable policy `action` for this user and
+            realm."""
+
+            # Note that we're using `get_client_policy()` in order to be able
+            # to consult client information (IP address, …) to find a policy
+            # that we like.
+
+            if not (
+                policies := get_client_policy(
+                    context["Client"],
+                    scope="enrollment",
+                    user=user.login,
+                    realm=user.realm,
+                    action=action,
+                )
+            ):
+                msg = "No `%s=` policy found for user %s@%s"
+                log.debug(msg, action, user.login, user.realm)
+                return ""
+
+            return get_action_value(
+                policies,
+                scope="enrollment",
+                action=action,
+                default="",
+            )
+
+        # Have to have an RP ID somehow.
+
+        if not (rp_id := get_policy_action(POLICY_RP_ID)):
+            log.debug(
+                "_get_rp_id_and_name_from_policies: no `%s=` policy found", POLICY_RP_ID
+            )
+            return {}
+
+        # We support `tokenissuer=` as a legacy equivalent to `fido2_rp_name=`,
+        # if `fido2_rp_name=` is not defined.
+
+        for action in (POLICY_RP_NAME, POLICY_TOKENISSUER):
+            if rp_name := get_policy_action(action):
+                break
+        else:
+            rp_name = RP_NAME_DEFAULT
+
+        result = {"rp_id": rp_id, "rp_name": rp_name}
+        log.debug("_get_rp_id_and_name_from_policies: result=%r", result)
+        return result
+
     def _handle_registration_phase1(self, params, user=None):
         """
         Generate WebAuthn registration challenge using Fido2Server.
@@ -535,16 +624,24 @@ class Fido2TokenClass(TokenClass):
         :return: dict with 'registerrequest' containing the
                  PublicKeyCredentialCreationOptions
         """
-        # Store RP ID and name for later verification
-        rp_id = current_app.config["FIDO2_RP_ID"]
-        rp_name = current_app.config["FIDO2_RP_NAME"]
-        self.addToTokenInfo(TOKEN_INFO_RP_ID, rp_id)
-        self.addToTokenInfo(TOKEN_INFO_RP_NAME, rp_name)
-
         # Build user entity - user and realm are required for FIDO2 enrollment
         if not user or not user.login or not user.realm:
             msg = "User information is required for FIDO2 token enrollment"
             raise ParameterError(msg)
+
+        if not (rp_info := self._get_rp_id_and_name_from_policies(user=user)):
+            g.audit["info"] = (
+                f"`{POLICY_RP_ID}=` policy missing for realm `{user.realm}`"
+            )
+            msg = _(
+                "To enroll FIDO2 tokens in realm `{0}`, a `{1}=` policy must be defined"
+            )
+            raise TokenAdminError(msg.format(user.realm, POLICY_RP_ID), id=1901)
+        rp_id, rp_name = rp_info["rp_id"], rp_info["rp_name"]
+
+        # log.info(f"_handle_registration_phase1: {rp_id=} {rp_name=}")
+        self.addToTokenInfo(TOKEN_INFO_RP_ID, rp_id)
+        self.addToTokenInfo(TOKEN_INFO_RP_NAME, rp_name)
 
         # Include realm in name for clarity in passkey managers (Chrome, etc.)
         user_name = f"{user.login}@{user.realm}"
@@ -559,9 +656,7 @@ class Fido2TokenClass(TokenClass):
         )
 
         # Call Fido2Server.register_begin() to generate challenge and options
-        server = _get_fido2_server()
-        server.timeout = self.get_challenge_validity()
-        options, state = server.register_begin(
+        options, state = self._get_fido2_server().register_begin(
             user=user_entity,
             user_verification=DEFAULT_USER_VERIFICATION,
             # Only allow cross-platform authenticators for now (hardware security keys)
@@ -602,7 +697,7 @@ class Fido2TokenClass(TokenClass):
         # Response is expected in nested format from client:
         # {id, rawId, type, response: {clientDataJSON, attestationObject}}
         try:
-            auth_data = _get_fido2_server().register_complete(
+            auth_data = self._get_fido2_server().register_complete(
                 state, attestation_response
             )
         except ValueError as exx:
@@ -618,9 +713,6 @@ class Fido2TokenClass(TokenClass):
         credential_id = credential_data.credential_id
         public_key = credential_data.public_key
         public_key_cbor = cbor_encode(public_key)
-
-        # Get RP ID for storage
-        rp_id: str = self.getFromTokenInfo(TOKEN_INFO_RP_ID)
 
         # ----------------------------------------------------------
         # Extract attestation details for extended properties
@@ -663,7 +755,7 @@ class Fido2TokenClass(TokenClass):
             credential_id=websafe_encode(credential_id),
             public_key=websafe_encode(public_key_cbor),
             sign_count=auth_data.counter,
-            rp_id=rp_id,
+            rp_id=self.getFromTokenInfo(TOKEN_INFO_RP_ID),
             aaguid=aaguid_str,
             attestation_format=attestation_fmt,
             public_key_algorithm=pub_key_alg,
@@ -789,9 +881,7 @@ class Fido2TokenClass(TokenClass):
         ]
 
         # Call Fido2Server.authenticate_begin() to generate challenge and options
-        server = _get_fido2_server()
-        server.timeout = self.get_challenge_validity()
-        options_obj, state = server.authenticate_begin(
+        options_obj, state = self._get_fido2_server().authenticate_begin(
             credentials=allow_credentials,
             user_verification=DEFAULT_USER_VERIFICATION,
         )
@@ -893,7 +983,9 @@ class Fido2TokenClass(TokenClass):
         # Response is expected in nested format from client:
         # {id, rawId, type, response: {clientDataJSON, authenticatorData, signature}}
         try:
-            _get_fido2_server().authenticate_complete(state, [attested_cred], resp_data)
+            self._get_fido2_server().authenticate_complete(
+                state, [attested_cred], resp_data
+            )
         except ValueError as exx:
             log.warning(
                 "FIDO2 assertion verification failed for token %s: %s",
