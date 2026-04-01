@@ -611,9 +611,40 @@ class TestUserserviceEnrollment(TestController):
         generates real ES256 key pairs and produces valid attestation
         responses — no mocking or patching required.
         """
+        self._create_fido2_policies()
 
-        # Setup policy to allow FIDO2 enrollment
-        policy_params = [
+        serial, registerreq, *_ = self.enroll_fido2_token(auth_user=self._auth_user())
+
+        assert serial.startswith("FIDO2")
+        assert registerreq["user"]["name"] == "passthru_user1"
+        assert registerreq["user"]["displayName"] == "passthru_user1"
+
+    def test_fido2_with_tokenlabel(self):
+        """
+        Test FIDO2 token with overridden user and displayName via tokenlabel.
+        """
+        self._create_fido2_policies(tokenlabel="<s><u>")
+
+        serial, registerreq, *_ = self.enroll_fido2_token(auth_user=self._auth_user())
+
+        expected = f"{serial}passthru_user1"
+        assert registerreq["user"]["name"] == expected
+        assert registerreq["user"]["displayName"] == expected
+
+    def test_fido2_empty_tokenlabel(self):
+        self._create_fido2_policies(tokenlabel="")
+
+        _, registerreq, *_ = self.enroll_fido2_token(auth_user=self._auth_user())
+
+        assert registerreq["user"]["name"] == "passthru_user1"
+        assert registerreq["user"]["displayName"] == "passthru_user1"
+
+    def _create_fido2_policies(self, tokenlabel=None):
+        action = "fido2_rp_id=localhost"
+        if tokenlabel is not None:
+            action += f", tokenlabel={tokenlabel}"
+
+        policies = [
             {
                 "name": "enroll_fido2",
                 "scope": "selfservice",
@@ -625,20 +656,18 @@ class TestUserserviceEnrollment(TestController):
             {
                 "name": "fido2_rpid",
                 "scope": "enrollment",
-                "action": "fido2_rp_id=localhost",
+                "action": action,
                 "user": "*",
                 "realm": "*",
                 "active": True,
             },
         ]
-        for pp in policy_params:
-            response = self.make_system_request("setPolicy", pp)
-            assert "false" not in response, response
 
-        auth_user = {
+        for p in policies:
+            self.create_policy(p)
+
+    def _auth_user(self):
+        return {
             "login": "passthru_user1@myDefRealm",
             "password": "geheim1",
         }
-
-        serial, _device = self.enroll_fido2_token(auth_user=auth_user)
-        assert serial.startswith("FIDO2")
