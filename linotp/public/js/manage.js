@@ -5790,16 +5790,28 @@ $(document).ready(function () {
             'Enroll': {
                 click: function () {
                     try {
-                        token_enroll();
-                        $(this).dialog('close');
+                        var result = token_enroll();
+			var typ = $('#tokentype').val();
+			if (typ !== 'fido2') {
+                            $(this).dialog('close');
+			}
                     }
                     catch (e) {
-                        alert_box({
-                            'title': i18n.gettext('Failed to enroll token'),
-                            'text': i18n.gettext('The entered PINs do not match!'),
-                            'type': ERROR,
-                            'is_escaped': true
-                        });
+		        if (e === "PinMatchError") {
+			    alert_box({
+			        'title': i18n.gettext('Failed to enroll token'),
+				'text': i18n.gettext('The entered PINs do not match!'),
+				'type': ERROR,
+				'is_escaped': true
+			    });
+			} else {
+                            alert_box({
+                                'title': i18n.gettext('Failed to enroll token'),
+                                'text': i18n.gettext('Error: ') + e,
+                                'type': ERROR,
+                                'is_escaped': true
+			    });
+			}
                     }
                 },
                 id: "button_enroll_enroll",
