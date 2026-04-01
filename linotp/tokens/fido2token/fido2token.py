@@ -463,6 +463,16 @@ class Fido2TokenClass(TokenClass):
             "selfservice": {
                 "enroll": {}  # keep for dynamic policy definitions
             },
+            "init": {
+                "title": {
+                    "html": "fido2token/fido2token.mako",
+                    "scope": "enroll.title",
+                },
+                "page": {
+                    "html": "fido2token/fido2token.mako",
+                    "scope": "enroll",
+                },
+            },
             "config": {
                 "title": {
                     "html": "fido2token/fido2token.mako",
