@@ -935,6 +935,10 @@ class Fido2TokenClass(TokenClass):
         # Verify attestation using Fido2Server
         # Response is expected in nested format from client:
         # {id, rawId, type, response: {clientDataJSON, attestationObject}}
+        # Note that the Fido2Server does only rudimentary origin
+        # verification, in particular it doesn't care about RORs,
+        # which we will need to add in our own `verify_origin`
+        # function when the time comes.
         try:
             auth_data = self._get_fido2_server().register_complete(
                 state, attestation_response
