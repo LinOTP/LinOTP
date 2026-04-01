@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     given, `tokenissuer=` will be used; if that is not given either, `LinOTP` is
     the default.
   - FIDO2 token challenge expiration time may be set in the LinOTP web UI as usual.
+  - The Name and DisplayName of the `FIDO2 UserEntity` can now be configured via policy `tokenlabel`.
 - unhandled errors are now logged with traceback and returned in the response
 - Manage-UI shows info-box (success/error) for operation `Set PIN`
 - Caching of UserInfo per request to decrease request time of e.g. `/validate/check` to about half
