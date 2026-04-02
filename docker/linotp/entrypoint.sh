@@ -46,7 +46,7 @@ initdb_linotp() {
 }
 
 export MODE="${MODE:-production}"
-export SERVICE="0.0.0.0:5000"
+export SERVICE="${SERVICE:-0.0.0.0:5000}"
 
 start_linotp() {
     log "--- Starting LinOTP ---"
