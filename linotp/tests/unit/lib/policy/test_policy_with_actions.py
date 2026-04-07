@@ -245,7 +245,7 @@ class PolicyActionTest(unittest.TestCase):
             "enrollment": {
                 "tokenissuer": {
                     "type": "str",
-                    "desc": "the issuer label for the google authenticator.",
+                    "desc": "the issuer label for the authenticator.",
                 },
             }
         }

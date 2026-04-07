@@ -35,7 +35,7 @@ from datetime import datetime
 from Cryptodome.Hash import SHA1, SHA256, SHA512
 from flask_babel import gettext as _
 
-from linotp.lib.apps import NoOtpAuthTokenException, create_google_authenticator
+from linotp.lib.apps import NoOtpAuthTokenException, create_authenticator
 from linotp.lib.auth.validate import check_otp, check_pin
 from linotp.lib.config import getFromConfig
 from linotp.lib.HMAC import HmacOtp
@@ -687,7 +687,7 @@ class HmacTokenClass(TokenClass):
                 p["otpkey"] = otpkey
                 p["serial"] = self.getSerial()
                 # label
-                enrollment_url = create_google_authenticator(p, user=user)
+                enrollment_url = create_authenticator(p, user=user)
 
                 enrollment_url_detail = {
                     "order": "0",

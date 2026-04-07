@@ -2622,7 +2622,7 @@ class OcraTest(TestController):
                 > {
                 >    "detail": {
                      "googleurl": {
-                       "description": "URL for google Authenticator",
+                       "description": "URL for Authenticator",
                        "value": "otpauth://ocra/LSOC00000001?secret=5F5BR2FO4F
                                    353EB7GWD2XIVQ3CJGYAZVRQQAWKTNTUHGBNGEXTWA
                                    &counter=0"

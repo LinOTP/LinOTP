@@ -24,13 +24,13 @@
 #    Support: www.lsexperts.de
 #
 """
-Tests for google authenticator url
+Tests for authenticator url
 """
 
 import unittest
 from unittest.mock import patch
 
-from linotp.lib.apps import create_google_authenticator
+from linotp.lib.apps import create_authenticator
 from linotp.lib.policy import get_tokenissuer, get_tokenlabel
 
 
@@ -129,7 +129,7 @@ class TestTokenLabel(unittest.TestCase):
     def test_token_label_issuer_default(
         self, mock__get_client, mock_has_client_policy, mock_get_action_value
     ):
-        """Google Authenticator url with default issuer and label
+        """Authenticator url with default issuer and label
 
         with this empty setting
         - the tokenissuer should become 'LinOTP' and
@@ -150,7 +150,7 @@ class TestTokenLabel(unittest.TestCase):
             "type": "hmac",
         }
 
-        url = create_google_authenticator(param=param)
+        url = create_authenticator(param=param)
         assert url.startswith("otpauth://hotp/LinOTP:HOTP1234?")
 
         assert "counter=0" in url
@@ -158,15 +158,15 @@ class TestTokenLabel(unittest.TestCase):
         assert "algorithm=SHA256" in url
 
         param["user.login"] = "hugo"
-        url = create_google_authenticator(param=param)
+        url = create_authenticator(param=param)
         assert url.startswith("otpauth://hotp/LinOTP:hugo?")
 
         param["user.realm"] = "realm"
-        url = create_google_authenticator(param=param)
+        url = create_authenticator(param=param)
         assert url.startswith("otpauth://hotp/LinOTP:hugo?")
 
         param["description"] = "description"
-        url = create_google_authenticator(param=param)
+        url = create_authenticator(param=param)
         assert url.startswith("otpauth://hotp/LinOTP:hugo?")
 
     @patch("linotp.lib.policy.get_action_value")
@@ -175,7 +175,7 @@ class TestTokenLabel(unittest.TestCase):
     def test_token_label_issuer_policy(
         self, mock__get_client, mock_has_client_policy, mock_get_action_value
     ):
-        """Google Authenticator url with issuer and label policy set
+        """Authenticator url with issuer and label policy set
 
         with this empty setting
         - the tokenissuer should become 'LinOTP' and
@@ -195,7 +195,7 @@ class TestTokenLabel(unittest.TestCase):
             "timeStep": "30",
         }
 
-        url = create_google_authenticator(param=param)
+        url = create_authenticator(param=param)
         assert url.startswith("otpauth://totp/...TOTP1234:...TOTP1234?")
 
         # verify that the totp / hotp defaults are not in the url
@@ -204,17 +204,17 @@ class TestTokenLabel(unittest.TestCase):
         assert "digits" not in url
 
         param["user.login"] = "hugo"
-        url = create_google_authenticator(param=param)
+        url = create_authenticator(param=param)
         msg = "otpauth://totp/..hugo.TOTP1234:..hugo.TOTP1234?"
         assert url.startswith(msg)
 
         param["user.realm"] = "realm"
-        url = create_google_authenticator(param=param)
+        url = create_authenticator(param=param)
         msg = "otpauth://totp/.realm.hugo.TOTP1234:.realm.hugo.TOTP1234?"
         assert url.startswith(msg)
 
         param["description"] = "descr:ption"
-        url = create_google_authenticator(param=param)
+        url = create_authenticator(param=param)
         msg = (
             "otpauth://totp/descr%3Aption.realm.hugo.TOTP1234:"
             "descr%3Aption.realm.hugo.TOTP1234?"
