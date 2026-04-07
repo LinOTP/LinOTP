@@ -2164,5 +2164,67 @@ class TestValidateController(TestController):
             f"Expected authentication to fail with wrong key: {response.json}"
         )
 
+    def test_fido2_user_verification_policy(self):
+        """
+        Test that fido2_user_verification_requirement policy is reflected
+        in the FIDO2 authentication challenge (signrequest).
+
+        Enrolls a FIDO2 token first (without UV=required to avoid the
+        software authenticator's UV limitation), then sets the
+        fido2_user_verification_requirement=required policy and verifies
+        that the signrequest contains userVerification=required.
+        """
+        # Enroll without UV=required (software authenticator can't set UV flag)
+        enroll_policies = [
+            {
+                "name": "enroll_fido2",
+                "action": "enrollFIDO2",
+                "user": "*",
+                "realm": "*",
+                "scope": "selfservice",
+            },
+            {
+                "name": "fido2_rpid",
+                "action": "fido2_rp_id=localhost",
+                "user": "*",
+                "realm": "*",
+                "scope": "enrollment",
+            },
+        ]
+        for pp in enroll_policies:
+            response = self.make_system_request("setPolicy", params=pp)
+            assert "false" not in response, response
+
+        auth_user = {
+            "login": "passthru_user1@myDefRealm",
+            "password": "geheim1",
+        }
+
+        self.enroll_fido2_token(auth_user=auth_user)
+
+        # Now add the UV=required policy before triggering authentication
+        response = self.make_system_request(
+            "setPolicy",
+            params={
+                "name": "fido2_uv",
+                "action": "fido2_user_verification_requirement=required",
+                "user": "*",
+                "realm": "*",
+                "scope": "enrollment",
+            },
+        )
+        assert "false" not in response, response
+
+        # Trigger FIDO2 challenge
+        params = {"user": "passthru_user1", "realm": "myDefRealm", "pass": ""}
+        response = self.make_validate_request("check", params)
+        assert response.json["result"]["status"] is True, response
+
+        detail = response.json.get("detail", {})
+        assert detail.get("linotp_tokentype") == "fido2"
+
+        sign_request = detail["signrequest"]
+        assert sign_request["userVerification"] == "required"
+
 
 # eof #########################################################################
