@@ -173,6 +173,7 @@ TOKEN_INFO_RP_ID = "rp_id"
 TOKEN_INFO_RP_NAME = "rp_name"
 TOKEN_INFO_COUNTER = "counter"
 TOKEN_INFO_CREDENTIAL = "fido2_credential"
+TOKEN_INFO_ATTESTATION_CONVEYANCE = "attestation_conveyance"
 TOKEN_INFO_LAST_AUTH = "last_auth_at"
 TOKEN_INFO_LAST_AUTH_UV = "last_auth_uv"
 
@@ -207,6 +208,13 @@ RESIDENT_KEY_MAP = {
 DEFAULT_ATTESTATION = ATTESTATION_PREFERENCE_MAP["direct"]
 DEFAULT_RESIDENT_KEY = RESIDENT_KEY_MAP["preferred"]
 DEFAULT_USER_VERIFICATION = USER_VERIFICATION_MAP["preferred"]
+
+# Conveyance preferences that require actual attestation data
+ATTESTATION_REQUIRED_PREFERENCES = {
+    AttestationConveyancePreference.DIRECT,
+    AttestationConveyancePreference.INDIRECT,
+    AttestationConveyancePreference.ENTERPRISE,
+}
 
 
 # WebAuthn hints (Level 3) corresponding to preferred types
@@ -830,6 +838,11 @@ class Fido2TokenClass(TokenClass):
         attestation_preference = self._get_attestation_preference(user=user)
         uv_requirement = self._get_user_verification_requirement(user=user)
         rk_requirement = self._get_resident_key_requirement(user=user)
+
+        # Save attestation conveyance for phase 2 validation
+        self.addToTokenInfo(
+            TOKEN_INFO_ATTESTATION_CONVEYANCE, attestation_preference.value
+        )
 
         # Determine preferred authenticator types from policy
         authenticator_types = self._get_authenticator_types(user=user)
