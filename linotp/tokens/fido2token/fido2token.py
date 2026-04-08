@@ -716,13 +716,10 @@ class Fido2TokenClass(TokenClass):
         response_detail["serial"] = self.getSerial()
 
         # Detect phase by presence of attestationResponse parameter
-        is_phase2 = params.get("attestationResponse") is not None
-
-        if not is_phase2:
-            response_detail.update(self._handle_registration_phase1(params, user))
-
-        elif is_phase2:
+        if params.get("attestationResponse") is not None:
             response_detail.update(self._handle_registration_phase2(params, user))
+        else:
+            response_detail.update(self._handle_registration_phase1(params, user))
 
         return response_detail
 
