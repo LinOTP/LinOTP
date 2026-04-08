@@ -717,6 +717,7 @@ class Fido2TokenClass(TokenClass):
 
         # Detect phase by presence of attestationResponse parameter
         if params.get("attestationResponse") is not None:
+            params["otpkey"] = params.pop("attestationResponse")
             response_detail.update(self._handle_registration_phase2(params, user))
         else:
             response_detail.update(self._handle_registration_phase1(params, user))
@@ -898,6 +899,7 @@ class Fido2TokenClass(TokenClass):
 
         Uses Fido2Server.register_complete() to verify the attestation.
         Expects 'otpkey' as a dict with the attestation response.
+        If the value is a string instead it is assumed to be JSON and decoded.
 
         :return: dict with registration result details
         """
@@ -905,6 +907,12 @@ class Fido2TokenClass(TokenClass):
         if attestation_response is None:
             msg = "No otpkey set (expected FIDO2 attestation response)"
             raise ParameterError(msg)
+        if isinstance(attestation_response, str):
+            try:
+                attestation_response = json.loads(attestation_response)
+            except Exception as ex:
+                msg = f"Attestation response is invalid JSON ({ex})"
+                raise ParameterError(msg) from ex
 
         # Retrieve registration state from phase 1
         state_json = self.getFromTokenInfo(TOKEN_INFO_REGISTRATION_CHALLENGE, None)
