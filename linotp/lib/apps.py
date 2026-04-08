@@ -53,12 +53,12 @@ class NoOtpAuthTokenException(Exception):
     pass
 
 
-def create_google_authenticator(param: dict, user=None) -> str:
-    """Create the google url from the parameters
+def create_authenticator(param: dict, user=None) -> str:
+    """Create the authenticator url from the parameters
 
     :param param: dict containing the parameters
     :param user: the user to which the token should be assigned
-    :return: the google authenticator url
+    :return: the authenticator url
     """
 
     serial = param["serial"]
@@ -86,24 +86,24 @@ def create_google_authenticator(param: dict, user=None) -> str:
 
     label = quote(issuer) + ":" + quote(token_label)
 
-    return google_authenticator_url(label, param)
+    return authenticator_url(label, param)
 
 
-def google_authenticator_url(label, param):
-    """create url for google authenticator
+def authenticator_url(label, param):
+    """create url for authenticator
 
       otpauth://TYPE/LABEL?PARAMETERS
 
     remark: be aware of that the google authenticator does not support
             other hash algorithms than 'SHA1' and no other digits like '6'!
-    remark: the counter value is respected by both, the google authenticator
+    remark: the counter value is respected by both, the authenticator
             and the free otp app
     remark: currently the free otp app handles the issuer not correctly as the
             issuer in the parameter list overrules the account in the LABEL
 
     :param label: the label for the url prefix
     :param param: request dictionary
-    :return: string with google url
+    :return: string with url
     """
 
     try:
@@ -176,8 +176,7 @@ def google_authenticator_url(label, param):
 
     if len(label) > allowed_label_length:
         log.debug(
-            "[create_google_authenticator_url] we got %d characters"
-            " left for the token label",
+            "[create_authenticator_url] we got %d characters left for the token label",
             allowed_label_length,
         )
 
@@ -190,7 +189,7 @@ def google_authenticator_url(label, param):
     auth_url = f"otpauth://{token_type}/{label}?{authenticator_params}"
 
     auth_url_prefix_len = len("otpauth:///") + len(token_type) + len(label)
-    log.debug("google authenticator: %r", auth_url[:auth_url_prefix_len])
+    log.debug("authenticator url: %r", auth_url[:auth_url_prefix_len])
 
     return auth_url
 

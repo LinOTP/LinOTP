@@ -148,7 +148,7 @@ from flask_babel import gettext as _
 from linotp.lib.auth.validate import check_pin
 from linotp.lib.context import request_context as context
 from linotp.lib.error import ParameterError, TokenAdminError
-from linotp.lib.policy import get_client_policy
+from linotp.lib.policy import get_client_policy, get_tokenlabel
 from linotp.lib.policy.action import get_action_value
 from linotp.tokens import tokenclass_registry
 from linotp.tokens.base import TokenClass
@@ -644,7 +644,15 @@ class Fido2TokenClass(TokenClass):
         self.addToTokenInfo(TOKEN_INFO_RP_NAME, rp_name)
 
         # Include realm in name for clarity in passkey managers (Chrome, etc.)
-        user_name = f"{user.login}@{user.realm}"
+        # WebAuthn user.name and user.displayName default to the linotp username.
+        # These values can be overridden when a tokenlabel policy is applied.
+        label = get_tokenlabel(
+            self.getSerial(),
+            user=user.login,
+            realm=user.realm,
+            description=self.getDescription(),
+        )
+        user_name = label
         user_display_name = user_name
         user_id = user_name.encode("utf-8")
 

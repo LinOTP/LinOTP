@@ -177,11 +177,11 @@ POLICY_DEFINTIONS = {
         "otp_pin_encrypt": {"type": "int", "value": [0, 1]},
         "tokenlabel": {
             "type": "str",
-            "desc": "the label for the google authenticator.",
+            "desc": "the label for the authenticator and webAuthn username (fido2).",
         },
         "tokenissuer": {
             "type": "str",
-            "desc": "the issuer label for the google authenticator.",
+            "desc": "the issuer label for the authenticator.",
         },
         "autoenrollment": {
             "type": "str",

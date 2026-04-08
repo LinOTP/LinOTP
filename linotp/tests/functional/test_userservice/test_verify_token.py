@@ -987,7 +987,7 @@ class TestUserserviceTokenTest(TestUserserviceController):
         }
 
         # -- Enroll FIDO2 token -------------------------------------------
-        serial, device = self.enroll_fido2_token(auth_user=auth_user)
+        serial, *_, device = self.enroll_fido2_token(auth_user=auth_user)
 
         # -- Verify the token ---------------------------------------------
 

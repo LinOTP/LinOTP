@@ -1141,7 +1141,7 @@ class TestController(TestCase):
         auth_user: dict,
         params: dict | None = None,
         origin: str = DEFAULT_ORIGIN,
-    ) -> tuple[str, SoftWebauthnDevice]:
+    ) -> tuple[str, dict, dict, SoftWebauthnDevice]:
         """Enroll a FIDO2 token via userservice using a software authenticator.
 
         Performs both enrollment phases (challenge generation + attestation
@@ -1153,7 +1153,7 @@ class TestController(TestCase):
         :param params: Extra enrollment parameters (e.g. ``pin``,
             ``description``).  ``type`` is always set to ``"fido2"``.
         :param origin: RP origin (default ``"https://localhost"``).
-        :return: ``(serial, device)`` tuple.
+        :return: ``(serial, registerrequest, attestation_response, device)`` tuple.
         """
 
         device = SoftWebauthnDevice()
@@ -1188,7 +1188,7 @@ class TestController(TestCase):
         assert response.json["result"]["status"] is True, response
         assert response.json["result"]["value"] is True, response
 
-        return serial, device
+        return serial, detail["registerrequest"], attestation_response, device
 
 
 # eof #

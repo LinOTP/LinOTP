@@ -2071,7 +2071,7 @@ class TestValidateController(TestController):
         }
 
         # -- Enroll FIDO2 token ---------------------------------------- --
-        _serial, device = self.enroll_fido2_token(auth_user=auth_user)
+        *_, device = self.enroll_fido2_token(auth_user=auth_user)
 
         # -- Authenticate ---------------------------------------------- --
 
@@ -2139,7 +2139,7 @@ class TestValidateController(TestController):
         }
 
         # Step 1: Enroll a FIDO2 token with device A
-        _serial_a, _device_a = self.enroll_fido2_token(auth_user=auth_user)
+        self.enroll_fido2_token(auth_user=auth_user)
 
         # Step 2: Trigger FIDO2 challenge
         params = {"user": "passthru_user1", "realm": "myDefRealm", "pass": ""}
@@ -2148,7 +2148,7 @@ class TestValidateController(TestController):
         sign_request = response.json["detail"]["signrequest"]
 
         # Step 3: A *different* device (wrong key) signs the challenge
-        _serial_b, device_b = self.enroll_fido2_token(auth_user=auth_user)
+        *_, device_b = self.enroll_fido2_token(auth_user=auth_user)
         assertion_response = device_b.get(sign_request)
 
         # Step 4: Assert that authentication fails with wrong key
