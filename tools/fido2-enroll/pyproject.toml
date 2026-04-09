@@ -1,0 +1,21 @@
+[project]
+name = "fido2-enroll"
+version = "0.1.0"
+description = "Example for enrolling LinOTP FIDO2 tokens via the admin API"
+readme = "README.md"
+authors = [
+    { name = "Anselm Lingnau", email = "anselm.lingnau@netgo.de" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "click>=8.3.2",
+    "fido2>=2.1.1",
+    "httpx>=0.28.1",
+]
+
+[project.scripts]
+fido2-enroll = "fido2_enroll:main"
+
+[build-system]
+requires = ["uv_build>=0.11.2,<0.12.0"]
+build-backend = "uv_build"
