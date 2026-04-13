@@ -18,6 +18,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     want to use FIDO2/WebAuthn tokens. `fido2_rp_name=` is optional; if it is not
     given, `tokenissuer=` will be used; if that is not given either, `LinOTP` is
     the default.
+  - New configurable enrollment policies for FIDO2 tokens:
+    - `fido2_attestation_conveyance` — controls whether and how the authenticator's
+      attestation statement is conveyed during registration (direct, indirect, none,
+      enterprise). Default: direct. 
+    - `fido2_user_verification_requirement` — controls whether the authenticator must
+      verify the user (e.g. via PIN or biometric) during registration and
+      authentication (required, preferred, discouraged). Default: preferred.
+    - `fido2_resident_key_requirement` — controls whether the authenticator should
+      create a discoverable credential / passkey (required, preferred, discouraged).
+      Default: preferred.
+    - `fido2_authenticator_types` — controls which authenticator types are preferred
+      and sets the corresponding WebAuthn hints and authenticator attachment
+      (client-device, security-key, hybrid). Multiple values can be combined.
   - FIDO2 token challenge expiration time may be set in the LinOTP web UI as usual.
   - The Name and DisplayName of the `FIDO2 UserEntity` can now be configured via policy `tokenlabel`.
 - unhandled errors are now logged with traceback and returned in the response

@@ -671,3 +671,96 @@ class TestUserserviceEnrollment(TestController):
             "login": "passthru_user1@myDefRealm",
             "password": "geheim1",
         }
+
+    def test_fido2_enrollment_policies(self):
+        """
+        Verify that FIDO2 enrollment policies are reflected in the
+        PublicKeyCredentialCreationOptions returned during phase 1.
+
+        Sets fido2_attestation_conveyance, fido2_user_verification_requirement,
+        fido2_resident_key_requirement and fido2_authenticator_types policies,
+        then checks that the registration challenge contains the expected
+        WebAuthn options.
+        """
+
+        policy_params = [
+            {
+                "name": "enroll_fido2",
+                "scope": "selfservice",
+                "action": "enrollFIDO2",
+                "user": "*",
+                "realm": "*",
+                "active": True,
+            },
+            {
+                "name": "fido2_rpid",
+                "scope": "enrollment",
+                "action": "fido2_rp_id=localhost",
+                "user": "*",
+                "realm": "*",
+                "active": True,
+            },
+            {
+                "name": "fido2_attestation",
+                "scope": "enrollment",
+                "action": "fido2_attestation_conveyance=direct",
+                "user": "*",
+                "realm": "*",
+                "active": True,
+            },
+            {
+                "name": "fido2_uv",
+                "scope": "enrollment",
+                "action": "fido2_user_verification_requirement=required",
+                "user": "*",
+                "realm": "*",
+                "active": True,
+            },
+            {
+                "name": "fido2_rk",
+                "scope": "enrollment",
+                "action": "fido2_resident_key_requirement=required",
+                "user": "*",
+                "realm": "*",
+                "active": True,
+            },
+            {
+                "name": "fido2_auth_types",
+                "scope": "enrollment",
+                "action": "fido2_authenticator_types=security-key",
+                "user": "*",
+                "realm": "*",
+                "active": True,
+            },
+        ]
+        for pp in policy_params:
+            response = self.make_system_request("setPolicy", pp)
+            assert "false" not in response, response
+
+        auth_user = {
+            "login": "passthru_user1@myDefRealm",
+            "password": "geheim1",
+        }
+
+        # Phase 1 — server generates a registration challenge
+        response = self.make_userselfservice_request(
+            "enroll",
+            params={"type": "fido2"},
+            auth_user=auth_user,
+            new_auth_cookie=True,
+        )
+        assert response.json["result"]["status"] is True, response
+
+        detail = response.json["detail"]
+        register_request = detail["registerrequest"]
+
+        # Check attestation conveyance preference
+        assert register_request["attestation"] == "direct"
+
+        auth_sel = register_request["authenticatorSelection"]
+        assert auth_sel["userVerification"] == "required"
+        assert auth_sel["residentKey"] == "required"
+
+        # security-key only → attachment must be cross-platform and hint set
+        assert auth_sel["authenticatorAttachment"] == "cross-platform"
+        assert register_request["hints"] == ["security-key"]

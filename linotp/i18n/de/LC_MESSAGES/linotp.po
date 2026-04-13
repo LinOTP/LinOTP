@@ -30,7 +30,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 3\n"
 "Report-Msgid-Bugs-To: info@linotp.de\n"
-"POT-Creation-Date: 2026-03-23 09:55+0100\n"
+"POT-Creation-Date: 2026-04-13 09:29+0200\n"
 "PO-Revision-Date: 2025-09-16 10:38+0200\n"
 "Last-Translator: Anselm Lingnau <anselm.lingnau@netgo.de>\n"
 "Language-Team: German <support@linotp.de>\n"
@@ -176,11 +176,17 @@ msgstr ""
 msgid "Assign"
 msgstr "Zuweisen"
 
-msgid "Assign Token"
-msgstr "Token zuweisen"
-
 msgid "Assigned token"
 msgstr "Zugewiesene Token"
+
+msgid ""
+"Attestation conveyance preference for FIDO2/WebAuthn token enrollment. "
+"Controls whether and how the authenticator's attestation statement is "
+"conveyed during registration."
+msgstr ""
+"Attestation-Conveyance-Präferenz für die FIDO2/WebAuthn-Token-Registrierung. "
+"Bestimmt, ob und wie die Attestierungserklärung des Authenticators bei der "
+"Registrierung übermittelt wird."
 
 msgid "Attribute mapping"
 msgstr "Attributszuordnung"
@@ -505,9 +511,6 @@ msgstr "Definieren Sie zu welchen Realms dieser Token gehören soll:"
 msgid "Delete"
 msgstr "Löschen"
 
-msgid "Delete OTP Token"
-msgstr "OTP-Token löschen"
-
 msgid "Delete Selected Policy"
 msgstr "Ausgewählte Richtlinie löschen"
 
@@ -534,9 +537,6 @@ msgstr "Details"
 
 msgid "Disable"
 msgstr "Deaktivieren"
-
-msgid "Disable Token"
-msgstr "Token deaktivieren"
 
 msgid "Discard"
 msgstr "Verwerfen"
@@ -616,12 +616,6 @@ msgstr "E-Mail-Token"
 
 msgid "Enable"
 msgstr "Aktivieren"
-
-msgid "Enable OTP Token"
-msgstr "OTP-Token aktivieren"
-
-msgid "Enable Token"
-msgstr "Token aktivieren"
 
 msgid "Enable all tokens"
 msgstr "Alle Tokens aktivieren"
@@ -711,14 +705,6 @@ msgstr "Fehler während des User-Imports: "
 msgid "Error during token type change processing for type \"\".<br><pre></pre>"
 msgstr ""
 "Fehler bei der Bearbeitung der Tokentypänderung für Typ \"\".<br><pre></pre>"
-
-#, python-format
-msgid ""
-"Error enrolling token:\n"
-" %s"
-msgstr ""
-"Fehler beim Ausrollen des Tokens:\n"
-" %s"
 
 msgid "Error fetching list!"
 msgstr "Fehler beim Abrufen der Liste!"
@@ -1164,9 +1150,6 @@ msgstr ""
 msgid "Here you need to enter the token ID of the YubiKey."
 msgstr "Hier müssen Sie die Token-ID des YubiKeys eingeben."
 
-msgid "History"
-msgstr "Verlauf"
-
 msgid ""
 "If LinOTP is setup to manage its administration users, you can change your "
 "LinOTP management password now."
@@ -1384,9 +1367,6 @@ msgstr "Loglevel"
 
 msgid "Log usage timestamps in token info"
 msgstr "Zeitstempel bei Nutzung in Token-Info protokollieren"
-
-msgid "Logged in as"
-msgstr "Eingeloggt als"
 
 msgid "Login"
 msgstr "Login"
@@ -1909,6 +1889,14 @@ msgstr "Port"
 msgid "Possible Values:"
 msgstr "Mögliche Wert:"
 
+msgid ""
+"Preferred authenticator types for FIDO2/WebAuthn token enrollment. Controls "
+"authenticator attachment and WebAuthn hints sent to the client."
+msgstr ""
+"Bevorzugte Authenticator-Typen für die FIDO2/WebAuthn-Token-Registrierung. "
+"Steuert die Authenticator-Zuordnung und die WebAuthn-Hints, die an den "
+"Client gesendet werden."
+
 msgid "PrependPin"
 msgstr "PIN voranstellen"
 
@@ -2075,6 +2063,15 @@ msgstr "Realm des remote Benutzers"
 msgid "Reset Failcounter"
 msgstr "Fehlzähler zurücksetzen"
 
+msgid ""
+"Resident key (discoverable credential) requirement preference for FIDO2/"
+"WebAuthn token enrollment. Controls whether the authenticator should create "
+"a discoverable credential."
+msgstr ""
+"Resident-Key-Anforderungspräferenz (auffindbare Anmeldeinformationen) für "
+"die FIDO2/WebAuthn-Token-Registrierung. Bestimmt, ob der Authenticator "
+"auffindbare Anmeldeinformationen erstellen soll."
+
 msgid "Resolver"
 msgstr "Resolver"
 
@@ -2213,9 +2210,6 @@ msgstr ""
 "Token: {0}\n"
 "Seriennummer: {1}\n"
 "Benutzername: {2}"
-
-msgid "Selfservice Home"
-msgstr "Self-Service-Start"
 
 #, python-format
 msgid ""
@@ -2898,7 +2892,9 @@ msgstr "Timeout (Sek)"
 
 #, python-brace-format
 msgid "To enroll FIDO2 tokens in realm `{0}`, a `{1}=` policy must be defined"
-msgstr "Eine `{1}=`-Policy muss definiert sein, um FIDO2-Tokens im Realm `{0}` auszurollen."
+msgstr ""
+"Eine `{1}=`-Policy muss definiert sein, um FIDO2-Tokens im Realm `{0}` "
+"auszurollen."
 
 msgid "To resolver"
 msgstr "Zu Resolver"
@@ -2927,22 +2923,11 @@ msgstr "Token-Passwort:"
 msgid "Token Pin:"
 msgstr "Token-PIN:"
 
-msgid "Token Self Service - LinOTP"
-msgstr "Token-Self-Service - LinOTP"
-
 msgid "Token Type"
 msgstr "Tokentyp"
 
 msgid "Token View"
 msgstr "Tokenansicht"
-
-#, python-format
-msgid ""
-"Token enrolled successfully:\n"
-" %s"
-msgstr ""
-"Der Token wurde erfolgreich ausgerollt:\n"
-" %s"
 
 msgid "Token enrolled. Use the old PIN with the new password."
 msgstr ""
@@ -2966,9 +2951,6 @@ msgstr "Tokeneinstellungen:"
 
 msgid "Token type"
 msgstr "Tokentyp"
-
-msgid "Tokens for user:"
-msgstr "Token des Benutzers:"
 
 msgid "Tokentype Configuration"
 msgstr "Konfiguration der Tokentypen"
@@ -3015,9 +2997,6 @@ msgstr "Die Serverkonfiguration konnte nicht geladen werden."
 
 msgid "Unassign"
 msgstr "Zuweisung aufheben"
-
-msgid "Unassign OTP Token"
-msgstr "OTP-Tokenzuweisung aufheben"
 
 msgid "Unassign selected tokens?"
 msgstr "Zuweisung der ausgewählten Token aufheben?"
@@ -3068,6 +3047,15 @@ msgstr "Der Benutzer darf die Telefon Nummer nicht setzen"
 
 msgid "User selection:"
 msgstr "Benutzer Auswahl:"
+
+msgid ""
+"User verification requirement for FIDO2/WebAuthn tokens. Controls whether "
+"the authenticator must verify the user (e.g. via PIN or biometric) during "
+"registration and authentication."
+msgstr ""
+"Benutzerverifizierungsanforderung für FIDO2/WebAuthn-Tokens. Bestimmt, ob "
+"der Authenticator den Benutzer (z.B. per PIN oder Biometrie) bei der "
+"Registrierung und Authentifizierung verifizieren muss."
 
 msgid "User:"
 msgstr "Benutzer:"
@@ -3697,14 +3685,8 @@ msgid "define if the user should be allowed to define the sms"
 msgstr ""
 "beschreibt, ob der Benutzer selbst seine SMS Nummer ändern darf oder nicht"
 
-msgid "delete Token"
-msgstr "Token löschen"
-
 msgid "eToken DAT File"
 msgstr "eToken .dat Datei"
-
-msgid "enable Token"
-msgstr "Token aktivieren"
 
 msgid "enter PIN"
 msgstr "PIN setzen"
@@ -3723,9 +3705,6 @@ msgstr "Forward-Seriennummer"
 
 msgid "generate random seed"
 msgstr "ein zufälliges Seed generieren"
-
-msgid "get OTP values"
-msgstr "OTP-Werte anfragen"
 
 msgid "get challenge"
 msgstr "Hole Challenge"
@@ -3763,9 +3742,6 @@ msgid ""
 msgstr ""
 "Falls gesetzt wird eine neue Handy-Nummer aus der User-Info anstelle des "
 "Token-Datensatzes geladen"
-
-msgid "in realm"
-msgstr "im Realm"
 
 msgid "invalid license (old license style)"
 msgstr "Ungülitige Lizenz (altes Lizenzformat)"
@@ -3860,9 +3836,6 @@ msgstr "Sekunden"
 msgid "secure hash"
 msgstr "sicherer Hash"
 
-msgid "selected Token"
-msgstr "ausgewählter Token"
-
 msgid "sending sms failed"
 msgstr "Das Senden der SMS war nicht erfolgreich"
 
@@ -3890,9 +3863,6 @@ msgstr "setze maximal erfolgreiche Authentisierungen"
 msgid "set OTP length"
 msgstr "setze OTP-Länge"
 
-msgid "set PIN"
-msgstr "PIN setzen"
-
 msgid "set PIN successfully"
 msgstr "PIN erfolgreich gesetzt"
 
@@ -3907,9 +3877,6 @@ msgstr "setze Zeitschritt"
 
 msgid "set Time Window"
 msgstr "setze Zeitfenster"
-
-msgid "set mOTP PIN"
-msgstr "mOTP-PIN setzen"
 
 msgid "set token PIN failed"
 msgstr "Setzen der Token-PIN fehlgeschlagen"
@@ -3943,9 +3910,6 @@ msgstr "Token ausgerollt"
 
 msgid "trigger"
 msgstr "erstellen"
-
-msgid "unassign Token"
-msgstr "Tokenzuweisung aufheben"
 
 msgid "unknown token type"
 msgstr "Unbekannter Tokentyp"
@@ -4070,6 +4034,9 @@ msgstr "WebUI generiert"
 #~ msgid "Assign OTP Token"
 #~ msgstr "OTP-Token zuweisen"
 
+#~ msgid "Assign Token"
+#~ msgstr "Token zuweisen"
+
 #~ msgid "CA Certificate"
 #~ msgstr "CA-Zertifikat"
 
@@ -4128,11 +4095,17 @@ msgstr "WebUI generiert"
 #~ msgid "DefaultChallengeValidityTime"
 #~ msgstr "Standardwert des Gültigkeitszeitraums einer Challenge"
 
+#~ msgid "Delete OTP Token"
+#~ msgstr "OTP-Token löschen"
+
 #~ msgid "Determine Serial Number"
 #~ msgstr "Seriennummer bestimmen"
 
 #~ msgid "Disable OTP Token"
 #~ msgstr "OTP-Token deaktivieren"
+
+#~ msgid "Disable Token"
+#~ msgstr "Token deaktivieren"
 
 #~ msgid "Discard Changes"
 #~ msgstr "Änderungen Verwerfen"
@@ -4165,6 +4138,12 @@ msgstr "WebUI generiert"
 
 #~ msgid "E-mail provider config"
 #~ msgstr "E-Mail Konfiguration"
+
+#~ msgid "Enable OTP Token"
+#~ msgstr "OTP-Token aktivieren"
+
+#~ msgid "Enable Token"
+#~ msgstr "Token aktivieren"
 
 #~ msgid "Enforce STARTTLS"
 #~ msgstr "STARTTLS erzwingen"
@@ -4281,6 +4260,14 @@ msgstr "WebUI generiert"
 #~ msgid "Error enabling Token!\n"
 #~ msgstr "Fehler bei der Tokenaktivierung\n"
 
+#, python-format
+#~ msgid ""
+#~ "Error enrolling token:\n"
+#~ " %s"
+#~ msgstr ""
+#~ "Fehler beim Ausrollen des Tokens:\n"
+#~ " %s"
+
 #~ msgid "Error getting otp values"
 #~ msgstr "Fehler bei Abfrage des OTP-Wertes"
 
@@ -4382,6 +4369,9 @@ msgstr "WebUI generiert"
 #~ msgid "Here you can upload your Vasco DPX file."
 #~ msgstr "Hier können Sie Ihre VASCO DPX-Datei importieren."
 
+#~ msgid "History"
+#~ msgstr "Verlauf"
+
 #~ msgid "If checked the linotp server will use system certificates"
 #~ msgstr ""
 #~ "Bei Aktivierung wird der LinOTP Server die Zertifikate des Systems "
@@ -4461,6 +4451,9 @@ msgstr "WebUI generiert"
 
 #~ msgid "Load your Google Authenticator profile:"
 #~ msgstr "Laden des Google Authenticator Profils:"
+
+#~ msgid "Logged in as"
+#~ msgstr "Eingeloggt als"
 
 #~ msgid "Login failed"
 #~ msgstr "Anmeldung fehlgeschlagen"
@@ -4698,6 +4691,9 @@ msgstr "WebUI generiert"
 #~ msgid "Selected tokens"
 #~ msgstr "ausgewählte Token"
 
+#~ msgid "Selfservice Home"
+#~ msgstr "Self-Service-Start"
+
 #~ msgid "Send OTP by SMS"
 #~ msgstr "OTP via SMS verschickt"
 
@@ -4866,6 +4862,9 @@ msgstr "WebUI generiert"
 #~ msgid "Token Seed:"
 #~ msgstr "Tokenschlüssel:"
 
+#~ msgid "Token Self Service - LinOTP"
+#~ msgstr "Token-Self-Service - LinOTP"
+
 #~ msgid "Token Settings:"
 #~ msgstr "Tokeneinstellungen:"
 
@@ -4890,6 +4889,14 @@ msgstr "WebUI generiert"
 #~ msgid "Token enrolled successfully "
 #~ msgstr "Der Token wurde erfolgreich ausgerollt "
 
+#, python-format
+#~ msgid ""
+#~ "Token enrolled successfully:\n"
+#~ " %s"
+#~ msgstr ""
+#~ "Der Token wurde erfolgreich ausgerollt:\n"
+#~ " %s"
+
 #~ msgid "Token enrollment result"
 #~ msgstr "Ergebnis des Tokenausrollprozesses"
 
@@ -4908,6 +4915,9 @@ msgstr "WebUI generiert"
 #~ msgid "Token-PIN (again)"
 #~ msgstr "Token PIN (wiederholen)"
 
+#~ msgid "Tokens for user:"
+#~ msgstr "Token des Benutzers:"
+
 #~ msgid "Tokentype"
 #~ msgstr "Token Typ"
 
@@ -4916,6 +4926,9 @@ msgstr "WebUI generiert"
 
 #~ msgid "URL for google Authenticator"
 #~ msgstr "URL für Google Authenticator"
+
+#~ msgid "Unassign OTP Token"
+#~ msgstr "OTP-Tokenzuweisung aufheben"
 
 #~ msgid "Use Yubikey"
 #~ msgstr "YubiKey benutzen"
@@ -5091,8 +5104,14 @@ msgstr "WebUI generiert"
 #~ msgid "delete"
 #~ msgstr "löschen"
 
+#~ msgid "delete Token"
+#~ msgstr "Token löschen"
+
 #~ msgid "disable Token"
 #~ msgstr "Token deaktivieren"
+
+#~ msgid "enable Token"
+#~ msgstr "Token aktivieren"
 
 #~ msgid "enroll"
 #~ msgstr "ausrollen"
@@ -5163,6 +5182,9 @@ msgstr "WebUI generiert"
 #~ msgid "for support agreement purchase."
 #~ msgstr "können Sie und gerne kontaktieren"
 
+#~ msgid "get OTP values"
+#~ msgstr "OTP-Werte anfragen"
+
 #~ msgid "get OTP values from Token"
 #~ msgstr "OTP-Werte vom Token anfragen"
 
@@ -5171,6 +5193,9 @@ msgstr "WebUI generiert"
 
 #~ msgid "in loginname"
 #~ msgstr "in Loginname"
+
+#~ msgid "in realm"
+#~ msgstr "im Realm"
 
 #~ msgid "install profile"
 #~ msgstr "Profil installieren"
@@ -5272,12 +5297,21 @@ msgstr "WebUI generiert"
 #~ msgid "see policy definition."
 #~ msgstr "siehe Richtliniendefinition."
 
+#~ msgid "selected Token"
+#~ msgstr "ausgewählter Token"
+
 #~ msgid "self enrolled"
 #~ msgstr "selbst erstellt"
 
 #, python-format
 #~ msgid "selfservice/usergetmultiotp failed: %r"
 #~ msgstr "Fehler beim Zugriff auf selfservice/usergetmultiotp: %r"
+
+#~ msgid "set PIN"
+#~ msgstr "PIN setzen"
+
+#~ msgid "set mOTP PIN"
+#~ msgstr "mOTP-PIN setzen"
 
 #~ msgid "splitAtSign"
 #~ msgstr "Trenne am @-Zeichen"
@@ -5320,6 +5354,9 @@ msgstr "WebUI generiert"
 
 #~ msgid "unassign"
 #~ msgstr "Zuweisung aufheben"
+
+#~ msgid "unassign Token"
+#~ msgstr "Tokenzuweisung aufheben"
 
 #~ msgid "upcoming features in LinOTP"
 #~ msgstr "neue Funktionen von LinOTP"
