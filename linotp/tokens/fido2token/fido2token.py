@@ -463,6 +463,16 @@ class Fido2TokenClass(TokenClass):
             "selfservice": {
                 "enroll": {}  # keep for dynamic policy definitions
             },
+            "init": {
+                "title": {
+                    "html": "fido2token/fido2token.mako",
+                    "scope": "enroll.title",
+                },
+                "page": {
+                    "html": "fido2token/fido2token.mako",
+                    "scope": "enroll",
+                },
+            },
             "config": {
                 "title": {
                     "html": "fido2token/fido2token.mako",
@@ -716,13 +726,11 @@ class Fido2TokenClass(TokenClass):
         response_detail["serial"] = self.getSerial()
 
         # Detect phase by presence of attestationResponse parameter
-        is_phase2 = params.get("attestationResponse") is not None
-
-        if not is_phase2:
-            response_detail.update(self._handle_registration_phase1(params, user))
-
-        elif is_phase2:
+        if params.get("attestationResponse") is not None:
+            params["otpkey"] = params.pop("attestationResponse")
             response_detail.update(self._handle_registration_phase2(params, user))
+        else:
+            response_detail.update(self._handle_registration_phase1(params, user))
 
         return response_detail
 
@@ -901,6 +909,7 @@ class Fido2TokenClass(TokenClass):
 
         Uses Fido2Server.register_complete() to verify the attestation.
         Expects 'otpkey' as a dict with the attestation response.
+        If the value is a string instead it is assumed to be JSON and decoded.
 
         :return: dict with registration result details
         """
@@ -908,6 +917,12 @@ class Fido2TokenClass(TokenClass):
         if attestation_response is None:
             msg = "No otpkey set (expected FIDO2 attestation response)"
             raise ParameterError(msg)
+        if isinstance(attestation_response, str):
+            try:
+                attestation_response = json.loads(attestation_response)
+            except Exception as ex:
+                msg = f"Attestation response is invalid JSON ({ex})"
+                raise ParameterError(msg) from ex
 
         # Retrieve registration state from phase 1
         state_json = self.getFromTokenInfo(TOKEN_INFO_REGISTRATION_CHALLENGE, None)
@@ -920,6 +935,10 @@ class Fido2TokenClass(TokenClass):
         # Verify attestation using Fido2Server
         # Response is expected in nested format from client:
         # {id, rawId, type, response: {clientDataJSON, attestationObject}}
+        # Note that the Fido2Server does only rudimentary origin
+        # verification, in particular it doesn't care about RORs,
+        # which we will need to add in our own `verify_origin`
+        # function when the time comes.
         try:
             auth_data = self._get_fido2_server().register_complete(
                 state, attestation_response
