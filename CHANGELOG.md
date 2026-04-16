@@ -31,6 +31,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `fido2_authenticator_types` — controls which authenticator types are preferred
       and sets the corresponding WebAuthn hints and authenticator attachment
       (client-device, security-key, hybrid). Multiple values can be combined.
+    - `fido2_allowed_authenticators` — limits enrollment to authenticator
+      models whose AAGUID is listed in the policy. Multiple AAGUIDs can be
+      configured.
   - FIDO2 token challenge expiration time may be set in the LinOTP web UI as usual.
   - The Name and DisplayName of the `FIDO2 UserEntity` can now be configured via policy `tokenlabel`.
 - unhandled errors are now logged with traceback and returned in the response
