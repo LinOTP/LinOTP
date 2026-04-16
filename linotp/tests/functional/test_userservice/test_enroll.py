@@ -32,6 +32,7 @@ Test token enrollment
 from typing import Any, TypedDict
 
 from linotp.tests import TestController
+from linotp.tests.functional.fido2_device import _AAGUID, SoftWebauthnDevice
 
 NOT_ALLOWED_ERROR = "The policy settings do not allow you to issue this request!"
 
@@ -764,3 +765,70 @@ class TestUserserviceEnrollment(TestController):
         # security-key only → attachment must be cross-platform and hint set
         assert auth_sel["authenticatorAttachment"] == "cross-platform"
         assert register_request["hints"] == ["security-key"]
+
+    def test_fido2_allowed_authenticators_accepted(self):
+        """FIDO2 enrollment succeeds when one of multiple whitelisted AAGUIDs matches."""
+        self._create_fido2_policies()
+
+        # Allow the SoftWebauthnDevice AAGUID among multiple space-separated values.
+        self.create_policy(
+            {
+                "name": "fido2_allowed_auth",
+                "scope": "enrollment",
+                "action": (
+                    "fido2_allowed_authenticators="
+                    f"11111111-2222-3333-4444-555555555555 {_AAGUID} "
+                    "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
+                ),
+                "user": "*",
+                "realm": "*",
+                "active": True,
+            }
+        )
+
+        serial, *_ = self.enroll_fido2_token(auth_user=self._auth_user())
+        assert serial.startswith("FIDO2")
+
+    def test_fido2_allowed_authenticators_rejected(self):
+        """FIDO2 enrollment phase 2 fails when the device AAGUID is NOT in the whitelist."""
+        self._create_fido2_policies()
+
+        # Only allow a different AAGUID — the SoftWebauthnDevice will be rejected
+        self.create_policy(
+            {
+                "name": "fido2_allowed_auth",
+                "scope": "enrollment",
+                "action": "fido2_allowed_authenticators=00000000-0000-0000-0000-000000000099",
+                "user": "*",
+                "realm": "*",
+                "active": True,
+            }
+        )
+
+        auth_user = self._auth_user()
+        device = SoftWebauthnDevice()
+
+        response = self.make_userselfservice_request(
+            "enroll",
+            params={"type": "fido2"},
+            auth_user=auth_user,
+            new_auth_cookie=True,
+        )
+        assert response.json["result"]["status"] is True, response
+        detail = response.json["detail"]
+        serial = detail["serial"]
+
+        # Phase 2 — should fail because the AAGUID is not whitelisted
+        attestation_response = device.create(
+            detail["registerrequest"], origin="https://localhost"
+        )
+        response = self.make_userselfservice_request(
+            "fido2_activate_finish",
+            params={
+                "serial": serial,
+                "attestationResponse": attestation_response,
+            },
+            auth_user=auth_user,
+            content_type="application/json",
+        )
+        assert response.json["result"]["status"] is False, response

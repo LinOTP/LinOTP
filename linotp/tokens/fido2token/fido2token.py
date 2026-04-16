@@ -185,6 +185,7 @@ POLICY_ATTESTATION = "fido2_attestation_conveyance"
 POLICY_USER_VERIFICATION = "fido2_user_verification_requirement"
 POLICY_RESIDENT_KEY = "fido2_resident_key_requirement"
 POLICY_AUTHENTICATOR_TYPES = "fido2_authenticator_types"
+POLICY_ALLOWED_AUTHENTICATORS = "fido2_allowed_authenticators"
 
 ATTESTATION_PREFERENCE_MAP = {
     "direct": AttestationConveyancePreference.DIRECT,
@@ -532,6 +533,16 @@ class Fido2TokenClass(TokenClass):
                             "and WebAuthn hints sent to the client."
                         ),
                     },
+                    POLICY_ALLOWED_AUTHENTICATORS: {
+                        "type": "str",
+                        "desc": _(
+                            "List of allowed authenticator AAGUIDs for "
+                            "FIDO2/WebAuthn token enrollment. Only "
+                            "authenticators whose AAGUID is in this list "
+                            "will be accepted during registration. "
+                            "Enter AAGUIDs as space-separated values."
+                        ),
+                    },
                 },
             },
         }
@@ -799,6 +810,19 @@ class Fido2TokenClass(TokenClass):
         value = _resolve_enrollment_policy(POLICY_RESIDENT_KEY, user)
         return RESIDENT_KEY_MAP.get(value, DEFAULT_RESIDENT_KEY)
 
+    def _get_allowed_authenticators(self, user=None) -> list[str]:
+        """Retrieve the ``fido2_allowed_authenticators`` enrollment policy value.
+
+        :param user: user object
+        :return: list of allowed AAGUID strings (lowercased), or empty list
+            if the policy is not set
+        """
+        value = _resolve_enrollment_policy(POLICY_ALLOWED_AUTHENTICATORS, user)
+        if not value:
+            return []
+
+        return [v.strip().lower() for v in str(value).split() if v.strip()]
+
     def _get_authenticator_types(self, user=None) -> list[str]:
         """Retrieve the ``fido2_authenticator_types`` enrollment policy value.
 
@@ -968,6 +992,20 @@ class Fido2TokenClass(TokenClass):
 
         # AAGUID — unique identifier for the authenticator model
         aaguid_str = str(credential_data.aaguid)
+
+        # Check if the authenticator's AAGUID is allowed by policy
+        allowed_aaguids = self._get_allowed_authenticators(user)
+        if allowed_aaguids and aaguid_str.lower() not in allowed_aaguids:
+            log.warning(
+                "FIDO2 registration rejected: authenticator AAGUID %s "
+                "is not in the allowed list for token %s",
+                aaguid_str,
+                self.getSerial(),
+            )
+            msg = _(
+                "This authenticator model is not in the list of allowed authenticators."
+            )
+            raise ParameterError(msg)
 
         # Attestation format ("packed", "none", "tpm", "apple", etc.)
         attestation_fmt = attestation_object.fmt
