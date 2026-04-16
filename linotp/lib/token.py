@@ -178,6 +178,7 @@ class TokenHandler:
             # tokenObj.update(params)
             tokenObj.setDefaults()
 
+        param["user"] = user
         tokenObj.update(param)
 
         if user is not None and user.login != "":
