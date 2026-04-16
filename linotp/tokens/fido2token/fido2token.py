@@ -742,10 +742,16 @@ class Fido2TokenClass(TokenClass):
             # (PIN is validated during authentication, not enrollment)
         # Phase 1: Initialize or regenerate challenge
         elif current_phase is None:
-            # Initialize new token
+            user = param.get("user", None)
+            if not user or not user.login or not user.realm:
+                msg = "User information is required for FIDO2 token enrollment"
+                raise ParameterError(msg)
+            self._initialize_fido2(user)
+
             pin = param.get("pin")
             if pin is not None:
                 TokenClass.setPin(self, pin)
+            # We change the token state to REGISTRATION to trigger activation in same request.
             self.addToTokenInfo(TOKEN_INFO_PHASE, TokenPhase.REGISTRATION)
             self.token.LinOtpIsactive = False
         elif current_phase == TokenPhase.REGISTRATION:
@@ -886,20 +892,6 @@ class Fido2TokenClass(TokenClass):
         if not user or not user.login or not user.realm:
             msg = "User information is required for FIDO2 token enrollment"
             raise ParameterError(msg)
-
-        if not (rp_info := self._get_rp_id_and_name_from_policies(user=user)):
-            g.audit["info"] = (
-                f"`{POLICY_RP_ID}=` policy missing for realm `{user.realm}`"
-            )
-            msg = _(
-                "To enroll FIDO2 tokens in realm `{0}`, a `{1}=` policy must be defined"
-            )
-            raise TokenAdminError(msg.format(user.realm, POLICY_RP_ID), id=1901)
-        rp_id, rp_name = rp_info["rp_id"], rp_info["rp_name"]
-
-        # log.info(f"_handle_registration_phase1: {rp_id=} {rp_name=}")
-        self.addToTokenInfo(TOKEN_INFO_RP_ID, rp_id)
-        self.addToTokenInfo(TOKEN_INFO_RP_NAME, rp_name)
 
         # Determine attestation and user verification preferences from policies
         attestation_preference = self._get_attestation_preference(user=user)
@@ -1108,6 +1100,29 @@ class Fido2TokenClass(TokenClass):
         )
 
         return {}
+
+    def _initialize_fido2(self, user):
+        """Called once when the token is first created (phase is ``None``).
+        Resolves enrollment policies (RP ID, RP name), stores them in
+        token info.
+
+        :param user: the token owner
+        :type user: User
+        :raises TokenAdminError: if the required ``fido2_rp_id`` policy
+            is not configured for the user's realm
+        """
+        if not (rp_info := self._get_rp_id_and_name_from_policies(user=user)):
+            g.audit["info"] = (
+                f"`{POLICY_RP_ID}=` policy missing for realm `{user.realm}`"
+            )
+            msg = _(
+                "To enroll FIDO2 tokens in realm `{0}`, a `{1}=` policy must be defined"
+            )
+            raise TokenAdminError(msg.format(user.realm, POLICY_RP_ID), id=1901)
+
+        rp_id, rp_name = rp_info["rp_id"], rp_info["rp_name"]
+        self.addToTokenInfo(TOKEN_INFO_RP_ID, rp_id)
+        self.addToTokenInfo(TOKEN_INFO_RP_NAME, rp_name)
 
     def get_enrollment_status(self):
         """
