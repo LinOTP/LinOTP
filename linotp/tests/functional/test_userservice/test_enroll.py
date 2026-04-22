@@ -785,7 +785,20 @@ class TestUserserviceEnrollment(TestController):
                 "active": True,
             }
         )
-
+        self.create_policy(
+            {
+                "name": "fido2_allowed_auth_2",
+                "scope": "enrollment",
+                "action": (
+                    "fido2_allowed_authenticators="
+                    "11111111-2222-3333-4444-555555555553"
+                    "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeee1"
+                ),
+                "user": "*",
+                "realm": "*",
+                "active": True,
+            }
+        )
         serial, *_ = self.enroll_fido2_token(auth_user=self._auth_user())
         assert serial.startswith("FIDO2")
 

@@ -123,6 +123,7 @@ import logging
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from enum import Enum
+from typing import Any
 from uuid import UUID
 
 from fido2.cbor import decode as cbor_decode
@@ -264,51 +265,87 @@ def compute_authenticator_types_options(
 # ---------------------------------------------------------------------- --
 
 
-def _get_enrollment_policy_action(action: str, user) -> str:
-    """Retrieve the value of an enrollment policy action for the given user.
-
-    :param action: policy action name
-    :param user: user object with login and realm attributes
-    :return: policy value as string, or empty string if not found
-    """
-    if not (
-        policies := get_client_policy(
-            context["Client"],
-            scope="enrollment",
-            user=user.login,
-            realm=user.realm,
-            action=action,
-        )
-    ):
-        return ""
-
-    return get_action_value(
-        policies,
-        scope="enrollment",
-        action=action,
-        default="",
-    )
-
-
-def _resolve_enrollment_policy(action: str, user=None) -> str | None:
-    """Look up an enrollment policy action for the given user.
+def _get_fido2_policy_value(action: str, user, scope="enrollment") -> Any:
+    """Get a single enrollment policy value for the given user.
 
     :param action: policy action name (e.g. ``POLICY_ATTESTATION``)
     :param user: user object with ``login`` and ``realm``
-    :return: lowercased policy value, or ``None`` when the user is
-        missing or the policy is not set
+    :param scope: policy scope (default: "enrollment")
+    :return: policy value, or ``None`` when the user info is
+        missing or no policy matches
     """
     if not user or not user.login or not user.realm:
-        log.debug("_resolve_enrollment_policy(%s): user info missing", action)
+        log.debug("_get_fido2_policy_value(%s): user info missing", action)
         return None
 
-    policy_value = _get_enrollment_policy_action(action, user)
-    if policy_value:
-        if isinstance(policy_value, str):
-            return policy_value.lower()
-        else:
-            return policy_value
-    return None
+    policies = get_client_policy(
+        context["Client"],
+        scope=scope,
+        user=user.login,
+        realm=user.realm,
+        action=action,
+    )
+    if not policies:
+        return None
+
+    value = get_action_value(
+        policies,
+        scope=scope,
+        action=action,
+    )
+
+    return value
+
+
+def _get_aggregated_fido2_policy_values(
+    action: str, user, scope="enrollment"
+) -> list[str]:
+    """Get aggregated values from matching enrollment policies at the
+    same specificity level.
+
+    All matching policies are merged first (via ``get_client_policy``),
+    then a value is extracted from each matching policy separately.
+    Useful when multiple policies define the same action with different
+    values that should all be collected (e.g. allowed authenticator
+    AAGUIDs).  Each value is split on whitespace and the results are
+    deduplicated and lowercased.
+
+    :param action: policy action name
+    :param user: user object with ``login`` and ``realm``
+    :param scope: policy scope (default: "enrollment")
+    :return: list of unique lowercased policy values, or empty list
+        if user info is missing or no policies match
+    """
+    if not user or not user.login or not user.realm:
+        log.debug(
+            "_get_aggregated_policy_values(%s): user info missing",
+            action,
+        )
+        return []
+
+    policies = get_client_policy(
+        context["Client"],
+        scope=scope,
+        user=user.login,
+        realm=user.realm,
+        action=action,
+    )
+    if not policies:
+        return []
+
+    policy_values = []
+    for name, definition in policies.items():
+        value = get_action_value(
+            {name: definition},
+            scope=scope,
+            action=action,
+        )
+        if value is not None:
+            policy_values.append(value)
+
+    result = {v.lower() for value in policy_values for v in value.split()}
+
+    return list(result)
 
 
 class TokenPhase(str, Enum):
@@ -762,7 +799,7 @@ class Fido2TokenClass(TokenClass):
 
         # Have to have an RP ID somehow.
 
-        if not (rp_id := _get_enrollment_policy_action(POLICY_RP_ID, user)):
+        if not (rp_id := _get_fido2_policy_value(POLICY_RP_ID, user)):
             log.debug(
                 "_get_rp_id_and_name_from_policies: no `%s=` policy found", POLICY_RP_ID
             )
@@ -772,7 +809,7 @@ class Fido2TokenClass(TokenClass):
         # if `fido2_rp_name=` is not defined.
 
         for action in (POLICY_RP_NAME, POLICY_TOKENISSUER):
-            if rp_name := _get_enrollment_policy_action(action, user):
+            if rp_name := _get_fido2_policy_value(action, user):
                 break
         else:
             rp_name = RP_NAME_DEFAULT
@@ -787,7 +824,7 @@ class Fido2TokenClass(TokenClass):
         :param user: user object
         :return: AttestationConveyancePreference enum value
         """
-        value = _resolve_enrollment_policy(POLICY_ATTESTATION, user)
+        value = _get_fido2_policy_value(POLICY_ATTESTATION, user)
         return ATTESTATION_PREFERENCE_MAP.get(value, DEFAULT_ATTESTATION)
 
     def _get_user_verification_requirement(
@@ -798,7 +835,7 @@ class Fido2TokenClass(TokenClass):
         :param user: user object
         :return: UserVerificationRequirement enum value
         """
-        value = _resolve_enrollment_policy(POLICY_USER_VERIFICATION, user)
+        value = _get_fido2_policy_value(POLICY_USER_VERIFICATION, user)
         return USER_VERIFICATION_MAP.get(value, DEFAULT_USER_VERIFICATION)
 
     def _get_resident_key_requirement(self, user=None) -> ResidentKeyRequirement:
@@ -807,7 +844,7 @@ class Fido2TokenClass(TokenClass):
         :param user: user object
         :return: ResidentKeyRequirement enum value
         """
-        value = _resolve_enrollment_policy(POLICY_RESIDENT_KEY, user)
+        value = _get_fido2_policy_value(POLICY_RESIDENT_KEY, user)
         return RESIDENT_KEY_MAP.get(value, DEFAULT_RESIDENT_KEY)
 
     def _get_allowed_authenticators(self, user=None) -> list[str]:
@@ -817,11 +854,9 @@ class Fido2TokenClass(TokenClass):
         :return: list of allowed AAGUID strings (lowercased), or empty list
             if the policy is not set
         """
-        value = _resolve_enrollment_policy(POLICY_ALLOWED_AUTHENTICATORS, user)
-        if not value:
-            return []
-
-        return [v.strip().lower() for v in str(value).split() if v.strip()]
+        # We use policy aggregation strategy here to allow multiple policies
+        # to define allowed AAGUIDs that are all collected together.
+        return _get_aggregated_fido2_policy_values(POLICY_ALLOWED_AUTHENTICATORS, user)
 
     def _get_authenticator_types(self, user=None) -> list[str]:
         """Retrieve the ``fido2_authenticator_types`` enrollment policy value.
@@ -829,7 +864,7 @@ class Fido2TokenClass(TokenClass):
         :param user: user object
         :return: list of valid preferred type strings (order preserved from policy)
         """
-        value = _resolve_enrollment_policy(POLICY_AUTHENTICATOR_TYPES, user)
+        value = _get_fido2_policy_value(POLICY_AUTHENTICATOR_TYPES, user)
         if not value:
             return []
 
