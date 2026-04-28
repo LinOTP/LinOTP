@@ -845,3 +845,83 @@ class TestUserserviceEnrollment(TestController):
             content_type="application/json",
         )
         assert response.json["result"]["status"] is False, response
+
+    def test_fido2_activation_begin_keeps_original_rp_definition(self):
+        """Regenerated FIDO2 challenges must keep the RP stored during phase 1."""
+        self._create_fido2_policies()
+        self.create_policy(
+            {
+                "name": "fido2_rpname",
+                "scope": "enrollment",
+                "action": "fido2_rp_name=LinOTP",
+                "user": "*",
+                "realm": "*",
+                "active": True,
+            }
+        )
+
+        auth_user = self._auth_user()
+        device = SoftWebauthnDevice()
+
+        response = self.make_userselfservice_request(
+            "enroll",
+            params={"type": "fido2"},
+            auth_user=auth_user,
+            new_auth_cookie=True,
+        )
+        assert response.json["result"]["status"] is True, response
+
+        detail = response.json["detail"]
+        serial = detail["serial"]
+        register_request = detail["registerrequest"]
+        assert register_request["rp"]["id"] == "localhost"
+        assert register_request["rp"]["name"] == "LinOTP"
+
+        # Change the policies after phase 1. Challenge regeneration must still
+        # use the RP definition already stored on the rollout token.
+        self.create_policy(
+            {
+                "name": "fido2_rpid",
+                "scope": "enrollment",
+                "action": "fido2_rp_id=example.com",
+                "user": "*",
+                "realm": "*",
+                "active": True,
+            }
+        )
+        self.create_policy(
+            {
+                "name": "fido2_rpname",
+                "scope": "enrollment",
+                "action": "fido2_rp_name=Example RP",
+                "user": "*",
+                "realm": "*",
+                "active": True,
+            }
+        )
+
+        response = self.make_userselfservice_request(
+            "fido2_activate_begin",
+            params={"serial": serial},
+            auth_user=auth_user,
+        )
+        assert response.json["result"]["status"] is True, response
+
+        regenerated_request = response.json["detail"]["registerrequest"]
+        assert regenerated_request["rp"]["id"] == "localhost"
+        assert regenerated_request["rp"]["name"] == "LinOTP"
+
+        attestation_response = device.create(
+            regenerated_request, origin="https://localhost"
+        )
+        response = self.make_userselfservice_request(
+            "fido2_activate_finish",
+            params={
+                "serial": serial,
+                "attestationResponse": attestation_response,
+            },
+            auth_user=auth_user,
+            content_type="application/json",
+        )
+        assert response.json["result"]["status"] is True, response
+        assert response.json["result"]["value"] is True, response

@@ -30,7 +30,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 3\n"
 "Report-Msgid-Bugs-To: info@linotp.de\n"
-"POT-Creation-Date: 2026-04-16 07:36+0200\n"
+"POT-Creation-Date: 2026-04-24 11:11+0200\n"
 "PO-Revision-Date: 2025-09-16 10:38+0200\n"
 "Last-Translator: Anselm Lingnau <anselm.lingnau@netgo.de>\n"
 "Language-Team: German <support@linotp.de>\n"
@@ -131,6 +131,15 @@ msgstr "Aktion"
 
 msgid "Action Detail"
 msgstr "Aktion Details"
+
+msgid "Activate FIDO2 Token"
+msgstr "FIDO2-Token aktivieren"
+
+msgid "Activate Now"
+msgstr "Jetzt aktivieren"
+
+msgid "Activation failed"
+msgstr "Aktivierung fehlgeschlagen"
 
 msgid "Active"
 msgstr "Aktiv"
@@ -288,13 +297,6 @@ msgstr ""
 msgid "Check the status of your challenge:"
 msgstr "Prüfen Sie den Status Ihrer Challenge:"
 
-msgid "Check your mobile and confirm the login"
-msgstr ""
-"Überprüfen Sie ihr Handy und bestätigen Sie die Anmeldung bzw. Transaktion"
-
-msgid "Choose your preferred method to authenticate"
-msgstr "Wählen Sie Ihre bevorzugte Methode zur Authentisierung"
-
 msgid "Choosen based on hash length. Fallback: SHA1"
 msgstr "Anhand der Hash-Länge ermittelt. Anderenfalls: SHA1"
 
@@ -334,10 +336,6 @@ msgstr "Durch Kommata getrennte Liste von Client-IP-Adressen oder Subnetzen."
 
 msgid "Communicating with LinOTP server..."
 msgstr "Kommuniziere mit dem LinOTP Server..."
-
-msgid "Compare this value to the transaction id shown on your mobile."
-msgstr ""
-"Vergleichen Sie diesen Wert mit der Transactions-Id, die ihr Handy anzeigt."
 
 msgid "Config"
 msgstr "Config"
@@ -408,6 +406,9 @@ msgstr "Zählerfenster"
 
 msgid "Create"
 msgstr "Erstellen"
+
+msgid "Create FIDO2/WebAuthn Token"
+msgstr "FIDO2/WebAuthn-Token erstellen"
 
 msgid "Create Static Password Token"
 msgstr "Einfachen Passworttoken erstellen"
@@ -651,9 +652,6 @@ msgstr ""
 msgid "Enter the number, how many OTP values you want to retrieve:"
 msgstr "Bitte geben Sie die Anzahl der anzufragenden OTP-Werte ein:"
 
-msgid "Enter the otp value"
-msgstr "Geben Sie Ihren OTP-Wert ein"
-
 msgid "Enter the page of the audit entries you want to export."
 msgstr ""
 "Bitte geben Sie die Auditseite mit den Auditeinträgen an, die Sie "
@@ -774,6 +772,9 @@ msgstr "Fehler beim Setzen des Standardproviders"
 
 msgid "Error while fetching the tokentype"
 msgstr "Fehler beim Bestimmen des Tokentyps"
+
+msgid "Error: "
+msgstr "Fehler: "
 
 #, python-format
 msgid "Error: %s"
@@ -1198,10 +1199,13 @@ msgstr ""
 "Token Information verwendet"
 
 msgid ""
-"If there is a problem with your current token please contact the help desk."
+"If you activate it here, the paired security key will be used for "
+"authentication. Choose 'Skip' to let the assigned user activate it with "
+"their own key later."
 msgstr ""
-"Wenn es ein Problem mit Ihrem aktuellen Token gibt, kontaktieren Sie bitte "
-"den HelpDesk."
+"Wenn Sie ihn hier aktivieren, wird der gekoppelte Sicherheitsschlüssel zur "
+"Authentifizierung verwendet. Wählen Sie 'Überspringen', damit der "
+"zugewiesene Benutzer ihn später mit seinem eigenen Schlüssel aktivieren kann."
 
 msgid ""
 "If you are interested in our MFA platform using LinOTP at its core and want "
@@ -1236,9 +1240,6 @@ msgstr ""
 "Sollten Sie Fragen über die Einrichtung oder Installation von LinOTP haben, "
 "werfen Sie bitte einen Blick <a href='https://linotp.org/doc' "
 "target='_blank'>in unsere Dokumentation</a>."
-
-msgid "If you lost a token, you may also disable this token."
-msgstr "Wenn Sie einen Token verloren haben, können Sie diesen deaktivieren."
 
 msgid ""
 "If you select one user, this token will be automatically assigned to this "
@@ -1391,14 +1392,8 @@ msgstr "Login Name"
 msgid "Login failed. Reason: %s"
 msgstr "Anmeldung fehlgeschlagen. Grund: %s"
 
-msgid "Login timed out. Please try again."
-msgstr "Timeout beim Login. Bitte versuchen Sie es nochmal."
-
 msgid "Login to LinOTP Manage-UI"
 msgstr "Anmeldung am LinOTP Manage-UI"
-
-msgid "Login to LinOTP self service"
-msgstr "Anmeldung am LinOTP-Self-Service"
 
 msgid "Login:"
 msgstr "Login:"
@@ -1503,9 +1498,6 @@ msgstr "Neues Passwort"
 msgid "No"
 msgstr "Nein"
 
-msgid "No active token found"
-msgstr "Kein aktives Token gefunden"
-
 msgid "No anonymous referral chasing"
 msgstr "Kein anonymes Verfolgen der Referrals"
 
@@ -1549,6 +1541,9 @@ msgstr "Keine gültige Session"
 
 msgid "Not a valid json string!"
 msgstr "Kein gültiger JSON-Text!"
+
+msgid "Note:"
+msgstr "Hinweis:"
 
 msgid ""
 "Note: Parameter-based client address overrides are deprecated. For now, you "
@@ -1615,9 +1610,6 @@ msgstr "OCRA2-Token-Einstellungen"
 
 msgid "OK"
 msgstr "OK"
-
-msgid "OTP"
-msgstr "OTP"
 
 msgid "OTP Digits"
 msgstr "OTP Ziffern"
@@ -1839,6 +1831,9 @@ msgid "Please have a look at each of the forms for more details."
 msgstr ""
 "Bitte überprüfen sie auf die einzelnen Konfigurationseinstellungen für "
 "weitere Details."
+
+msgid "Please interact with your FIDO2 security key …"
+msgstr "Bitte interagieren Sie mit Ihrem FIDO2-Sicherheitsschlüssel …"
 
 msgid "Please scan the provided qr code"
 msgstr "Bitte scannen Sie den QR-Code"
@@ -2175,11 +2170,6 @@ msgstr "Konfiguration speichern"
 msgid "Save config"
 msgstr "Konfiguration speichern"
 
-msgid "Scan the QR code and comfirm on your mobile or submit below"
-msgstr ""
-"Scannen Sie den QR-Code und bestätigen Sie auf Ihrem Handy bzw geben Sie "
-"unten die vom Handy generierte TAN an"
-
 msgid "Scan the challenge and get your OTP:"
 msgstr "Scannen Sie die Challenge und erhalten Sie einen OTP Wert:"
 
@@ -2228,9 +2218,6 @@ msgid ""
 msgstr ""
 "Self-Service Login-Anfrage\n"
 "Benutzer: %s"
-
-msgid "Selfservice Portal"
-msgstr "Self-Service-Portal"
 
 msgid "Selfservice portal"
 msgstr "Self-Service-Portal"
@@ -2306,6 +2293,9 @@ msgstr "Einfacher Passwort Token"
 
 msgid "Sizelimit"
 msgstr "Größenlimit"
+
+msgid "Skip"
+msgstr "Überspringen"
 
 msgid "Skip first line (header information)"
 msgstr "Erste Zeile mit Spalten Überschriften überspringen"
@@ -2695,6 +2685,13 @@ msgstr "Der Token gehört zu "
 msgid "The token is already assigned to another user."
 msgstr "Der Token ist bereits einem anderen Benutzer zugewiesen."
 
+msgid ""
+"The token is currently inactive. Would you like to activate it now by "
+"pairing a security key?"
+msgstr ""
+"Der Token ist derzeit inaktiv. Möchten Sie ihn jetzt aktivieren, indem Sie "
+"einen Sicherheitsschlüssel koppeln?"
+
 msgid "The token seed is the password"
 msgstr "Der Token-Seed ist das Passwort"
 
@@ -2780,6 +2777,15 @@ msgstr ""
 "Authenticatoren enthalten."
 
 msgid ""
+"This creates a FIDO2 token. After creation, you can activate it immediately "
+"with your security key, or leave it inactive for the assigned user to "
+"activate later via selfservice."
+msgstr ""
+"Dies erstellt einen FIDO2-Token. Nach der Erstellung können Sie ihn sofort "
+"mit Ihrem Sicherheitsschlüssel aktivieren oder ihn inaktiv lassen, damit der "
+"zugewiesene Benutzer ihn später über den Selfservice aktivieren kann."
+
+msgid ""
 "This is a comma-separated list of the LinOTP clients, for example a RADIUS "
 "Server, which are allowed to pass their own clients IP-address as a "
 "parameter. This modified address can then be used in policy definitions."
@@ -2788,13 +2794,6 @@ msgstr ""
 "denen gestattet wird, die IP-Adresse ihrer Clients als Parameter an LinOTP "
 "weiterzureichen. Diese können als Grundlage für Authorisierungsrichtlinien "
 "verwendet werden."
-
-msgid ""
-"This is the LinOTP self service portal. You may login here with your "
-"username and realm."
-msgstr ""
-"Dies ist der LinOTP-Self-Service. Sie können Sich hier mit Ihrem "
-"Benutzernamen und Ihrem Realm anmelden."
 
 msgid "This is the default look ahead window for counter based tokens."
 msgstr ""
@@ -2920,6 +2919,9 @@ msgstr "Zum Token"
 msgid "To verify your result enter the OTP value into the form below."
 msgstr "Bitte geben Sie zur Prüfung unten den OTP-Wert ein."
 
+msgid "Token"
+msgstr "Token"
+
 msgid "Token Config"
 msgstr "Tokenkonfiguration"
 
@@ -2943,6 +2945,9 @@ msgstr "Tokentyp"
 
 msgid "Token View"
 msgstr "Tokenansicht"
+
+msgid "Token created:"
+msgstr "Token erstellt:"
 
 msgid "Token enrolled. Use the old PIN with the new password."
 msgstr ""
@@ -3126,9 +3131,6 @@ msgstr "Voice-Token"
 msgid "Voice provider configuration"
 msgstr "Voice-Provider-Konfiguration"
 
-msgid "Waiting for confirmation..."
-msgstr "Warten auf Bestätigung..."
-
 msgid ""
 "We are pleased that you are using <a href='https://linotp.de'>LinOTP powered "
 "by netgo</a> as your MFA solution."
@@ -3172,13 +3174,6 @@ msgid ""
 msgstr ""
 "Mit diesem Dialog können Sie Benutzer importieren um einen 'intern "
 "verwalteten' UserIdResolver zu erzeugen."
-
-msgid ""
-"Within the self service portal you may reset the PINs of your tokens, assign "
-"new tokens or resync your tokens."
-msgstr ""
-"Im Self-Service-Portal können Sie bspw. die PIN Ihrer Token zurücksetzen, "
-"neue Token ausrollen oder synchronisieren."
 
 msgid "Yes"
 msgstr "Ja"
@@ -3657,6 +3652,9 @@ msgstr "Aktivieren Sie Ihren PushToken"
 msgid "activate your QRToken"
 msgstr "Aktivieren Sie Ihren QRToken"
 
+msgid "activated successfully!"
+msgstr "erfolgreich aktiviert!"
+
 msgid "admin"
 msgstr "admin"
 
@@ -4022,12 +4020,6 @@ msgstr "WebUI generiert"
 #~ msgid "Action detail"
 #~ msgstr "Aktionen"
 
-#~ msgid "Activate Push Token"
-#~ msgstr "Aktivieren Sie Ihren PushToken"
-
-#~ msgid "Activate token"
-#~ msgstr "Token aktivieren"
-
 #~ msgid "Activate your OCRA Token"
 #~ msgstr "Aktivieren Sie Ihren OCRA-Token"
 
@@ -4064,6 +4056,13 @@ msgstr "WebUI generiert"
 #~ msgid "Challenge triggered successfully"
 #~ msgstr "Challenge wurde erfolgreich angefordert"
 
+#~ msgid "Check your mobile and confirm the login"
+#~ msgstr ""
+#~ "Überprüfen Sie ihr Handy und bestätigen Sie die Anmeldung bzw. Transaktion"
+
+#~ msgid "Choose your preferred method to authenticate"
+#~ msgstr "Wählen Sie Ihre bevorzugte Methode zur Authentisierung"
+
 #~ msgid "Choose your token profile "
 #~ msgstr "Bitte wählen Sie Ihren Tokentyp "
 
@@ -4079,6 +4078,11 @@ msgstr "WebUI generiert"
 
 #~ msgid "Comment"
 #~ msgstr "Kommentar"
+
+#~ msgid "Compare this value to the transaction id shown on your mobile."
+#~ msgstr ""
+#~ "Vergleichen Sie diesen Wert mit der Transactions-Id, die ihr Handy "
+#~ "anzeigt."
 
 #~ msgid "Confirm using mobile"
 #~ msgstr "Änderungen über ihr Handy bestätigen"
@@ -4248,6 +4252,9 @@ msgstr "WebUI generiert"
 #~ "Geben Sie die Token-ID Ihres YubiKeys ein. Stecken Sie einfach Ihren "
 #~ "Yubikey ein und drücken Sie den Knopf."
 
+#~ msgid "Enter the otp value"
+#~ msgstr "Geben Sie Ihren OTP-Wert ein"
+
 #~ msgid "Enter the realm, the tokens should part of:"
 #~ msgstr "Zu welchem Realm sollen die Token zugeordnet werden:"
 
@@ -4256,9 +4263,6 @@ msgstr "WebUI generiert"
 
 #~ msgid "Error"
 #~ msgstr "Fehler"
-
-#~ msgid "Error "
-#~ msgstr "Fehler "
 
 #~ msgid "Error assigning Token: "
 #~ msgstr "Fehler bei der Zuweisung des Tokens: "
@@ -4393,6 +4397,13 @@ msgstr "WebUI generiert"
 #~ "verwenden."
 
 #~ msgid ""
+#~ "If there is a problem with your current token please contact the help "
+#~ "desk."
+#~ msgstr ""
+#~ "Wenn es ein Problem mit Ihrem aktuellen Token gibt, kontaktieren Sie "
+#~ "bitte den HelpDesk."
+
+#~ msgid ""
 #~ "If you are not yet subscribed, please consider subscribing to our "
 #~ "quarterly newsletter."
 #~ msgstr "Abonnieren Sie unseren vierteljährlich erscheinenden Newsletter."
@@ -4409,6 +4420,10 @@ msgstr "WebUI generiert"
 #~ msgstr ""
 #~ "Wenn Sie keinen eigenen API Key eingeben, wird ein LinOTP DEMO API Key "
 #~ "verwendet!"
+
+#~ msgid "If you lost a token, you may also disable this token."
+#~ msgstr ""
+#~ "Wenn Sie einen Token verloren haben, können Sie diesen deaktivieren."
 
 #~ msgid "Import tokens from Vasco DPX file"
 #~ msgstr "VASCO-DPX-Tokendatei importieren"
@@ -4473,6 +4488,12 @@ msgstr "WebUI generiert"
 #~ msgid "Login failed"
 #~ msgstr "Anmeldung fehlgeschlagen"
 
+#~ msgid "Login timed out. Please try again."
+#~ msgstr "Timeout beim Login. Bitte versuchen Sie es nochmal."
+
+#~ msgid "Login to LinOTP self service"
+#~ msgstr "Anmeldung am LinOTP-Self-Service"
+
 #~ msgid "Lost token"
 #~ msgstr "Verlorener Token"
 
@@ -4490,6 +4511,9 @@ msgstr "WebUI generiert"
 
 #~ msgid "No Token with this OTP value found!"
 #~ msgstr "Kein Token mit diesem OTP-Wert gefunden!"
+
+#~ msgid "No active token found"
+#~ msgstr "Kein aktives Token gefunden"
 
 #~ msgid "No valid authentication session %r"
 #~ msgstr "Keine gültige Authentisierungs-Session %r"
@@ -4529,8 +4553,8 @@ msgstr "WebUI generiert"
 #~ msgid "OCRA token settings"
 #~ msgstr "OCRA2-Token-Einstellungen"
 
-#~ msgid "OTP Validation failed"
-#~ msgstr "OTP Validierung fehlgeschlagen"
+#~ msgid "OTP"
+#~ msgstr "OTP"
 
 #~ msgid "OTP Value: "
 #~ msgstr "OTP-Wert: "
@@ -4688,6 +4712,11 @@ msgstr "WebUI generiert"
 #~ msgid "Scan QR code"
 #~ msgstr "Scannen Sie den QR-Code"
 
+#~ msgid "Scan the QR code and comfirm on your mobile or submit below"
+#~ msgstr ""
+#~ "Scannen Sie den QR-Code und bestätigen Sie auf Ihrem Handy bzw geben Sie "
+#~ "unten die vom Handy generierte TAN an"
+
 #~ msgid "Seed for HOTP token"
 #~ msgstr "Seed des HOTP Token"
 
@@ -4708,6 +4737,9 @@ msgstr "WebUI generiert"
 
 #~ msgid "Selfservice Home"
 #~ msgstr "Self-Service-Start"
+
+#~ msgid "Selfservice Portal"
+#~ msgstr "Self-Service-Portal"
 
 #~ msgid "Send OTP by SMS"
 #~ msgstr "OTP via SMS verschickt"
@@ -4826,6 +4858,13 @@ msgstr "WebUI generiert"
 #~ "Es ist keine Policy selfservice/max_count definiert für Tokentyp %s im "
 #~ "Realm %s."
 
+#~ msgid ""
+#~ "This is the LinOTP self service portal. You may login here with your "
+#~ "username and realm."
+#~ msgstr ""
+#~ "Dies ist der LinOTP-Self-Service. Sie können Sich hier mit Ihrem "
+#~ "Benutzernamen und Ihrem Realm anmelden."
+
 #~ msgid "This is the location of your index.html file on the LinOTP server."
 #~ msgstr ""
 #~ "Das ist der Ort, wo auf dem LinOTP-Server die index.html der Hilfe liegt."
@@ -4882,9 +4921,6 @@ msgstr "WebUI generiert"
 
 #~ msgid "Token Settings:"
 #~ msgstr "Tokeneinstellungen:"
-
-#~ msgid "Token assigned successfully"
-#~ msgstr "Der Token wurde erfolgreich zugewiesen"
 
 #~ msgid "Token defaults"
 #~ msgstr "Token-Standardwerte"
@@ -4974,8 +5010,18 @@ msgstr "WebUI generiert"
 #~ msgid "Vasco Token"
 #~ msgstr "Vasco-Token"
 
+#~ msgid "Waiting for confirmation..."
+#~ msgstr "Warten auf Bestätigung..."
+
 #~ msgid "Welcome to the LinOTP Selfservice Portal"
 #~ msgstr "Willkommen im LinOTP-Self-Service-Portal"
+
+#~ msgid ""
+#~ "Within the self service portal you may reset the PINs of your tokens, "
+#~ "assign new tokens or resync your tokens."
+#~ msgstr ""
+#~ "Im Self-Service-Portal können Sie bspw. die PIN Ihrer Token zurücksetzen, "
+#~ "neue Token ausrollen oder synchronisieren."
 
 #~ msgid ""
 #~ "You are going to assign a new token to you. Is this the correct serial: "
