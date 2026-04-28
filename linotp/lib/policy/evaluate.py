@@ -73,8 +73,8 @@ class PolicyEvaluator:
 
     [
      Currently the filter only return a boolean value, but this could be
-     extendend to be a tuple of (match, exact or wildcard) which will help
-     to determin the most precise policy
+     extended to be a tuple of (match, exact or wildcard) which will help
+     to determine the most precise policy
     ]
 
     [
@@ -135,7 +135,7 @@ class PolicyEvaluator:
         - If strict_matches=True, there is a special treatment of the user matching in policies, which
           classifies the policies in those with a pure wildcard match, a regex
           match and an exact matching. If there are exact matching, this set of
-          policies is prefered over those with a regex match, which is prefered
+          policies is preferred over those with a regex match, which is preferred
           over the set of pure wildcard '*' match. Thus in case of a wildcard
           match, all policies are returned.
           If strict_matches=False, the policies get intersected over all matching policies.
@@ -193,7 +193,7 @@ class PolicyEvaluator:
 
                 # here we honor the user matching, which in difference to the
                 # other matching functions returns more than a boolean -
-                # it returns the matching precission, which is either:
+                # it returns the matching precision, which is either:
                 # exact:match, regex:match or wildcard:match
                 # - the evaluation of the set of policy conditions can
                 # only be evaluated within the user_list_compare
@@ -217,10 +217,10 @@ class PolicyEvaluator:
         return matching_policies, matches
 
     def _intersect_matches_strict(self, matching_policies, matches):
-        # to get the best machtes, we intersect the matching policies
+        # to get the best matches, we intersect the matching policies
         # for example:
         #
-        # matchin all: p1, p2, p3, p4, p5
+        # matching all: p1, p2, p3, p4, p5
         # user exact: p1, p2, p3
         # user wild: p4, p5
         # => 1 selection: (p1, p2, p3, p4,) & (p1, p2, p3) = (p1, p2, p3)
@@ -232,7 +232,7 @@ class PolicyEvaluator:
         # intersect result with client:
         # client match exact: p3
         # client match wildcard: p1
-        # => 3. selecttion: (p1, p2) & (p1) = p1
+        # => 3. selection: (p1, p2) & (p1) = p1
 
         return self._intersect_matches_(matching_policies, matches, strict_matches=True)
 
@@ -240,7 +240,7 @@ class PolicyEvaluator:
         # to get the most, we intersect the union of matching policies
         # for example:
         #
-        # matchin all: p1, p2, p3, p4, p5
+        # matching all: p1, p2, p3, p4, p5
         # user exact: p1, p2, p3
         # user wild: p5
         # => 1 selection: (p1, p2, p3, p4, p5) & ((p1, p2, p3) | (p5)) = (p1, p2, p3, p5)
@@ -252,7 +252,7 @@ class PolicyEvaluator:
         # intersect result with client:
         # client match exact: p5
         # client match wildcard: p1
-        # => 3. selecttion: (p1, p2, p5) & ((p5) | (p1)) = (p1, p5)
+        # => 3. selection: (p1, p2, p5) & ((p5) | (p1)) = (p1, p5)
 
         return self._intersect_matches_(
             matching_policies, matches, strict_matches=False
@@ -328,7 +328,7 @@ class PolicyEvaluator:
 
         :param all_matches: set of initial entries
         :param *args: list of sets, whereby the ordering defines the
-                      matching precission e.g.:
+                      matching precision e.g.:
                           set(exact), set(regex), set(wildcard)
         :return: set of matches
         """
@@ -380,7 +380,7 @@ class PolicyEvaluator:
     def add_filter(self, key, value, value_compare):
         """
         low level filter interface which adds a tuple of
-            key, value and comparering_method
+            key, value and comparing_method
         like
            ('user , 'hugo', user_list_compare)
         """
@@ -462,7 +462,7 @@ class PolicyEvaluator:
         """
         usability wrapper for adding time value for time filtering
 
-        :param time: datetime object or None, which referes to now()
+        :param time: datetime object or None, which refers to now()
         :return: - nothing -
         """
         if time is None:
@@ -710,7 +710,7 @@ def user_list_compare(policy_conditions, login):
         its_a_not_condition = False
 
         # we preserve the kind of match:
-        # in case of a 'non condition' match, we must return immeaditly
+        # in case of a 'non condition' match, we must return immediately
         # and return a False to break out of the loop of conditions
 
         if condition[0] in ["-", "!"]:
@@ -772,7 +772,7 @@ def user_list_compare(policy_conditions, login):
         # if we came here, we got a least one match
         matched = True
 
-        # evaluate the precission of the user match
+        # evaluate the precision of the user match
 
         if condition in full_qualified_names:
             match_type = EXACT_MATCH
