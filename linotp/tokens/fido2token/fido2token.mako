@@ -291,6 +291,7 @@ async function fido2_admin_activate_now() {
 
     // Success - reset and close dialog, show success banner
     fido2_close_and_reset();
+    $('#token_table').flexReload();
     alert_info_text({
       text: '${_("Token")} ' + escape(serial) + ' ${_("activated successfully!")}',
       is_escaped: true
