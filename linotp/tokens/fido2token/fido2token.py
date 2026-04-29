@@ -368,7 +368,9 @@ class Fido2EnrollmentPolicies:
 
         # Have to have an RP ID somehow.
 
-        if not (rp_id := _get_fido2_policy_value(POLICY_RP_ID, user, scope="enrollment")):
+        if not (
+            rp_id := _get_fido2_policy_value(POLICY_RP_ID, user, scope="enrollment")
+        ):
             log.debug(
                 "Fido2EnrollmentPolicies.get_rp_id_and_name: no `%s=` policy found",
                 POLICY_RP_ID,
@@ -388,13 +390,9 @@ class Fido2EnrollmentPolicies:
         log.debug("Fido2EnrollmentPolicies.get_rp_id_and_name: result=%r", result)
         return result
 
-    def get_attestation_preference(
-        self, user=None
-    ) -> AttestationConveyancePreference:
+    def get_attestation_preference(self, user=None) -> AttestationConveyancePreference:
         """Return attestation conveyance preference."""
-        value = _get_fido2_policy_value(
-            POLICY_ATTESTATION, user, scope="enrollment"
-        )
+        value = _get_fido2_policy_value(POLICY_ATTESTATION, user, scope="enrollment")
         return ATTESTATION_PREFERENCE_MAP.get(value, DEFAULT_ATTESTATION)
 
     def get_user_verification_requirement(
@@ -408,9 +406,7 @@ class Fido2EnrollmentPolicies:
 
     def get_resident_key_requirement(self, user=None) -> ResidentKeyRequirement:
         """Return resident key requirement."""
-        value = _get_fido2_policy_value(
-            POLICY_RESIDENT_KEY, user, scope="enrollment"
-        )
+        value = _get_fido2_policy_value(POLICY_RESIDENT_KEY, user, scope="enrollment")
         return RESIDENT_KEY_MAP.get(value, DEFAULT_RESIDENT_KEY)
 
     def get_allowed_authenticators(self, user=None) -> list[str]:
@@ -434,6 +430,28 @@ class Fido2EnrollmentPolicies:
 
         return [t for t in raw if t in VALID_AUTHENTICATOR_TYPES]
 
+
+class Fido2AuthenticationPolicies:
+    """FIDO2 authentication-scope policy accessors."""
+
+    def get_user_verification_requirement(
+        self, user=None
+    ) -> UserVerificationRequirement:
+        """Return user verification requirement for authentication."""
+        value = _get_fido2_policy_value(
+            POLICY_USER_VERIFICATION, user, scope="authentication"
+        )
+        return USER_VERIFICATION_MAP.get(value, DEFAULT_USER_VERIFICATION)
+
+
+class Fido2AuthorizationPolicies:
+    """FIDO2 authorization-scope policy accessors."""
+
+    def get_allowed_authenticators(self, user=None) -> list[str]:
+        """Return allowed authenticator AAGUIDs for authentication."""
+        return _get_aggregated_fido2_policy_values(
+            POLICY_ALLOWED_AUTHENTICATORS, user, scope="authorization"
+        )
 
 
 class TokenPhase(str, Enum):
@@ -666,6 +684,29 @@ class Fido2TokenClass(TokenClass):
                             "authenticators whose AAGUID is in this list "
                             "will be accepted during registration. "
                             "Enter AAGUIDs as space-separated values."
+                        ),
+                    },
+                },
+                "authentication": {
+                    POLICY_USER_VERIFICATION: {
+                        "type": "set",
+                        "value": ["required", "preferred", "discouraged"],
+                        "desc": _(
+                            "User verification requirement for FIDO2/WebAuthn "
+                            "token authentication. Controls whether the "
+                            "authenticator must verify the user (e.g. via PIN "
+                            "or biometric) during authentication."
+                        ),
+                    },
+                },
+                "authorization": {
+                    POLICY_ALLOWED_AUTHENTICATORS: {
+                        "type": "str",
+                        "desc": _(
+                            "List of allowed authenticator AAGUIDs for "
+                            "FIDO2/WebAuthn token authentication. Only already "
+                            "enrolled tokens whose AAGUID is in this list may "
+                            "be used. Enter AAGUIDs as space-separated values."
                         ),
                     },
                 },
@@ -1134,6 +1175,17 @@ class Fido2TokenClass(TokenClass):
     # Authentication (Assertion) - Challenge/Response
     # ---------------------------------------------------------------------- --
 
+    def _is_authenticator_allowed_for_authentication(self, user=None) -> bool:
+        """Check authorization policy for this token's enrolled authenticator."""
+        allowed_aaguids = Fido2AuthorizationPolicies.get_allowed_authenticators(user)
+        if not allowed_aaguids:
+            return True
+
+        cred = self._get_stored_credential()
+
+        aaguid = (cred.aaguid or "").lower()
+        return aaguid in allowed_aaguids
+
     def splitPinPass(self, passw: str):
         """
         Split pin and otp from the password.
@@ -1199,6 +1251,19 @@ class Fido2TokenClass(TokenClass):
         """
         cred = self._get_stored_credential()
 
+        # Build a User object from the token's owner info for policy lookup.
+        username = self.getUsername()
+        realms = self.getRealms()
+        token_user = (
+            User(login=username, realm=realms[0]) if username and realms else None
+        )
+
+        if not self._is_authenticator_allowed_for_authentication(token_user):
+            message = _(
+                "This authenticator model is not in the list of allowed authenticators."
+            )
+            return (False, message, {}, {})
+
         # Build allowCredentials list from the stored credential
         allow_credentials = [
             PublicKeyCredentialDescriptor(
@@ -1207,14 +1272,11 @@ class Fido2TokenClass(TokenClass):
             )
         ]
 
-        # Determine user verification requirement from policy
-        # Build a User object from the token's owner info for policy lookup
-        username = self.getUsername()
-        realms = self.getRealms()
-        token_user = (
-            User(login=username, realm=realms[0]) if username and realms else None
+        # Determine user verification requirement from authentication policy.
+        authentication_policies = Fido2AuthenticationPolicies()
+        uv_requirement = authentication_policies.get_user_verification_requirement(
+            token_user
         )
-        uv_requirement = Fido2EnrollmentPolicies().get_user_verification_requirement(user=token_user)
 
         # Call Fido2Server.authenticate_begin() to generate challenge and options
         options_obj, state = self._get_fido2_server().authenticate_begin(
@@ -1273,39 +1335,53 @@ class Fido2TokenClass(TokenClass):
             # Get the saved challenge data
             saved_challenge_b64 = self._parse_challenge_data(challenge)
             if not saved_challenge_b64:
-                log.debug(
+                log.warning(
                     "Could not find challenge data for challenge %s", challenge.transid
                 )
                 continue
 
             # Verify the assertion response
-            _otp_counter = self._verify_assertion(passw, saved_challenge_b64)
+            _otp_counter = self._verify_assertion(passw, saved_challenge_b64, user=user)
             if _otp_counter >= 0:
                 matching_challenges.append(challenge)
                 otp_counter = _otp_counter
 
         return otp_counter, matching_challenges
 
-    def _verify_assertion(self, passw, saved_challenge_state_json):
+    def _verify_assertion(self, passw, saved_challenge_state_json, user=None):
         """
         Verify a FIDO2 assertion response using Fido2Server.
 
         :param passw: the JSON assertion response string
         :param saved_challenge_state_json: the JSON-serialized state from Fido2Server
+        :param user: user object for policy lookup
         :return: 0 on success, -1 on failure
         """
+
+        # Check if the authenticator is allowed by policy before doing any verification
+        if not self._is_authenticator_allowed_for_authentication(user):
+            return -1
+
         # Deserialize state from challenge
         try:
             state = self._deserialize_state(saved_challenge_state_json)
         except ParameterError as exx:
-            log.debug("Failed to parse challenge state: %r", exx)
+            log.warning(
+                "Failed to parse FIDO2 challenge state for token %s: %r",
+                self.getSerial(),
+                exx,
+            )
             return -1
 
         # Parse assertion response
         try:
             resp_data = json.loads(passw)
         except (ValueError, TypeError) as exx:
-            log.debug("Invalid JSON in FIDO2 assertion response: %r", exx)
+            log.warning(
+                "Invalid JSON in FIDO2 assertion response for token %s: %r",
+                self.getSerial(),
+                exx,
+            )
             return -1
 
         # Reconstruct stored credential for verification

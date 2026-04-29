@@ -45,6 +45,7 @@ from pyrad.packet import AccessAccept
 
 from linotp.lib.HMAC import HmacOtp as LinHmac
 from linotp.tests import TestController
+from linotp.tests.functional.fido2_device import _AAGUID
 
 
 class Response:
@@ -2210,7 +2211,7 @@ class TestValidateController(TestController):
                 "action": "fido2_user_verification_requirement=required",
                 "user": "*",
                 "realm": "*",
-                "scope": "enrollment",
+                "scope": "authentication",
             },
         )
         assert "false" not in response, response
@@ -2225,6 +2226,68 @@ class TestValidateController(TestController):
 
         sign_request = detail["signrequest"]
         assert sign_request["userVerification"] == "required"
+
+    def test_fido2_allowed_authenticators_authorization_policy(self):
+        """
+        The authorization-scope allowed-authenticators policy controls whether
+        an already enrolled FIDO2 token may be used for authentication.
+        """
+        policies = [
+            {
+                "name": "enroll_fido2",
+                "action": "enrollFIDO2",
+                "user": "*",
+                "realm": "*",
+                "scope": "selfservice",
+            },
+            {
+                "name": "fido2_rpid",
+                "action": "fido2_rp_id=localhost",
+                "user": "*",
+                "realm": "*",
+                "scope": "enrollment",
+            },
+            {
+                "name": "fido2_allowed_auth",
+                "action": (
+                    "fido2_allowed_authenticators=00000000-0000-0000-0000-000000000099"
+                ),
+                "user": "*",
+                "realm": "*",
+                "scope": "authorization",
+            },
+        ]
+        for pp in policies:
+            response = self.make_system_request("setPolicy", params=pp)
+            assert "false" not in response, response
+
+        auth_user = {
+            "login": "passthru_user1@myDefRealm",
+            "password": "geheim1",
+        }
+        self.enroll_fido2_token(auth_user=auth_user)
+
+        params = {"user": "passthru_user1", "realm": "myDefRealm", "pass": ""}
+        response = self.make_validate_request("check", params)
+        assert response.json["result"]["status"] is True, response
+        assert response.json["result"]["value"] is False, response
+
+        # now allow the correct AAGUID via policy and verify that authentication works
+        response = self.make_system_request(
+            "setPolicy",
+            params={
+                "name": "fido2_allowed_auth",
+                "action": f"fido2_allowed_authenticators={_AAGUID}",
+                "user": "*",
+                "realm": "*",
+                "scope": "authorization",
+            },
+        )
+        assert "false" not in response, response
+
+        response = self.make_validate_request("check", params)
+        assert response.json["result"]["status"] is True, response
+        assert response.json["detail"]["linotp_tokentype"] == "fido2"
 
 
 # eof #########################################################################
