@@ -348,6 +348,94 @@ def _get_aggregated_fido2_policy_values(
     return list(result)
 
 
+class Fido2EnrollmentPolicies:
+    """FIDO2 enrollment-scope policy accessors."""
+
+    def get_rp_id_and_name(self, user=None) -> dict[str, str]:
+        """Obtain RP ID and RP name from appropriate policies. Returns
+        a dictionary with `rp_id` and `rp_name` items, or an empty
+        dictionary if no RP ID could be located in policies.
+        """
+
+        # The user stuff will also have been checked in the method
+        # `_handle_registration_phase1()` below.  We check it again
+        # here for safety, in case this method is ever called from
+        # elsewhere.
+
+        if not user or not user.login or not user.realm:
+            log.debug("Fido2EnrollmentPolicies.get_rp_id_and_name: user info missing")
+            return {}
+
+        # Have to have an RP ID somehow.
+
+        if not (rp_id := _get_fido2_policy_value(POLICY_RP_ID, user, scope="enrollment")):
+            log.debug(
+                "Fido2EnrollmentPolicies.get_rp_id_and_name: no `%s=` policy found",
+                POLICY_RP_ID,
+            )
+            return {}
+
+        # We support `tokenissuer=` as a legacy equivalent to `fido2_rp_name=`,
+        # if `fido2_rp_name=` is not defined.
+
+        for action in (POLICY_RP_NAME, POLICY_TOKENISSUER):
+            if rp_name := _get_fido2_policy_value(action, user, scope="enrollment"):
+                break
+        else:
+            rp_name = RP_NAME_DEFAULT
+
+        result = {"rp_id": rp_id, "rp_name": rp_name}
+        log.debug("Fido2EnrollmentPolicies.get_rp_id_and_name: result=%r", result)
+        return result
+
+    def get_attestation_preference(
+        self, user=None
+    ) -> AttestationConveyancePreference:
+        """Return attestation conveyance preference."""
+        value = _get_fido2_policy_value(
+            POLICY_ATTESTATION, user, scope="enrollment"
+        )
+        return ATTESTATION_PREFERENCE_MAP.get(value, DEFAULT_ATTESTATION)
+
+    def get_user_verification_requirement(
+        self, user=None
+    ) -> UserVerificationRequirement:
+        """Return user verification requirement for registration."""
+        value = _get_fido2_policy_value(
+            POLICY_USER_VERIFICATION, user, scope="enrollment"
+        )
+        return USER_VERIFICATION_MAP.get(value, DEFAULT_USER_VERIFICATION)
+
+    def get_resident_key_requirement(self, user=None) -> ResidentKeyRequirement:
+        """Return resident key requirement."""
+        value = _get_fido2_policy_value(
+            POLICY_RESIDENT_KEY, user, scope="enrollment"
+        )
+        return RESIDENT_KEY_MAP.get(value, DEFAULT_RESIDENT_KEY)
+
+    def get_allowed_authenticators(self, user=None) -> list[str]:
+        """Return allowed authenticator AAGUIDs for registration."""
+        return _get_aggregated_fido2_policy_values(
+            POLICY_ALLOWED_AUTHENTICATORS, user, scope="enrollment"
+        )
+
+    def get_authenticator_types(self, user=None) -> list[str]:
+        """Return preferred authenticator types."""
+        value = _get_fido2_policy_value(
+            POLICY_AUTHENTICATOR_TYPES, user, scope="enrollment"
+        )
+        if not value:
+            return []
+
+        if isinstance(value, set):
+            raw = list(value)
+        else:
+            raw = [v.strip().lower() for v in str(value).split() if v.strip()]
+
+        return [t for t in raw if t in VALID_AUTHENTICATOR_TYPES]
+
+
+
 class TokenPhase(str, Enum):
     """Token lifecycle phases."""
 
@@ -548,7 +636,7 @@ class Fido2TokenClass(TokenClass):
                             "User verification requirement for FIDO2/WebAuthn "
                             "tokens. Controls whether the authenticator must "
                             "verify the user (e.g. via PIN or biometric) during "
-                            "registration and authentication."
+                            "registration."
                         ),
                     },
                     POLICY_RESIDENT_KEY: {
@@ -788,99 +876,6 @@ class Fido2TokenClass(TokenClass):
 
         return response_detail
 
-    def _get_rp_id_and_name_from_policies(self, user=None) -> dict[str, str]:
-        """Obtain RP ID and RP name from appropriate policies. Returns
-        a dictionary with `rp_id` and `rp_name` items, or an empty
-        dictionary if no RP ID could be located in policies.
-        """
-
-        # The user stuff will also have been checked in the method
-        # `_handle_registration_phase1()` below.  We check it again
-        # here for safety, in case this method is ever called from
-        # elsewhere.
-
-        if not user or not user.login or not user.realm:
-            log.debug("_get_rp_id_and_name_from_policies: user info missing")
-            return {}
-
-        # Have to have an RP ID somehow.
-
-        if not (rp_id := _get_fido2_policy_value(POLICY_RP_ID, user)):
-            log.debug(
-                "_get_rp_id_and_name_from_policies: no `%s=` policy found", POLICY_RP_ID
-            )
-            return {}
-
-        # We support `tokenissuer=` as a legacy equivalent to `fido2_rp_name=`,
-        # if `fido2_rp_name=` is not defined.
-
-        for action in (POLICY_RP_NAME, POLICY_TOKENISSUER):
-            if rp_name := _get_fido2_policy_value(action, user):
-                break
-        else:
-            rp_name = RP_NAME_DEFAULT
-
-        result = {"rp_id": rp_id, "rp_name": rp_name}
-        log.debug("_get_rp_id_and_name_from_policies: result=%r", result)
-        return result
-
-    def _get_attestation_preference(self, user=None) -> AttestationConveyancePreference:
-        """Determine the attestation conveyance preference from the enrollment policy.
-
-        :param user: user object
-        :return: AttestationConveyancePreference enum value
-        """
-        value = _get_fido2_policy_value(POLICY_ATTESTATION, user)
-        return ATTESTATION_PREFERENCE_MAP.get(value, DEFAULT_ATTESTATION)
-
-    def _get_user_verification_requirement(
-        self, user=None
-    ) -> UserVerificationRequirement:
-        """Determine the user verification requirement from the enrollment policy.
-
-        :param user: user object
-        :return: UserVerificationRequirement enum value
-        """
-        value = _get_fido2_policy_value(POLICY_USER_VERIFICATION, user)
-        return USER_VERIFICATION_MAP.get(value, DEFAULT_USER_VERIFICATION)
-
-    def _get_resident_key_requirement(self, user=None) -> ResidentKeyRequirement:
-        """Determine the resident key requirement from the enrollment policy.
-
-        :param user: user object
-        :return: ResidentKeyRequirement enum value
-        """
-        value = _get_fido2_policy_value(POLICY_RESIDENT_KEY, user)
-        return RESIDENT_KEY_MAP.get(value, DEFAULT_RESIDENT_KEY)
-
-    def _get_allowed_authenticators(self, user=None) -> list[str]:
-        """Retrieve the ``fido2_allowed_authenticators`` enrollment policy value.
-
-        :param user: user object
-        :return: list of allowed AAGUID strings (lowercased), or empty list
-            if the policy is not set
-        """
-        # We use policy aggregation strategy here to allow multiple policies
-        # to define allowed AAGUIDs that are all collected together.
-        return _get_aggregated_fido2_policy_values(POLICY_ALLOWED_AUTHENTICATORS, user)
-
-    def _get_authenticator_types(self, user=None) -> list[str]:
-        """Retrieve the ``fido2_authenticator_types`` enrollment policy value.
-
-        :param user: user object
-        :return: list of valid preferred type strings (order preserved from policy)
-        """
-        value = _get_fido2_policy_value(POLICY_AUTHENTICATOR_TYPES, user)
-        if not value:
-            return []
-
-        if isinstance(value, set):
-            raw = list(value)
-        else:
-            raw = [v.strip().lower() for v in str(value).split() if v.strip()]
-
-        return [t for t in raw if t in VALID_AUTHENTICATOR_TYPES]
-
     def _handle_registration_phase1(self, params, user=None):
         """
         Generate WebAuthn registration challenge using Fido2Server.
@@ -894,9 +889,10 @@ class Fido2TokenClass(TokenClass):
             raise ParameterError(msg)
 
         # Determine attestation and user verification preferences from policies
-        attestation_preference = self._get_attestation_preference(user=user)
-        uv_requirement = self._get_user_verification_requirement(user=user)
-        rk_requirement = self._get_resident_key_requirement(user=user)
+        enrollment_policies = Fido2EnrollmentPolicies()
+        attestation_preference = enrollment_policies.get_attestation_preference(user)
+        uv_requirement = enrollment_policies.get_user_verification_requirement(user)
+        rk_requirement = enrollment_policies.get_resident_key_requirement(user)
 
         # Save attestation conveyance for phase 2 validation
         self.addToTokenInfo(
@@ -904,7 +900,7 @@ class Fido2TokenClass(TokenClass):
         )
 
         # Determine preferred authenticator types from policy
-        authenticator_types = self._get_authenticator_types(user=user)
+        authenticator_types = enrollment_policies.get_authenticator_types(user)
         authenticator_type_options = compute_authenticator_types_options(
             authenticator_types
         )
@@ -1021,7 +1017,7 @@ class Fido2TokenClass(TokenClass):
         aaguid_str = str(credential_data.aaguid)
 
         # Check if the authenticator's AAGUID is allowed by policy
-        allowed_aaguids = self._get_allowed_authenticators(user)
+        allowed_aaguids = Fido2EnrollmentPolicies().get_allowed_authenticators(user)
         if allowed_aaguids and aaguid_str.lower() not in allowed_aaguids:
             log.warning(
                 "FIDO2 registration rejected: authenticator AAGUID %s "
@@ -1111,7 +1107,7 @@ class Fido2TokenClass(TokenClass):
         :raises TokenAdminError: if the required ``fido2_rp_id`` policy
             is not configured for the user's realm
         """
-        if not (rp_info := self._get_rp_id_and_name_from_policies(user=user)):
+        if not (rp_info := Fido2EnrollmentPolicies().get_rp_id_and_name(user)):
             g.audit["info"] = (
                 f"`{POLICY_RP_ID}=` policy missing for realm `{user.realm}`"
             )
@@ -1218,7 +1214,7 @@ class Fido2TokenClass(TokenClass):
         token_user = (
             User(login=username, realm=realms[0]) if username and realms else None
         )
-        uv_requirement = self._get_user_verification_requirement(user=token_user)
+        uv_requirement = Fido2EnrollmentPolicies().get_user_verification_requirement(user=token_user)
 
         # Call Fido2Server.authenticate_begin() to generate challenge and options
         options_obj, state = self._get_fido2_server().authenticate_begin(
