@@ -1032,7 +1032,9 @@ class Fido2TokenClass(TokenClass):
                 state, attestation_response
             )
         except ValueError as exx:
-            msg = f"FIDO2 registration verification failed: {exx}"
+            msg = f"FIDO2 registration verification failed for token {self.getSerial()}: {exx}"
+            log.warning(msg)
+            g.audit["info"] = f"Fido2 activation failed: {exx!s}"
             raise ParameterError(msg) from exx
 
         # Extract credential data
@@ -1065,6 +1067,9 @@ class Fido2TokenClass(TokenClass):
                 "is not in the allowed list for token %s",
                 aaguid_str,
                 self.getSerial(),
+            )
+            g.audit["info"] = (
+                f"{POLICY_ALLOWED_AUTHENTICATORS}: {aaguid_str} is not in the allowed list"
             )
             msg = _(
                 "This authenticator model is not in the list of allowed authenticators."
@@ -1177,14 +1182,26 @@ class Fido2TokenClass(TokenClass):
 
     def _is_authenticator_allowed_for_authentication(self, user=None) -> bool:
         """Check authorization policy for this token's enrolled authenticator."""
-        allowed_aaguids = Fido2AuthorizationPolicies.get_allowed_authenticators(user)
+        allowed_aaguids = Fido2AuthorizationPolicies().get_allowed_authenticators(user)
         if not allowed_aaguids:
             return True
 
         cred = self._get_stored_credential()
 
         aaguid = (cred.aaguid or "").lower()
-        return aaguid in allowed_aaguids
+        result = aaguid in allowed_aaguids
+        if not result:
+            log.warning(
+                "FIDO2 authentication rejected: authenticator AAGUID %s "
+                "is not in the allowed list for token %s",
+                aaguid,
+                self.getSerial(),
+            )
+            g.audit["info"] = (
+                f"{POLICY_ALLOWED_AUTHENTICATORS}: {aaguid} is not in the allowed list"
+            )
+
+        return result
 
     def splitPinPass(self, passw: str):
         """
@@ -1404,6 +1421,8 @@ class Fido2TokenClass(TokenClass):
                 self.getSerial(),
                 exx,
             )
+            # token_detail will be overridden with "wrong otp pin 1"
+            g.audit["info"] = f"Fido2 authentication failed: {exx!s}"
             return -1
 
         # At this point, all cryptographic verification is complete (done by Fido2Server)

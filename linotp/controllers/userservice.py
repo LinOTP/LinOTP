@@ -2856,8 +2856,12 @@ class UserserviceController(BaseController):
                 msg = f"Missing parameter: '{exx}'"
                 raise ParameterError(msg) from exx
 
+            g.audit["serial"] = serial
+
             # verify the user owns this token
             token = get_token(serial)
+            g.audit["token_type"] = token.type
+
             owner = get_token_owner(token)
             if owner != g.authUser:
                 msg = f"User {g.authUser.login!r} is not owner of token {serial}"
@@ -2888,7 +2892,6 @@ class UserserviceController(BaseController):
             # ------------------------------------------------------------ --
 
             g.audit["success"] = ret
-            g.audit["serial"] = serial
             g.audit["info"] = "fido2 enrollment phase 2 completed"
             g.reporting["realms"] = [g.authUser.realm or "/:no realm:/"]
 
@@ -2933,8 +2936,12 @@ class UserserviceController(BaseController):
                 msg = f"Missing parameter: '{exx}'"
                 raise ParameterError(msg) from exx
 
+            g.audit["serial"] = serial
+
             # verify the user owns this token
             token = get_token(serial)
+            g.audit["token_type"] = token.type
+
             owner = get_token_owner(token)
             if owner != g.authUser:
                 msg = f"User {g.authUser.login!r} is not owner of token {serial}"
@@ -2972,7 +2979,6 @@ class UserserviceController(BaseController):
             # ------------------------------------------------------------ --
 
             g.audit["success"] = ret
-            g.audit["serial"] = serial
             g.audit["info"] = "fido2 activation challenge regenerated"
             g.reporting["realms"] = [g.authUser.realm or "/:no realm:/"]
 
