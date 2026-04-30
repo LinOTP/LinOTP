@@ -23,8 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       attestation statement is conveyed during registration (direct, indirect, none,
       enterprise). Default: direct. 
     - `fido2_user_verification_requirement` — controls whether the authenticator must
-      verify the user (e.g. via PIN or biometric) during registration and
-      authentication (required, preferred, discouraged). Default: preferred.
+      verify the user (e.g. via PIN or biometric) during registration (required,
+      preferred, discouraged). Default: preferred.
     - `fido2_resident_key_requirement` — controls whether the authenticator should
       create a discoverable credential / passkey (required, preferred, discouraged).
       Default: preferred.
@@ -34,6 +34,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `fido2_allowed_authenticators` — limits enrollment to authenticator
       models whose AAGUID is listed in the policy. Multiple AAGUIDs can be
       configured.
+  - New configurable authentication policy for FIDO2 tokens:
+    - `fido2_user_verification_requirement` — controls whether the authenticator must
+      verify the user (e.g. via PIN or biometric) during authentication (required,
+      preferred, discouraged). Default: preferred.
+  - New configurable authorization policy for FIDO2 tokens:
+    - `fido2_allowed_authenticators` — limits authentication to enrolled
+      authenticator models whose AAGUID is listed in the policy. Multiple AAGUIDs
+      can be configured.
   - FIDO2 token challenge expiration time may be set in the LinOTP web UI as usual.
   - The Name and DisplayName of the `FIDO2 UserEntity` can now be configured via policy `tokenlabel`.
 - unhandled errors are now logged with traceback and returned in the response
