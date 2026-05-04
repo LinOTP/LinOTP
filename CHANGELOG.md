@@ -44,6 +44,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       can be configured.
   - FIDO2 token challenge expiration time may be set in the LinOTP web UI as usual.
   - The Name and DisplayName of the `FIDO2 UserEntity` can now be configured via policy `tokenlabel`.
+  - FIDO2 tokens now store whether a credential is discoverable (resident key)
+    and the credential's authenticator transports in token info. During
+    authentication, LinOTP includes the stored transports in `allowCredentials`
+    so browsers can guide users to the appropriate authenticator.
 - unhandled errors are now logged with traceback and returned in the response
 - Manage-UI shows info-box (success/error) for operation `Set PIN`
 - Caching of UserInfo per request to decrease request time of e.g. `/validate/check` to about half
