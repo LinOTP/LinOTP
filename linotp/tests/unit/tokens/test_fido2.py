@@ -7,10 +7,9 @@ from fido2.webauthn import AuthenticatorAttachment
 
 from linotp.tokens.fido2token.fido2token import (
     Fido2Credential,
+    Fido2RegistrationResponse,
     _get_aggregated_fido2_policy_values,
     compute_authenticator_types_options,
-    get_credential_transports,
-    get_resident_key,
 )
 
 
@@ -64,41 +63,38 @@ def test_all_three_types():
 
 
 def test_get_credential_transports_from_attestation_response():
-    result = get_credential_transports(
-        {
-            "response": {},
-            "transports": ["nfc", "usb", "usb", "", 42, "hybrid", "invalid"],
-        }
+    resp = SimpleNamespace(
+        transports=["nfc", "usb", "usb", "", 42, "hybrid", "invalid"]
     )
+    result = Fido2RegistrationResponse.get_credential_transports(resp)
     assert set(result) == {"nfc", "usb", "hybrid"}
 
 
 def test_get_credential_transports_ignores_nested_response_transports():
-    result = get_credential_transports(
-        {
-            "response": {
-                "transports": ["internal", "ble"],
-            },
-            "transports": ["usb"],
-        }
-    )
+    resp = SimpleNamespace(transports=["usb"])
+    result = Fido2RegistrationResponse.get_credential_transports(resp)
     assert result == ["usb"]
 
 
 def test_get_credential_transports_rejects_non_list_value():
-    assert get_credential_transports({"transports": "usb"}) == []
+    resp = SimpleNamespace(transports="usb")
+    assert Fido2RegistrationResponse.get_credential_transports(resp) is None
 
 
 def test_get_resident_key_from_cred_props_extension():
-    assert (
-        get_resident_key({"clientExtensionResults": {"credProps": {"rk": True}}}) is True
-    )
+    reg = SimpleNamespace(client_extension_results={"credProps": {"rk": True}})
+    assert Fido2RegistrationResponse.is_resident_key(reg) is True
 
 
 def test_get_resident_key_defaults_false():
-    assert get_resident_key({}) is False
-    assert get_resident_key({"clientExtensionResults": {"credProps": {"rk": False}}}) is False
-    assert get_resident_key({"clientExtensionResults": {"credProps": {"rk": "true"}}}) is False
+    reg_empty = SimpleNamespace(client_extension_results={})
+    assert Fido2RegistrationResponse.is_resident_key(reg_empty) is False
+
+    reg_false = SimpleNamespace(client_extension_results={"credProps": {"rk": False}})
+    assert Fido2RegistrationResponse.is_resident_key(reg_false) is False
+
+    reg_string = SimpleNamespace(client_extension_results={"credProps": {"rk": "true"}})
+    assert Fido2RegistrationResponse.is_resident_key(reg_string) is not True
 
 
 def test_fido2_credential_loads_without_transports_for_existing_tokens():

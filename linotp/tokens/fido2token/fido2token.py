@@ -135,7 +135,6 @@ from fido2.server import Fido2Server
 from fido2.utils import websafe_decode, websafe_encode
 from fido2.webauthn import (
     AttestationConveyancePreference,
-    AttestationObject,
     AttestedCredentialData,
     AuthenticatorAttachment,
     AuthenticatorData,
@@ -144,6 +143,7 @@ from fido2.webauthn import (
     PublicKeyCredentialRpEntity,
     PublicKeyCredentialType,
     PublicKeyCredentialUserEntity,
+    RegistrationResponse,
     ResidentKeyRequirement,
     UserVerificationRequirement,
 )
@@ -234,28 +234,25 @@ VALID_CREDENTIAL_TRANSPORTS = {transport.value for transport in AuthenticatorTra
 RP_NAME_DEFAULT = "LinOTP"
 
 
-def get_credential_transports(attestation_response: dict) -> list[str]:
-    """Return authenticator transports from the attestation response."""
-    transports = attestation_response.get("transports")
-    if not isinstance(transports, list):
-        return None
+@dataclass(eq=False, frozen=True, kw_only=True)
+class Fido2RegistrationResponse(RegistrationResponse):
+    """RegistrationResponse with credential transports and resident key helpers."""
 
-    return list({t for t in transports if t in VALID_CREDENTIAL_TRANSPORTS})
+    transports: list | None = None
 
+    def get_credential_transports(self) -> list[str] | None:
+        """Return authenticator transports from the attestation response."""
+        if not isinstance(self.transports, list):
+            return None
+        return list({t for t in self.transports if t in VALID_CREDENTIAL_TRANSPORTS})
 
-def get_resident_key(attestation_response: dict, resident_key_requirement: str | None = None) -> bool:
-    """Return clientExtensionResults.credProps.rk from the attestation response."""
-    is_required = resident_key_requirement == ResidentKeyRequirement.REQUIRED.value
-    extension_results = attestation_response.get("clientExtensionResults", {})
-
-    if not isinstance(extension_results, dict):
-        return is_required
-
-    cred_props = extension_results.get("credProps", {})
-    if not isinstance(cred_props, dict):
-        return is_required
-
-    return cred_props.get("rk", is_required)
+    def is_resident_key(self, resident_key_requirement: str | None = None) -> bool:
+        """Return clientExtensionResults.credProps.rk from the attestation response."""
+        is_required = resident_key_requirement == ResidentKeyRequirement.REQUIRED.value
+        cred_props = self.client_extension_results.get("credProps", {})
+        if not isinstance(cred_props, dict):
+            return is_required
+        return cred_props.get("rk", is_required)
 
 
 def compute_authenticator_types_options(
@@ -1062,16 +1059,25 @@ class Fido2TokenClass(TokenClass):
 
         :return: dict with registration result details
         """
-        attestation_response = params.get("otpkey")
-        if attestation_response is None:
+        attestation_response_dict = params.get("otpkey")
+        if attestation_response_dict is None:
             msg = "No otpkey set (expected FIDO2 attestation response)"
             raise ParameterError(msg)
-        if isinstance(attestation_response, str):
+        if isinstance(attestation_response_dict, str):
             try:
-                attestation_response = json.loads(attestation_response)
+                attestation_response_dict = json.loads(attestation_response_dict)
             except Exception as ex:
                 msg = f"Attestation response is invalid JSON ({ex})"
                 raise ParameterError(msg) from ex
+
+        # Parse raw dict into a typed Fido2RegistrationResponse object
+        try:
+            registration = Fido2RegistrationResponse.from_dict(
+                attestation_response_dict
+            )
+        except Exception as ex:
+            msg = f"Invalid attestation response format ({ex})"
+            raise ParameterError(msg) from ex
 
         # Retrieve registration state from phase 1
         state_json = self.getFromTokenInfo(TOKEN_INFO_REGISTRATION_CHALLENGE, None)
@@ -1089,9 +1095,7 @@ class Fido2TokenClass(TokenClass):
         # which we will need to add in our own `verify_origin`
         # function when the time comes.
         try:
-            auth_data = self._get_fido2_server().register_complete(
-                state, attestation_response
-            )
+            auth_data = self._get_fido2_server().register_complete(state, registration)
         except ValueError as exx:
             msg = f"FIDO2 registration verification failed for token {self.getSerial()}: {exx}"
             log.warning(msg)
@@ -1111,11 +1115,7 @@ class Fido2TokenClass(TokenClass):
         # ----------------------------------------------------------
         # Extract attestation details for extended properties
         # ----------------------------------------------------------
-        # We need to re-parse the attestation object to get format and certificate
-        attestation_object_raw = websafe_decode(
-            attestation_response["response"]["attestationObject"]
-        )
-        attestation_object = AttestationObject(attestation_object_raw)
+        attestation_object = registration.response.attestation_object
 
         # AAGUID — unique identifier for the authenticator model
         aaguid_str = str(credential_data.aaguid)
@@ -1148,10 +1148,12 @@ class Fido2TokenClass(TokenClass):
         backup_eligible = auth_data.is_backup_eligible()
         backed_up = auth_data.is_backed_up()
         user_verified = auth_data.is_user_verified()
-        transports = get_credential_transports(attestation_response)
+        transports = registration.get_credential_transports()
 
-        resident_key_requirement = self.getFromTokenInfo(TOKEN_INFO_RESIDENT_KEY_REQUIREMENT)
-        resident_key = get_resident_key(attestation_response, resident_key_requirement)
+        resident_key_requirement = self.getFromTokenInfo(
+            TOKEN_INFO_RESIDENT_KEY_REQUIREMENT
+        )
+        resident_key = registration.is_resident_key(resident_key_requirement)
 
         # Attestation certificate (if provided in attestation statement)
         attestation_cert_b64 = None
