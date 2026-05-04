@@ -230,27 +230,26 @@ async function fido2_admin_activate_now() {
 
     // Call WebAuthn API
     const publicKey = {
-      rp: registerRequest.rp,
+      ...registerRequest,
       user: {
         id: Base64URL.decode(registerRequest.user.id),
 	name: registerRequest.user.name,
 	displayName: registerRequest.user.displayName
       },
       challenge: Base64URL.decode(registerRequest.challenge),
-      pubKeyCredParams: registerRequest.pubKeyCredParams,
-      timeout: registerRequest.timeout || 60000,
-      authenticatorSelection: registerRequest.authenticatorSelection || {},
-      attestation: registerRequest.attestation || 'none'
     };
 
     if (registerRequest.excludeCredentials) {
       publicKey.excludeCredentials = registerRequest.excludeCredentials.map(cred => ({
-        type: cred.type,
+        ...cred,
 	id: Base64URL.decode(cred.id)
       }));
     }
 
     const credential = await navigator.credentials.create({ publicKey });
+    const transports = (
+      credential.response && typeof credential.response.getTransports === 'function'
+    ) ? credential.response.getTransports() : null;
 
     // Submit attestation (phase 2)
     const attestationResponse = {
@@ -262,6 +261,14 @@ async function fido2_admin_activate_now() {
       },
       type: credential.type
     };
+    if (transports) {
+      attestationResponse.transports = transports;
+    }
+
+    const clientExtensionResults = credential.getClientExtensionResults ? credential.getClientExtensionResults() : null;
+    if (clientExtensionResults) {
+      attestationResponse.clientExtensionResults = clientExtensionResults;
+    }
 
     // Include user/realm data to preserve token assignment
     const phase2Data = {
