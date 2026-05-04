@@ -6,8 +6,11 @@ from unittest.mock import patch
 from fido2.webauthn import AuthenticatorAttachment
 
 from linotp.tokens.fido2token.fido2token import (
+    Fido2Credential,
     _get_aggregated_fido2_policy_values,
     compute_authenticator_types_options,
+    get_credential_transports,
+    get_resident_key,
 )
 
 
@@ -58,6 +61,69 @@ def test_all_three_types():
     )
     assert "authenticator_attachment" not in result
     assert result["hints"] == ["client-device", "security-key", "hybrid"]
+
+
+def test_get_credential_transports_from_attestation_response():
+    result = get_credential_transports(
+        {
+            "response": {},
+            "transports": ["nfc", "usb", "usb", "", 42, "hybrid", "invalid"],
+        }
+    )
+    assert set(result) == {"nfc", "usb", "hybrid"}
+
+
+def test_get_credential_transports_ignores_nested_response_transports():
+    result = get_credential_transports(
+        {
+            "response": {
+                "transports": ["internal", "ble"],
+            },
+            "transports": ["usb"],
+        }
+    )
+    assert result == ["usb"]
+
+
+def test_get_credential_transports_rejects_non_list_value():
+    assert get_credential_transports({"transports": "usb"}) == []
+
+
+def test_get_resident_key_from_cred_props_extension():
+    assert (
+        get_resident_key({"clientExtensionResults": {"credProps": {"rk": True}}}) is True
+    )
+
+
+def test_get_resident_key_defaults_false():
+    assert get_resident_key({}) is False
+    assert get_resident_key({"clientExtensionResults": {"credProps": {"rk": False}}}) is False
+    assert get_resident_key({"clientExtensionResults": {"credProps": {"rk": "true"}}}) is False
+
+
+def test_fido2_credential_loads_without_transports_for_existing_tokens():
+    data = {
+        "credential_id": "credential-id",
+        "public_key": "public-key",
+        "sign_count": 0,
+        "rp_id": "localhost",
+        "aaguid": "f1d0f1d0-f1d0-f1d0-f1d0-f1d0f1d0f1d0",
+        "attestation_format": "none",
+        "public_key_algorithm": -7,
+        "auth_data_flags": 65,
+        "backup_eligible": False,
+        "backed_up": False,
+        "user_verified_at_reg": False,
+        "attestation_cert_b64": None,
+        "registered_at": "2026-04-30T00:00:00+00:00",
+    }
+
+    cred = Fido2Credential.from_dict(data)
+
+    assert cred.transports == []
+    assert cred.resident_key is False
+    assert cred.to_dict()["transports"] == []
+    assert cred.to_dict()["resident_key"] is False
 
 
 # ---------------------------------------------------------------------- --
