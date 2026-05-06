@@ -3996,17 +3996,7 @@ class TestPolicies(TestPoliciesBase):
                 "client": "",
             },
         ]
-        # create policies
-        for policy in policies:
-            auth_user = "superadmin"
-            response = self.make_system_request(
-                action="setPolicy", params=policy, auth_user=auth_user
-            )
-
-            assert response.json["result"]["status"], response
-            pkey = "setPolicy %s" % policy.get("name")
-            values = set(response.json["result"]["value"][pkey].values())
-            assert False not in values, response
+        self._create_policies(policies)
 
         # test, if admin show_admin_1 is not allowed to show
         params = {"viewrealm": "testrealm"}
@@ -4082,17 +4072,7 @@ class TestPolicies(TestPoliciesBase):
             },
         ]
 
-        # set policy for authorization
-        for pol in policies:
-            auth_user = "superadmin"
-            response = self.make_system_request(
-                action="setPolicy", params=pol, auth_user=auth_user
-            )
-
-            assert response.json["result"]["status"], response
-            assert response.json["result"]["value"][
-                "setPolicy %s" % pol["name"]
-            ], response
+        self._create_policies(policies)
 
         # check the successful validation
         params = {"user": "detail_user@myMixRealm", "pass": "secret"}
@@ -4148,20 +4128,6 @@ class TestPolicies(TestPoliciesBase):
         Check the authorization/detail_on_success with
         passthru policy for users without tokens
         """
-        self._test_detail_on_success_with_passing_policies("passthru")
-
-    @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
-    def test_detail_on_success_with_passing_policies_passOnNoToken(self):
-        """
-        Check the authorization/detail_on_success with
-        passOnNoToken policy for users without tokens
-        """
-        self._test_detail_on_success_with_passing_policies("passOnNoToken")
-
-    def _test_detail_on_success_with_passing_policies(self, auth_policy):
-        """
-        Helper method to test detail_on_success with different authentication policies
-        """
         # Set policies for authorization and authentication
         policies = [
             {
@@ -4173,24 +4139,16 @@ class TestPolicies(TestPoliciesBase):
                 "client": "",
             },
             {
-                "name": auth_policy,
+                "name": "passthru",
                 "scope": "authentication",
                 "realm": "myMixRealm",
-                "action": auth_policy,
+                "action": "passthru",
                 "user": "*",
                 "client": "",
             },
         ]
 
-        # Create policies
-        for pol in policies:
-            response = self.make_system_request(
-                action="setPolicy", params=pol, auth_user="superadmin"
-            )
-            assert response.json["result"]["status"], response
-            assert response.json["result"]["value"][
-                f"setPolicy {pol['name']}"
-            ], response
+        self._create_policies(policies)
 
         # Check successful validation with detail_on_success
         params = {"user": "passthru_user1@myMixRealm", "pass": "geheim1"}
@@ -4212,15 +4170,46 @@ class TestPolicies(TestPoliciesBase):
         }
         assert response.json["detail"]["user"] == expected_user, response
 
-        # Clean up - delete policies
-        for pol in policies:
-            response = self.make_system_request(
-                action="delPolicy",
-                params={"name": pol["name"]},
-                auth_user="superadmin",
-            )
-            assert response.json["result"]["status"], response
-            assert response.json["result"]["value"]["delPolicy"]
+        self._delete_policies(policies)
+
+    @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
+    def test_detail_on_success_with_passing_policies_passOnNoToken(self):
+        """
+        Check the authorization/detail_on_success with
+        passOnNoToken policy for users without tokens.
+        Due to LINOTP-2403 no details are exposed in the response.
+        """
+        # Set policies for authorization and authentication
+        policies = [
+            {
+                "name": "detail_on_success",
+                "scope": "authorization",
+                "realm": "myMixRealm",
+                "action": "detail_on_success",
+                "user": "*",
+                "client": "",
+            },
+            {
+                "name": "passOnNoToken",
+                "scope": "authentication",
+                "realm": "myMixRealm",
+                "action": "passOnNoToken",
+                "user": "*",
+                "client": "",
+            },
+        ]
+
+        # Create policies
+        self._create_policies(policies)
+
+        # Check successful validation with detail_on_success
+        params = {"user": "passthru_user1@myMixRealm", "pass": "geheim1"}
+        response = self.make_validate_request(action="check", params=params)
+
+        assert response.json["result"]["value"], response
+        assert "detail" not in response
+
+        self._delete_policies(policies)
 
     @pytest.mark.usefixtures("realms_and_resolver", "admin_roles")
     def test_setrealm_in_check_status(self):
@@ -4251,15 +4240,7 @@ class TestPolicies(TestPoliciesBase):
             },
         ]
 
-        # Create policies
-        for pol in policies:
-            response = self.make_system_request(
-                action="setPolicy", params=pol, auth_user="superadmin"
-            )
-            assert response.json["result"]["status"], response
-            assert response.json["result"]["value"][
-                f"setPolicy {pol['name']}"
-            ], response
+        self._create_policies(policies)
 
         # enroll token
         user = "passthru_user1"
@@ -4318,6 +4299,9 @@ class TestPolicies(TestPoliciesBase):
         assert response.json["result"]["status"] is True, response
         assert response.json["result"]["value"] is True, response
 
+        self._delete_policies(policies)
+
+    def _delete_policies(self, policies):
         # Clean up - delete policies
         for pol in policies:
             response = self.make_system_request(
@@ -4325,5 +4309,15 @@ class TestPolicies(TestPoliciesBase):
                 params={"name": pol["name"]},
                 auth_user="superadmin",
             )
+        assert response.json["result"]["status"], response
+        assert response.json["result"]["value"]["delPolicy"]
+
+    def _create_policies(self, policies):
+        for pol in policies:
+            response = self.make_system_request(
+                action="setPolicy", params=pol, auth_user="superadmin"
+            )
             assert response.json["result"]["status"], response
-            assert response.json["result"]["value"]["delPolicy"]
+            assert response.json["result"]["value"][
+                f"setPolicy {pol['name']}"
+            ], response

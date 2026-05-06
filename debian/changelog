@@ -1,19 +1,12 @@
-linotp (3.4.5~rc2-1) buster; urgency=medium
-
-  (temporary entry between RCs) fix image info not being shown
-
- -- LinOTP Packaging <packaging@linotp.de>  Fri, 09 Jan 2029 12:34:56:00 +0200
-
-linotp (3.4.5~rc1-1) buster; urgency=medium
-
-  (temporary entry between RCs) fix IMAGE_VERSION for release candidates
-
- -- LinOTP Packaging <packaging@linotp.de>  Fri, 09 Jan 2029 12:34:56:00 +0200
-
-linotp (3.4.5~rc0-1) buster; urgency=medium
+linotp (3.4.5~rc3-1) buster; urgency=medium
 
   Fixes:
   * If `setOTPPIN` and `otp_pin_random` policies are set during selfservice enroll, the pin will no longer be randomized
+  * Reverted the change introduced in 3.4.4 where `detail_on_success` would include
+    user information in responses when authentication succeeded via the `passOnNoToken`
+    policy and the user had no tokens assigned. The previous behavior (no user details
+    returned in this scenario) is restored, as the combination of these two policies
+    can expose user details without any authentication having taken place. 
 
   Misc:
   * update python dependencies
