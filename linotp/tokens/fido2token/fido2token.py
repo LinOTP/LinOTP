@@ -62,6 +62,8 @@ Enrollment is a two-phase process via /userservice:
             - ``serial``: token serial
             - ``session``: session identifier
             - ``attestationResponse``: WebAuthn attestation response (JSON)
+              with optional additional ``transports`` and
+              ``clientExtensionResults`` properties.
         - The server verifies the attestation and, if successful, stores the credential and activates the token.
         - The server responds with:
             - ``result.status``: true/false (server status; false indicates a request or server error)
@@ -120,7 +122,7 @@ Authentication is a two-step challenge-response process:
 import base64
 import json
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
@@ -133,14 +135,15 @@ from fido2.server import Fido2Server
 from fido2.utils import websafe_decode, websafe_encode
 from fido2.webauthn import (
     AttestationConveyancePreference,
-    AttestationObject,
     AttestedCredentialData,
     AuthenticatorAttachment,
     AuthenticatorData,
+    AuthenticatorTransport,
     PublicKeyCredentialDescriptor,
     PublicKeyCredentialRpEntity,
     PublicKeyCredentialType,
     PublicKeyCredentialUserEntity,
+    RegistrationResponse,
     ResidentKeyRequirement,
     UserVerificationRequirement,
 )
@@ -177,6 +180,7 @@ TOKEN_INFO_CREDENTIAL = "fido2_credential"
 TOKEN_INFO_ATTESTATION_CONVEYANCE = "attestation_conveyance"
 TOKEN_INFO_LAST_AUTH = "last_auth_at"
 TOKEN_INFO_LAST_AUTH_UV = "last_auth_uv"
+TOKEN_INFO_RESIDENT_KEY_REQUIREMENT = "resident_key_requirement"
 
 # Policy action keys
 POLICY_RP_ID = "fido2_rp_id"
@@ -225,8 +229,30 @@ HINT_SECURITY_KEY = "security-key"
 HINT_HYBRID = "hybrid"
 
 VALID_AUTHENTICATOR_TYPES = {HINT_CLIENT_DEVICE, HINT_SECURITY_KEY, HINT_HYBRID}
+VALID_CREDENTIAL_TRANSPORTS = {transport.value for transport in AuthenticatorTransport}
 
 RP_NAME_DEFAULT = "LinOTP"
+
+
+@dataclass(eq=False, frozen=True, kw_only=True)
+class Fido2RegistrationResponse(RegistrationResponse):
+    """RegistrationResponse with credential transports and resident key helpers."""
+
+    transports: list | None = None
+
+    def get_credential_transports(self) -> list[str] | None:
+        """Return authenticator transports from the attestation response."""
+        if not isinstance(self.transports, list):
+            return None
+        return list({t for t in self.transports if t in VALID_CREDENTIAL_TRANSPORTS})
+
+    def is_resident_key(self, resident_key_requirement: str | None = None) -> bool:
+        """Return clientExtensionResults.credProps.rk from the attestation response."""
+        is_required = resident_key_requirement == ResidentKeyRequirement.REQUIRED.value
+        cred_props = self.client_extension_results.get("credProps", {})
+        if not isinstance(cred_props, dict):
+            return is_required
+        return cred_props.get("rk", is_required)
 
 
 def compute_authenticator_types_options(
@@ -485,6 +511,8 @@ class Fido2Credential:
         attestation_cert_b64 - Base64-encoded DER attestation certificate, or
                                None if the authenticator did not provide one
         registered_at        - ISO 8601 timestamp of registration
+        transports           - Authenticator transports reported at registration
+        resident_key         - credProps.rk extension result from registration
     """
 
     credential_id: str  # base64url-encoded credential ID
@@ -500,6 +528,8 @@ class Fido2Credential:
     user_verified_at_reg: bool  # UV flag at registration
     attestation_cert_b64: str | None  # Base64 DER certificate (None if not provided)
     registered_at: str  # ISO 8601 timestamp
+    transports: list[str] = field(default_factory=list)
+    resident_key: bool = False
 
     def to_dict(self) -> dict:
         """Convert to dictionary for JSON storage."""
@@ -517,6 +547,8 @@ class Fido2Credential:
             "user_verified_at_reg": self.user_verified_at_reg,
             "attestation_cert_b64": self.attestation_cert_b64,
             "registered_at": self.registered_at,
+            "transports": self.transports,
+            "resident_key": self.resident_key,
         }
 
     @classmethod
@@ -536,6 +568,8 @@ class Fido2Credential:
             user_verified_at_reg=data["user_verified_at_reg"],
             attestation_cert_b64=data["attestation_cert_b64"],
             registered_at=data["registered_at"],
+            transports=data.get("transports") or [],
+            resident_key=data.get("resident_key", False) is True,
         )
 
     @classmethod
@@ -546,6 +580,28 @@ class Fido2Credential:
     def to_json(self) -> str:
         """Convert to JSON string for storage."""
         return json.dumps(self.to_dict())
+
+    def get_authenticator_transports(self) -> list[AuthenticatorTransport] | None:
+        """Convert stored transport strings to python-fido2 enum values."""
+        if not self.transports:
+            return None
+
+        # Deduplicate transports while preserving order
+        unique_transports = dict.fromkeys(self.transports)
+
+        result: list[AuthenticatorTransport] = []
+
+        for transport in unique_transports:
+            if transport not in VALID_CREDENTIAL_TRANSPORTS:
+                log.debug(
+                    "Ignoring unsupported FIDO2 authenticator transport %r",
+                    transport,
+                )
+                continue
+
+            result.append(AuthenticatorTransport(transport))
+
+        return result or None
 
 
 @tokenclass_registry.class_entry(FIDO2_TOKEN_TYPE)
@@ -939,6 +995,7 @@ class Fido2TokenClass(TokenClass):
         self.addToTokenInfo(
             TOKEN_INFO_ATTESTATION_CONVEYANCE, attestation_preference.value
         )
+        self.addToTokenInfo(TOKEN_INFO_RESIDENT_KEY_REQUIREMENT, rk_requirement.value)
 
         # Determine preferred authenticator types from policy
         authenticator_types = enrollment_policies.get_authenticator_types(user)
@@ -976,6 +1033,7 @@ class Fido2TokenClass(TokenClass):
             authenticator_attachment=authenticator_type_options.get(
                 "authenticator_attachment", None
             ),
+            extensions={"credProps": True},
         )
 
         # Build response dict and inject WebAuthn L3 hints if configured
@@ -1001,16 +1059,25 @@ class Fido2TokenClass(TokenClass):
 
         :return: dict with registration result details
         """
-        attestation_response = params.get("otpkey")
-        if attestation_response is None:
+        attestation_response_dict = params.get("otpkey")
+        if attestation_response_dict is None:
             msg = "No otpkey set (expected FIDO2 attestation response)"
             raise ParameterError(msg)
-        if isinstance(attestation_response, str):
+        if isinstance(attestation_response_dict, str):
             try:
-                attestation_response = json.loads(attestation_response)
+                attestation_response_dict = json.loads(attestation_response_dict)
             except Exception as ex:
                 msg = f"Attestation response is invalid JSON ({ex})"
                 raise ParameterError(msg) from ex
+
+        # Parse raw dict into a typed Fido2RegistrationResponse object
+        try:
+            registration = Fido2RegistrationResponse.from_dict(
+                attestation_response_dict
+            )
+        except Exception as ex:
+            msg = f"Invalid attestation response format ({ex})"
+            raise ParameterError(msg) from ex
 
         # Retrieve registration state from phase 1
         state_json = self.getFromTokenInfo(TOKEN_INFO_REGISTRATION_CHALLENGE, None)
@@ -1028,9 +1095,7 @@ class Fido2TokenClass(TokenClass):
         # which we will need to add in our own `verify_origin`
         # function when the time comes.
         try:
-            auth_data = self._get_fido2_server().register_complete(
-                state, attestation_response
-            )
+            auth_data = self._get_fido2_server().register_complete(state, registration)
         except ValueError as exx:
             msg = f"FIDO2 registration verification failed for token {self.getSerial()}: {exx}"
             log.warning(msg)
@@ -1050,11 +1115,7 @@ class Fido2TokenClass(TokenClass):
         # ----------------------------------------------------------
         # Extract attestation details for extended properties
         # ----------------------------------------------------------
-        # We need to re-parse the attestation object to get format and certificate
-        attestation_object_raw = websafe_decode(
-            attestation_response["response"]["attestationObject"]
-        )
-        attestation_object = AttestationObject(attestation_object_raw)
+        attestation_object = registration.response.attestation_object
 
         # AAGUID — unique identifier for the authenticator model
         aaguid_str = str(credential_data.aaguid)
@@ -1087,6 +1148,12 @@ class Fido2TokenClass(TokenClass):
         backup_eligible = auth_data.is_backup_eligible()
         backed_up = auth_data.is_backed_up()
         user_verified = auth_data.is_user_verified()
+        transports = registration.get_credential_transports()
+
+        resident_key_requirement = self.getFromTokenInfo(
+            TOKEN_INFO_RESIDENT_KEY_REQUIREMENT
+        )
+        resident_key = registration.is_resident_key(resident_key_requirement)
 
         # Attestation certificate (if provided in attestation statement)
         attestation_cert_b64 = None
@@ -1115,6 +1182,8 @@ class Fido2TokenClass(TokenClass):
             user_verified_at_reg=user_verified,
             attestation_cert_b64=attestation_cert_b64,
             registered_at=registered_at,
+            transports=transports,
+            resident_key=resident_key,
         )
 
         self.addToTokenInfo(TOKEN_INFO_CREDENTIAL, cred.to_json())
@@ -1123,6 +1192,7 @@ class Fido2TokenClass(TokenClass):
 
         # Remove the registration state
         self.removeFromTokenInfo(TOKEN_INFO_REGISTRATION_CHALLENGE)
+        self.removeFromTokenInfo(TOKEN_INFO_RESIDENT_KEY_REQUIREMENT)
 
         # Activate the token
         self.token.LinOtpIsactive = True
@@ -1130,7 +1200,7 @@ class Fido2TokenClass(TokenClass):
         log.info(
             "FIDO2 registration completed for token %s "
             "(credential_id=%s, aaguid=%s, fmt=%s, alg=%s, "
-            "BE=%s, BS=%s, UV=%s)",
+            "BE=%s, BS=%s, UV=%s, transports=%s)",
             self.getSerial(),
             websafe_encode(credential_id),
             aaguid_str,
@@ -1139,6 +1209,7 @@ class Fido2TokenClass(TokenClass):
             backup_eligible,
             backed_up,
             user_verified,
+            transports,
         )
 
         return {}
@@ -1286,6 +1357,7 @@ class Fido2TokenClass(TokenClass):
             PublicKeyCredentialDescriptor(
                 type=PublicKeyCredentialType.PUBLIC_KEY,
                 id=websafe_decode(cred.credential_id),
+                transports=cred.get_authenticator_transports(),
             )
         ]
 

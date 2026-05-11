@@ -29,6 +29,7 @@
 Test token enrollment
 """
 
+import json
 from typing import Any, TypedDict
 
 from linotp.tests import TestController
@@ -619,6 +620,52 @@ class TestUserserviceEnrollment(TestController):
         assert serial.startswith("FIDO2")
         assert registerreq["user"]["name"] == "passthru_user1"
         assert registerreq["user"]["displayName"] == "passthru_user1"
+        assert registerreq["extensions"] == {"credProps": True}
+
+    def test_fido2_enrollment_stores_transports(self):
+        """FIDO2 enrollment stores authenticator transports from phase 2."""
+        self._create_fido2_policies()
+
+        auth_user = self._auth_user()
+        device = SoftWebauthnDevice()
+
+        response = self.make_userselfservice_request(
+            "enroll",
+            params={"type": "fido2"},
+            auth_user=auth_user,
+            new_auth_cookie=True,
+        )
+        assert response.json["result"]["status"] is True, response
+
+        detail = response.json["detail"]
+        serial = detail["serial"]
+
+        attestation_response = device.create(
+            detail["registerrequest"], origin="https://localhost"
+        )
+        attestation_response["transports"] = ["nfc", "usb"]
+
+        response = self.make_userselfservice_request(
+            "fido2_activate_finish",
+            params={
+                "serial": serial,
+                "attestationResponse": attestation_response,
+            },
+            auth_user=auth_user,
+            content_type="application/json",
+        )
+        assert response.json["result"]["status"] is True, response
+
+        response = self.make_admin_request(
+            "show",
+            params={"serial": serial, "tokeninfo_format": "json"},
+        )
+        token_data = json.loads(response.body)["result"]["value"]["data"][0]
+        stored_credential = json.loads(
+            token_data["LinOtp.TokenInfo"]["fido2_credential"]
+        )
+
+        assert stored_credential["transports"] == ["nfc", "usb"]
 
     def test_fido2_with_tokenlabel(self):
         """

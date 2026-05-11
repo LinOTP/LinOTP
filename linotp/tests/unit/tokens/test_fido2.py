@@ -6,6 +6,8 @@ from unittest.mock import patch
 from fido2.webauthn import AuthenticatorAttachment
 
 from linotp.tokens.fido2token.fido2token import (
+    Fido2Credential,
+    Fido2RegistrationResponse,
     _get_aggregated_fido2_policy_values,
     compute_authenticator_types_options,
 )
@@ -58,6 +60,66 @@ def test_all_three_types():
     )
     assert "authenticator_attachment" not in result
     assert result["hints"] == ["client-device", "security-key", "hybrid"]
+
+
+def test_get_credential_transports_from_attestation_response():
+    resp = SimpleNamespace(
+        transports=["nfc", "usb", "usb", "", 42, "hybrid", "invalid"]
+    )
+    result = Fido2RegistrationResponse.get_credential_transports(resp)
+    assert set(result) == {"nfc", "usb", "hybrid"}
+
+
+def test_get_credential_transports_ignores_nested_response_transports():
+    resp = SimpleNamespace(transports=["usb"])
+    result = Fido2RegistrationResponse.get_credential_transports(resp)
+    assert result == ["usb"]
+
+
+def test_get_credential_transports_rejects_non_list_value():
+    resp = SimpleNamespace(transports="usb")
+    assert Fido2RegistrationResponse.get_credential_transports(resp) is None
+
+
+def test_get_resident_key_from_cred_props_extension():
+    reg = SimpleNamespace(client_extension_results={"credProps": {"rk": True}})
+    assert Fido2RegistrationResponse.is_resident_key(reg) is True
+
+
+def test_get_resident_key_defaults_false():
+    reg_empty = SimpleNamespace(client_extension_results={})
+    assert Fido2RegistrationResponse.is_resident_key(reg_empty) is False
+
+    reg_false = SimpleNamespace(client_extension_results={"credProps": {"rk": False}})
+    assert Fido2RegistrationResponse.is_resident_key(reg_false) is False
+
+    reg_string = SimpleNamespace(client_extension_results={"credProps": {"rk": "true"}})
+    assert Fido2RegistrationResponse.is_resident_key(reg_string) is not True
+
+
+def test_fido2_credential_loads_without_transports_for_existing_tokens():
+    data = {
+        "credential_id": "credential-id",
+        "public_key": "public-key",
+        "sign_count": 0,
+        "rp_id": "localhost",
+        "aaguid": "f1d0f1d0-f1d0-f1d0-f1d0-f1d0f1d0f1d0",
+        "attestation_format": "none",
+        "public_key_algorithm": -7,
+        "auth_data_flags": 65,
+        "backup_eligible": False,
+        "backed_up": False,
+        "user_verified_at_reg": False,
+        "attestation_cert_b64": None,
+        "registered_at": "2026-04-30T00:00:00+00:00",
+    }
+
+    cred = Fido2Credential.from_dict(data)
+
+    assert cred.transports == []
+    assert cred.resident_key is False
+    assert cred.to_dict()["transports"] == []
+    assert cred.to_dict()["resident_key"] is False
 
 
 # ---------------------------------------------------------------------- --
