@@ -155,6 +155,8 @@ from linotp.lib.context import request_context as context
 from linotp.lib.error import ParameterError, TokenAdminError
 from linotp.lib.policy import get_client_policy, get_tokenlabel
 from linotp.lib.policy.action import get_action_value
+from linotp.lib.policy.processing import has_client_policy
+from linotp.lib.policy.util import _get_client
 from linotp.lib.user import User
 from linotp.tokens import tokenclass_registry
 from linotp.tokens.base import TokenClass
@@ -1003,17 +1005,33 @@ class Fido2TokenClass(TokenClass):
             authenticator_types
         )
 
-        # Include realm in name for clarity in passkey managers (Chrome, etc.)
-        # WebAuthn user.name and user.displayName default to the linotp username.
-        # These values can be overridden when a tokenlabel policy is applied.
-        label = get_tokenlabel(
-            self.getSerial(),
-            user=user.login,
+        tokenlabel_policy_exists = has_client_policy(
+            _get_client(),
+            scope="enrollment",
+            action="tokenlabel",
             realm=user.realm,
-            description=self.getDescription(),
+            user=user,
         )
-        user_name = label
-        user_display_name = user_name
+
+        # WebAuthn user.name and user.displayName are overriden by tokenlabel policy if defined.
+        if tokenlabel_policy_exists:
+            user_name = (
+                get_tokenlabel(
+                    self.getSerial(),
+                    user=user.login,
+                    realm=user.realm,
+                    description=self.getDescription(),
+                )
+                or self.getSerial()
+            )
+            user_display_name = user_name
+        else:
+            user_name = user.login or self.getSerial()
+            user_display_name = (
+                f"{user.info.get('givenname', '')} {user.info.get('surname', '')}".strip()
+                or user_name
+            )
+
         user_id = user_name.encode("utf-8")
 
         # Build user entity
