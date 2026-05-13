@@ -246,7 +246,11 @@ class Fido2RegistrationResponse(RegistrationResponse):
         """Return authenticator transports from the attestation response."""
         if not isinstance(self.transports, list):
             return None
-        return list({t for t in self.transports if t in VALID_CREDENTIAL_TRANSPORTS})
+        return list(
+            dict.fromkeys(
+                t for t in self.transports if t in VALID_CREDENTIAL_TRANSPORTS
+            )
+        )
 
     def is_resident_key(self, resident_key_requirement: str | None = None) -> bool:
         """Return clientExtensionResults.credProps.rk from the attestation response."""
