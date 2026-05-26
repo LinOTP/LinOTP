@@ -614,12 +614,16 @@ class TestUserserviceEnrollment(TestController):
         responses — no mocking or patching required.
         """
         self._create_fido2_policies()
+        user = self._auth_user()
 
-        serial, registerreq, *_ = self.enroll_fido2_token(auth_user=self._auth_user())
+        serial, registerreq, *_ = self.enroll_fido2_token(auth_user=user)
 
         assert serial.startswith("FIDO2")
         assert registerreq["user"]["name"] == "passthru_user1"
-        assert registerreq["user"]["displayName"] == "passthru_user1"
+        assert (
+            registerreq["user"]["displayName"]
+            == f"{user['givenname']} {user['surname']}"
+        )
         assert registerreq["extensions"] == {"credProps": True}
 
     def test_fido2_enrollment_stores_transports(self):
@@ -718,6 +722,8 @@ class TestUserserviceEnrollment(TestController):
         return {
             "login": "passthru_user1@myDefRealm",
             "password": "geheim1",
+            "surname": "True",
+            "givenname": "Pascal",
         }
 
     def test_fido2_enrollment_policies(self):

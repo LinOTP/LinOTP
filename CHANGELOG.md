@@ -44,6 +44,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       can be configured.
   - FIDO2 token challenge expiration time may be set in the LinOTP web UI as usual.
   - The Name and DisplayName of the `FIDO2 UserEntity` can now be configured via policy `tokenlabel`.
+    If no policy is defined:
+    - `displayName` defaults to: Givenname Surname → username → serial
+    - `name` defaults to: username
   - FIDO2 tokens now store whether a credential is discoverable (resident key)
     and the credential's authenticator transports in token info. During
     authentication, LinOTP includes the stored transports in `allowCredentials`
@@ -81,8 +84,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - CVE-2023-0286, CVE-2023-50782, CVE-2023-23931, CVE-2023-49083, CVE-2024-0727, GHSA-5cpq-8wj7-hf2v, GHSA-jm77-qphf-c4w8, GHSA-v8gr-m533-ghj9
 - Remove `setuptools` from container to address multiple known vulnerabilities:
   - CVE-2024-6345, CVE-2025-47273
-- Update `urllib3` to version 2.6.0 to address multiple known vulnerabilities:
-  - CVE-2025-66418, CVE-2025-66471
+- Update `idna` to version 3.15 to address the vulnerability in CVE-2026-45409
+- Update `urllib3` to version 2.7.0 to address multiple known vulnerabilities:
+  - CVE-2025-66418, CVE-2025-66471, CVE-2026-44431, CVE-2026-44432
 - Update SQLAlchemy library to version 2.x
 
 ### Removed
