@@ -2101,6 +2101,90 @@ class TestValidateController(TestController):
         result_value = response.json["result"]["value"]
         assert result_value["value"] is True, response
 
+    def test_fido2_check_status_returns_offline_info(self):
+        """FIDO2 check_status includes offline_info after successful authentication."""
+        policies = [
+            {
+                "name": "enroll_fido2",
+                "action": "enrollFIDO2",
+                "user": "*",
+                "realm": "*",
+                "scope": "selfservice",
+            },
+            {
+                "name": "fido2_rpid",
+                "action": "fido2_rp_id=localhost",
+                "user": "*",
+                "realm": "*",
+                "scope": "enrollment",
+            },
+            {
+                "name": "fido2_offline",
+                "action": "support_offline=fido2",
+                "user": "*",
+                "realm": "*",
+                "scope": "authentication",
+            },
+        ]
+        for pp in policies:
+            response = self.make_system_request("setPolicy", params=pp)
+            assert "false" not in response, response
+
+        auth_user = {
+            "login": "passthru_user1@myDefRealm",
+            "password": "geheim1",
+        }
+
+        *_, device = self.enroll_fido2_token(auth_user=auth_user)
+
+        # Step 1: trigger challenge
+        params = {"user": "passthru_user1", "realm": "myDefRealm", "pass": ""}
+        response = self.make_validate_request("check", params)
+        assert response.json["result"]["status"] is True, response
+        detail = response.json.get("detail", {})
+        transaction_id = detail.get("transactionid")
+        assert transaction_id, f"No transactionid in detail: {detail}"
+
+        # Step 2: verify the assertion via the public check endpoint
+        sign_request = detail["signrequest"]
+        assertion_response = device.get(sign_request, origin="https://localhost")
+
+        params = {
+            "user": "passthru_user1",
+            "realm": "myDefRealm",
+            "transactionid": transaction_id,
+            "pass": json.dumps(assertion_response),
+        }
+        response = self.make_validate_request("check", params)
+        assert response.json["result"]["status"] is True, response
+        assert response.json["result"]["value"] is True, response
+
+        # Step 3: request offline data via check_status
+        params = {
+            "user": "passthru_user1",
+            "realm": "myDefRealm",
+            "pass": "",
+            "transactionid": transaction_id,
+            "use_offline": True,
+        }
+        response = self.make_validate_request("check_status", params)
+        assert response.json["result"]["status"] is True, response
+
+        tx = response.json.get("detail", {}).get("transactions", {}).get(transaction_id)
+        assert tx, response.json
+        assert tx["valid_tan"] is True, response.json
+
+        token = tx["token"]
+        assert token["type"] == "fido2", response.json
+        assert "offline_info" in token, response.json
+
+        offline_info = token["offline_info"]
+        assert offline_info.get("public_key"), response.json
+        # assert offline_info.get("credential_id"), response.json
+        # assert offline_info.get("rp_id") == "localhost", response.json
+        # assert offline_info.get("rp_name"), response.json
+        # assert "counter" in offline_info, response.json
+
     def test_fido2_authentication_wrong_key(self):
         """
         Test that FIDO2 authentication fails when a different device

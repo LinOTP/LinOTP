@@ -382,7 +382,7 @@ POLICY_DEFINTIONS = {
         },
         "support_offline": {
             "type": "set",
-            "range": ["qr", "u2f", "forward"],  # TODO: currently hardcoded
+            "range": ["qr", "u2f", "forward", "fido2"],  # TODO: currently hardcoded
             "desc": "The token types that should support offline authentication",
         },
     },
