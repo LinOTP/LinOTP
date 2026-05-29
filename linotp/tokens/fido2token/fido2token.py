@@ -635,7 +635,7 @@ class Fido2TokenClass(TokenClass):
         super().__init__(aToken)
         self.setType(FIDO2_TOKEN_TYPE)
         self.mode = ["challenge"]  # This is a challenge-response token
-        self.supports_offline_mode = False
+        self.supports_offline_mode = True
         self.hKeyRequired = False  # FIDO2 uses public key, not OTP key
 
     @classmethod
@@ -1268,6 +1268,18 @@ class Fido2TokenClass(TokenClass):
         if current_phase == TokenPhase.AUTHENTICATION:
             return {"status": "completed"}
         return {"status": "unpaired"}
+
+    def getOfflineInfo(self):
+        """Return offline-relevant credential data for check_status."""
+        cred = self._get_stored_credential()
+        return {
+            "public_key": cred.public_key,
+            "credential_id": cred.credential_id,
+            # If we need it in the future, we can also store and return these additional fields:
+            # "counter": str(cred.sign_count),
+            # "rp_id": self.getFromTokenInfo(TOKEN_INFO_RP_ID),
+            # "rp_name": self.getFromTokenInfo(TOKEN_INFO_RP_NAME),
+        }
 
     # ---------------------------------------------------------------------- --
     # Authentication (Assertion) - Challenge/Response
