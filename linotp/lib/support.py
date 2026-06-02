@@ -92,7 +92,7 @@ BLACK_SIGNATURES = [
 ]
 
 DEMO_LICENSE = """-----BEGIN LICENSE-----
-comment=Demo License for LSE LinOTP 2
+comment=Demo License for LinOTP
 contact-email=unknown/unbekannt
 licensee=Demo License
 expire=14 days
@@ -102,10 +102,10 @@ subscription=
 token-num=5
 contact-name=unknown/unbekannt
 version=2
-issuer=LSE Leading Security Experts GmbH
+issuer=netgo software GmbH
 -----END LICENSE-----
 -----BEGIN LICENSE SIGNATURE-----
-SMyYfVhZKPgS3mjcSYsfUG9awcgfwUU/ssEw0FLqSbTQiIJf2gWN9dx02iVSJREUnlf80Gy3ZQd0l4EVOucGw2GYWGGo3JRj/XrL7NnZFeP5d0SpPmcRwb4qyVYZ+yhQFtYkh4PMVnhPbjZyuILA1gBY1jUTeHqtfswg9QYwkCKlqosyyHnI1jA+usW3RcGuI74BNQK0qS7cQmoZBKG0PN/UbD3fA4wNVqJbh0FPQi2fnduZysWHFqmuMkpQ5epkVOfmkDTL6QQwl9R5We6RgepBdMkX5+E1hmCeDoIsXo8/+zAVYeejVQ9LWpdMExN443W0oQ0VIxA8/kTzuaEX9A==
+OCQ/pvx21/+8yO9lIyEuaWigsbNLH7mkRtlwrFKe2+Y8fbVuVRsK+e27cbhCOINtneVxj7HeexU20lXN2T0WVQ6/WHnv1sfzMgfV/UHlQOQZhzoywEF06+yKRKwfv6ObKhbuEdt4b4kziEBM5fVtKeQdtyq0iw8I1CV66azke5GxWrZCnHuEm9Vz1rlLVeodeXpgxENCXF2ScfEJIDqLul2GXjJn1gkfQz9aj2XE73zk1jxXEC1gW6Oh1nmOIEFXevX1+0LELlMcB0e+3BdY/+leiixgsAPFATwBnRdqVfx3m2htiZlHGJvU1am9f2mTkxOZSXkC9ypHzj3SHzHo8A==
 -----END LICENSE SIGNATURE-----"""
 
 GRACE_VOLUME = 2
