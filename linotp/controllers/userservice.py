@@ -358,6 +358,11 @@ class UserserviceController(BaseController):
 
         # ------------------------------------------------------------------ --
 
+        if "serial" in self.request_params:
+            serial = self.request_params["serial"]
+            g.audit["serial"] = serial
+            g.audit["token_type"] = getTokenType(serial)
+
         return
 
     @staticmethod
@@ -1320,6 +1325,7 @@ class UserserviceController(BaseController):
 
         except LicenseException as lex:
             log.error("[enable] license exception: %r", lex)
+            g.audit["info"] = str(lex)
             db.session.rollback()
             msg = _("Failed to enable token, please contact your administrator")
             return sendError(msg, 1)
@@ -2588,6 +2594,7 @@ class UserserviceController(BaseController):
 
         except Exception as exx:
             log.exception("[search] audit/search failed: %r", exx)
+            g.audit["info"] = str(exx)
             db.session.rollback()
             return sendError(_("audit/search failed: %s") % str(exx), 0)
 
@@ -2761,6 +2768,7 @@ class UserserviceController(BaseController):
         except Exception as exx:
             error = f"[userfinishocra2token] token initialization failed! {exx!r}"
             log.exception(error)
+            g.audit["info"] = str(exx)
             db.session.rollback()
             return sendError(error, 1)
 
@@ -3002,7 +3010,6 @@ class UserserviceController(BaseController):
 
         except Exception as exx:
             log.exception("[fido2_activate_init] failed: %r", exx)
-            g.audit["info"] = str(exx)
             db.session.rollback()
             return sendError(exx, 1)
 
