@@ -358,6 +358,11 @@ class UserserviceController(BaseController):
 
         # ------------------------------------------------------------------ --
 
+        if "serial" in self.request_params:
+            serial = self.request_params["serial"]
+            g.audit["serial"] = serial
+            g.audit["token_type"] = getTokenType(serial)
+
         return
 
     @staticmethod
@@ -399,6 +404,13 @@ class UserserviceController(BaseController):
                     g.audit["serial"] = serial
                     g.audit["token_type"] = getTokenType(serial)
 
+                error_response = None
+                if response.is_json:
+                    response_json = response.get_json(silent=True) or {}
+                    error_response = response_json.get("result", {}).get("error")
+
+                if error_response and not g.audit.get("info"):
+                    g.audit["info"] = error_response.get("message")
                 # --------------------------------------------------------- --
 
                 # actions which change the token amount do some reporting
@@ -1313,6 +1325,7 @@ class UserserviceController(BaseController):
 
         except LicenseException as lex:
             log.error("[enable] license exception: %r", lex)
+            g.audit["info"] = str(lex)
             db.session.rollback()
             msg = _("Failed to enable token, please contact your administrator")
             return sendError(msg, 1)
@@ -2323,6 +2336,7 @@ class UserserviceController(BaseController):
         try:
             try:
                 tok_type = param["type"]
+                g.audit["token_type"] = tok_type
             except KeyError as exx:
                 msg = f"Missing parameter: '{exx}'"
                 raise ParameterError(msg) from exx
@@ -2358,6 +2372,7 @@ class UserserviceController(BaseController):
                         g.authUser.login,
                         check_res["error"],
                     )
+                    g.audit["info"] = check_res["error"]
 
                     return sendError(_("Error: %s") % check_res["error"])
 
@@ -2499,6 +2514,7 @@ class UserserviceController(BaseController):
 
         except LicenseException as lex:
             log.error("[enroll] license exception: %r", lex)
+            g.audit["info"] = str(lex)
             db.session.rollback()
             msg = _("Failed to enroll token, please contact your administrator")
             return sendError(msg, 1)
@@ -2578,6 +2594,7 @@ class UserserviceController(BaseController):
 
         except Exception as exx:
             log.exception("[search] audit/search failed: %r", exx)
+            g.audit["info"] = str(exx)
             db.session.rollback()
             return sendError(_("audit/search failed: %s") % str(exx), 0)
 
@@ -2751,6 +2768,7 @@ class UserserviceController(BaseController):
         except Exception as exx:
             error = f"[userfinishocra2token] token initialization failed! {exx!r}"
             log.exception(error)
+            g.audit["info"] = str(exx)
             db.session.rollback()
             return sendError(error, 1)
 
@@ -2992,7 +3010,6 @@ class UserserviceController(BaseController):
 
         except Exception as exx:
             log.exception("[fido2_activate_init] failed: %r", exx)
-            g.audit["info"] = str(exx)
             db.session.rollback()
             return sendError(exx, 1)
 
