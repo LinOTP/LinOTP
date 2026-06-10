@@ -664,12 +664,12 @@ class IdResolver(UserIdResolver):
 
     def getUsername(self, userid):
         """
-        get the loginname from the given userid
+        get the username from the given userid
 
         :param userId: userid descriptor
         :type userId: string
 
-        :return: loginname
+        :return: username
         :rtype:  string
         """
 

@@ -201,7 +201,7 @@ class UserIdResolver:
     def getUsername(self, userid):
         """
         getUsername(LoginId)
-          - returns the loginname string
+          - returns the username string
           - empty string if not exist
 
         """

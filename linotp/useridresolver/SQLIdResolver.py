@@ -809,12 +809,12 @@ class IdResolver(UserIdResolver):
 
     def getUsername(self, userId):
         """
-        get the login name for a given userId
+        get the username for a given userId
 
         :param userId: unique identifier of the user
         :type userId: string
 
-        :return: login name
+        :return: username
         :rtype: string
         """
         log.debug("[getUsername] %r[%s]", userId, type(userId))
