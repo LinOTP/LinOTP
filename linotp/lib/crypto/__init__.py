@@ -49,7 +49,7 @@ class SecretObj:
     classes that need encrypted data such as the
     database fields
 
-    The encryption operations themselves are realised
+    The encryption operations themselves are realized
     using a SecurityModule (such as HSM, PKCS11)
 
     The class implementation ensures that secret keys
@@ -108,7 +108,7 @@ class SecretObj:
 
         - legacy -
         the seed for some tokens contains the encrypted password
-        insetead of decrypting the password and running the comparison,
+        instead of decrypting the password and running the comparison,
         the new otp will be encrypted as well.
 
         :param password: the password - for the password token this is the
@@ -120,7 +120,7 @@ class SecretObj:
         if self.iv == b":1:":
             return utils.compare_password(password, self.val.decode("utf-8"))
 
-        # the legacy comparison: compare the ecrypted password
+        # the legacy comparison: compare the encrypted password
 
         enc_otp_key = utils.encrypt(password, self.iv, hsm=self.hsm)
 
@@ -197,7 +197,7 @@ class SecretObj:
 
         hash_pin = utils.hash_digest(pin.encode("utf-8"), iv)
 
-        # TODO: position independend compare
+        # TODO: position-independent compare
         return hashed_pin == hash_pin
 
     @staticmethod
@@ -227,7 +227,7 @@ class SecretObj:
 
         crypted_pin = utils.encryptPin(pin.encode("utf-8"), iv)
 
-        # TODO: position independend compare
+        # TODO: position-independent compare
         return encrypted_pin == crypted_pin.encode("utf-8")
 
     @staticmethod

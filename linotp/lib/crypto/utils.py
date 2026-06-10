@@ -58,7 +58,10 @@ PasslibHashes = CryptContext(
         "md5_crypt",
         "bcrypt",
         "bcrypt_sha256",
-    ]
+        "des_crypt",  # Traditional Unix crypt (DES)
+        "bsdi_crypt",  # Extended DES crypt
+    ],
+    deprecated=["des_crypt", "bsdi_crypt", "md5_crypt"],  # Mark legacy as deprecated
 )
 
 log = logging.getLogger(__name__)
@@ -75,45 +78,35 @@ Hashlib_map = {
 
 def compare_password(password, crypted_password):
     """
-    comparing passwords
+    Compare a plain text password with a crypted password hash.
 
-    for password comparison the passwords crypt algorithms are supported,
-    which are indicated by the "$ID$" prefix :
+    Uses the passlib library to support various password hashing formats
+    including modern schemes (SHA-512, SHA-256, bcrypt) and legacy Unix
+    crypt formats for backward compatibility.
 
-      ID  | Method
-      ─────────────────────────────────────────────────────────
-      1   | MD5
-      2a  | Blowfish (not in mainline glibc; added in some
-          | Linux distributions)
-      5   | SHA-256 (since glibc 2.7)
-      6   | SHA-512 (since glibc 2.7)
-
-    to upport passowrds on a broad range of platforms the passlib library
-    is used:
-
-        https://passlib.readthedocs.io/en/stable/index.html
-
-    algorithm:
-    we iterate over supported list of passlib modules to identify the
-    hashing algorithm (s.o.) and do the comparison with the matching one.
+    Supported formats include:
+    - SHA-512 crypt ($6$...)
+    - SHA-256 crypt ($5$...)
+    - SHA-1 crypt ($sha1$...)
+    - MD5 crypt ($1$...)
+    - bcrypt ($2a$..., $2b$...)
+    - Traditional Unix DES crypt (13 chars, no prefix)
+    - Extended DES crypt
 
     :param password: the plain text password
-    :param crypted_password: the encrypted password
+    :param crypted_password: the hashed password to compare against
 
-    :return: boolean - for the password comparison result
+    :return: boolean - True if passwords match, False otherwise
     """
 
     if PasslibHashes.identify(crypted_password):
         return PasslibHashes.verify(password, crypted_password)
 
-    # TODO: remove/refactor as crypt is deprecated and removed in python 3.13
-    # compatibilty case:
-    # the rare case for the broken system crypto libs like on macos
-
-    from crypt import crypt as libcrypt  # noqa: PLC0415
-
-    new_crypted_passw = libcrypt(password, crypted_password)
-    return compare(new_crypted_passw, crypted_password)
+    log.warning(
+        "Password comparison failed, returning False. Unrecognized password hash format (first 10 chars): %s ",
+        crypted_password[:10],
+    )
+    return False
 
 
 def crypt_password(password):
@@ -136,7 +129,7 @@ def crypt_password(password):
 
 def compare(one, two):
     """
-    position independend comparison of values
+    position-independent comparison of values
 
     :param one: first value
     :param two: second value
@@ -333,7 +326,7 @@ def encryptPin(cryptPin: bytes, iv=None, hsm=None):
     """Encrypt pin (i.e. token pin)
 
     :param cryptPin: pin to encrypt
-    :param iv: initializain vector
+    :param iv: initialization vector
     :param hsm: hsm security object instance
     :return: return encrypted pin
     """
@@ -398,7 +391,7 @@ def encrypt(data: str, iv: bytes, id: int = 0, hsm=None) -> bytes:
     :param id:    contains the id of which key of the keyset should be used
     :type  id:    int
 
-    :return:      encryted buffer
+    :return:      encrypted buffer
     """
 
     hsm_obj = _get_hsm_obj_from_context(hsm)
@@ -416,7 +409,7 @@ def decrypt(input, iv, id=0, hsm=None):
     :param id:    contains the id of which key of the keyset should be used
     :type  id:    int
 
-    :return:      decryted buffer
+    :return:      decrypted buffer
     """
 
     hsm_obj = _get_hsm_obj_from_context(hsm)
@@ -565,8 +558,8 @@ def geturandom(len=20):
     """
     get random - from the security module
 
-    :param len:  len of the returned bytes - defalt is 20 bytes
-    :tyrpe len:    int
+    :param len: length of the bytes to return - default is 20 bytes
+    :type len: int, optional
 
     :return: buffer of bytes
 

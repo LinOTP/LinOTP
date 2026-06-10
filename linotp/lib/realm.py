@@ -314,7 +314,7 @@ def _get_realm_config_cache():
     the realm config cache is used to track the realm definition
     changes. therefore for each realm name the realm config is stored
     in a cache. In case of an request the comparison of the realm config
-    with the cache value is made and in case of inconsistancy the
+    with the cache value is made and in case of inconsistency the
     realm -> resolver cache could be flushed.
 
     :remark: This cache is only enabled, if the resolver user lookup cache
@@ -398,15 +398,15 @@ def _initialGetRealms():
 def _setDefaultRealm(realms, defaultRealm):
     """
     internal method to set in the realm array the default attribute
-    (used by the _initalGetRealms)
+    (used by the _initialGetRealms)
 
     :param realms: dict of all realm descriptions
-    :type  realms: dict
-    :param defaultRealm : name of the default realm
-    :type  defaultRelam : string
+    :type realms: dict
+    :param defaultRealm: name of the default realm
+    :type defaultRealm: string
 
-    :return success or not
-    :rtype  boolean
+    :return: success or not
+    :rtype: boolean
     """
 
     ret = False
@@ -429,10 +429,10 @@ def isRealmDefined(realm):
     check, if a realm already exists or not
 
     :param realm: the realm, that should be verified
-    :type  realm: string
+    :type realm: string
 
-    :return :found or not found
-    :rtype  :boolean
+    :return: found or not found
+    :rtype: boolean
     """
     ret = False
     realms = getRealms()
@@ -443,15 +443,15 @@ def isRealmDefined(realm):
 
 def setDefaultRealm(defaultRealm, check_if_exists=True):
     """
-    set the defualt realm attrbute
+    set the default realm attribute
 
-    :note: verify, if the defualtRealm could be empty :""
+    :note: verify, if the defaultRealm could be empty :""
 
     :param defaultRealm: the default realm name
-    :type  defualtRealm: string
+    :type defaultRealm: string
 
-    :return:  success or not
-    :rtype:   boolean
+    :return: success or not
+    :rtype: boolean
     """
 
     # TODO: verify merge
@@ -485,25 +485,25 @@ def getDefaultRealm(config=None):
     return defaultRealm.lower()
 
 
-def deleteRealm(realmname):
+def deleteRealm(realm_name):
     """
     delete the realm from the Database Table with the given name
 
-    :param realmname: the to be deleted realm
-    :type  realmname: string
+    :param realm_name: the to be deleted realm
+    :type realm_name: string
     """
 
     admin_realm_name = current_app.config["ADMIN_REALM_NAME"].lower()
 
-    if realmname == admin_realm_name:
+    if realm_name == admin_realm_name:
         msg = f"It is not allowed to delete the admin realm {admin_realm_name}"
         raise DeleteForbiddenError(msg)
 
-    log.debug("deleting realm object with name=%s", realmname)
-    r = getRealmObject(name=realmname)
+    log.debug("deleting realm object with name=%s", realm_name)
+    r = getRealmObject(name=realm_name)
     if r is None:
         """if no realm is found, we re-try the lowercase name for backward compatibility"""
-        r = getRealmObject(name=realmname.lower())
+        r = getRealmObject(name=realm_name.lower())
     realmId = 0
     if r is not None:
         try:
@@ -512,42 +512,42 @@ def deleteRealm(realmname):
             if realmId != 0:
                 log.debug("Deleting token relations for realm with id %r", realmId)
                 TokenRealm.query.filter_by(realm_id=realmId).delete()
-            _delete_realm_config(realmname=realmname)
+            _delete_realm_config(realm_name)
             db.session.delete(r)
 
             from linotp.lib.user import delete_realm_resolver_cache  # noqa: PLC0415
 
-            delete_realm_resolver_cache(realmname)
+            delete_realm_resolver_cache(realm_name)
 
             return True
         except Exception as exx:
             log.error("[delRealm] error deleting realm: %r", exx)
             db.session.rollback()
 
-    log.warning("Realm with name %s was not found.", realmname)
+    log.warning("Realm with name %s was not found.", realm_name)
     return False
 
 
-def _delete_realm_config(realmname):
+def _delete_realm_config(realm_name):
     """Deletes the realm from config
     and resets default realm if it was the default realm
 
     Args:
-        realmname (str): name of the realm
+        realm_name (str): name of the realm
 
     Returns:
         boolean: true if realm was deleted else false
     """
     # Test if realm is defined
-    if not isRealmDefined(realmname):
+    if not isRealmDefined(realm_name):
         return False
 
     defRealm = getDefaultRealm()
-    was_default_realm = realmname.lower() == defRealm.lower()
+    was_default_realm = realm_name.lower() == defRealm.lower()
 
     realmConfig = (
-        f"useridresolver.group.{realmname}"
-        if realmname != "_default_"
+        f"useridresolver.group.{realm_name}"
+        if realm_name != "_default_"
         else "useridresolver"
     )
 
@@ -563,7 +563,7 @@ def match_realms(request_realms, allowed_realms):
     Check if all requested realms are also allowed realms
     and that all allowed realms exist and
     return a filtered list with only the matched realms.
-    In case of '*' in reques_realms, return all allowed realms
+    In case of '*' in request_realms, return all allowed realms
     including /:no realm:/
 
     :param allowed_realms: list of realms from request (without '*')
