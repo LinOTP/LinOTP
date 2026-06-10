@@ -126,6 +126,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CLI commands with `--help` work without initializing LinOTP, therefore without requiring a valid configuration.
 - CLI commands failing due to invalid configurations now return a meaningfull error message instead of stacktrace.
 - Audit entries for failed `userservice/enroll` requests now include the reason in `info`.
+- The `linotp support` command now works correctly again.
 
 ## [3.4.4-1] - 2025-06-18
 

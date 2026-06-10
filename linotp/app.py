@@ -1088,7 +1088,12 @@ def create_app(config_name=None, config_extra=None):
     # Initialize components (that need app_context)
     with app.app_context():
         setup_db(app)
+
         if not app.testing and app.cli_cmd not in START_LINOTP_COMMANDS:
+            if app.cli_cmd == "support":
+                init_security_provider()
+                _setup_babel(app)
+
             return app
 
         if not app.testing:
