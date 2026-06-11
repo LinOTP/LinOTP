@@ -395,5 +395,108 @@ class TestForwardToken(TestController):
         jresp = json.loads(response.body)
         assert jresp["result"]["value"]
 
+    def test_forwarded_fido2(self):
+        """
+        checking the functionality of the fido2 token when used as a forward target.
+        """
+        # TODO: does this belong here?
+
+        # policies to enable enrolling fido2
+        policies = [
+            {
+                "name": "enroll_fido2",
+                "action": "enrollFIDO2",
+                "user": "*",
+                "realm": "*",
+                "scope": "selfservice",
+            },
+            {
+                "name": "fido2_rpid",
+                "action": "fido2_rp_id=localhost",
+                "user": "*",
+                "realm": "*",
+                "scope": "enrollment",
+            },
+        ]
+        for pp in policies:
+            response = self.make_system_request("setPolicy", params=pp)
+            assert "false" not in response, (
+                json.dumps(response) + "could not setPolicy" + pp["name"]
+            )
+
+        auth_user = {
+            "login": "passthru_user1",
+            "realm": "myDefRealm",
+            "password": "geheim1",
+        }
+
+        # create FIDO token
+        fidoSerial, *_, device = self.enroll_fido2_token(
+            auth_user=auth_user, origin="https://localhost"
+        )
+
+        # create linked FIDO token
+        self.create_forward_token(
+            owner=auth_user["login"] + "@" + auth_user["realm"],
+            target_serial=fidoSerial,
+        )
+
+        # make FIDO Token not accessible
+        self.unassign_token(serial=fidoSerial)
+
+        # create challenge for forward token
+        params = {"user": auth_user["login"], "realm": "myDefRealm", "pass": "123!"}
+        response = self.make_validate_request("check", params=params)
+
+        assert "detail" in response, "detail not sent forward token:" + response.body
+        assert "transactionid" in response, (
+            "transactionid not sent forward token:" + response.body
+        )
+        assert "signrequest" in response, (
+            "signrequest not sent forward token:" + response.body
+        )
+
+        jresp = json.loads(response.body)
+        transactionid = jresp["detail"]["transactionid"]
+        detail = response.json.get("detail", {})
+        sign_request = detail["signrequest"]
+
+        # answer challenge correctly
+        params = {
+            "user": "passthru_user1",
+            "pass": json.dumps(device.get(sign_request, origin="https://localhost")),
+            "transactionid": transactionid,
+            "realm": "myDefRealm",
+        }
+        validate_response = self.make_validate_request("check_t", params=params)
+        assert "false" not in validate_response, "login not successful"
+
+        # create challenge for forward token
+        params = {"user": auth_user["login"], "realm": "myDefRealm", "pass": "123!"}
+        response = self.make_validate_request("check", params=params)
+
+        assert "detail" in response, "detail not sent forward token:" + response.body
+        assert "transactionid" in response, (
+            "transactionid not sent forward token:" + response.body
+        )
+        assert "signrequest" in response, (
+            "signrequest not sent forward token:" + response.body
+        )
+
+        jresp = json.loads(response.body)
+        transactionid = jresp["detail"]["transactionid"]
+        detail = response.json.get("detail", {})
+        sign_request = detail["signrequest"]
+
+        # answer challenge incorrectly
+        params = {
+            "user": "passthru_user1",
+            "pass": json.dumps(device.get(sign_request, origin="https://remotehost")),
+            "transactionid": transactionid,
+            "realm": "myDefRealm",
+        }
+        validate_response = self.make_validate_request("check_t", params=params)
+        assert "false" in validate_response, "invalid positive login"
+
 
 # eof #########################################################################
