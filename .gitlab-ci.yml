@@ -324,7 +324,7 @@ lint:
     - .nightly-test-set-rules
   variables:
     <<: *mysql-vars
-    DB: mysql:5.5
+    DB: mysql:8.4
   services:
     - name: ${DB}
       alias: db
@@ -333,6 +333,7 @@ lint:
           "mysqld",
           "--character-set-server=utf8",
           "--collation-server=utf8_general_ci",
+          "--binlog_format=MIXED",
         ]
 
 .mysql-lower-case-table-names-database:
@@ -340,7 +341,7 @@ lint:
     - .nightly-test-set-rules
   variables:
     <<: *mysql-vars
-    DB: mysql:5.5
+    DB: mysql:8.4
   services:
     - name: ${DB}
       alias: db
@@ -349,6 +350,7 @@ lint:
           "mysqld",
           "--character-set-server=utf8",
           "--collation-server=utf8_general_ci",
+          "--binlog_format=MIXED",
           "--lower-case-table-names=1",
         ]
   script:
