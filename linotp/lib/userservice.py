@@ -79,7 +79,13 @@ def getTokenForUser(user, active=None, exclude_rollout=True):
             if set(path) & {"userservice", "validate"} and exclude_rollout:
                 continue
 
-            tok["LinOtp.TokenInfo"] = token_info
+            # keep token internals such as the fido2 credential out of the
+            # list that is handed to the token owner
+            tok["LinOtp.TokenInfo"] = {
+                key: value
+                for key, value in token_info.items()
+                if key not in token.internal_token_info_keys
+            }
 
         tok["Enrollment"] = token.get_enrollment_status()
 

@@ -644,6 +644,13 @@ class Fido2TokenClass(TokenClass):
     can be verified using the public key stored during registration.
     """
 
+    # the credential and the pending registration state are of no use to the
+    # token owner and are kept out of the selfservice token list
+    internal_token_info_keys = (
+        TOKEN_INFO_CREDENTIAL,
+        TOKEN_INFO_REGISTRATION_CHALLENGE,
+    )
+
     def __init__(self, aToken):
         """
         Constructor - create a token object.
