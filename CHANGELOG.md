@@ -85,6 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The texts in demo license are updated.
 - API: resolver names no longer impose a minimum length, bringing them to parity with realm names (a name just needs to be non-empty and use letters, numbers, `_` or `-`). The Manage-UI still enforces a four-character minimum client-side.
 - Policies in the legacy `ocra` and `ocra2` scopes are no longer exempted from policy action validation. The ocra (v1) token type was removed in 3.0, and the ocra2 token type never used a policy scope `ocra2` at all. Saving such a policy now fails validation and it should be deleted instead.
+- The token info dialog of the Manage-UI breaks object and list values down into nested tables at any depth instead of showing a Python representation, and shortens overly long values to keep the dialog readable. The `scope` of a rollout token is now listed as a `path` entry of `userservice` rather than as `{'path': ['userservice']}`. The FIDO2 credential and the FIDO2 registration and authentication state are returned as JSON objects by `admin/show` with `tokeninfo_format=json`, `admin/checkstatus` and `userservice`.
 
 ### Security
 
