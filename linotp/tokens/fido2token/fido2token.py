@@ -843,14 +843,14 @@ class Fido2TokenClass(TokenClass):
         return Fido2Credential.from_dict(cred_data)
 
     @staticmethod
-    def _parse_challenge_data(challenge: dict):
-        """Extract the saved challenge data from a challenge dict."""
+    def _parse_challenge_data(challenge):
+        """Extract the saved challenge state from a challenge.
+
+        `challenge.get("data")` yields the raw string rather than a dict if the
+        stored payload does not decode as JSON.
+        """
         data = challenge.get("data")
-        if not data:
-            return None
-        if isinstance(data, str):
-            data: dict = json.loads(data)
-        return data.get("challenge")
+        return data.get("challenge") if isinstance(data, dict) else None
 
     def _reconstruct_attested_credential(self) -> AttestedCredentialData:
         """

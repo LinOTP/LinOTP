@@ -171,6 +171,41 @@ def test_get_stored_credential_without_credential():
 
 
 # ---------------------------------------------------------------------- --
+# _parse_challenge_data tests
+# ---------------------------------------------------------------------- --
+
+
+def _challenge_stub(data):
+    """Stand-in for Challenge.get(), which dispatches "data" to getData()."""
+    return SimpleNamespace(get=lambda key, fallback=None: data)
+
+
+def test_parse_challenge_data_returns_the_stored_state():
+    state = {"challenge": "Y2hhbGxlbmdl", "user_verification": "preferred"}
+    challenge = _challenge_stub({"challenge": state, "signrequest": {}})
+
+    assert Fido2TokenClass._parse_challenge_data(challenge) == state
+
+
+def test_parse_challenge_data_without_a_state():
+    challenge = _challenge_stub({"signrequest": {}})
+
+    assert Fido2TokenClass._parse_challenge_data(challenge) is None
+
+
+def test_parse_challenge_data_of_an_empty_data_column():
+    """getData() hands back "" for an empty column, not None or {}."""
+    assert Fido2TokenClass._parse_challenge_data(_challenge_stub("")) is None
+
+
+def test_parse_challenge_data_of_an_undecodable_data_column():
+    """getData() hands back the raw string when it is not JSON."""
+    challenge = _challenge_stub("some opaque string")
+
+    assert Fido2TokenClass._parse_challenge_data(challenge) is None
+
+
+# ---------------------------------------------------------------------- --
 # _get_aggregated_policy_values tests
 # ---------------------------------------------------------------------- --
 
