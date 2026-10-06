@@ -71,10 +71,10 @@ standard_http_errors = {
 resp = """
 <html>
 <head>
-<title>%s %s</title>
+<title>%s</title>
 </head>
 <body>
-<h1>%s %s</h1>
+<h1>%s</h1>
 %s
 <br>
 <br>
@@ -245,7 +245,7 @@ def sendError(exception: Exception | str, id: int = 1):
         code = error_code
         status = f"{error_code} {reason}"
         desc = f"[{get_version()}] {errId}: {errDesc}"
-        ret = resp % (code, status, code, status, escape(desc))
+        ret = resp % (status, status, escape(desc))
 
         return Response(response=ret, status=code, mimetype="text/html")
 
