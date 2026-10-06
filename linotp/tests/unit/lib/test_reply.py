@@ -142,3 +142,54 @@ class TestReplyTestCase:
         value = result_dict.get("result", {}).get("value")
 
         assert value == ["one"]
+
+
+MARKUP = "<b>user-input</b>"
+ESCAPED_MARKUP = "&lt;b&gt;user-input&lt;/b&gt;"
+
+
+@pytest.mark.usefixtures("app")
+class TestReplyHtmlEscaping:
+    @pytest.mark.parametrize("exception_type", [str, Exception])
+    def test_send_error_html_escapes_exception_text(self, app, exception_type):
+        """exception text in the httperror html response must be escaped"""
+
+        message = f'No token with serial {MARKUP} & "quoted" — ü'
+        with app.test_request_context("/?httperror=500"):
+            response = reply.sendError(exception_type(message))
+
+        body = response.get_data(as_text=True)
+        assert response.status_code == 500
+        assert response.mimetype == "text/html"
+        assert MARKUP not in body
+        assert ESCAPED_MARKUP in body
+        assert "&amp; &quot;quoted&quot; — ü" in body
+
+    def test_send_error_json_preserves_exception_text(self, app):
+        """HTML encoding must not alter the JSON API's error message."""
+
+        message = f'No token with serial {MARKUP} & "quoted" — ü'
+        with app.test_request_context("/"):
+            response = reply.sendError(Exception(message))
+
+        assert response.status_code == 200
+        assert response.mimetype == "application/json"
+        assert response.get_json()["result"]["error"]["message"] == message
+
+    @pytest.mark.parametrize(
+        "alt",
+        [
+            MARKUP,
+            {"key": MARKUP},
+            {MARKUP: "value"},
+            [MARKUP],
+        ],
+        ids=("str", "dict value", "dict key", "list"),
+    )
+    def test_create_html_escapes_alt(self, alt):
+        """alt data rendered into the qr html page must be escaped"""
+
+        body = reply.create_html("data", alt=alt)
+
+        assert MARKUP not in body
+        assert ESCAPED_MARKUP in body

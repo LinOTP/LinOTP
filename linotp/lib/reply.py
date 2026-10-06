@@ -32,6 +32,7 @@ import logging
 import urllib.error
 import urllib.parse
 import urllib.request
+from html import escape
 from urllib.parse import parse_qs
 
 import qrcode
@@ -244,7 +245,7 @@ def sendError(exception: Exception | str, id: int = 1):
         code = error_code
         status = f"{error_code} {reason}"
         desc = f"[{get_version()}] {errId}: {errDesc}"
-        ret = resp % (code, status, code, status, desc)
+        ret = resp % (code, status, code, status, escape(desc))
 
         return Response(response=ret, status=code, mimetype="text/html")
 
