@@ -27,7 +27,7 @@
 """
 userservice controller -
      This is the controller for the user self service
-     interface, where an authenitcated users can manage their own tokens
+     interface, where authenticated users can manage their own tokens
 
 There are three types of requests
   * the context requests: before, context
@@ -147,7 +147,7 @@ REPLY_MODES = defaultdict(
 def secure_cookie():
     """
     in the development environment where we run in debug mode
-    there is probaly no https defined. So we switch secure cookies off.
+    there is probably no https defined. So we switch secure cookies off.
     this is done in the settings.py
     """
     return config["SESSION_COOKIE_SECURE"]
@@ -265,8 +265,7 @@ class UserserviceController(BaseController):
 
         """
 
-        # the following actions dont require an authenticated session
-
+        # the following actions don't require an authenticated session at all
         NON_AUTHENTICATED_REQUEST_LIST = [
             "auth",
             "pre_context",
@@ -330,7 +329,7 @@ class UserserviceController(BaseController):
 
         # ------------------------------------------------------------------ --
 
-        # finally check the validty of the session
+        # finally check the validity of the session
 
         if not check_session(request, g.authUser, g.client):
             raise unauthorized(_("No valid session"))
@@ -443,7 +442,7 @@ class UserserviceController(BaseController):
         user identification and authentication:
                 lib.user.get_authenticated_user
         and has been adjusted to the need to run the password authentication
-        as a seperate step
+        as a separate step
 
         :param params: request parameters
         :return: User Object or None
@@ -499,10 +498,10 @@ class UserserviceController(BaseController):
         """
         user authentication for example to the remote selfservice
 
-        :param login: login name of the user normaly in the user@realm format
+        :param login: login name of the user normally in the user@realm format
         :param realm: the realm of the user
         :param password: the password for the user authentication
-                         which is base32 encoded to seperate the
+                         which is base32 encoded to separate the
                          os_passw:pin+otp in case of mfa_login
 
         :return: {result : {value: bool} }
@@ -763,8 +762,8 @@ class UserserviceController(BaseController):
             msg = "invalid state data"
             raise Exception(msg)
 
-        # if there has been a challenge triggerd before, we can extract
-        # the the transaction info from the cookie cached data
+        # if there has been a challenge triggered before, we can extract
+        # the transaction info from the cookie cached data
 
         transid = state_data.get("transactionid")
 
@@ -778,7 +777,7 @@ class UserserviceController(BaseController):
 
         check if it is a valid otp, we grant access
 
-        state: challenge_tiggered
+        state: challenge_triggered
 
         :param user: the login user
         :param transid: the transaction id, taken from the cookie context
@@ -811,10 +810,10 @@ class UserserviceController(BaseController):
         """Check status of the login challenge.
 
         check, if there is no otp in the request, we assume that we have to
-        poll for the transaction state. If a valid tan was recieved we grant
+        poll for the transaction state. If a valid tan was received we grant
         access.
 
-        input state: challenge_tiggered
+        input state: challenge_triggered
 
         :param user: the login user
         :param transid: the transaction id, taken out of the cookie content
@@ -848,7 +847,7 @@ class UserserviceController(BaseController):
         db.session.commit()
         return sendResult(verified, opt=detail)
 
-    def _login_with_otp(self, user, passw, param):
+    def _login_with_otp(self, user, password, param):
         """
         handle login with otp - either if provided directly or delayed
 
@@ -857,7 +856,7 @@ class UserserviceController(BaseController):
         :param param: the request parameters
         """
 
-        if not user.checkPass(passw):
+        if not user.checkPass(password):
             log.info("User %r failed to authenticate!", user)
             g.audit["action_detail"] = f"User {user!r} failed to authenticate!"
             g.audit["success"] = False
@@ -870,7 +869,7 @@ class UserserviceController(BaseController):
         otp = param.get("otp", "")
         toks = getTokenForUser(g.authUser, active=True)
 
-        # If user has no token, we check if we can peform autoenrollment.
+        # If user has no token, we check if we can perform autoenrollment.
         # We cannot delegate that to checkUserPass cause it returns False as result of autoenrollment.
         if len(toks) == 0:
             th = TokenHandler()
@@ -881,7 +880,7 @@ class UserserviceController(BaseController):
                 )
                 and not otp
             ):
-                (auto_enroll_return, reply) = th.auto_enrollToken(passw, user)
+                (auto_enroll_return, reply) = th.auto_enrollToken(password, user)
                 if auto_enroll_return is False:
                     error = "autoenroll: {!r}".format(reply.get("error", ""))
                     raise Exception(error)
@@ -894,7 +893,7 @@ class UserserviceController(BaseController):
             prepend_pin_active = boolean(getFromConfig("PrependPin", True))
             res, reply = vh.checkUserPass(
                 user,
-                passw + otp if prepend_pin_active else otp + passw,
+                password + otp if prepend_pin_active else otp + password,
                 autoassign_enabled=is_autoassign_enabled,
             )
 
@@ -924,7 +923,7 @@ class UserserviceController(BaseController):
         # ------------------------------------------------------------------ --
 
         # last step - we have no otp but mfa_login request - so we
-        # create the 'credentials_verified state'
+        # create the 'credentials_verified' state
 
         (cookie_value, expires, expiration) = create_auth_cookie(
             user, g.client, state="credentials_verified"
@@ -985,7 +984,7 @@ class UserserviceController(BaseController):
         """
         user authentication for example to the remote selfservice
 
-        :param login: login name of the user normaly in the user@realm format
+        :param login: login name of the user normally in the user@realm format
         :param realm: the realm of the user
         :param password: the password for the user authentication
         :param otp: optional the otp
@@ -1002,7 +1001,7 @@ class UserserviceController(BaseController):
             # -------------------------------------------------------------- --
 
             # the new selfservice provides the parameter 'username' instead of
-            # 'login'. As all lower llayers expect 'login' we switch the case
+            # 'login'. As all lower layers expect 'login' we switch the case
 
             if "login" not in param and "username" in param:
                 param["login"] = param["username"]
@@ -1023,7 +1022,7 @@ class UserserviceController(BaseController):
                 return self._login_with_cookie(user_selfservice_cookie, param)
 
             # if there is a cookie but could not be found in cache
-            # we remove the out dated client cookie
+            # we remove the outdated client cookie
 
             if user_selfservice_cookie and not auth_info[0]:
                 self.delete_cookie("user_selfservice")
@@ -1090,7 +1089,7 @@ class UserserviceController(BaseController):
 
     def _default_auth_check(self, user, password, otp=None):
         """
-        the former selfservice login controll:
+        the former selfservice login control:
          check for username and os_pass
 
         :param user: user object
@@ -1107,18 +1106,18 @@ class UserserviceController(BaseController):
     def _mfa_login_check(self, user, password, otp):
         """
         secure auth requires the os password and the otp (pin+otp)
-        - secure auth supports autoassignement, where the user logs in with
+        - secure auth supports autoassignment, where the user logs in with
                       os_password and only the otp value. If user has no token,
                       a token with a matching otp in the window is searched
         - secure auth supports autoenrollment, where a user with no token will
-                      get automaticaly enrolled one token.
+                      get automatically enrolled one token.
 
         :param user: user object
         :param password: the os_password
         :param otp: empty (for autoenrollment),
                     otp value only for auto assignment or
                     pin+otp for standard authentication (respects
-                                                            otppin ploicy)
+                                                            otppin policy)
 
         :return: bool
         """
@@ -1129,7 +1128,7 @@ class UserserviceController(BaseController):
         if passwd_match:
             toks = getTokenForUser(user, active=True)
 
-            # if user has no token, we check for auto assigneing one to him
+            # if user has no token, we check for auto assigning one to him
             if len(toks) == 0:
                 th = TokenHandler()
 
@@ -1148,7 +1147,7 @@ class UserserviceController(BaseController):
                         error = "autoenroll: {!r}".format(reply.get("error", ""))
                         raise Exception(error)
                     # we always have to return a false, as we have
-                    # a challenge tiggered
+                    # a challenge triggered
                     ret = False
 
             # user has at least one token, so we do a check on pin + otp
@@ -1783,7 +1782,7 @@ class UserserviceController(BaseController):
         """
         verify a token, identified by a serial number
 
-        after a successful authentication and a valid session, the idenitfied
+        after a successful authentication and a valid session, the identified
         user can verify his enrolled tokens. To verify the token, the token
         serial number is used.
 
@@ -2279,7 +2278,7 @@ class UserserviceController(BaseController):
         """
 
         searches for the token, that generates the given OTP value.
-        The search can be restricted by several critterions
+        The search can be restricted by several criteria
         This method only searches tokens in the realm of the user
         and tokens that are not assigned!
 
@@ -2491,7 +2490,7 @@ class UserserviceController(BaseController):
                 g.authUser.realm,
             )
 
-            # extend the interface by parameters, so that decisssion could
+            # extend the interface by parameters, so that decision could
             # be made in the token update method
             param["::scope::"] = {"selfservice": True, "user": g.authUser}
 
@@ -2500,7 +2499,7 @@ class UserserviceController(BaseController):
                 info = tokenObj.getInfo()
                 response_detail.update(info)
 
-            # result enrichment - if the token is sucessfully created,
+            # result enrichment - if the token is successfully created,
             # some processing info is added to the result document,
             #  e.g. the otpkey :-) as qr code
             initDetail = tokenObj.getInitDetail(param, g.authUser)
@@ -2731,7 +2730,7 @@ class UserserviceController(BaseController):
         finishocra2token - called from the selfservice web ui to finish
                         the OCRA2 token to run the final check_t for the token
 
-        :param passw: the calculated verificaton otp
+        :param passw: the calculated verification otp
         :param transactionid: the transactionid
 
         :return: dict about the token
