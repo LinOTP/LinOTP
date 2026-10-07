@@ -29,6 +29,32 @@
 <%
     ttype = c.tokeninfo.get("LinOtp.TokenType","").lower()
 %>
+<%def name="token_info_value(value)">\
+## Render a token info value. Objects and lists are broken down into nested
+## tables at any depth, so that no value ends up as a python representation.
+% if isinstance(value, dict):
+<table class=tokeninfoInnerTable>
+% for key, item in value.items():
+<tr>
+<td class=tokeninfoInnerTable>${key}</td>
+<td class=tokeninfoInnerTable>${token_info_value(item)}</td>
+</tr>
+% endfor
+</table>\
+% elif isinstance(value, list):
+<table class=tokeninfoInnerTable>
+% for item in value:
+<tr>
+<td class=tokeninfoInnerTable>${token_info_value(item)}</td>
+</tr>
+% endfor
+</table>\
+% elif isinstance(value, str) and len(value) > 64:
+<span title="${value}">${value[:48]}&hellip;</span>\
+% else:
+${value}\
+% endif
+</%def>
 
 <table class=tokeninfoOuterTable>
     % for value in c.tokeninfo:
@@ -45,7 +71,7 @@
         %for k in c.tokeninfo[value]:
         <tr>
         <td class=tokeninfoInnerTable>${k}</td>
-        <td class=tokeninfoInnerTable id="tokeninfo_${k}">${c.tokeninfo[value][k]}</td>
+        <td class=tokeninfoInnerTable id="tokeninfo_${k}">${token_info_value(c.tokeninfo[value][k])}</td>
         </tr>
         %endfor
         </table>

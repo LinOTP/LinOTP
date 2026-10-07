@@ -606,15 +606,6 @@ class Fido2Credential:
             resident_key=data.get("resident_key", False) is True,
         )
 
-    @classmethod
-    def from_json(cls, json_str: str) -> "Fido2Credential":
-        """Create from JSON string."""
-        return cls.from_dict(json.loads(json_str))
-
-    def to_json(self) -> str:
-        """Convert to JSON string for storage."""
-        return json.dumps(self.to_dict())
-
     def get_authenticator_transports(self) -> list[AuthenticatorTransport] | None:
         """Convert stored transport strings to python-fido2 enum values."""
         if not self.transports:
@@ -652,6 +643,13 @@ class Fido2TokenClass(TokenClass):
     to sign a challenge received from the relying party. This signature
     can be verified using the public key stored during registration.
     """
+
+    # the credential and the pending registration state are of no use to the
+    # token owner and are kept out of the selfservice token list
+    internal_token_info_keys = (
+        TOKEN_INFO_CREDENTIAL,
+        TOKEN_INFO_REGISTRATION_CHALLENGE,
+    )
 
     def __init__(self, aToken):
         """
@@ -841,59 +839,25 @@ class Fido2TokenClass(TokenClass):
         Retrieve stored credential data from token info.
 
         :return: Fido2Credential object
-        :raises ValueError: if no credential is stored or if JSON is invalid
+        :raises ValueError: if no credential is stored
+        :raises KeyError: if the stored credential misses a required field
         """
-        cred_json = self.getFromTokenInfo(TOKEN_INFO_CREDENTIAL, None)
-        if not cred_json:
+        cred_data = self.getFromTokenInfo(TOKEN_INFO_CREDENTIAL, None)
+        if not cred_data:
             msg = f"No FIDO2 credential stored for token {self.getSerial()}"
             raise ValueError(msg)
 
-        return Fido2Credential.from_json(cred_json)
+        return Fido2Credential.from_dict(cred_data)
 
     @staticmethod
-    def _parse_challenge_data(challenge: dict):
-        """Extract the saved challenge data from a challenge dict."""
+    def _parse_challenge_data(challenge):
+        """Extract the saved challenge state from a challenge.
+
+        `challenge.get("data")` yields the raw string rather than a dict if the
+        stored payload does not decode as JSON.
+        """
         data = challenge.get("data")
-        if not data:
-            return None
-        if isinstance(data, str):
-            data: dict = json.loads(data)
-        return data.get("challenge")
-
-    # ---------------------------------------------------------------------- --
-    # Helper methods for state conversion
-    # ---------------------------------------------------------------------- --
-
-    @staticmethod
-    def _serialize_state(state: dict) -> str:
-        """
-        Serialize Fido2Server state to JSON with enum handling.
-
-        :param state: state dict from Fido2Server (may contain enums)
-        :return: JSON string representation
-        """
-        return json.dumps(state, default=str)
-
-    @staticmethod
-    def _deserialize_state(state_json: str) -> dict:
-        """
-        Deserialize Fido2Server state from JSON and restore enums.
-
-        :param state_json: JSON string representation of state
-        :return: state dict with UserVerificationRequirement enum restored
-        :raises ParameterError: on invalid JSON or enum values
-        """
-        try:
-            state = json.loads(state_json)
-            # Restore UserVerificationRequirement enum if present
-            if "user_verification" in state and state["user_verification"] is not None:
-                state["user_verification"] = UserVerificationRequirement(
-                    state["user_verification"]
-                )
-            return state
-        except (ValueError, TypeError, KeyError) as exx:
-            msg = "Invalid or corrupted registration/challenge state"
-            raise ParameterError(msg) from exx
+        return data.get("challenge") if isinstance(data, dict) else None
 
     def _reconstruct_attested_credential(self) -> AttestedCredentialData:
         """
@@ -1086,9 +1050,8 @@ class Fido2TokenClass(TokenClass):
         if "hints" in authenticator_type_options:
             register_request["hints"] = authenticator_type_options["hints"]
 
-        # Serialize state for phase 2 (contains challenge + user_verification preference)
-        state_json = self._serialize_state(state)
-        self.addToTokenInfo(TOKEN_INFO_REGISTRATION_CHALLENGE, state_json)
+        # Store state for phase 2 (contains challenge + user_verification preference)
+        self.addToTokenInfo(TOKEN_INFO_REGISTRATION_CHALLENGE, state)
 
         log.info("FIDO2 registration phase 1 initiated for token %s", self.getSerial())
 
@@ -1125,12 +1088,10 @@ class Fido2TokenClass(TokenClass):
             raise ParameterError(msg) from ex
 
         # Retrieve registration state from phase 1
-        state_json = self.getFromTokenInfo(TOKEN_INFO_REGISTRATION_CHALLENGE, None)
-        if not state_json:
+        state = self.getFromTokenInfo(TOKEN_INFO_REGISTRATION_CHALLENGE, None)
+        if not state:
             msg = "No registration state found in token info."
             raise ParameterError(msg)
-
-        state = self._deserialize_state(state_json)
 
         # Verify attestation using Fido2Server
         # Response is expected in nested format from client:
@@ -1233,7 +1194,7 @@ class Fido2TokenClass(TokenClass):
             resident_key=resident_key,
         )
 
-        self.addToTokenInfo(TOKEN_INFO_CREDENTIAL, cred.to_json())
+        self.addToTokenInfo(TOKEN_INFO_CREDENTIAL, cred.to_dict())
         self.addToTokenInfo(TOKEN_INFO_PHASE, TokenPhase.AUTHENTICATION)
         self.addToTokenInfo(TOKEN_INFO_COUNTER, str(auth_data.counter))
 
@@ -1438,13 +1399,11 @@ class Fido2TokenClass(TokenClass):
             user_verification=uv_requirement,
         )
 
-        # Serialize state for later verification (contains challenge + user_verification)
-        state_json = self._serialize_state(state)
-
-        # Build challenge data with serialized state
+        # Build challenge data with the state for later verification
+        # (contains challenge + user_verification)
         sign_request = dict(options_obj.public_key)
         challenge_data = {
-            "challenge": state_json,  # Contains state for authentication_complete
+            "challenge": state,  # Contains state for authentication_complete
             "signrequest": sign_request,
         }
 
@@ -1487,44 +1446,33 @@ class Fido2TokenClass(TokenClass):
 
         for challenge in challenges:
             # Get the saved challenge data
-            saved_challenge_b64 = self._parse_challenge_data(challenge)
-            if not saved_challenge_b64:
+            challenge_state = self._parse_challenge_data(challenge)
+            if not challenge_state:
                 log.warning(
                     "Could not find challenge data for challenge %s", challenge.transid
                 )
                 continue
 
             # Verify the assertion response
-            _otp_counter = self._verify_assertion(passw, saved_challenge_b64, user=user)
+            _otp_counter = self._verify_assertion(passw, challenge_state, user=user)
             if _otp_counter >= 0:
                 matching_challenges.append(challenge)
                 otp_counter = _otp_counter
 
         return otp_counter, matching_challenges
 
-    def _verify_assertion(self, passw, saved_challenge_state_json, user=None):
+    def _verify_assertion(self, passw, challenge_state, user=None):
         """
         Verify a FIDO2 assertion response using Fido2Server.
 
         :param passw: the JSON assertion response string
-        :param saved_challenge_state_json: the JSON-serialized state from Fido2Server
+        :param challenge_state: the stored state from Fido2Server
         :param user: user object for policy lookup
         :return: 0 on success, -1 on failure
         """
 
         # Check if the authenticator is allowed by policy before doing any verification
         if not self._is_authenticator_allowed_for_authentication(user):
-            return -1
-
-        # Deserialize state from challenge
-        try:
-            state = self._deserialize_state(saved_challenge_state_json)
-        except ParameterError as exx:
-            log.warning(
-                "Failed to parse FIDO2 challenge state for token %s: %r",
-                self.getSerial(),
-                exx,
-            )
             return -1
 
         # Parse assertion response
@@ -1550,7 +1498,7 @@ class Fido2TokenClass(TokenClass):
         # {id, rawId, type, response: {clientDataJSON, authenticatorData, signature}}
         try:
             self._get_fido2_server().authenticate_complete(
-                state, [attested_cred], resp_data
+                challenge_state, [attested_cred], resp_data
             )
         except ValueError as exx:
             log.warning(
@@ -1606,7 +1554,7 @@ class Fido2TokenClass(TokenClass):
         cred.backed_up = auth_data.is_backed_up()
         user_verified = auth_data.is_user_verified()
 
-        self.addToTokenInfo(TOKEN_INFO_CREDENTIAL, cred.to_json())
+        self.addToTokenInfo(TOKEN_INFO_CREDENTIAL, cred.to_dict())
 
         # Track last authentication timestamp and user verification status
         now_iso = datetime.now(UTC).isoformat()
@@ -1647,8 +1595,8 @@ class Fido2TokenClass(TokenClass):
         # Find the matching challenge
         for challenge in challenges:
             if challenge.transid == transactionid:
-                saved_challenge_b64 = self._parse_challenge_data(challenge)
-                if saved_challenge_b64:
-                    return self._verify_assertion(anOtpVal, saved_challenge_b64)
+                challenge_state = self._parse_challenge_data(challenge)
+                if challenge_state:
+                    return self._verify_assertion(anOtpVal, challenge_state)
 
         return -1

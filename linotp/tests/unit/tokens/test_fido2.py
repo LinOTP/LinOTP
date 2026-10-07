@@ -3,11 +3,13 @@
 from types import SimpleNamespace
 from unittest.mock import patch
 
+import pytest
 from fido2.webauthn import AuthenticatorAttachment
 
 from linotp.tokens.fido2token.fido2token import (
     Fido2Credential,
     Fido2RegistrationResponse,
+    Fido2TokenClass,
     _get_aggregated_fido2_policy_values,
     compute_authenticator_types_options,
 )
@@ -120,6 +122,87 @@ def test_fido2_credential_loads_without_transports_for_existing_tokens():
     assert cred.resident_key is False
     assert cred.to_dict()["transports"] == []
     assert cred.to_dict()["resident_key"] is False
+
+
+# ---------------------------------------------------------------------- --
+# _get_stored_credential tests
+# ---------------------------------------------------------------------- --
+
+_CREDENTIAL_DATA = {
+    "credential_id": "credential-id",
+    "public_key": "public-key",
+    "sign_count": 3,
+    "rp_id": "localhost",
+    "aaguid": "f1d0f1d0-f1d0-f1d0-f1d0-f1d0f1d0f1d0",
+    "attestation_format": "none",
+    "public_key_algorithm": -7,
+    "auth_data_flags": 65,
+    "backup_eligible": False,
+    "backed_up": False,
+    "user_verified_at_reg": False,
+    "attestation_cert_b64": None,
+    "attestation_cert_info": None,
+    "registered_at": "2026-04-30T00:00:00+00:00",
+    "transports": ["nfc", "usb"],
+    "resident_key": True,
+}
+
+
+def _token_stub(stored_value):
+    """Minimal stand-in exposing what _get_stored_credential touches."""
+    return SimpleNamespace(
+        getFromTokenInfo=lambda key, default=None: stored_value,
+        getSerial=lambda: "FIDO20001",
+    )
+
+
+def test_get_stored_credential_from_nested_object():
+    """The credential is stored as a nested JSON object."""
+    cred = Fido2TokenClass._get_stored_credential(_token_stub(_CREDENTIAL_DATA))
+
+    assert cred.credential_id == "credential-id"
+    assert cred.sign_count == 3
+    assert cred.transports == ["nfc", "usb"]
+
+
+def test_get_stored_credential_without_credential():
+    with pytest.raises(ValueError, match="No FIDO2 credential stored"):
+        Fido2TokenClass._get_stored_credential(_token_stub(None))
+
+
+# ---------------------------------------------------------------------- --
+# _parse_challenge_data tests
+# ---------------------------------------------------------------------- --
+
+
+def _challenge_stub(data):
+    """Stand-in for Challenge.get(), which dispatches "data" to getData()."""
+    return SimpleNamespace(get=lambda key, fallback=None: data)
+
+
+def test_parse_challenge_data_returns_the_stored_state():
+    state = {"challenge": "Y2hhbGxlbmdl", "user_verification": "preferred"}
+    challenge = _challenge_stub({"challenge": state, "signrequest": {}})
+
+    assert Fido2TokenClass._parse_challenge_data(challenge) == state
+
+
+def test_parse_challenge_data_without_a_state():
+    challenge = _challenge_stub({"signrequest": {}})
+
+    assert Fido2TokenClass._parse_challenge_data(challenge) is None
+
+
+def test_parse_challenge_data_of_an_empty_data_column():
+    """getData() hands back "" for an empty column, not None or {}."""
+    assert Fido2TokenClass._parse_challenge_data(_challenge_stub("")) is None
+
+
+def test_parse_challenge_data_of_an_undecodable_data_column():
+    """getData() hands back the raw string when it is not JSON."""
+    challenge = _challenge_stub("some opaque string")
+
+    assert Fido2TokenClass._parse_challenge_data(challenge) is None
 
 
 # ---------------------------------------------------------------------- --

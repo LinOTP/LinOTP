@@ -1342,6 +1342,11 @@ class TokenClass(TokenPropertyMixin, TokenValidityMixin):
                 ldict[key] = f"{val!r}"
         return ldict
 
+    # token info entries that are internal protocol metadata. They are withheld
+    # from the selfservice token list; administrative surfaces still show them.
+    # This is not a confidentiality boundary: secrets never enter token info.
+    internal_token_info_keys: tuple[str, ...] = ()
+
     def get_enrollment_status(self):
         return {"status": "completed"}
 

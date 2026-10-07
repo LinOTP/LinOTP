@@ -665,10 +665,11 @@ class TestUserserviceEnrollment(TestController):
             params={"serial": serial, "tokeninfo_format": "json"},
         )
         token_data = json.loads(response.body)["result"]["value"]["data"][0]
-        stored_credential = json.loads(
-            token_data["LinOtp.TokenInfo"]["fido2_credential"]
-        )
+        stored_credential = token_data["LinOtp.TokenInfo"]["fido2_credential"]
 
+        assert isinstance(stored_credential, dict), (
+            "the credential must be a nested JSON object, not an encoded string"
+        )
         assert stored_credential["transports"] == ["nfc", "usb"]
 
     def test_fido2_with_tokenlabel(self):

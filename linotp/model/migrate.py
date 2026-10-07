@@ -28,6 +28,7 @@ database schema migration hook
 """
 
 import binascii
+import json
 import logging
 from typing import Any
 
@@ -375,6 +376,7 @@ class Migration:
         "3.2.2.0",
         "3.2.3.0",
         "4.0.0.0",
+        "4.0.0.1",
     ]
     #!! the migration number should be the same as the linotp release number /
     # debian release number !!
@@ -969,6 +971,48 @@ class Migration:
             "Migration to 4.0.0 - webprovision policies are updated and OATHTokenSupport config item is removed"
         )
 
+    def migrate_4_0_0_1(self):
+        """
+        Migration to 4.0.0.1 - unwrap the JSON-encoded fido2 token info values.
+
+        The fido2 credential and the registration state used to be written into
+        the token info as JSON-encoded strings, so they ended up double-encoded
+        and were exposed as opaque strings by every JSON API. They are stored as
+        nested JSON objects now.
+
+        Open fido2 challenges carry the same double-encoded state in their
+        signed data, which cannot be rewritten without re-signing them, so they
+        are dropped instead. Affected users have to restart authentication.
+        """
+
+        migrated_tokens = 0
+
+        fido2_tokens = model.Token.query.filter(model.Token.LinOtpTokenType == "fido2")
+
+        for token in fido2_tokens.all():
+            token_info, changed = Migration_4_0_0_1.unwrap_json_encoded_values(
+                token.getInfo()
+            )
+            if changed:
+                log.info(
+                    "Unwrapping fido2 token info of token %r",
+                    token.LinOtpTokenSerialnumber,
+                )
+                token.setInfo(token_info)
+                model.db.session.add(token)
+                migrated_tokens += 1
+
+        dropped_challenges = model.Challenge.query.filter(
+            model.Challenge.tokenserial.in_(
+                fido2_tokens.with_entities(model.Token.LinOtpTokenSerialnumber)
+            )
+        ).delete(synchronize_session=False)
+
+        return True, (
+            f"Migration to 4.0.0.1 - token info of {migrated_tokens} fido2 token(s) "
+            f"unwrapped, {dropped_challenges} open fido2 challenge(s) dropped"
+        )
+
 
 def _parse_action(action_value):
     # to avoid circular import import lazily parse_action
@@ -1030,3 +1074,56 @@ class Migration_4_0_0_0:
             format_single_action(policy_action) for policy_action in changed_policies
         )
         return result, True
+
+
+class Migration_4_0_0_1:
+    """This static class is a namespace for all migration functions
+    that are related to the migration to 4.0.0.1
+    """
+
+    # token info keys whose value used to be a JSON-encoded string
+    JSON_ENCODED_KEYS = ("fido2_credential", "registration_challenge")
+
+    @staticmethod
+    def unwrap_json_encoded_values(token_info: str) -> tuple[str | None, bool]:
+        """
+        Replace JSON-encoded string values in a token info by nested objects.
+
+        Only the keys that were ever stored double-encoded are touched, so a
+        token info that happens to hold a string starting with "{" for any
+        other key is left alone.
+
+        :param token_info: the token info as stored in the token
+        :return: the updated token info and a flag whether it was changed
+        """
+
+        try:
+            info = json.loads(token_info or "{}")
+        except ValueError:
+            log.warning("Skipping token with unreadable token info")
+            return None, False
+
+        if not isinstance(info, dict):
+            return None, False
+
+        changed = False
+
+        for key in Migration_4_0_0_1.JSON_ENCODED_KEYS:
+            value = info.get(key)
+            if not isinstance(value, str):
+                continue
+
+            try:
+                unwrapped = json.loads(value)
+            except ValueError:
+                log.warning("Skipping unreadable token info entry %r", key)
+                continue
+
+            if isinstance(unwrapped, dict):
+                info[key] = unwrapped
+                changed = True
+
+        if not changed:
+            return None, False
+
+        return json.dumps(info), True
