@@ -102,6 +102,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update `urllib3` to version 2.7.0 to address multiple known vulnerabilities:
   - CVE-2025-66418, CVE-2025-66471, CVE-2026-44431, CVE-2026-44432
 - Update SQLAlchemy library to version 2.x
+- Fix a reflected cross-site scripting vulnerability in the HTML error page that is returned
+  when the `httperror` parameter is given: request-supplied values are now escaped before being
+  rendered. Takes effect only when a user opens a crafted request within their own authenticated
+  session; LinOTP itself never produces or stores such a request.
+- Fix a reflected cross-site scripting vulnerability in the HTML challenge response that is
+  returned when `qr=html` is requested: request-supplied values are now escaped before being
+  rendered. Takes effect only when a user opens a crafted request within their own authenticated
+  session; LinOTP itself never produces or stores such a request.
 
 ### Removed
 

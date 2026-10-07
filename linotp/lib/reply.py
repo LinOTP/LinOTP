@@ -32,6 +32,7 @@ import logging
 import urllib.error
 import urllib.parse
 import urllib.request
+from html import escape
 from urllib.parse import parse_qs
 
 import qrcode
@@ -70,10 +71,10 @@ standard_http_errors = {
 resp = """
 <html>
 <head>
-<title>%s %s</title>
+<title>%s</title>
 </head>
 <body>
-<h1>%s %s</h1>
+<h1>%s</h1>
 %s
 <br>
 <br>
@@ -244,7 +245,7 @@ def sendError(exception: Exception | str, id: int = 1):
         code = error_code
         status = f"{error_code} {reason}"
         desc = f"[{get_version()}] {errId}: {errDesc}"
-        ret = resp % (code, status, code, status, desc)
+        ret = resp % (status, status, escape(desc))
 
         return Response(response=ret, status=code, mimetype="text/html")
 
@@ -648,16 +649,17 @@ def create_html(data, width=0, alt=None, list_id="challenge_data"):
 
     if alt is not None:
         if isinstance(alt, str):
-            alt_str = f"<p>{alt}</p>"
+            alt_str = f"<p>{escape(alt)}</p>"
         elif isinstance(alt, dict):
             list_items = [
-                f'<li> {key}: <span class="{key}">{value}</span> </li>'
+                f"<li> {escape(str(key))}: "
+                f'<span class="{escape(str(key))}">{escape(str(value))}</span> </li>'
                 for key, value in alt.items()
             ]
-            alt_str = f'<ul id="{list_id}">{"".join(list_items)}</ul>'
+            alt_str = f'<ul id="{escape(list_id)}">{"".join(list_items)}</ul>'
         elif isinstance(alt, list):
-            list_items = [f"<li> {item} </li>" for item in alt]
-            alt_str = f'<ul id="{list_id}">{"".join(list_items)}</ul>'
+            list_items = [f"<li> {escape(str(item))} </li>" for item in alt]
+            alt_str = f'<ul id="{escape(list_id)}">{"".join(list_items)}</ul>'
 
     ret_html = f"<html><body><div>{img}{alt_str}</div></body></html>"
 

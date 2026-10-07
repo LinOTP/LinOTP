@@ -35,10 +35,32 @@ in case of an error.
 """
 
 import logging
+from html import escape
 
 from linotp.tests import TestController
 
 log = logging.getLogger(__name__)
+
+
+def test_httperror_escapes_reflected_input(
+    create_common_resolvers, create_common_realms, scoped_authclient
+):
+    """A crafted GET URL must render invalid page input as text, not HTML."""
+    payload = "<img src=x onerror=alert(document.domain)>"
+    with scoped_authclient(verify_jwt=True) as client:
+        login = client.post(
+            "/admin/login", data={"username": "admin", "password": "Test123!"}
+        )
+        assert login.json["result"]["value"] is True
+
+        response = client.get(
+            "/api/v2/tokens/", query_string={"page": payload, "httperror": "400"}
+        )
+
+    assert response.status_code == 400
+    assert response.mimetype == "text/html"
+    assert payload not in response.text
+    assert escape(payload) in response.text
 
 
 class TestHTTPError(TestController):
@@ -265,7 +287,7 @@ class TestHTTPError(TestController):
         response = self._make_admin_request_custom_status("init", params, 444)
 
         assert "text/html" in response.content_type.split(";")
-        assert "getUserId failed: no user >doesnotexist" in response.body
+        assert "getUserId failed: no user &gt;doesnotexist" in response.body
 
     def test_no_GET_for_admin_init(self):
         """
