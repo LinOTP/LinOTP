@@ -30,7 +30,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LinOTP 3\n"
 "Report-Msgid-Bugs-To: info@linotp.de\n"
-"POT-Creation-Date: 2026-05-04 17:27+0200\n"
+"POT-Creation-Date: 2026-10-09 10:40+0200\n"
 "PO-Revision-Date: 2025-09-16 10:38+0200\n"
 "Last-Translator: Anselm Lingnau <anselm.lingnau@netgo.de>\n"
 "Language-Team: German <support@linotp.de>\n"
@@ -1209,8 +1209,8 @@ msgstr ""
 
 msgid ""
 "If you are interested in our MFA platform using LinOTP at its core and want "
-"to know more, feel free to <a href='https://linotp.de/en/"
-"contact.html'>contact us</a>."
+"to know more, feel free to <a href='https://linotp.de/en/contact."
+"html'>contact us</a>."
 msgstr ""
 "Falls Sie sich für die die MFA-Plattform mit LinOTP als Kern interessieren "
 "und weitere Informationen wünschen, können Sie uns gerne <a href=‘https://"
@@ -1866,6 +1866,9 @@ msgstr ""
 
 msgid "Policies"
 msgstr "Richtlinien"
+
+msgid "Policies could not be checked."
+msgstr "Die Richtlinien konnten nicht geprüft werden."
 
 #, python-format
 msgid "Policy %s must have a value"
@@ -2752,6 +2755,10 @@ msgstr ""
 
 msgid "The user or usergroup the policy should apply to"
 msgstr "Die Benutzer eine Gruppe für die die Richtlinie gelten soll"
+
+#, python-brace-format
+msgid "The user's realm `{0}` is not assigned to the token."
+msgstr "Der Realm `{0}` des Benutzers ist dem Token nicht zugewiesen."
 
 msgid ""
 "The users of the csv file will update an existing or populate a new managed "
