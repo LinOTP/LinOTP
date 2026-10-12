@@ -212,14 +212,18 @@ class TokenIterator:
         )
 
         #  care for the result sort order
+        #  Tokens with the same value in the sort column would otherwise be
+        #  returned in an arbitrary order, which breaks the paging (tokens
+        #  missing or repeated across pages). Therefore the primary key is
+        #  appended as secondary sort criteria.
         if sortdir is not None and sortdir == "desc":
-            order = order.desc()
+            order = (order.desc(), Token.LinOtpTokenId.desc())
         else:
-            order = order.asc()
+            order = (order.asc(), Token.LinOtpTokenId.asc())
 
         #  care for the result pageing
         if page is None:
-            self.tokens = Token.query.filter(condition).order_by(order).distinct()
+            self.tokens = Token.query.filter(condition).order_by(*order).distinct()
             self.total_token_count = self.tokens.count()
 
             log.debug(
@@ -246,7 +250,7 @@ class TokenIterator:
 
         paginated_tokens: Pagination = (
             Token.query.filter(condition)
-            .order_by(order)
+            .order_by(*order)
             .distinct()
             .paginate(page=requested_page, per_page=pagesize)
         )

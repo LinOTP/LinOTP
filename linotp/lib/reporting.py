@@ -140,7 +140,9 @@ def get_last_token_count_before_date(realm, before_date=None, status="active"):
                 Reporting.parameter == status,
             )
         )
-        .order_by(Reporting.timestamp.desc())
+        # several counts may be recorded in the same second, so the id
+        # picks the most recent of them
+        .order_by(Reporting.timestamp.desc(), Reporting.id.desc())
         .first()
     )
 
@@ -271,13 +273,17 @@ class ReportingIterator:
             order = Reporting.timestamp
 
         #  care for the result sort order
+        #  Rows with the same value in the sort column would otherwise be
+        #  returned in an arbitrary order, which breaks the paging (rows
+        #  missing or repeated across pages). Therefore the primary key is
+        #  appended as secondary sort criteria.
         if sortdir is not None and sortdir == "desc":
-            order = order.desc()
+            order = (order.desc(), Reporting.id.desc())
         else:
-            order = order.asc()
+            order = (order.asc(), Reporting.id.asc())
 
         # query database for all reports
-        self.reports = Reporting.query.filter(*conds).order_by(order).distinct()
+        self.reports = Reporting.query.filter(*conds).order_by(*order).distinct()
         self.report_num = self.reports.count()
         self.pagesize = self.report_num
 
