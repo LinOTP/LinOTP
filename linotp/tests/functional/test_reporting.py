@@ -381,7 +381,7 @@ class TestReportingController(TestController):
         from       - to           |realm:      | t| ac|nac| as|uas|
         -----------+--------------+--------------------------------------
         2020-02-21 - 2020-02-22   | mydefrealm | 1| 1 | N | 1 | N
-        2020-02-21 - 2020-02-22   | mymixrealm | 1| 1 | 0 | 1 | 0
+        2020-02-21 - 2020-02-22   | mymixrealm | 1| 0 | 1 | 1 | 0
 
 
         """
@@ -619,12 +619,13 @@ class TestReportingController(TestController):
                 "unassigned": 0,
                 "inactive": 0,
             }
+            # token 0001 was enrolled and immediately after deactivated
             assert realms["mymixrealm"]["maxtokencount"] == {
                 "total": 1,
-                "active": 1,
+                "active": 0,
                 "assigned": 1,
                 "unassigned": 0,
-                "inactive": 0,
+                "inactive": 1,
             }
 
     def test_reporting_maximum(self):

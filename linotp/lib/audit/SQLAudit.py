@@ -431,17 +431,23 @@ class Audit(AuditBase):
                 order = AuditTable.clearance_level
 
         # build the ordering
-        order_dir = asc(order)
+        # Entries with the same value in the sort column would otherwise be
+        # returned in an arbitrary order, which breaks the paging (entries
+        # missing or repeated across pages). Therefore the primary key is
+        # appended as secondary sort criteria.
+        order_dir = (asc(order), asc(AuditTable.id))
 
         if rp_dict.get("sortorder"):
             sorto = rp_dict.get("sortorder").lower()
             if sorto == "desc":
-                order_dir = desc(order)
+                order_dir = (desc(order), desc(AuditTable.id))
 
         if condition is None:
-            audit_q = db.session.query(AuditTable).order_by(order_dir)
+            audit_q = db.session.query(AuditTable).order_by(*order_dir)
         else:
-            audit_q = db.session.query(AuditTable).filter(condition).order_by(order_dir)
+            audit_q = (
+                db.session.query(AuditTable).filter(condition).order_by(*order_dir)
+            )
 
         # FIXME? BUT THIS IS SO MUCH SLOWER!
         # FIXME: Here desc() ordering also does not work! :/

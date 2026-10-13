@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [4.0.0-dev0] - UNRELEASED
+## [4.0.0-rc0] - 2026-10-09
 
 ### Added
 
@@ -52,11 +52,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     authentication, LinOTP includes the stored transports in `allowCredentials`
     so browsers can guide users to the appropriate authenticator.
   - Offline mode support for FIDO2 tokens.
-- unhandled errors are now logged with traceback and returned in the response
+- Unhandled errors are now logged with a traceback and returned in the response
 - Manage-UI shows info-box (success/error) for operation `Set PIN`
 - The *Check Policy* dialog in the Manage-UI tells the administrator why a check could not be answered, e.g. when the request was rejected or the server did not respond
 - Caching of UserInfo per request to decrease request time of e.g. `/validate/check` to about half
-- a new `setOCRAPIN` admin policy is introduced that works exactly like `setMOTPPIN` and can only be used for ocra2 tokens
+- A new `setOCRAPIN` admin policy is introduced that works exactly like `setMOTPPIN` and can only be used for ocra2 tokens
 - Activation challenges for QR and Push tokens can be triggered by users via `/userservice/activate_init`.
   This allows for a better UX, as an authenticated user does not have to provide their credentials again (current workflow `/validate`).
   Users need to have selfservice policies `activate_PushToken` or `activate_QRToken` respectively to be allowed to do so.
@@ -80,12 +80,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `userservice/enroll` response for HOTP/TOTP/mOTP tokens now includes a new field: `detail.enrollment_url`, which currently mirrors `detail.googleurl` property
 - `userservice/enroll` requests for mOTP tokens may now omit the `otpkey` parameter, which will cause a random `otpkey` to be assigned by LinOTP. Clients can find out about this from the response.
 - Setting `WORKER_THREADS` to `auto` (or not setting it at all) will use “2 \* number of CPU cores + 1” threads.
-- The `userservice/context` and `userservice/pre_context` endpoints no longer expose internal realm or resolver details. They now only return the necessary fields (`realmname` and `default`, which is now a boolean) to improve security. This is breaking change.
+- The `userservice/context` and `userservice/pre_context` endpoints no longer expose internal realm or resolver details. They now only return the necessary fields (`realmname` and `default`, which is now a boolean) to improve security. This is a breaking change.
 - Selfservice login policies `mfa_login`, `autoassignment`, and `autoenrollment` are now evaluated with the authenticated user and realm, so realm-/user-scoped policies apply only within their scope; global policies are unaffected. As a result, `userservice/pre_context` no longer advertises these settings. This is a breaking change: make the policy global if it should apply to everyone.
 - The texts in demo license are updated.
 - API: resolver names no longer impose a minimum length, bringing them to parity with realm names (a name just needs to be non-empty and use letters, numbers, `_` or `-`). The Manage-UI still enforces a four-character minimum client-side.
 - Policies in the legacy `ocra` and `ocra2` scopes are no longer exempted from policy action validation. The ocra (v1) token type was removed in 3.0, and the ocra2 token type never used a policy scope `ocra2` at all. Saving such a policy now fails validation and it should be deleted instead.
 - The token info dialog of the Manage-UI breaks object and list values down into nested tables at any depth instead of showing a Python representation, and shortens overly long values to keep the dialog readable. The `scope` of a rollout token is now listed as a `path` entry of `userservice` rather than as `{'path': ['userservice']}`. The FIDO2 credential and the FIDO2 registration and authentication state are returned as JSON objects by `admin/show` with `tokeninfo_format=json` and `admin/checkstatus`.
+- CLI commands log with the verbosity given on the command line (`-q`, `-v`, `-vv`, `-vvv`); the default is `ERROR`.
 
 ### Security
 
@@ -131,23 +132,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - The *Check Policy* dialog in the Manage-UI uses standard json formatting of the matching policy now: it is no longer broken apart at the commas inside a value, and long values wrap instead of horizontally scrolling the dialog.
-- filter audit trail by token type
+- Filter audit trail by token type
 - Don't reject empty string as `pin` when `otp_pin_contents=+`
 - To set the motp pin via `/admin/setPin`, the admin policy `setMOTPPIN` is sufficient
 - Setting OCRA PIN via Manage-UI
 - `setMOTPPIN` admin policy only allows setting userpin for motp tokens, not ocra2 or any other token type
 - If `otppin=1` policy is set when trying to enrol an FIDO U2F token, assume `otppin=0`
   instead
-- If `setOTPPIN` and `otp_pin_random` policies are set during selfservice enroll, the pin will no longer be
-  randomized
-- comply with policy `tokencount` in userservice for enroll, enable and assign
+- Comply with policy `tokencount` in userservice for enroll, enable and assign
 - Enabling an already enabled token does not raise a Policy exception due to `tokencount` anymore
-- English and german text for license fields in Manage-UI
-- multi-challenge request does not fail entirely if one challenge fails
+- English and German text for license fields in Manage-UI
+- Multi-challenge request does not fail entirely if one challenge fails
 - The `LINOTP_CONFIG` environment variable correctly sets the selected configuration environment.
 - Exceptions in AdminController properly return error responses instead of 500 Internal Server Errors.
 - CLI commands with `--help` work without initializing LinOTP, therefore without requiring a valid configuration.
-- CLI commands failing due to invalid configurations now return a meaningfull error message instead of stacktrace.
+- CLI commands failing due to invalid configurations now return a meaningful error message instead of a stacktrace.
 - Audit entries for failed `userservice/enroll` requests now include the reason in `info`.
 - The `linotp support` command now works correctly again.
 - Fixed an issue where realm- or user-scoped policies were incorrectly applied when no user or realm context was present.

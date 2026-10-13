@@ -2055,8 +2055,8 @@ class UserserviceController(BaseController):
                     "status": true,
                     "value": true
                 },
-                "version": "LinOTP 4.0.0.dev0",
-                "versionNumber": "4.0.0.dev0",
+                "version": "LinOTP 3.4.5",
+                "versionNumber": "3.4.5",
                 "id": 0,
                 "detail": {
                     "transactionid": "60310817541239899",
@@ -2131,8 +2131,8 @@ class UserserviceController(BaseController):
                         "status": true,
                         "value": true
                     },
-                    "version": "LinOTP 4.0.0.dev0",
-                    "versionNumber": "4.0.0.dev0",
+                    "version": "LinOTP 3.4.5",
+                    "versionNumber": "3.4.5",
                     "id": 0,
                     "detail": {
                         "transactions": {
