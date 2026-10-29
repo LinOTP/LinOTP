@@ -102,10 +102,9 @@ def add_column(engine: Engine, table_name: str, column: sa.Column):
     c_column_name = column.compile(dialect=engine.dialect)
     c_column_type = column.type.compile(engine.dialect)
 
-    with engine.connect() as connection:
-        connection.execute(
-            f"ALTER TABLE {c_table_name} ADD COLUMN {c_column_name} {c_column_type}"
-        )
+    model.db.session.execute(
+        text(f"ALTER TABLE {c_table_name} ADD COLUMN {c_column_name} {c_column_type}")
+    )
 
 
 def add_index(engine: Engine, table_name: str, column: sa.Column) -> None:
@@ -131,10 +130,9 @@ def add_index(engine: Engine, table_name: str, column: sa.Column) -> None:
     index_name = f"ix_{table_name}_{column.name}"
     c_index_name = _compile_name(index_name, dialect=engine.dialect)
 
-    with engine.connect() as connection:
-        connection.execute(
-            f"CREATE INDEX {c_index_name} ON {c_table_name} ( {c_column_name} )"
-        )
+    model.db.session.execute(
+        text(f"CREATE INDEX {c_index_name} ON {c_table_name} ( {c_column_name} )")
+    )
 
 
 def drop_column(engine: Engine, table_name: str, column: sa.Column) -> None:
@@ -154,8 +152,9 @@ def drop_column(engine: Engine, table_name: str, column: sa.Column) -> None:
     c_table_name = _compile_name(table_name, dialect=engine.dialect)
 
     c_column_name = column.compile(dialect=engine.dialect)
-    with engine.connect() as connection:
-        connection.execute(f"ALTER TABLE {c_table_name} drop COLUMN {c_column_name} ")
+    model.db.session.execute(
+        text(f"ALTER TABLE {c_table_name} drop COLUMN {c_column_name} ")
+    )
 
 
 def re_encode(
