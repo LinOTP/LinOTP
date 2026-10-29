@@ -25,7 +25,15 @@
 
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, Integer, Sequence, Unicode
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    Integer,
+    Sequence,
+    Unicode,
+    UnicodeText,
+)
 
 from linotp.model import db, implicit_returning
 from linotp.model.tokenRealm import TokenRealmSchema
@@ -54,7 +62,7 @@ class TokenSchema(db.Model):
     )
 
     LinOtpTokenType = Column("LinOtpTokenType", Unicode(30), default="HMAC", index=True)
-    LinOtpTokenInfo = Column("LinOtpTokenInfo", Unicode(2000), default="")
+    LinOtpTokenInfo = Column("LinOtpTokenInfo", UnicodeText, default="")
     # # encrypt
     LinOtpTokenPinUser = Column("LinOtpTokenPinUser", Unicode(512), default="")
     # # encrypt
