@@ -17,6 +17,20 @@ wheels = [
 ]
 
 [[package]]
+name = "alembic"
+version = "1.20.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "mako" },
+    { name = "sqlalchemy" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/93/1c/00909e0fbebad2121d916fdcab044cae988146680e9ee4387ba25fef8747/alembic-1.20.1.tar.gz", hash = "sha256:83490def1f723413db5096591f7609ac52544805be93849170088ed04f5a2e0b", size = 2103576, upload-time = "2026-10-22T03:24:35.93Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/11/3c/8740f5b4e1bd57333e4f84265b9b6363da4f7cf70f5622dd1e2fde7a0bd5/alembic-1.20.1-py3-none-any.whl", hash = "sha256:9970712cfb81ea26c8658d378aaa5b8f6ff9146e5bb111d70497c164016cf598", size = 270355, upload-time = "2026-10-22T03:24:37.667Z" },
+]
+
+[[package]]
 name = "argparse"
 version = "1.4.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1168,6 +1182,7 @@ wheels = [
 name = "linotp"
 source = { editable = "." }
 dependencies = [
+    { name = "alembic" },
     { name = "bcrypt" },
     { name = "beaker" },
     { name = "click" },
@@ -1242,6 +1257,7 @@ translations = [
 
 [package.metadata]
 requires-dist = [
+    { name = "alembic" },
     { name = "bcrypt", specifier = "<5.0" },
     { name = "beaker" },
     { name = "click", specifier = "<8.2" },

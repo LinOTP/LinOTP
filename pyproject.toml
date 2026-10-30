@@ -23,6 +23,7 @@ classifiers = [
 ]
 # Core dependencies
 dependencies = [
+  "alembic",
   "bcrypt<5.0", # Pinned due to `Passing hashpw a password longer than 72 bytes now raises a ValueError`
   "beaker",
   "click<8.2", # Click is pinned, because 8.2 is not compatible with Flask 2.1.x.
