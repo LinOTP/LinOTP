@@ -3001,7 +3001,7 @@ class UserserviceController(BaseController):
             # verify enrollment status is not complete
             token_obj = get_token(serial)
             enrollment_status = token_obj.get_enrollment_status()
-            if enrollment_status.get("status") == "complete":
+            if enrollment_status.get("status") == "completed":
                 msg = f"Token {serial} is already active and paired."
                 raise ParameterError(msg)
 
