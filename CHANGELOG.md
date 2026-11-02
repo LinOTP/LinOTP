@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.0-rc1] - UNRELEASED
+
+### Changed
+
+- The token info column (`Token.LinOtpTokenInfo`) is no longer limited to 2000
+  characters. The database migration changes its type in place
+  (`ALTER TABLE`), so the database user used for `linotp init database` needs
+  the permission to alter tables.
+
+### Fixed
+
+- FIDO2 enrollment no longer fails with authenticators that send a large
+  attestation certificate (e.g. Windows Hello / TPM), which exceeded the size
+  of the token info column.
+- FIDO2: a signature counter of 0 after a counter > 0 is now detected as a
+  cloned authenticator and the token is deactivated.
+
 ## [4.0.0-rc0] - 2026-10-09
 
 ### Added

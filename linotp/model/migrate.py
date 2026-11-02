@@ -33,6 +33,8 @@ import logging
 from typing import Any
 
 import sqlalchemy as sa
+from alembic.migration import MigrationContext
+from alembic.operations import Operations
 from flask import current_app
 from sqlalchemy import inspect, text
 from sqlalchemy.engine import Engine
@@ -100,10 +102,9 @@ def add_column(engine: Engine, table_name: str, column: sa.Column):
     c_column_name = column.compile(dialect=engine.dialect)
     c_column_type = column.type.compile(engine.dialect)
 
-    with engine.connect() as connection:
-        connection.execute(
-            f"ALTER TABLE {c_table_name} ADD COLUMN {c_column_name} {c_column_type}"
-        )
+    model.db.session.execute(
+        text(f"ALTER TABLE {c_table_name} ADD COLUMN {c_column_name} {c_column_type}")
+    )
 
 
 def add_index(engine: Engine, table_name: str, column: sa.Column) -> None:
@@ -129,10 +130,9 @@ def add_index(engine: Engine, table_name: str, column: sa.Column) -> None:
     index_name = f"ix_{table_name}_{column.name}"
     c_index_name = _compile_name(index_name, dialect=engine.dialect)
 
-    with engine.connect() as connection:
-        connection.execute(
-            f"CREATE INDEX {c_index_name} ON {c_table_name} ( {c_column_name} )"
-        )
+    model.db.session.execute(
+        text(f"CREATE INDEX {c_index_name} ON {c_table_name} ( {c_column_name} )")
+    )
 
 
 def drop_column(engine: Engine, table_name: str, column: sa.Column) -> None:
@@ -152,8 +152,9 @@ def drop_column(engine: Engine, table_name: str, column: sa.Column) -> None:
     c_table_name = _compile_name(table_name, dialect=engine.dialect)
 
     c_column_name = column.compile(dialect=engine.dialect)
-    with engine.connect() as connection:
-        connection.execute(f"ALTER TABLE {c_table_name} drop COLUMN {c_column_name} ")
+    model.db.session.execute(
+        text(f"ALTER TABLE {c_table_name} drop COLUMN {c_column_name} ")
+    )
 
 
 def re_encode(
@@ -377,6 +378,7 @@ class Migration:
         "3.2.3.0",
         "4.0.0.0",
         "4.0.0.1",
+        "4.0.0.2",
     ]
     #!! the migration number should be the same as the linotp release number /
     # debian release number !!
@@ -1011,6 +1013,41 @@ class Migration:
         return True, (
             f"Migration to 4.0.0.1 - token info of {migrated_tokens} fido2 token(s) "
             f"unwrapped, {dropped_challenges} open fido2 challenge(s) dropped"
+        )
+
+    def migrate_4_0_0_2(self):
+        """
+        Migration to 4.0.0.2 - change the token info column to an almost
+        unlimited text.
+
+        The token info used to be limited to 2000 characters, which is exceeded
+        by fido2 tokens that store a large attestation certificate (e.g. Windows
+        Hello / TPM). The column keeps its name and data, only its type changes.
+
+        On MySQL/MariaDB, UnicodeText becomes TEXT, which holds at most 64 KB
+        (roughly 16k characters with utf8mb4).
+        """
+
+        # run on the connection of the migration session: previous migration
+        # steps may hold uncommitted changes on the table, which would block
+        # an ALTER TABLE issued from a separate connection.
+        operations = Operations(
+            MigrationContext.configure(model.db.session.connection())
+        )
+
+        # sqlite can not change a column type, so the batch recreates the
+        # table there and copies the data over; the other databases get an
+        # ALTER TABLE statement.
+        with operations.batch_alter_table("Token") as batch_op:
+            batch_op.alter_column(
+                "LinOtpTokenInfo",
+                type_=sa.types.UnicodeText(),
+                existing_type=sa.types.Unicode(2000),
+                existing_nullable=True,
+            )
+
+        return True, (
+            "Migration to 4.0.0.2 - token info column changed to almost unlimited text"
         )
 
 

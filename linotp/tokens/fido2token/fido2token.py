@@ -1527,8 +1527,11 @@ class Fido2TokenClass(TokenClass):
         prev_counter = int(self.getFromTokenInfo(TOKEN_INFO_COUNTER, "0"))
         new_counter = auth_data.counter
 
-        if new_counter != 0 and new_counter <= prev_counter:
-            # counter of 0 means the authenticator doesn't support counters
+        # WebAuthn §7.2: if the new or the stored counter is not 0, the new one
+        # must be greater. Authenticators without a counter (e.g. synced
+        # passkeys) always send 0 and are not affected, but a counter of 0
+        # after a counter > 0 signals a cloned authenticator.
+        if (new_counter != 0 or prev_counter != 0) and new_counter <= prev_counter:
             log.warning(
                 "FIDO2 counter did not increase for token %s: "
                 "prev=%d, new=%d (possible cloned authenticator!)",
