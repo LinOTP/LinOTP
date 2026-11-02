@@ -57,13 +57,15 @@ def check_maxtoken(method, user, param):
     if method in enroll_methods + assign_methods:
         log.debug("checking maxtokens for user")
 
-        check_maxtoken_for_user(user)
+        check_maxtoken_for_user(user, serial=param.get("serial"))
 
     if method in enroll_methods:
         log.debug("checking maxtokens of user by token type")
 
         type_of_token = param.get("type", "hmac")
-        check_maxtoken_for_user_by_type(user, type_of_token=type_of_token)
+        check_maxtoken_for_user_by_type(
+            user, type_of_token=type_of_token, serial=param.get("serial")
+        )
 
     elif method in assign_methods:
         log.debug("checking maxtokens of user by serial number")
@@ -71,10 +73,12 @@ def check_maxtoken(method, user, param):
         tokens = linotp.lib.token.get_tokens(serial=param["serial"])
         for token in tokens:
             type_of_token = token.type.lower()
-            check_maxtoken_for_user_by_type(user, type_of_token=type_of_token)
+            check_maxtoken_for_user_by_type(
+                user, type_of_token=type_of_token, serial=param["serial"]
+            )
 
 
-def check_maxtoken_for_user(user: User):
+def check_maxtoken_for_user(user: User, serial: str | None = None):
     """
     This internal function checks the number of assigned tokens to a user
     restricted by the policies:
@@ -82,6 +86,8 @@ def check_maxtoken_for_user(user: User):
         "scope = enrollment", action = "maxtoken = <number>"
 
     :param user: to whom the token should belong
+    :param serial: serial of the token in the request - if it already
+                   belongs to the user, it is not counted again
     :raises PolicyException: if maxtoken policy would be violated
     """
 
@@ -97,10 +103,11 @@ def check_maxtoken_for_user(user: User):
     if token_limit is None:
         return
     tokens: list[Any] = linotp.lib.token.get_tokens(user, "")  # type: ignore
-    token_count = len(tokens)
+    already_owned = bool(serial) and serial in (t.getSerial() for t in tokens)
+    token_count = len(tokens) + (0 if already_owned else 1)
 
     # check the maxtoken policy
-    if token_count + 1 > token_limit:
+    if token_count > token_limit:
         error_msg = _(
             "The maximum number of allowed tokens "
             "per user is exceeded. Check the "
@@ -138,7 +145,9 @@ def get_maxtoken_for_user(user: User) -> int | None:
     return result
 
 
-def check_maxtoken_for_user_by_type(user: User, type_of_token: str):
+def check_maxtoken_for_user_by_type(
+    user: User, type_of_token: str, serial: str | None = None
+):
     """
     This internal function checks the number of assigned tokens to a user
     restricted by the policies:
@@ -147,6 +156,8 @@ def check_maxtoken_for_user_by_type(user: User, type_of_token: str):
 
     :param user: to whom the token should belong
     :param type_of_token: which type of token should be enrolled or assigned
+    :param serial: serial of the token in the request - if it already
+                   belongs to the user, it is not counted again
     :raises PolicyException: if maxtoken policy would be violated
     """
 
@@ -160,9 +171,10 @@ def check_maxtoken_for_user_by_type(user: User, type_of_token: str):
         return
 
     tokens: list[Any] = linotp.lib.token.get_tokens(user, token_type=type_of_token)  # type: ignore
-    token_count = len(tokens)
+    already_owned = bool(serial) and serial in (t.getSerial() for t in tokens)
+    token_count = len(tokens) + (0 if already_owned else 1)
 
-    if token_count + 1 > token_limit:
+    if token_count > token_limit:
         error_msg = _(
             "The maximum number of allowed tokens of type %(type)s "
             "per user is exceeded. Check the policies "

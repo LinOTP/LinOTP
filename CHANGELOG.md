@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Policies `maxtoken` and `maxtoken<TYPE>` no longer refuse the pairing of a pending FIDO2 token
+  via `/userservice/fido2_activate_begin`, `/userservice/fido2_activate_finish` or the second
+  `/admin/init` call, as the token was already counted at enrollment
 - FIDO2 enrollment no longer fails with authenticators that send a large
   attestation certificate (e.g. Windows Hello / TPM), which exceeded the size
   of the token info column.
