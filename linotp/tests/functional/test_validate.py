@@ -29,6 +29,7 @@
 
 import binascii
 import contextlib
+import copy
 import hashlib
 import json
 import time
@@ -2248,6 +2249,107 @@ class TestValidateController(TestController):
         assert result_value["value"] is False, (
             f"Expected authentication to fail with wrong key: {response.json}"
         )
+
+    def _enroll_fido2_for_counter_tests(self):
+        """Enroll a FIDO2 token for passthru_user1, return serial and device."""
+
+        policies = [
+            {
+                "name": "enroll_fido2",
+                "action": "enrollFIDO2",
+                "user": "*",
+                "realm": "*",
+                "scope": "selfservice",
+            },
+            {
+                "name": "fido2_rpid",
+                "action": "fido2_rp_id=localhost",
+                "user": "*",
+                "realm": "*",
+                "scope": "enrollment",
+            },
+        ]
+        for pp in policies:
+            response = self.make_system_request("setPolicy", params=pp)
+            assert "false" not in response, response
+
+        auth_user = {
+            "login": "passthru_user1@myDefRealm",
+            "password": "geheim1",
+        }
+        serial, *_, device = self.enroll_fido2_token(auth_user=auth_user)
+        return serial, device
+
+    def _fido2_authenticate(self, device, counter):
+        """Answer a FIDO2 challenge with the given signature counter.
+
+        :return: the authentication result of /validate/check_t
+        """
+
+        params = {"user": "passthru_user1", "realm": "myDefRealm", "pass": ""}
+        response = self.make_validate_request("check", params)
+        detail = response.json["detail"]
+
+        # SoftWebauthnDevice.get() increments the counter before signing
+        device.sign_count = counter - 1
+        assertion_response = device.get(
+            detail["signrequest"], origin="https://localhost"
+        )
+
+        params = {
+            "transactionid": detail["transactionid"],
+            "pass": json.dumps(assertion_response),
+        }
+        response = self.make_validate_request("check_t", params)
+        assert response.json["result"]["status"] is True, response
+        return response.json["result"]["value"]["value"]
+
+    def _fido2_stored_counter(self, serial):
+        response = self.make_admin_request("show", params={"serial": serial})
+        token = response.json["result"]["value"]["data"][0]
+        return int(json.loads(token["LinOtp.TokenInfo"])["counter"])
+
+    def test_fido2_counter_zero_after_positive_counter_is_rejected(self):
+        """A counter of 0 is a clone signal once the stored counter is > 0.
+
+        WebAuthn §7.2 step 22: if the new or the stored counter is not 0 and
+        the new counter is not greater than the stored one, the authenticator
+        may be cloned. A cloned authenticator which always sends 0 must not be
+        accepted, and it must not reset the stored counter.
+        """
+
+        serial, device = self._enroll_fido2_for_counter_tests()
+
+        # the genuine authenticator uses the counter
+        assert self._fido2_authenticate(device, counter=1) is True
+        assert self._fido2_stored_counter(serial) == 1
+
+        # a clone of it always sends counter 0
+        clone = copy.copy(device)
+        assert self._fido2_authenticate(clone, counter=0) is False, (
+            "counter 0 after a stored counter of 1 must be rejected"
+        )
+        assert self._fido2_stored_counter(serial) == 1, (
+            "counter 0 must not reset the stored counter"
+        )
+
+    def test_fido2_authenticator_without_counter_keeps_working(self):
+        """Authenticators without a counter (e.g. synced passkeys) always send 0."""
+
+        serial, device = self._enroll_fido2_for_counter_tests()
+
+        assert self._fido2_authenticate(device, counter=0) is True
+        assert self._fido2_authenticate(device, counter=0) is True
+        assert self._fido2_stored_counter(serial) == 0
+
+    def test_fido2_counter_not_increased_is_rejected(self):
+        """A counter which does not increase is rejected (unchanged behaviour)."""
+
+        serial, device = self._enroll_fido2_for_counter_tests()
+
+        assert self._fido2_authenticate(device, counter=5) is True
+        assert self._fido2_authenticate(device, counter=5) is False
+        assert self._fido2_stored_counter(serial) == 5
 
     def test_fido2_user_verification_policy(self):
         """
