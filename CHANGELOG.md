@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - FIDO2 enrollment no longer fails with authenticators that send a large
   attestation certificate (e.g. Windows Hello / TPM), which exceeded the size
   of the token info column.
+- FIDO2: a signature counter of 0 after a counter > 0 is now detected as a
+  cloned authenticator and the token is deactivated.
 
 ## [4.0.0-rc0] - 2026-10-09
 
