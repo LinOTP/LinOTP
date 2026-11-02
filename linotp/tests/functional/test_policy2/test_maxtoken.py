@@ -30,6 +30,7 @@ Test the maxtoken Policy.
 """
 
 from linotp.tests import TestController
+from linotp.tests.functional.fido2_device import SoftWebauthnDevice
 
 
 class TestPolicyMaxtoken(TestController):
@@ -449,3 +450,124 @@ class TestMaxtokenSelfService(TestController):
         token_limit = token_limit_res[0]
         assert token_limit["max_token"] == 3
         assert token_limit["token_type"] == "pw"
+
+
+class TestMaxtokenFido2Pairing(TestController):
+    """
+    The pairing of a pending fido2 token must not be refused by the
+    maxtoken policy, as the token was already counted at enrollment.
+    """
+
+    user = "passthru_user1@myDefRealm"
+    max_token_msg = "The maximum number of allowed tokens per user is exceeded"
+
+    def setUp(self):
+        TestController.setUp(self)
+        self.delete_all_policies()
+        self.delete_all_token()
+        self.delete_all_realms()
+        self.delete_all_resolvers()
+        self.create_common_resolvers()
+        self.create_common_realms()
+
+        policies = [
+            {
+                "name": "enroll_fido2",
+                "scope": "selfservice",
+                "action": "enrollFIDO2",
+                "user": "*",
+                "realm": "*",
+                "active": True,
+            },
+            {
+                "name": "enrollment",
+                "scope": "enrollment",
+                "action": "fido2_rp_id=localhost, maxtoken=1, maxtokenFIDO2=1",
+                "user": "*",
+                "realm": "*",
+                "active": True,
+            },
+        ]
+        for policy in policies:
+            self.create_policy(policy)
+
+    def tearDown(self):
+        TestController.tearDown(self)
+
+    def test_selfservice_pairing(self):
+        """
+        selfservice: the only allowed fido2 token can be paired via
+        fido2_activate_begin and fido2_activate_finish
+        """
+        auth_user = {"login": self.user, "password": "geheim1"}
+
+        response = self.make_userselfservice_request(
+            "enroll",
+            params={"type": "fido2"},
+            auth_user=auth_user,
+            new_auth_cookie=True,
+        )
+        assert response.json["result"]["status"] is True, response
+        serial = response.json["detail"]["serial"]
+
+        response = self.make_userselfservice_request(
+            "fido2_activate_begin",
+            params={"serial": serial},
+            auth_user=auth_user,
+        )
+        assert response.json["result"]["status"] is True, response
+        registerrequest = response.json["detail"]["registerrequest"]
+
+        attestation_response = SoftWebauthnDevice().create(
+            registerrequest, origin="https://localhost"
+        )
+        response = self.make_userselfservice_request(
+            "fido2_activate_finish",
+            params={"serial": serial, "attestationResponse": attestation_response},
+            auth_user=auth_user,
+            content_type="application/json",
+        )
+        assert response.json["result"]["value"] is True, response
+
+        # a further token is still refused
+
+        response = self.make_userselfservice_request(
+            "enroll",
+            params={"type": "fido2"},
+            auth_user=auth_user,
+            new_auth_cookie=True,
+        )
+        assert self.max_token_msg in response, response
+
+    def test_admin_pairing(self):
+        """
+        admin: the only allowed fido2 token can be paired via the second
+        admin/init call
+        """
+        response = self.make_admin_request(
+            "init", params={"type": "fido2", "user": self.user}
+        )
+        assert response.json["result"]["status"] is True, response
+        detail = response.json["detail"]
+
+        attestation_response = SoftWebauthnDevice().create(
+            detail["registerrequest"], origin="https://localhost"
+        )
+        response = self.make_admin_request(
+            "init",
+            params={
+                "serial": detail["serial"],
+                "type": "fido2",
+                "attestationResponse": attestation_response,
+                "user": self.user,
+            },
+            content_type="application/json",
+        )
+        assert response.json["result"]["value"] is True, response
+
+        # a further token is still refused
+
+        response = self.make_admin_request(
+            "init", params={"type": "fido2", "user": self.user}
+        )
+        assert self.max_token_msg in response, response
