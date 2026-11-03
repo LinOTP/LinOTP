@@ -1,3 +1,14 @@
+linotp (3.4.6~dev0-1) buster; urgency=medium
+
+  Fixes:
+  * Allow JWTs whose "sub" claim is not a string, as required by newer PyJWT versions
+
+  Misc:
+  * update PyJWT to 2.14.0 (CVE-2026-102268) and flask-jwt-extended to 4.7.4
+  * update certifi to 2026.10.18 (GHSA-6q48-6c7w-9gw2)
+
+ -- LinOTP Packaging <packaging@linotp.de>  Tue, 03 Nov 2026 09:00:00 +0100
+
 linotp (3.4.5-1) buster; urgency=medium
 
   Fixes:
