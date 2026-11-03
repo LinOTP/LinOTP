@@ -45,9 +45,9 @@ bcrypt==4.2.1 \
 beaker==1.13.0 \
     --hash=sha256:e956cd8a35ad5de1b5212c7bff8fc01e2b3d34ab92466d24684c666abb8c9c30
     # via LinOTP (setup.py)
-certifi==2026.1.4 \
-    --hash=sha256:9943707519e4add1115f44c2bc244f782c0249876bf51b6599fee1ffbedd685c \
-    --hash=sha256:ac726dd470482006e014ad384921ed6438c457018f4b3d204aea4281258b2120
+certifi==2026.10.18 \
+    --hash=sha256:73191c47aaa79da394e8fee2dbc2ec827432cab56311122c9e47abf79e390f62 \
+    --hash=sha256:b9995d97b64d0431a5af837d8ca8cd6238104d1f319f04bd93ea43124d6c861e
     # via
     #   requests
     #   selenium
