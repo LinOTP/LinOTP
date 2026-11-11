@@ -25,16 +25,16 @@
 #
 
 [linotp]
-protocol = {{ .Env.LINOTP_PROTOCOL }}
-host = {{ .Env.LINOTP_HOST }}
-port = {{ .Env.LINOTP_PORT }}
-username = {{ .Env.LINOTP_USERNAME }}
-password = {{ .Env.LINOTP_PASSWORD }}
+protocol = ${LINOTP_PROTOCOL}
+host = ${LINOTP_HOST}
+port = ${LINOTP_PORT}
+username = ${LINOTP_USERNAME}
+password = ${LINOTP_PASSWORD}
 
 [selenium]
-driver = {{ .Env.SELENIUM_DRIVER }}
+driver = ${SELENIUM_DRIVER}
 remote = true
-remote_url = {{ printf "%s://%s:%s/wd/hub" .Env.SELENIUM_PROTOCOL .Env.SELENIUM_HOST .Env.SELENIUM_PORT }}
+remote_url = ${SELENIUM_PROTOCOL}://${SELENIUM_HOST}:${SELENIUM_PORT}/wd/hub
 
 # Which language should the browser request?
 # The default is en_us
