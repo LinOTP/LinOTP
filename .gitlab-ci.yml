@@ -9,7 +9,6 @@ include:
 
 variables:
   LANG: C.UTF-8
-  DOCKERFY_URL: https://debs-devel.corp.linotp.de/misc/dockerfy/dockerfy
   DOCKER_TAGS: $CI_PIPELINE_ID
   IMAGE_PREFIX_CI: $CI_REGISTRY/$CI_PROJECT_PATH/ci
   DOCKER_COMPOSE_VERSION: "1.22.0"
@@ -512,13 +511,9 @@ functional-test-mysql-lower-case-table-names:
         LINOTP_SESSION_COOKIE_SECURE: "false"
   script:
     - cd linotp/tests/integration
-    - >
-      /usr/local/bin/dockerfy
-      --template docker_cfg.ini.tmpl:/tmp/server_cfg.ini
-      --wait tcp://$SELENIUM_HOST:$SELENIUM_PORT
-      --timeout 60m
-      --wait tcp://$LINOTP_HOST:$LINOTP_PORT
-      --timeout 60m
+    - envsubst < docker_cfg.ini.tmpl > /tmp/server_cfg.ini
+    - timeout 60m bash -c 'until (exec 3<>/dev/tcp/$SELENIUM_HOST/$SELENIUM_PORT) 2>/dev/null; do sleep 1; done'
+    - timeout 60m bash -c 'until (exec 3<>/dev/tcp/$LINOTP_HOST/$LINOTP_PORT) 2>/dev/null; do sleep 1; done'
     - make integrationtests TCFILE=/tmp/server_cfg.ini PYTESTARGS="$PYTESTARGS"
   after_script:
     - mkdir -p linotp/tests/integration/Screenshots

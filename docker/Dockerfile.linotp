@@ -199,18 +199,15 @@ FROM prod AS testenv
 
 USER root
 
-# Install dockerfy for checking test container startup and conversion of docker_cfg.ini.tmpl
-RUN curl -LO https://github.com/markriggins/dockerfy/releases/download/0.2.6/dockerfy-linux-amd64-0.2.6.tar.gz && \
-    tar -C /usr/local/bin -xzvf dockerfy-linux-amd64*.gz && \
-    rm dockerfy-linux-amd64*.gz
-
 # Get uv package manager
 COPY --from=builder /bin/uv /bin/
 
+# gettext-base provides envsubst to render docker_cfg.ini.tmpl for the e2e tests
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && apt-get install -y --no-install-recommends \
-    make 
+    make \
+    gettext-base
 
 # Install test dependencies
 RUN --mount=type=cache,target=/root/.cache/uv \
