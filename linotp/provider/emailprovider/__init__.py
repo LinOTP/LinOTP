@@ -198,7 +198,8 @@ class SMTPEmailProvider(IEmailProvider):
 
         if not os.path.isdir(template_root):
             LOG.error(
-                "Configuration error: no email provider template directory found: %r"
+                "Configuration error: email provider template directory not found: %s",
+                template_root,
             )
             msg = "Email provider template directory not found"
             raise Exception(msg)
