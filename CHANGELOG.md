@@ -123,6 +123,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `/custom-templates/mailtemplates`. This is a breaking change: templates mounted to
   `/etc/linotp/custom-templates/mailtemplates` are no longer found and no email OTP is sent. Mount the templates
   to `/custom-templates/mailtemplates` instead.
+- Certificate and key files of the push, SMS and voice providers belong in `/data`, as `/etc/linotp` is no longer
+  used in the container. Paths to `/etc/linotp` in existing provider configurations are not migrated: copy the
+  files to `/data` and update the provider configuration.
 
 ### Security
 
