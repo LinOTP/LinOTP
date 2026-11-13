@@ -147,7 +147,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- Selfservice policies removed: `getotp`, `max_count_dpw`, `max_count_hotp`, `max_count_totp`, `show_landing_page`
+- Selfservice policies removed, as these features are no longer available after the removal of the legacy selfservice: `enrollU2F`, `getotp`, `max_count_dpw`, `max_count_hotp`, `max_count_totp`, `show_landing_page`. An existing policy that lists one of these actions should be cleaned up, as saving it again fails the policy action validation
 - webprovisionGOOGLE and webprovisionGOOGLEtime policies are removed and migrated to enrollHMAC and enrollTOTP respectively
 - OATHTokenSupport config item is removed and "OATH webprovision" is no longer supported in legacy selfservice
 - `userservice/webprovision` endpoint is removed
