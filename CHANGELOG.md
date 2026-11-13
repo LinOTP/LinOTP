@@ -160,6 +160,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `userservice/webprovision` endpoint is removed
 - `userservice/getmultiotp` endpoint is removed
 - Legacy selfservice user interface removed
+- The file based imprint of the selfservice (`/etc/linotp/imprint/<realm>.imprint`) is removed. Use the selfservice policy `imprint_url` to link to an imprint page instead
 - Unsupported smartcard leftovers are removed that never went into production: the `sopin` parameter of `/admin/setPin` and the `setSCPIN` admin policy. An existing policy that lists `setSCPIN` has no effect and should be cleaned up, as saving it again fails the policy action validation
 
 ### Deprecated
