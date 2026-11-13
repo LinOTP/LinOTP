@@ -80,9 +80,7 @@ class SpassTokenClass(TokenClass):
             "description": (
                 "A token that allows the user to simply pass. Can be combined with the OTP PIN."
             ),
-            "selfservice": {
-                "enroll": {}  # keep for dynamic policy definitions
-            },
+            "selfservice": {},
             "config": {},
             "policy": {},
         }
