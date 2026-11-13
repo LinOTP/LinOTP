@@ -645,6 +645,22 @@ scope = gettoken
 
         assert '"status": true' in response, response
 
+    def test_get_policy_def_selfservice_enroll_actions(self):
+        """Token types the selfservice can not enroll have no enroll action."""
+        response = self.make_system_request(
+            action="getPolicyDef", params={"scope": "selfservice"}
+        )
+        actions = response.json["result"]["value"]
+
+        for action in (
+            "enrollDPW",
+            "enrollFORWARD",
+            "enrollRADIUS",
+            "enrollREMOTE",
+            "enrollSPASS",
+        ):
+            assert action not in actions, action
+
     def test_set_license_via_form_upload(self, license_filename="demo-lic.pem"):
         """
         Ensure that loading a license file works via form upload.
