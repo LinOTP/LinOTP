@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.0-rc2] - unreleased
+
+### Removed
+
+<!-- Only relevant for rc0/rc1: 3.4.5 never had these actions. Remove this entry for 4.0.0. -->
+- The selfservice policy actions `enrollSPASS`, `enrollDPW`, `enrollFORWARD`,
+  `enrollRADIUS` and `enrollREMOTE` were added by mistake in 4.0.0-rc0 and are
+  removed again. The selfservice can not enroll these token types, but
+  `/userservice/enroll` accepted them; with `enrollSPASS` a user could enroll a
+  static password token and log in with the PIN alone. Policies using these
+  actions can no longer be saved.
+
 ## [4.0.0-rc1] - 2026-11-03
 
 ### Changed
