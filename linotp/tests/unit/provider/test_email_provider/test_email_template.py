@@ -327,5 +327,23 @@ class TestEMailTemplate(TestCase):
         ex_msg = f"{exx.exception!r}"
         assert "not in email provider template root" in ex_msg
 
+    def test_missing_template_root_is_logged(self):
+        """the error log names the template root that does not exist"""
+
+        missing_root = "/custom-templates/mailtemplates/does-not-exist"
+        context = {"Config": {EMAIL_PROVIDER_TEMPLATE_KEY: missing_root}}
+
+        with (
+            patch("linotp.provider.emailprovider.request_context", new=context),
+            self.assertLogs("linotp.provider.emailprovider", level="ERROR") as logs,
+            self.assertRaisesRegex(Exception, "template directory not found"),
+        ):
+            EMailProvider.get_template_root()
+
+        assert (
+            f"email provider template directory not found: {missing_root}"
+            in logs.output[0]
+        )
+
 
 # eof
